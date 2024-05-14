@@ -1,0 +1,181 @@
+File
+PLA25_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,17.123172 mM,0.02,0.33,0.687
+,glutamic acid,0.455521 mM,3.4,-1.11,0.99
+,internal standard,2.199203 mM,3.22,0.23,0.9999
+,asparagine,-3.74238 mM,0.47,2.34,0.5471
+,serine,-1.160396 mM,2.66,3.54,0.9779
+,glutamine,0.075189 mM,3.06,0.19,0.9994
+,histidine,-0.644845 mM,3.03,2.17,0.8885
+,glycine,-0.810425 mM,2.08,2.09,0.9507
+,citrulline,-9.730448 mM,0.07,0.81,0.1007
+,threonine,0.097097 mM,3.05,-0.07,0.9999
+,arginine,0.070177 mM,3.26,-0.04,0.9997
+,GABA,0.108465 mM,3.11,-0.03,0.9999
+,alanine,0.046731 mM,3.03,-0.04,0.9999
+,proline,0.166235 mM,3.23,-0.02,0.9999
+,NH4Cl,0.335662 mM,3.17,0.1,0.9996
+,agmatine,7.658165 mM,-0.03,0.76,0.0305
+
+PLA44_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,18.194429 mM,0.02,0.33,0.687
+,glutamic acid,0.440472 mM,3.4,-1.11,0.99
+,internal standard,-0.019624 mM,3.22,0.23,0.9999
+,asparagine,8.717117 mM,0.47,2.34,0.5471
+,serine,-0.98986 mM,2.66,3.54,0.9779
+,glutamine,0.222552 mM,3.06,0.19,0.9994
+,histidine,-0.495073 mM,3.03,2.17,0.8885
+,glycine,-0.873319 mM,2.08,2.09,0.9507
+,citrulline,-6.858274 mM,0.07,0.81,0.1007
+,threonine,0.098389 mM,3.05,-0.07,0.9999
+,arginine,0.060352 mM,3.26,-0.04,0.9997
+,GABA,0.110441 mM,3.11,-0.03,0.9999
+,alanine,0.114757 mM,3.03,-0.04,0.9999
+,proline,0.1646 mM,3.23,-0.02,0.9999
+,NH4Cl,0.272472 mM,3.17,0.1,0.9996
+,agmatine,8.695644 mM,-0.03,0.76,0.0305
+
+PLA45_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,13.23759 mM,0.02,0.33,0.687
+,glutamic acid,0.429821 mM,3.4,-1.11,0.99
+,internal standard,-0.038416 mM,3.22,0.23,0.9999
+,asparagine,8.108169 mM,0.47,2.34,0.5471
+,serine,-1.04685 mM,2.66,3.54,0.9779
+,glutamine,0.095986 mM,3.06,0.19,0.9994
+,histidine,-0.541521 mM,3.03,2.17,0.8885
+,glycine,-0.882943 mM,2.08,2.09,0.9507
+,citrulline,-6.78188 mM,0.07,0.81,0.1007
+,threonine,0.11392 mM,3.05,-0.07,0.9999
+,arginine,0.070528 mM,3.26,-0.04,0.9997
+,GABA,0.113774 mM,3.11,-0.03,0.9999
+,alanine,0.199356 mM,3.03,-0.04,0.9999
+,proline,0.266722 mM,3.23,-0.02,0.9999
+,NH4Cl,0.140234 mM,3.17,0.1,0.9996
+
+PLA51_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,16.508215 mM,0.02,0.33,0.687
+,glutamic acid,0.443232 mM,3.4,-1.11,0.99
+,internal standard,2.047182 mM,3.22,0.23,0.9999
+,asparagine,-3.650848 mM,0.47,2.34,0.5471
+,serine,-1.184164 mM,2.66,3.54,0.9779
+,glutamine,0.083205 mM,3.06,0.19,0.9994
+,histidine,-0.646745 mM,3.03,2.17,0.8885
+,glycine,-0.836242 mM,2.08,2.09,0.9507
+,citrulline,-9.924046 mM,0.07,0.81,0.1007
+,threonine,0.094574 mM,3.05,-0.07,0.9999
+,arginine,0.064972 mM,3.26,-0.04,0.9997
+,GABA,0.103591 mM,3.11,-0.03,0.9999
+,alanine,0.188267 mM,3.03,-0.04,0.9999
+,proline,0.354416 mM,3.23,-0.02,0.9999
+,NH4Cl,0.128825 mM,3.17,0.1,0.9996
+
+PLA58_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,25.410387 mM,0.02,0.33,0.687
+,glutamic acid,0.473932 mM,3.4,-1.11,0.99
+,internal standard,-0.03421 mM,3.22,0.23,0.9999
+,asparagine,13.527551 mM,0.47,2.34,0.5471
+,serine,-1.286831 mM,2.66,3.54,0.9779
+,glutamine,0.193459 mM,3.06,0.19,0.9994
+,histidine,-0.547705 mM,3.03,2.17,0.8885
+,glycine,-0.706265 mM,2.08,2.09,0.9507
+,citrulline,-8.403258 mM,0.07,0.81,0.1007
+,threonine,0.157814 mM,3.05,-0.07,0.9999
+,arginine,0.055158 mM,3.26,-0.04,0.9997
+,GABA,0.089352 mM,3.11,-0.03,0.9999
+,alanine,0.081273 mM,3.03,-0.04,0.9999
+,proline,0.11258 mM,3.23,-0.02,0.9999
+,NH4Cl,-0.001054 mM,3.17,0.1,0.9996
+,agmatine,4.693248 mM,-0.03,0.76,0.0305
+,histamine,-inf mM,0.0,1.15,0.0001
+,valine,-0.459469 mM,0.17,2.34,0.0902
+,methionine,-0.908129 mM,1.14,1.56,0.8883
+
+PLA60_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,15.432243 mM,0.02,0.33,0.687
+,glutamic acid,0.451118 mM,3.4,-1.11,0.99
+,internal standard,-0.04181 mM,3.22,0.23,0.9999
+,asparagine,11.202759 mM,0.47,2.34,0.5471
+,serine,-1.100797 mM,2.66,3.54,0.9779
+,glutamine,0.069358 mM,3.06,0.19,0.9994
+,histidine,-0.558045 mM,3.03,2.17,0.8885
+,glycine,-0.829455 mM,2.08,2.09,0.9507
+,citrulline,-9.969362 mM,0.07,0.81,0.1007
+,threonine,0.102816 mM,3.05,-0.07,0.9999
+,arginine,0.071734 mM,3.26,-0.04,0.9997
+,GABA,0.10787 mM,3.11,-0.03,0.9999
+,alanine,0.212944 mM,3.03,-0.04,0.9999
+,proline,0.552141 mM,3.23,-0.02,0.9999
+,NH4Cl,0.12455 mM,3.17,0.1,0.9996
+
+PLA66_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,19.334746 mM,0.02,0.33,0.687
+,glutamic acid,0.457432 mM,3.4,-1.11,0.99
+,internal standard,-0.021667 mM,3.22,0.23,0.9999
+,asparagine,11.642864 mM,0.47,2.34,0.5471
+,serine,-1.281013 mM,2.66,3.54,0.9779
+,glutamine,0.17865 mM,3.06,0.19,0.9994
+,histidine,-0.526727 mM,3.03,2.17,0.8885
+,glycine,-0.74444 mM,2.08,2.09,0.9507
+,citrulline,-8.979385 mM,0.07,0.81,0.1007
+,threonine,0.142445 mM,3.05,-0.07,0.9999
+,arginine,0.049035 mM,3.26,-0.04,0.9997
+,GABA,0.109037 mM,3.11,-0.03,0.9999
+,alanine,0.089248 mM,3.03,-0.04,0.9999
+,proline,0.126079 mM,3.23,-0.02,0.9999
+,NH4Cl,0.00106 mM,3.17,0.1,0.9996
+,agmatine,3.039675 mM,-0.03,0.76,0.0305
+,histamine,inf mM,0.0,1.15,0.0001
+,valine,-10.682415 mM,0.17,2.34,0.0902
+
+PLA67_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,16.557653 mM,0.02,0.33,0.687
+,glutamic acid,0.441148 mM,3.4,-1.11,0.99
+,internal standard,-0.02514 mM,3.22,0.23,0.9999
+,asparagine,9.933329 mM,0.47,2.34,0.5471
+,serine,-1.281611 mM,2.66,3.54,0.9779
+,glutamine,0.218904 mM,3.06,0.19,0.9994
+,histidine,-0.5231 mM,3.03,2.17,0.8885
+,glycine,-0.679858 mM,2.08,2.09,0.9507
+,citrulline,-8.161998 mM,0.07,0.81,0.1007
+,threonine,0.133869 mM,3.05,-0.07,0.9999
+,arginine,0.095234 mM,3.26,-0.04,0.9997
+,GABA,0.075222 mM,3.11,-0.03,0.9999
+,alanine,0.137008 mM,3.03,-0.04,0.9999
+,proline,0.040754 mM,3.23,-0.02,0.9999
+,NH4Cl,0.150024 mM,3.17,0.1,0.9996
+,agmatine,-37.312848 mM,-0.03,0.76,0.0305
+,histamine,-inf mM,0.0,1.15,0.0001
+
+PLA74_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,7.171695 mM,0.02,0.33,0.687
+,glutamic acid,0.422693 mM,3.4,-1.11,0.99
+,internal standard,-0.037927 mM,3.22,0.23,0.9999
+,asparagine,7.591655 mM,0.47,2.34,0.5471
+,serine,-1.00661 mM,2.66,3.54,0.9779
+,glutamine,0.044741 mM,3.06,0.19,0.9994
+,histidine,-0.588407 mM,3.03,2.17,0.8885
+,glycine,-0.921031 mM,2.08,2.09,0.9507
+,citrulline,-7.87599 mM,0.07,0.81,0.1007
+,threonine,0.076861 mM,3.05,-0.07,0.9999
+,arginine,0.055993 mM,3.26,-0.04,0.9997
+,GABA,0.080543 mM,3.11,-0.03,0.9999
+,alanine,0.186121 mM,3.03,-0.04,0.9999
+,proline,0.501386 mM,3.23,-0.02,0.9999
+,NH4Cl,0.122529 mM,3.17,0.1,0.9996
+
+PLA75_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,15.266055 mM,0.02,0.33,0.687
+,glutamic acid,0.448305 mM,3.4,-1.11,0.99
+,internal standard,-0.037456 mM,3.22,0.23,0.9999
+,asparagine,10.072502 mM,0.47,2.34,0.5471
+,serine,-1.037396 mM,2.66,3.54,0.9779
+,glutamine,0.090151 mM,3.06,0.19,0.9994
+,histidine,-0.561666 mM,3.03,2.17,0.8885
+,glycine,-0.838594 mM,2.08,2.09,0.9507
+,citrulline,-8.60087 mM,0.07,0.81,0.1007
+,threonine,0.076362 mM,3.05,-0.07,0.9999
+,arginine,0.094186 mM,3.26,-0.04,0.9997
+,GABA,0.267196 mM,3.11,-0.03,0.9999
+,alanine,0.632228 mM,3.03,-0.04,0.9999
+,proline,0.159865 mM,3.23,-0.02,0.9999
+
