@@ -1,6 +1,5 @@
 import os
 import re
-import shutil
 from pathlib import Path
 
 def read_files(file_path):
@@ -13,9 +12,11 @@ def read_files(file_path):
     
     for file in folder_contents:
         if file.endswith(".txt"):
-            match = re.search(r'(.*)mM', file)
+            match = re.search(r'STMIX', file)
             if match:
                 cal_files.append(file)
+            elif file.endswith("log.txt"):
+                continue
             else:
                 res_files.append(file)
         else:
