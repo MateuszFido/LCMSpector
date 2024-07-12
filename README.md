@@ -8,7 +8,7 @@ It looks for peak annotations for each calibration/measurement file, and outputs
 It also outputs a plot of the calibration curve, a plot of the background corrected chromatogram, and a plot of the recognized peaks.
 If supplied files with concentrations in the name, the script will also estimate concentrations of the recognized peaks based on the calibration curve.
 
-# INSTALLATION #:
+# INSTALLATION:
 1. Clone the repository. 
 2. Install Python 3.12 or later.
 3. Install the dependencies listed out in requirements.txt ($ pip3 install -r requirements.txt):
@@ -32,6 +32,8 @@ background corrected chromatograms, and recognized peaks in the 'plots' folder.
 References: 
 
 hplc-py package by Griffin Chure from the Cremer lab:
+
 https://cremerlab.github.io/hplc-py/
+
 https://github.com/cremerlab/hplc-py
 
