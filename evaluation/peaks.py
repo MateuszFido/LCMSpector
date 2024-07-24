@@ -41,7 +41,7 @@ def assign_peaks(baseline_corrected_data, peaks, filename, file_path):
             print(f'[ERROR] Peak {index} contains n.a. values, skipping.')
             continue
         else:    
-            print(f'Found peak {peak['Peakname']}, with area {peak['Area ']} mAU, at retention time {peak['Ret.Time']} minutes between {peak["Peak Start "]} and {peak["Peak Stop "]} minutes.\n Recalculating area...')
+            print(f"Found peak {peak['Peakname']}, with area {peak['Area ']} mAU, at retention time {peak['Ret.Time']} minutes between {peak['Peak Start ']} and {peak['Peak Stop ']} minutes.\n Recalculating area...")
             left_base=np.argmin(np.abs(baseline_corrected_data['Time (min)'] - float(peak['Peak Start '])))
             right_base=np.argmin(np.abs(baseline_corrected_data['Time (min)'] - float(peak['Peak Stop '])))
             compound = Compound(index=index, 

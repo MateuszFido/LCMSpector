@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import csv
+import csv, re
 
 def load_absorbance_data(file_path):
     # Read the .txt file skipping initial rows until the 'Chromatogram Data' section
@@ -37,11 +37,17 @@ def load_annotated_peaks(file_path):
             else:
                 start_index += 1
 
+    peakname = r"(Peakname|Name)\s*"  # Matches "Peakname" or "Name" with optional whitespace
+    rt = r"(Ret\.Time|RetentionTime)\s*"  # Matches "Ret.Time" or "RetentionTime" with optional whitespace
+    area = r"(Area|Height)\s*"  # Matches "Area" or "Height" with optional whitespace
+    peak_start = r"(Peak Start|Start)\s*"  # Matches "Peak Start" or "Start" with optional whitespace
+    peak_stop = r"(Peak Stop|Stop)\s*"  # Matches "Peak Stop" or "Stop" with optional whitespace
+    
     # Load the annotated peaks from the annotations file, skipping the first few header rows
     df = pd.read_csv(file_path,
                      skiprows=start_index + 1,
                      delimiter='\t',
                      header=0,
-                     usecols=['Peakname', 'Ret.Time', 'Area ', 'Peak Start ', 'Peak Stop '])
+                     usecols=lambda x: re.search(peakname, x) or re.search(rt, x) or re.search(area, x) or re.search(peak_start, x) or re.search(peak_stop, x))
 
     return df
