@@ -1,181 +1,1172 @@
 File
-PLA25_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,17.123172 mM,0.02,0.33,0.687
-,glutamic acid,0.455521 mM,3.4,-1.11,0.99
-,internal standard,2.199203 mM,3.22,0.23,0.9999
-,asparagine,-3.74238 mM,0.47,2.34,0.5471
-,serine,-1.160396 mM,2.66,3.54,0.9779
-,glutamine,0.075189 mM,3.06,0.19,0.9994
-,histidine,-0.644845 mM,3.03,2.17,0.8885
-,glycine,-0.810425 mM,2.08,2.09,0.9507
-,citrulline,-9.730448 mM,0.07,0.81,0.1007
-,threonine,0.097097 mM,3.05,-0.07,0.9999
-,arginine,0.070177 mM,3.26,-0.04,0.9997
-,GABA,0.108465 mM,3.11,-0.03,0.9999
-,alanine,0.046731 mM,3.03,-0.04,0.9999
-,proline,0.166235 mM,3.23,-0.02,0.9999
-,NH4Cl,0.335662 mM,3.17,0.1,0.9996
-,agmatine,7.658165 mM,-0.03,0.76,0.0305
+DUO 136.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.629317 mM,445.47,251.2,0.9782
+,internal standard,55.289173 mM,1.6,1045.14,0.0926
+,asparagine,0.20803 mM,472.29,97.95,0.9962
+,serine,0.548832 mM,497.09,80.18,0.9978
+,glutamine,0.214128 mM,478.07,71.84,0.9981
+,histidine,0.071539 mM,537.97,49.08,0.9993
+,glycine,1.332881 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,4.884589 mM,436.79,40.85,0.996
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.907684 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.731044 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.563745 mM,492.2,128.53,0.9956
+,methionine,0.190525 mM,529.52,66.01,0.9982
+,tryptophan,0.038132 mM,509.47,41.56,0.9993
+,isoleucine,0.272605 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.69736 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.863704 mM,901.48,50.62,0.9995
+,lysine,0.569189 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA44_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,18.194429 mM,0.02,0.33,0.687
-,glutamic acid,0.440472 mM,3.4,-1.11,0.99
-,internal standard,-0.019624 mM,3.22,0.23,0.9999
-,asparagine,8.717117 mM,0.47,2.34,0.5471
-,serine,-0.98986 mM,2.66,3.54,0.9779
-,glutamine,0.222552 mM,3.06,0.19,0.9994
-,histidine,-0.495073 mM,3.03,2.17,0.8885
-,glycine,-0.873319 mM,2.08,2.09,0.9507
-,citrulline,-6.858274 mM,0.07,0.81,0.1007
-,threonine,0.098389 mM,3.05,-0.07,0.9999
-,arginine,0.060352 mM,3.26,-0.04,0.9997
-,GABA,0.110441 mM,3.11,-0.03,0.9999
-,alanine,0.114757 mM,3.03,-0.04,0.9999
-,proline,0.1646 mM,3.23,-0.02,0.9999
-,NH4Cl,0.272472 mM,3.17,0.1,0.9996
-,agmatine,8.695644 mM,-0.03,0.76,0.0305
+DUO 139.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,1.000324 mM,445.47,251.2,0.9782
+,internal standard,0.40662 mM,1.6,1045.14,0.0926
+,asparagine,0.302229 mM,472.29,97.95,0.9962
+,serine,0.801561 mM,497.09,80.18,0.9978
+,glutamine,0.375539 mM,478.07,71.84,0.9981
+,histidine,0.10987 mM,537.97,49.08,0.9993
+,glycine,1.404386 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,5.399824 mM,436.79,40.85,0.996
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.078124 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.509963 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.915114 mM,492.2,128.53,0.9956
+,methionine,0.331915 mM,529.52,66.01,0.9982
+,tryptophan,0.065958 mM,509.47,41.56,0.9993
+,isoleucine,0.510881 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.118277 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.234964 mM,901.48,50.62,0.9995
+,lysine,0.544291 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA45_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,13.23759 mM,0.02,0.33,0.687
-,glutamic acid,0.429821 mM,3.4,-1.11,0.99
-,internal standard,-0.038416 mM,3.22,0.23,0.9999
-,asparagine,8.108169 mM,0.47,2.34,0.5471
-,serine,-1.04685 mM,2.66,3.54,0.9779
-,glutamine,0.095986 mM,3.06,0.19,0.9994
-,histidine,-0.541521 mM,3.03,2.17,0.8885
-,glycine,-0.882943 mM,2.08,2.09,0.9507
-,citrulline,-6.78188 mM,0.07,0.81,0.1007
-,threonine,0.11392 mM,3.05,-0.07,0.9999
-,arginine,0.070528 mM,3.26,-0.04,0.9997
-,GABA,0.113774 mM,3.11,-0.03,0.9999
-,alanine,0.199356 mM,3.03,-0.04,0.9999
-,proline,0.266722 mM,3.23,-0.02,0.9999
-,NH4Cl,0.140234 mM,3.17,0.1,0.9996
+DUO 140.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.691103 mM,445.47,251.2,0.9782
+,internal standard,95.741825 mM,1.6,1045.14,0.0926
+,asparagine,0.202255 mM,472.29,97.95,0.9962
+,serine,0.546555 mM,497.09,80.18,0.9978
+,glutamine,0.295182 mM,478.07,71.84,0.9981
+,histidine,0.085346 mM,537.97,49.08,0.9993
+,glycine,1.412003 mM,531.74,3.65,0.9998
+,threonine,4.579979 mM,436.79,40.85,0.996
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.576172 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.949755 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.581621 mM,492.2,128.53,0.9956
+,methionine,0.235622 mM,529.52,66.01,0.9982
+,tryptophan,0.039626 mM,509.47,41.56,0.9993
+,isoleucine,0.291093 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.868143 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.90338 mM,901.48,50.62,0.9995
+,lysine,0.627789 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA51_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,16.508215 mM,0.02,0.33,0.687
-,glutamic acid,0.443232 mM,3.4,-1.11,0.99
-,internal standard,2.047182 mM,3.22,0.23,0.9999
-,asparagine,-3.650848 mM,0.47,2.34,0.5471
-,serine,-1.184164 mM,2.66,3.54,0.9779
-,glutamine,0.083205 mM,3.06,0.19,0.9994
-,histidine,-0.646745 mM,3.03,2.17,0.8885
-,glycine,-0.836242 mM,2.08,2.09,0.9507
-,citrulline,-9.924046 mM,0.07,0.81,0.1007
-,threonine,0.094574 mM,3.05,-0.07,0.9999
-,arginine,0.064972 mM,3.26,-0.04,0.9997
-,GABA,0.103591 mM,3.11,-0.03,0.9999
-,alanine,0.188267 mM,3.03,-0.04,0.9999
-,proline,0.354416 mM,3.23,-0.02,0.9999
-,NH4Cl,0.128825 mM,3.17,0.1,0.9996
+DUO 224.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.509901 mM,445.47,251.2,0.9782
+,internal standard,190.792952 mM,1.6,1045.14,0.0926
+,asparagine,0.057523 mM,472.29,97.95,0.9962
+,serine,0.132209 mM,497.09,80.18,0.9978
+,glutamine,0.240571 mM,478.07,71.84,0.9981
+,histidine,N/A mM,537.97,49.08,0.9993
+,glycine,0.693002 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.076415 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.261126 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.103326 mM,492.2,128.53,0.9956
+,methionine,0.001136 mM,529.52,66.01,0.9982
+,tryptophan,N/A mM,509.47,41.56,0.9993
+,isoleucine,N/A mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.203734 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.278388 mM,901.48,50.62,0.9995
+,lysine,0.578051 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA58_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,25.410387 mM,0.02,0.33,0.687
-,glutamic acid,0.473932 mM,3.4,-1.11,0.99
-,internal standard,-0.03421 mM,3.22,0.23,0.9999
-,asparagine,13.527551 mM,0.47,2.34,0.5471
-,serine,-1.286831 mM,2.66,3.54,0.9779
-,glutamine,0.193459 mM,3.06,0.19,0.9994
-,histidine,-0.547705 mM,3.03,2.17,0.8885
-,glycine,-0.706265 mM,2.08,2.09,0.9507
-,citrulline,-8.403258 mM,0.07,0.81,0.1007
-,threonine,0.157814 mM,3.05,-0.07,0.9999
-,arginine,0.055158 mM,3.26,-0.04,0.9997
-,GABA,0.089352 mM,3.11,-0.03,0.9999
-,alanine,0.081273 mM,3.03,-0.04,0.9999
-,proline,0.11258 mM,3.23,-0.02,0.9999
-,NH4Cl,-0.001054 mM,3.17,0.1,0.9996
-,agmatine,4.693248 mM,-0.03,0.76,0.0305
-,histamine,-inf mM,0.0,1.15,0.0001
-,valine,-0.459469 mM,0.17,2.34,0.0902
-,methionine,-0.908129 mM,1.14,1.56,0.8883
+DUO102.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.670391 mM,445.47,251.2,0.9782
+,internal standard,119.619309 mM,1.6,1045.14,0.0926
+,asparagine,0.124954 mM,472.29,97.95,0.9962
+,serine,0.369263 mM,497.09,80.18,0.9978
+,glutamine,0.238763 mM,478.07,71.84,0.9981
+,histidine,0.08801 mM,537.97,49.08,0.9993
+,glycine,1.047238 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.925498 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.150829 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.43618 mM,492.2,128.53,0.9956
+,methionine,0.135095 mM,529.52,66.01,0.9982
+,tryptophan,0.039631 mM,509.47,41.56,0.9993
+,isoleucine,0.232338 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.584658 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.787371 mM,901.48,50.62,0.9995
+,lysine,0.566286 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA60_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,15.432243 mM,0.02,0.33,0.687
-,glutamic acid,0.451118 mM,3.4,-1.11,0.99
-,internal standard,-0.04181 mM,3.22,0.23,0.9999
-,asparagine,11.202759 mM,0.47,2.34,0.5471
-,serine,-1.100797 mM,2.66,3.54,0.9779
-,glutamine,0.069358 mM,3.06,0.19,0.9994
-,histidine,-0.558045 mM,3.03,2.17,0.8885
-,glycine,-0.829455 mM,2.08,2.09,0.9507
-,citrulline,-9.969362 mM,0.07,0.81,0.1007
-,threonine,0.102816 mM,3.05,-0.07,0.9999
-,arginine,0.071734 mM,3.26,-0.04,0.9997
-,GABA,0.10787 mM,3.11,-0.03,0.9999
-,alanine,0.212944 mM,3.03,-0.04,0.9999
-,proline,0.552141 mM,3.23,-0.02,0.9999
-,NH4Cl,0.12455 mM,3.17,0.1,0.9996
+DUO107.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,1.064997 mM,445.47,251.2,0.9782
+,internal standard,137.729696 mM,1.6,1045.14,0.0926
+,asparagine,0.207295 mM,472.29,97.95,0.9962
+,serine,0.626082 mM,497.09,80.18,0.9978
+,glutamine,0.597812 mM,478.07,71.84,0.9981
+,histidine,0.120833 mM,537.97,49.08,0.9993
+,glycine,1.165158 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.033863 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.556026 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.670959 mM,492.2,128.53,0.9956
+,methionine,0.305245 mM,529.52,66.01,0.9982
+,tryptophan,0.060598 mM,509.47,41.56,0.9993
+,isoleucine,0.419058 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.004929 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.038526 mM,901.48,50.62,0.9995
+,lysine,0.598483 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA66_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,19.334746 mM,0.02,0.33,0.687
-,glutamic acid,0.457432 mM,3.4,-1.11,0.99
-,internal standard,-0.021667 mM,3.22,0.23,0.9999
-,asparagine,11.642864 mM,0.47,2.34,0.5471
-,serine,-1.281013 mM,2.66,3.54,0.9779
-,glutamine,0.17865 mM,3.06,0.19,0.9994
-,histidine,-0.526727 mM,3.03,2.17,0.8885
-,glycine,-0.74444 mM,2.08,2.09,0.9507
-,citrulline,-8.979385 mM,0.07,0.81,0.1007
-,threonine,0.142445 mM,3.05,-0.07,0.9999
-,arginine,0.049035 mM,3.26,-0.04,0.9997
-,GABA,0.109037 mM,3.11,-0.03,0.9999
-,alanine,0.089248 mM,3.03,-0.04,0.9999
-,proline,0.126079 mM,3.23,-0.02,0.9999
-,NH4Cl,0.00106 mM,3.17,0.1,0.9996
-,agmatine,3.039675 mM,-0.03,0.76,0.0305
-,histamine,inf mM,0.0,1.15,0.0001
-,valine,-10.682415 mM,0.17,2.34,0.0902
+DUO127.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.514838 mM,445.47,251.2,0.9782
+,internal standard,127.874109 mM,1.6,1045.14,0.0926
+,asparagine,0.130377 mM,472.29,97.95,0.9962
+,serine,0.417904 mM,497.09,80.18,0.9978
+,glutamine,0.269739 mM,478.07,71.84,0.9981
+,histidine,0.089178 mM,537.97,49.08,0.9993
+,glycine,0.914139 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.417806 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.473923 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.54876 mM,492.2,128.53,0.9956
+,methionine,0.214967 mM,529.52,66.01,0.9982
+,tryptophan,0.060129 mM,509.47,41.56,0.9993
+,isoleucine,0.306768 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.852393 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.912447 mM,901.48,50.62,0.9995
+,lysine,0.554636 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA67_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,16.557653 mM,0.02,0.33,0.687
-,glutamic acid,0.441148 mM,3.4,-1.11,0.99
-,internal standard,-0.02514 mM,3.22,0.23,0.9999
-,asparagine,9.933329 mM,0.47,2.34,0.5471
-,serine,-1.281611 mM,2.66,3.54,0.9779
-,glutamine,0.218904 mM,3.06,0.19,0.9994
-,histidine,-0.5231 mM,3.03,2.17,0.8885
-,glycine,-0.679858 mM,2.08,2.09,0.9507
-,citrulline,-8.161998 mM,0.07,0.81,0.1007
-,threonine,0.133869 mM,3.05,-0.07,0.9999
-,arginine,0.095234 mM,3.26,-0.04,0.9997
-,GABA,0.075222 mM,3.11,-0.03,0.9999
-,alanine,0.137008 mM,3.03,-0.04,0.9999
-,proline,0.040754 mM,3.23,-0.02,0.9999
-,NH4Cl,0.150024 mM,3.17,0.1,0.9996
-,agmatine,-37.312848 mM,-0.03,0.76,0.0305
-,histamine,-inf mM,0.0,1.15,0.0001
+DUO128.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.681761 mM,445.47,251.2,0.9782
+,internal standard,107.059766 mM,1.6,1045.14,0.0926
+,asparagine,0.225214 mM,472.29,97.95,0.9962
+,serine,0.71061 mM,497.09,80.18,0.9978
+,glutamine,0.378542 mM,478.07,71.84,0.9981
+,histidine,0.117883 mM,537.97,49.08,0.9993
+,glycine,1.406254 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,alanine,2.047148 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,3.504201 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.736217 mM,492.2,128.53,0.9956
+,methionine,0.216866 mM,529.52,66.01,0.9982
+,tryptophan,0.020233 mM,509.47,41.56,0.9993
+,isoleucine,0.403391 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.841079 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.952394 mM,901.48,50.62,0.9995
+,lysine,0.560713 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA74_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,7.171695 mM,0.02,0.33,0.687
-,glutamic acid,0.422693 mM,3.4,-1.11,0.99
-,internal standard,-0.037927 mM,3.22,0.23,0.9999
-,asparagine,7.591655 mM,0.47,2.34,0.5471
-,serine,-1.00661 mM,2.66,3.54,0.9779
-,glutamine,0.044741 mM,3.06,0.19,0.9994
-,histidine,-0.588407 mM,3.03,2.17,0.8885
-,glycine,-0.921031 mM,2.08,2.09,0.9507
-,citrulline,-7.87599 mM,0.07,0.81,0.1007
-,threonine,0.076861 mM,3.05,-0.07,0.9999
-,arginine,0.055993 mM,3.26,-0.04,0.9997
-,GABA,0.080543 mM,3.11,-0.03,0.9999
-,alanine,0.186121 mM,3.03,-0.04,0.9999
-,proline,0.501386 mM,3.23,-0.02,0.9999
-,NH4Cl,0.122529 mM,3.17,0.1,0.9996
+DUO129.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.054018 mM,445.47,251.2,0.9782
+,internal standard,49.984381 mM,1.6,1045.14,0.0926
+,asparagine,N/A mM,472.29,97.95,0.9962
+,serine,0.12668 mM,497.09,80.18,0.9978
+,glutamine,0.115745 mM,478.07,71.84,0.9981
+,histidine,N/A mM,537.97,49.08,0.9993
+,glycine,0.543656 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,1.886134 mM,436.79,40.85,0.996
+,arginine,0.150081 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,0.584661 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.028811 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.071341 mM,492.2,128.53,0.9956
+,methionine,0.011183 mM,529.52,66.01,0.9982
+,tryptophan,N/A mM,509.47,41.56,0.9993
+,isoleucine,N/A mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.243307 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.369436 mM,901.48,50.62,0.9995
+,lysine,0.50478 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 
-PLA75_UV_VIS_1.txt,Compound,Concentration,Slope,Intercept,R-squared
-,aspartic acid,15.266055 mM,0.02,0.33,0.687
-,glutamic acid,0.448305 mM,3.4,-1.11,0.99
-,internal standard,-0.037456 mM,3.22,0.23,0.9999
-,asparagine,10.072502 mM,0.47,2.34,0.5471
-,serine,-1.037396 mM,2.66,3.54,0.9779
-,glutamine,0.090151 mM,3.06,0.19,0.9994
-,histidine,-0.561666 mM,3.03,2.17,0.8885
-,glycine,-0.838594 mM,2.08,2.09,0.9507
-,citrulline,-8.60087 mM,0.07,0.81,0.1007
-,threonine,0.076362 mM,3.05,-0.07,0.9999
-,arginine,0.094186 mM,3.26,-0.04,0.9997
-,GABA,0.267196 mM,3.11,-0.03,0.9999
-,alanine,0.632228 mM,3.03,-0.04,0.9999
-,proline,0.159865 mM,3.23,-0.02,0.9999
+DUO130.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.552685 mM,445.47,251.2,0.9782
+,asparagine,0.093983 mM,472.29,97.95,0.9962
+,serine,0.309198 mM,497.09,80.18,0.9978
+,glutamine,0.317834 mM,478.07,71.84,0.9981
+,histidine,0.040887 mM,537.97,49.08,0.9993
+,glycine,0.823159 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.455482 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.037794 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.346453 mM,492.2,128.53,0.9956
+,methionine,0.09682 mM,529.52,66.01,0.9982
+,tryptophan,0.001344 mM,509.47,41.56,0.9993
+,isoleucine,0.167812 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.527651 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.660147 mM,901.48,50.62,0.9995
+,lysine,0.551902 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO135.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.5387 mM,445.47,251.2,0.9782
+,internal standard,85.949988 mM,1.6,1045.14,0.0926
+,asparagine,0.202283 mM,472.29,97.95,0.9962
+,serine,0.534688 mM,497.09,80.18,0.9978
+,glutamine,0.161281 mM,478.07,71.84,0.9981
+,histidine,0.075901 mM,537.97,49.08,0.9993
+,glycine,1.326619 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,5.42132 mM,436.79,40.85,0.996
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.584344 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.832603 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.583377 mM,492.2,128.53,0.9956
+,methionine,0.189396 mM,529.52,66.01,0.9982
+,tryptophan,0.029732 mM,509.47,41.56,0.9993
+,isoleucine,0.295176 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.708489 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.8304 mM,901.48,50.62,0.9995
+,lysine,0.566189 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO172.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.340217 mM,445.47,251.2,0.9782
+,internal standard,35.892134 mM,1.6,1045.14,0.0926
+,asparagine,0.014265 mM,472.29,97.95,0.9962
+,serine,0.187532 mM,497.09,80.18,0.9978
+,glutamine,0.114373 mM,478.07,71.84,0.9981
+,histidine,0.030114 mM,537.97,49.08,0.9993
+,glycine,0.820437 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.352124 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.933545 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.211288 mM,492.2,128.53,0.9956
+,methionine,0.072025 mM,529.52,66.01,0.9982
+,tryptophan,N/A mM,509.47,41.56,0.9993
+,isoleucine,0.077436 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.399127 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.560273 mM,901.48,50.62,0.9995
+,lysine,0.566469 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO177.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.512399 mM,445.47,251.2,0.9782
+,internal standard,169.585259 mM,1.6,1045.14,0.0926
+,asparagine,0.048872 mM,472.29,97.95,0.9962
+,serine,0.293014 mM,497.09,80.18,0.9978
+,glutamine,0.254404 mM,478.07,71.84,0.9981
+,histidine,0.04731 mM,537.97,49.08,0.9993
+,glycine,0.885637 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.75336 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.793476 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.177513 mM,492.2,128.53,0.9956
+,methionine,0.076927 mM,529.52,66.01,0.9982
+,tryptophan,N/A mM,509.47,41.56,0.9993
+,isoleucine,0.069641 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.371699 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.473726 mM,901.48,50.62,0.9995
+,lysine,0.584952 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO178.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.487697 mM,445.47,251.2,0.9782
+,internal standard,114.35414 mM,1.6,1045.14,0.0926
+,asparagine,0.094426 mM,472.29,97.95,0.9962
+,serine,0.360499 mM,497.09,80.18,0.9978
+,glutamine,0.304533 mM,478.07,71.84,0.9981
+,histidine,0.047898 mM,537.97,49.08,0.9993
+,glycine,0.923069 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.745049 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,3.240466 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.292544 mM,492.2,128.53,0.9956
+,methionine,0.117241 mM,529.52,66.01,0.9982
+,tryptophan,N/A mM,509.47,41.56,0.9993
+,isoleucine,0.148128 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.464475 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.640792 mM,901.48,50.62,0.9995
+,lysine,0.590426 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO182.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,1.257472 mM,445.47,251.2,0.9782
+,internal standard,57.627234 mM,1.6,1045.14,0.0926
+,asparagine,0.27328 mM,472.29,97.95,0.9962
+,serine,0.871142 mM,497.09,80.18,0.9978
+,glutamine,0.538134 mM,478.07,71.84,0.9981
+,histidine,0.133611 mM,537.97,49.08,0.9993
+,glycine,1.981538 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,3.691166 mM,436.79,40.85,0.996
+,arginine,1.646695 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.545184 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.737556 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.954528 mM,492.2,128.53,0.9956
+,methionine,0.498432 mM,529.52,66.01,0.9982
+,tryptophan,0.09483 mM,509.47,41.56,0.9993
+,isoleucine,0.592862 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.463227 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.346926 mM,901.48,50.62,0.9995
+,lysine,0.564093 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO183.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.079588 mM,415.52,359.96,0.9466
+,glutamic acid,1.490181 mM,445.47,251.2,0.9782
+,internal standard,54.239837 mM,1.6,1045.14,0.0926
+,asparagine,0.451136 mM,472.29,97.95,0.9962
+,serine,1.290393 mM,497.09,80.18,0.9978
+,glutamine,0.839334 mM,478.07,71.84,0.9981
+,histidine,0.208811 mM,537.97,49.08,0.9993
+,threonine,3.515028 mM,436.79,40.85,0.996
+,arginine,2.833351 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.805798 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.565688 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,1.69283 mM,492.2,128.53,0.9956
+,methionine,0.852487 mM,529.52,66.01,0.9982
+,tryptophan,0.209741 mM,509.47,41.56,0.9993
+,isoleucine,1.116612 mM,514.87,130.73,0.9958
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,2.266065 mM,901.48,50.62,0.9995
+,lysine,0.558763 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO185.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.973527 mM,445.47,251.2,0.9782
+,internal standard,101.141202 mM,1.6,1045.14,0.0926
+,asparagine,0.219516 mM,472.29,97.95,0.9962
+,serine,0.887748 mM,497.09,80.18,0.9978
+,glutamine,0.525365 mM,478.07,71.84,0.9981
+,histidine,0.10314 mM,537.97,49.08,0.9993
+,glycine,1.540542 mM,531.74,3.65,0.9998
+,threonine,3.224067 mM,436.79,40.85,0.996
+,arginine,1.695752 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.928893 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.048807 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.965781 mM,492.2,128.53,0.9956
+,methionine,0.553799 mM,529.52,66.01,0.9982
+,tryptophan,0.170819 mM,509.47,41.56,0.9993
+,isoleucine,0.510261 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.497507 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.423515 mM,901.48,50.62,0.9995
+,lysine,0.540867 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO186.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.705631 mM,445.47,251.2,0.9782
+,internal standard,87.370825 mM,1.6,1045.14,0.0926
+,asparagine,0.164988 mM,472.29,97.95,0.9962
+,serine,0.587154 mM,497.09,80.18,0.9978
+,glutamine,0.382173 mM,478.07,71.84,0.9981
+,histidine,0.067457 mM,537.97,49.08,0.9993
+,glycine,1.040065 mM,531.74,3.65,0.9998
+,threonine,2.175541 mM,436.79,40.85,0.996
+,arginine,1.501268 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.382346 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.16982 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.89627 mM,492.2,128.53,0.9956
+,methionine,0.46042 mM,529.52,66.01,0.9982
+,tryptophan,0.154199 mM,509.47,41.56,0.9993
+,isoleucine,0.507992 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.415841 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.480981 mM,901.48,50.62,0.9995
+,lysine,0.497761 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO187.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.646311 mM,445.47,251.2,0.9782
+,internal standard,182.668981 mM,1.6,1045.14,0.0926
+,asparagine,0.182776 mM,472.29,97.95,0.9962
+,serine,0.581202 mM,497.09,80.18,0.9978
+,glutamine,0.242388 mM,478.07,71.84,0.9981
+,histidine,0.075009 mM,537.97,49.08,0.9993
+,glycine,1.446208 mM,531.74,3.65,0.9998
+,threonine,3.31113 mM,436.79,40.85,0.996
+,arginine,1.06254 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.776539 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.016047 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.736256 mM,492.2,128.53,0.9956
+,methionine,0.18348 mM,529.52,66.01,0.9982
+,tryptophan,0.037147 mM,509.47,41.56,0.9993
+,isoleucine,0.364035 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.924564 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.977367 mM,901.48,50.62,0.9995
+,lysine,0.510966 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO190.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.483898 mM,445.47,251.2,0.9782
+,internal standard,93.973116 mM,1.6,1045.14,0.0926
+,asparagine,0.124642 mM,472.29,97.95,0.9962
+,serine,0.415431 mM,497.09,80.18,0.9978
+,glutamine,0.161079 mM,478.07,71.84,0.9981
+,histidine,0.052955 mM,537.97,49.08,0.9993
+,glycine,1.11023 mM,531.74,3.65,0.9998
+,threonine,3.391548 mM,436.79,40.85,0.996
+,arginine,1.046288 mM,579.48,98.7,0.999
+,alanine,1.324939 mM,472.6,216.07,0.9871
+,gaba,1.421108 mM,489.58,146.49,0.993
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.637629 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.525953 mM,492.2,128.53,0.9956
+,methionine,0.201793 mM,529.52,66.01,0.9982
+,tryptophan,0.040915 mM,509.47,41.56,0.9993
+,isoleucine,0.257804 mM,514.87,130.73,0.9958
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.873947 mM,901.48,50.62,0.9995
+,lysine,0.526287 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO191.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.789895 mM,445.47,251.2,0.9782
+,internal standard,75.746229 mM,1.6,1045.14,0.0926
+,asparagine,0.187535 mM,472.29,97.95,0.9962
+,serine,0.687592 mM,497.09,80.18,0.9978
+,glutamine,0.270892 mM,478.07,71.84,0.9981
+,histidine,0.102867 mM,537.97,49.08,0.9993
+,glycine,1.859013 mM,531.74,3.65,0.9998
+,threonine,4.946249 mM,436.79,40.85,0.996
+,arginine,1.048382 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.789929 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.72153 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,0.000223 mM,532.61,26.0,0.9996
+,valine,0.695819 mM,492.2,128.53,0.9956
+,methionine,0.281946 mM,529.52,66.01,0.9982
+,tryptophan,0.031265 mM,509.47,41.56,0.9993
+,isoleucine,0.372175 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.927038 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.871244 mM,901.48,50.62,0.9995
+,lysine,0.584761 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO223.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.613919 mM,445.47,251.2,0.9782
+,internal standard,131.152667 mM,1.6,1045.14,0.0926
+,asparagine,0.052497 mM,472.29,97.95,0.9962
+,serine,0.186738 mM,497.09,80.18,0.9978
+,glutamine,0.060414 mM,478.07,71.84,0.9981
+,histidine,N/A mM,537.97,49.08,0.9993
+,glycine,0.828966 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,0.963814 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.434892 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.154108 mM,492.2,128.53,0.9956
+,methionine,0.03741 mM,529.52,66.01,0.9982
+,tryptophan,N/A mM,509.47,41.56,0.9993
+,isoleucine,0.005332 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.258318 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.31537 mM,901.48,50.62,0.9995
+,lysine,0.577663 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO225.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,1.349002 mM,445.47,251.2,0.9782
+,glycine,0.253664 mM,531.74,3.65,0.9998
+,threonine,1.202802 mM,436.79,40.85,0.996
+,gaba,N/A mM,489.58,146.49,0.993
+,agmatine,N/A mM,451.82,68.91,0.999
+,valine,0.99487 mM,492.2,128.53,0.9956
+,methionine,0.237078 mM,529.52,66.01,0.9982
+,tryptophan,0.04219 mM,509.47,41.56,0.9993
+,isoleucine,0.306211 mM,514.87,130.73,0.9958
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.846148 mM,901.48,50.62,0.9995
+,lysine,0.615993 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO25.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.576986 mM,445.47,251.2,0.9782
+,internal standard,84.827144 mM,1.6,1045.14,0.0926
+,asparagine,0.067031 mM,472.29,97.95,0.9962
+,serine,0.490289 mM,497.09,80.18,0.9978
+,glutamine,0.365535 mM,478.07,71.84,0.9981
+,histidine,0.074247 mM,537.97,49.08,0.9993
+,glycine,0.866987 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,1.901929 mM,436.79,40.85,0.996
+,arginine,1.760063 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.544576 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.841304 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.671485 mM,492.2,128.53,0.9956
+,methionine,0.402565 mM,529.52,66.01,0.9982
+,tryptophan,0.10488 mM,509.47,41.56,0.9993
+,isoleucine,0.421273 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.233566 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.359802 mM,901.48,50.62,0.9995
+,lysine,0.541668 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO44.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.806906 mM,445.47,251.2,0.9782
+,internal standard,128.497744 mM,1.6,1045.14,0.0926
+,asparagine,0.115576 mM,472.29,97.95,0.9962
+,serine,0.510271 mM,497.09,80.18,0.9978
+,glutamine,0.505182 mM,478.07,71.84,0.9981
+,histidine,0.104501 mM,537.97,49.08,0.9993
+,glycine,1.088045 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,2.715746 mM,436.79,40.85,0.996
+,arginine,1.670869 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.92951 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,4.963004 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.619364 mM,492.2,128.53,0.9956
+,methionine,0.34036 mM,529.52,66.01,0.9982
+,tryptophan,0.084446 mM,509.47,41.56,0.9993
+,isoleucine,0.359486 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.092799 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.173818 mM,901.48,50.62,0.9995
+,lysine,0.580771 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO45.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.243171 mM,415.52,359.96,0.9466
+,glutamic acid,1.083662 mM,445.47,251.2,0.9782
+,internal standard,156.275314 mM,1.6,1045.14,0.0926
+,asparagine,0.354578 mM,472.29,97.95,0.9962
+,serine,1.106044 mM,497.09,80.18,0.9978
+,glutamine,0.797789 mM,478.07,71.84,0.9981
+,histidine,0.229407 mM,537.97,49.08,0.9993
+,glycine,1.402 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.451774 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,4.473467 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,1.178791 mM,492.2,128.53,0.9956
+,methionine,0.67328 mM,529.52,66.01,0.9982
+,tryptophan,0.129369 mM,509.47,41.56,0.9993
+,isoleucine,0.770908 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.77051 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.804901 mM,901.48,50.62,0.9995
+,lysine,0.672987 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO51.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.428816 mM,445.47,251.2,0.9782
+,internal standard,81.301407 mM,1.6,1045.14,0.0926
+,asparagine,0.091387 mM,472.29,97.95,0.9962
+,serine,0.494485 mM,497.09,80.18,0.9978
+,glutamine,0.30682 mM,478.07,71.84,0.9981
+,histidine,0.079441 mM,537.97,49.08,0.9993
+,glycine,1.010966 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.325294 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.496582 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.532062 mM,492.2,128.53,0.9956
+,methionine,0.433507 mM,529.52,66.01,0.9982
+,tryptophan,0.041765 mM,509.47,41.56,0.9993
+,isoleucine,0.315656 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.857873 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.945419 mM,901.48,50.62,0.9995
+,lysine,0.553488 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO58.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.523309 mM,415.52,359.96,0.9466
+,glutamic acid,1.877903 mM,445.47,251.2,0.9782
+,internal standard,106.360422 mM,1.6,1045.14,0.0926
+,asparagine,0.470929 mM,472.29,97.95,0.9962
+,serine,1.174207 mM,497.09,80.18,0.9978
+,glutamine,0.63029 mM,478.07,71.84,0.9981
+,histidine,0.284192 mM,537.97,49.08,0.9993
+,glycine,2.103813 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,0.046358 mM,489.58,146.49,0.993
+,alanine,3.84747 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,7.246995 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,0.004224 mM,532.61,26.0,0.9996
+,valine,1.398481 mM,492.2,128.53,0.9956
+,methionine,0.63381 mM,529.52,66.01,0.9982
+,tryptophan,0.207992 mM,509.47,41.56,0.9993
+,isoleucine,0.940499 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.858486 mM,1021.17,200.48,0.9974
+,ornithine,0.023941 mM,857.31,410.25,0.9895
+,spermidine,2.033681 mM,901.48,50.62,0.9995
+,lysine,0.703559 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+
+DUO59.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.7145 mM,415.52,359.96,0.9466
+,glutamic acid,1.735058 mM,445.47,251.2,0.9782
+,internal standard,171.397905 mM,1.6,1045.14,0.0926
+,asparagine,0.358503 mM,472.29,97.95,0.9962
+,serine,0.996459 mM,497.09,80.18,0.9978
+,glutamine,0.566756 mM,478.07,71.84,0.9981
+,histidine,0.193605 mM,537.97,49.08,0.9993
+,glycine,1.753815 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,3.989913 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,5.68725 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,0.00092 mM,532.61,26.0,0.9996
+,valine,1.101343 mM,492.2,128.53,0.9956
+,methionine,0.481763 mM,529.52,66.01,0.9982
+,tryptophan,0.091442 mM,509.47,41.56,0.9993
+,isoleucine,0.737779 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.354023 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.385962 mM,901.48,50.62,0.9995
+,lysine,0.695256 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+
+DUO60.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.695553 mM,445.47,251.2,0.9782
+,internal standard,193.511431 mM,1.6,1045.14,0.0926
+,asparagine,0.0846 mM,472.29,97.95,0.9962
+,serine,0.48151 mM,497.09,80.18,0.9978
+,glutamine,0.216681 mM,478.07,71.84,0.9981
+,histidine,0.088632 mM,537.97,49.08,0.9993
+,glycine,0.991911 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.72365 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,3.354749 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.570672 mM,492.2,128.53,0.9956
+,methionine,0.287542 mM,529.52,66.01,0.9982
+,tryptophan,0.058656 mM,509.47,41.56,0.9993
+,isoleucine,0.359574 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.962467 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.049983 mM,901.48,50.62,0.9995
+,lysine,0.578868 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO66.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.930588 mM,445.47,251.2,0.9782
+,internal standard,185.647849 mM,1.6,1045.14,0.0926
+,asparagine,0.164779 mM,472.29,97.95,0.9962
+,serine,0.624225 mM,497.09,80.18,0.9978
+,glutamine,0.309524 mM,478.07,71.84,0.9981
+,histidine,0.120965 mM,537.97,49.08,0.9993
+,glycine,1.269375 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.202808 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,4.619826 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.605065 mM,492.2,128.53,0.9956
+,methionine,0.252369 mM,529.52,66.01,0.9982
+,tryptophan,0.02787 mM,509.47,41.56,0.9993
+,isoleucine,0.37096 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.830356 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.974281 mM,901.48,50.62,0.9995
+,lysine,0.6616 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO67.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.527286 mM,445.47,251.2,0.9782
+,internal standard,64.499495 mM,1.6,1045.14,0.0926
+,asparagine,0.05919 mM,472.29,97.95,0.9962
+,serine,0.453466 mM,497.09,80.18,0.9978
+,glutamine,0.285501 mM,478.07,71.84,0.9981
+,histidine,0.064396 mM,537.97,49.08,0.9993
+,glycine,0.88939 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.443656 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,3.655819 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.458628 mM,492.2,128.53,0.9956
+,methionine,0.223984 mM,529.52,66.01,0.9982
+,tryptophan,0.022313 mM,509.47,41.56,0.9993
+,isoleucine,0.288151 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.736787 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.742154 mM,901.48,50.62,0.9995
+,lysine,0.591438 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO74.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.787016 mM,445.47,251.2,0.9782
+,internal standard,133.817689 mM,1.6,1045.14,0.0926
+,asparagine,0.097177 mM,472.29,97.95,0.9962
+,serine,0.444102 mM,497.09,80.18,0.9978
+,glutamine,0.275076 mM,478.07,71.84,0.9981
+,histidine,0.077102 mM,537.97,49.08,0.9993
+,glycine,0.956365 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.871918 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,3.165409 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.464701 mM,492.2,128.53,0.9956
+,methionine,0.189228 mM,529.52,66.01,0.9982
+,tryptophan,0.011808 mM,509.47,41.56,0.9993
+,isoleucine,0.27666 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.679096 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.867263 mM,901.48,50.62,0.9995
+,lysine,0.581483 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO75.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.557416 mM,445.47,251.2,0.9782
+,internal standard,89.173236 mM,1.6,1045.14,0.0926
+,asparagine,0.031916 mM,472.29,97.95,0.9962
+,serine,0.395034 mM,497.09,80.18,0.9978
+,glutamine,0.17955 mM,478.07,71.84,0.9981
+,histidine,0.057304 mM,537.97,49.08,0.9993
+,glycine,0.766247 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.417622 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.833767 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.375791 mM,492.2,128.53,0.9956
+,methionine,0.147782 mM,529.52,66.01,0.9982
+,tryptophan,0.021858 mM,509.47,41.56,0.9993
+,isoleucine,0.225417 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.562154 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.755726 mM,901.48,50.62,0.9995
+,lysine,0.558472 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO76.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.661784 mM,445.47,251.2,0.9782
+,internal standard,22.979714 mM,1.6,1045.14,0.0926
+,asparagine,0.102734 mM,472.29,97.95,0.9962
+,serine,0.424374 mM,497.09,80.18,0.9978
+,glutamine,0.226651 mM,478.07,71.84,0.9981
+,histidine,0.069881 mM,537.97,49.08,0.9993
+,glycine,0.919578 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,1.50496 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.511549 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.442193 mM,492.2,128.53,0.9956
+,methionine,0.154612 mM,529.52,66.01,0.9982
+,tryptophan,0.02506 mM,509.47,41.56,0.9993
+,isoleucine,0.253457 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.616877 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.783097 mM,901.48,50.62,0.9995
+,lysine,0.556248 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO77.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.818405 mM,445.47,251.2,0.9782
+,internal standard,29.448565 mM,1.6,1045.14,0.0926
+,asparagine,0.16936 mM,472.29,97.95,0.9962
+,serine,0.564535 mM,497.09,80.18,0.9978
+,glutamine,0.350491 mM,478.07,71.84,0.9981
+,histidine,0.107835 mM,537.97,49.08,0.9993
+,glycine,1.202308 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.026338 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,2.113054 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.589265 mM,492.2,128.53,0.9956
+,methionine,0.231167 mM,529.52,66.01,0.9982
+,tryptophan,0.03387 mM,509.47,41.56,0.9993
+,isoleucine,0.351931 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.833678 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.995228 mM,901.48,50.62,0.9995
+,lysine,0.561457 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO78.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.405397 mM,415.52,359.96,0.9466
+,glutamic acid,2.239196 mM,445.47,251.2,0.9782
+,internal standard,4.656841 mM,1.6,1045.14,0.0926
+,asparagine,0.502763 mM,472.29,97.95,0.9962
+,serine,1.309268 mM,497.09,80.18,0.9978
+,glutamine,0.797155 mM,478.07,71.84,0.9981
+,histidine,0.299253 mM,537.97,49.08,0.9993
+,glycine,2.392422 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,4.346472 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,7.267257 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,1.387573 mM,492.2,128.53,0.9956
+,methionine,0.630378 mM,529.52,66.01,0.9982
+,tryptophan,0.1377 mM,509.47,41.56,0.9993
+,isoleucine,0.913411 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.848634 mM,1021.17,200.48,0.9974
+,ornithine,0.087118 mM,857.31,410.25,0.9895
+,spermidine,1.948131 mM,901.48,50.62,0.9995
+,lysine,0.724961 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+
+DUO88.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.399487 mM,415.52,359.96,0.9466
+,glutamic acid,1.513317 mM,445.47,251.2,0.9782
+,internal standard,149.17591 mM,1.6,1045.14,0.0926
+,asparagine,0.417174 mM,472.29,97.95,0.9962
+,serine,1.185934 mM,497.09,80.18,0.9978
+,glutamine,0.745418 mM,478.07,71.84,0.9981
+,histidine,0.216613 mM,537.97,49.08,0.9993
+,glycine,1.895778 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,3.196143 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,4.383185 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,1.376531 mM,492.2,128.53,0.9956
+,methionine,0.711492 mM,529.52,66.01,0.9982
+,tryptophan,0.16823 mM,509.47,41.56,0.9993
+,isoleucine,0.875961 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,2.046017 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,2.028186 mM,901.48,50.62,0.9995
+,lysine,0.654643 mM,997.51,-474.2,0.9975
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO89.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.409104 mM,415.52,359.96,0.9466
+,glutamic acid,1.540075 mM,445.47,251.2,0.9782
+,internal standard,214.790478 mM,1.6,1045.14,0.0926
+,asparagine,0.446381 mM,472.29,97.95,0.9962
+,serine,1.329245 mM,497.09,80.18,0.9978
+,glutamine,0.805648 mM,478.07,71.84,0.9981
+,histidine,0.262667 mM,537.97,49.08,0.9993
+,glycine,1.852358 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,3.207992 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,4.362055 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,1.61893 mM,492.2,128.53,0.9956
+,methionine,0.779824 mM,529.52,66.01,0.9982
+,tryptophan,0.177298 mM,509.47,41.56,0.9993
+,isoleucine,1.083717 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,2.246103 mM,1021.17,200.48,0.9974
+,ornithine,0.139933 mM,857.31,410.25,0.9895
+,spermidine,2.256622 mM,901.48,50.62,0.9995
+,lysine,0.589557 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO95.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.419356 mM,415.52,359.96,0.9466
+,glutamic acid,1.739158 mM,445.47,251.2,0.9782
+,internal standard,104.536948 mM,1.6,1045.14,0.0926
+,asparagine,0.430731 mM,472.29,97.95,0.9962
+,serine,1.968596 mM,497.09,80.18,0.9978
+,glutamine,0.829972 mM,478.07,71.84,0.9981
+,histidine,0.237311 mM,537.97,49.08,0.9993
+,glycine,2.012593 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,3.825908 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,5.202301 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,1.410938 mM,492.2,128.53,0.9956
+,methionine,0.682512 mM,529.52,66.01,0.9982
+,tryptophan,0.145638 mM,509.47,41.56,0.9993
+,isoleucine,0.896125 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.796713 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.740322 mM,901.48,50.62,0.9995
+,lysine,0.62082 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+DUO96.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,0.372193 mM,415.52,359.96,0.9466
+,glutamic acid,0.989168 mM,445.47,251.2,0.9782
+,internal standard,141.366164 mM,1.6,1045.14,0.0926
+,asparagine,0.236332 mM,472.29,97.95,0.9962
+,serine,0.934376 mM,497.09,80.18,0.9978
+,glutamine,0.495169 mM,478.07,71.84,0.9981
+,histidine,0.156425 mM,537.97,49.08,0.9993
+,glycine,1.510567 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,2.655238 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,4.054389 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,valine,0.930304 mM,492.2,128.53,0.9956
+,methionine,0.29462 mM,529.52,66.01,0.9982
+,tryptophan,0.099535 mM,509.47,41.56,0.9993
+,isoleucine,0.572335 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,1.308599 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,1.430932 mM,901.48,50.62,0.9995
+,lysine,0.57161 mM,997.51,-474.2,0.9975
+
+H2O.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glycine,0.004946 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,gaba,N/A mM,489.58,146.49,0.993
+,nh4cl,N/A mM,122.06,218.61,0.8579
+,valine,N/A mM,492.2,128.53,0.9956
+,methionine,N/A mM,529.52,66.01,0.9982
+,isoleucine,N/A mM,514.87,130.73,0.9958
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+JEJ182.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.438751 mM,445.47,251.2,0.9782
+,internal standard,79.380423 mM,1.6,1045.14,0.0926
+,asparagine,0.071757 mM,472.29,97.95,0.9962
+,serine,0.541064 mM,497.09,80.18,0.9978
+,glutamine,0.306604 mM,478.07,71.84,0.9981
+,histidine,N/A mM,537.97,49.08,0.9993
+,glycine,0.491984 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,0.305247 mM,436.79,40.85,0.996
+,arginine,0.49327 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,0.541776 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,0.329356 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,0.000183 mM,532.61,26.0,0.9996
+,valine,0.493789 mM,492.2,128.53,0.9956
+,methionine,0.125777 mM,529.52,66.01,0.9982
+,tryptophan,0.092485 mM,509.47,41.56,0.9993
+,isoleucine,0.275252 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.491674 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.603475 mM,901.48,50.62,0.9995
+,lysine,0.485801 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
+
+JEJ224.txt,Compound,Concentration,Slope,Intercept,R-squared
+,aspartic acid,N/A mM,415.52,359.96,0.9466
+,glutamic acid,0.073421 mM,445.47,251.2,0.9782
+,internal standard,131.083797 mM,1.6,1045.14,0.0926
+,asparagine,N/A mM,472.29,97.95,0.9962
+,serine,0.089909 mM,497.09,80.18,0.9978
+,glutamine,0.272514 mM,478.07,71.84,0.9981
+,histidine,N/A mM,537.97,49.08,0.9993
+,glycine,0.341772 mM,531.74,3.65,0.9998
+,citrulline,N/A mM,475.88,117.94,0.995
+,threonine,0.347157 mM,436.79,40.85,0.996
+,arginine,0.337649 mM,579.48,98.7,0.999
+,gaba,N/A mM,489.58,146.49,0.993
+,alanine,0.293292 mM,472.6,216.07,0.9871
+,proline,N/A mM,35.63,123.02,0.7419
+,nh4cl,1.254244 mM,122.06,218.61,0.8579
+,agmatine,N/A mM,451.82,68.91,0.999
+,histamine,N/A mM,532.61,26.0,0.9996
+,valine,0.21962 mM,492.2,128.53,0.9956
+,methionine,0.048232 mM,529.52,66.01,0.9982
+,tryptophan,0.026634 mM,509.47,41.56,0.9993
+,isoleucine,0.074846 mM,514.87,130.73,0.9958
+,leucine-phenylalanine,0.307572 mM,1021.17,200.48,0.9974
+,ornithine,N/A mM,857.31,410.25,0.9895
+,spermidine,0.366356 mM,901.48,50.62,0.9995
+,lysine,0.479204 mM,997.51,-474.2,0.9975
+,putrescine,N/A mM,197.15,943.36,0.3852
+,cadaverine,N/A mM,376.58,359.34,0.9402
 

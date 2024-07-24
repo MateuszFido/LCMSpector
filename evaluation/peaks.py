@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import find_peaks, peak_prominences
 import matplotlib.pyplot as plt
-import os
+import os, re
 from pathlib import Path
 
 class Compound:
@@ -31,25 +31,39 @@ def assign_peaks(baseline_corrected_data, peaks, filename, file_path):
 
     This function iterates over the annotated peaks data and assigns peaks to the chromatogram based on the provided data. It skips rows that contain "n.a." values or "UV_VIS" in the peak name. It creates a subfolder called "peaks" in the "plots" directory if it doesn't exist. It then plots the chromatogram and highlights the assigned peaks. It also plots vertical lines for the left and right bases of each peak and fills the area underneath the peak's contour line with a shaded region. The plot is saved as a PNG file in the "peaks" subfolder. The function returns a list of Compound objects representing the assigned peaks.
     """
+    
     compound_list = []
     for index, peak in peaks.iterrows():
-        if peak['Peakname'] == 'NaN' or 'UV_VIS' in str(peak['Peakname']):
+        # First, check which naming convention is used by Chromeleon
+        try:
+            rt = peak['Ret.Time']
+            area = peak['Area ']
+        except KeyError:
+            rt = peak['RetentionTime']
+            area = peak['Area']
+        finally:
+            peakname = peak['Peakname']
+            peak_start = peak['Peak Start ']
+            peak_stop = peak['Peak Stop ']
+        if index == 0:
+            continue
+        if 'NaN'.casefold() in str(peakname).casefold() or 'UV_VIS'.casefold() in str(peakname).casefold():
             continue
         try: 
-            float(peak['Ret.Time'])
+            float(rt)
         except(ValueError):
             print(f'[ERROR] Peak {index} contains n.a. values, skipping.')
             continue
         else:    
-            print(f"Found peak {peak['Peakname']}, with area {peak['Area ']} mAU, at retention time {peak['Ret.Time']} minutes between {peak['Peak Start ']} and {peak['Peak Stop ']} minutes.\n Recalculating area...")
-            left_base=np.argmin(np.abs(baseline_corrected_data['Time (min)'] - float(peak['Peak Start '])))
-            right_base=np.argmin(np.abs(baseline_corrected_data['Time (min)'] - float(peak['Peak Stop '])))
+            print(f"Found peak {peakname}, with area {area} mAU, at retention time {rt} minutes between {peak_start} and {peak_stop} minutes.\n Recalculating area...")
+            left_base=np.argmin(np.abs(baseline_corrected_data['Time (min)'] - float(peak_start)))
+            right_base=np.argmin(np.abs(baseline_corrected_data['Time (min)'] - float(peak_stop)))
             compound = Compound(index=index, 
-                                name=peak['Peakname'], 
+                                name=peakname, 
                                 left_base=left_base, 
                                 right_base=right_base, 
                                 area=np.trapz(y=baseline_corrected_data['Value (mAU)'].iloc[left_base:right_base]), 
-                                rt=float(peak['Ret.Time']))
+                                rt=float(rt))
             print(filename, ':', compound, '\n')
             compound_list.append(compound)
         

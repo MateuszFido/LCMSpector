@@ -32,7 +32,7 @@ def load_annotated_peaks(file_path):
         lines = csv.reader(file, delimiter='\t')
         start_index = 0
         for row in lines:
-            if row[0] == 'Peak Results':
+            if row[0] == 'Peak Results' or row[0] == 'Integration Results':
                 break
             else:
                 start_index += 1
@@ -50,4 +50,6 @@ def load_annotated_peaks(file_path):
                      header=0,
                      usecols=lambda x: re.search(peakname, x) or re.search(rt, x) or re.search(area, x) or re.search(peak_start, x) or re.search(peak_stop, x))
 
+    print(df)
+    
     return df
