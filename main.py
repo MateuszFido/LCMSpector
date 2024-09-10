@@ -1,5 +1,5 @@
 from evaluation.calibration_curves import calibrate
-from evaluation.concentrations import calculate_concentration
+from evaluation.calc_conc import calculate_concentration
 from evaluation.peaks import assign_peaks
 from training import *
 from utils.list_files import read_files
@@ -8,6 +8,7 @@ from utils.preprocessing import baseline_correction
 import time, csv, re, sys, os
 from pathlib import Path
 from alive_progress import alive_bar
+import pandas as pd
 
 def run():
     """
@@ -122,30 +123,17 @@ def run():
                     print(f'[WARNING] No calibration curve found for {compound.name}.')
                     continue
                 print(f" {res_file}: {compound.name} has a concentration of {concentration} mM." )
-                compounds_in_file[compound.name] = [f'{concentration} mM', 
-                                                    curve_params[compound.name]['Slope'], 
-                                                    curve_params[compound.name]['Intercept'],
-                                                    curve_params[compound.name]['R-squared']]
+                compounds_in_file[compound.name] = concentration
             concentrations[res_file] = compounds_in_file
             sys.stdout = stdout
             bar()
     
+    results = pd.DataFrame(data=concentrations, columns = concentrations.keys())
 
-    with open(file_path / 'results.csv', 'w', newline='') as csv_file:
-        writer = csv.writer(csv_file)
+    # Rename all the columns so that they don't contain the .txt extension
+    results = results.rename(columns = lambda x: x[:-4])
 
-        # Write header row
-        header_row = ['File']
-        writer.writerow(header_row)
-
-        # Write data rows
-        for outer_key, inner_dict in concentrations.items():
-            writer.writerow([outer_key, 'Compound', 'Concentration', 'Slope', 'Intercept', 'R-squared'])
-            for compound_name, compound_values in inner_dict.items():
-                data_row = ['', compound_name] + compound_values
-                writer.writerow(data_row)
-            
-            writer.writerow([])
+    results.to_csv('data/results.csv')
 
 if __name__ == "__main__":
     # Log script run-time 

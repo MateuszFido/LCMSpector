@@ -1,7 +1,8 @@
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.stats import linregress
+from scipy.stats import pearsonr
+from statistics import linear_regression
 from pathlib import Path
 
 def calibrate(all_compounds, file_path):
@@ -29,15 +30,17 @@ def calibrate(all_compounds, file_path):
                     color=plt.cm.jet(idx / num_compounds))
         
         # Fit a linear equation to the concentration-peak area relationship
-        slope, intercept, rvalue, _, _ = linregress(compounds_df.loc[compounds_df['Name'] == compound_name, 'Concentration (mM)'],
-                                               compounds_df.loc[compounds_df['Name'] == compound_name, 'Area'])
-        slope_intercept_values[compound_name] = {'Slope': round(slope, 2), 'Intercept': round(intercept, 2), 'R-squared': round(rvalue ** 2, 4)}
+        slope = linear_regression(compounds_df.loc[compounds_df['Name'] == compound_name, 'Concentration (mM)'],
+                                               compounds_df.loc[compounds_df['Name'] == compound_name, 'Area'], proportional=True)[0]
+
+        slope_intercept_values[compound_name] = {'Slope': round(slope, 2), 'R-squared': round(pearsonr(compounds_df.loc[compounds_df['Name'] == compound_name, 
+        'Concentration (mM)'], compounds_df.loc[compounds_df['Name'] == compound_name, 'Area'])[0] ** 2, 4)}
         
         # Plot the fitted curve
         plt.plot(compounds_df.loc[compounds_df['Name'] == compound_name, 'Concentration (mM)'],
-                 slope * compounds_df.loc[compounds_df['Name'] == compound_name, 'Concentration (mM)'] + intercept,
+                 slope * compounds_df.loc[compounds_df['Name'] == compound_name, 'Concentration (mM)'],
                  color='black', linestyle='--',
-                 label=f'Fit: y = {slope:.4f}x + {intercept:.4f}')
+                 label=f'Fit: y = {slope:.4f}x')
 
         plt.title(f'{compound_name} Calibration Curve')
         plt.xlabel('Concentration (mM)')
