@@ -7,7 +7,8 @@ import time, csv, re, sys, os
 from pathlib import Path
 from alive_progress import alive_bar
 from utils.annotation import annotate_lc_chromatograms, annotate_XICs, average_intensity, construct_xic
-from utils.sorting import get_path
+from utils.sorting import get_path, check_data
+from utils.measurements import LCMeasurement, MSMeasurement
 import pandas as pd
 from settings import BASE_PATH
 
@@ -64,23 +65,33 @@ def run():
 
     print("\nAnnotation path:", annotation_path, "\nMS path:", ms_path, "\nLC path:", lc_path)
 
+    # Perform a check on the data
+    check_data()
+
+    lc_files = [file for file in os.listdir(lc_path) if file.endswith('.txt')]
+    ms_files = [file for file in os.listdir(ms_path) if file.endswith('.mzml')]
+
+    for lc_file in lc_files:
+        print(f"Preprocessing {lc_file}...")
+        lc_file = LCMeasurement(Path(lc_path) / lc_file)
+        lc_file.load_data()
+    print("Done.")
+
+    for ms_file in ms_files:
+        print(f"Preprocessing {ms_file}...")
+        ms_file = MSMeasurement(Path(ms_path) / ms_file)
+        ms_file.load_data()
+    print("Done.")
 
 
 
-    for lc_file, annotation in lc_files.items():
-        # sys.stdout = log_file
-        # TODO: Consider st_dout
-        #TODO Check on a larger cohort to see if this even makes sense
-        print(f'Preprocessing {file}...')
-        dataframe = load_absorbance_data(lc_path / lc_file)
-        baseline_corrected_data = baseline_correction(lc_path / lc_file)
-        if annotation.endswith('.txt'):
-            compounds = assign_peaks(baseline_corrected_data, load_annotated_peaks(annotation_path / annotation), lc_file, lc_path)
-        elif annotation.endswith('.mzml'):
-            average_intensity(ms_path / annotation)
-            construct_xic(ms_path / annotation)
-            annotate_XICs(ms_path / annotation, ion_list)
-            annotate_lc_chromatograms((ms_path / annotation), baseline_corrected_data)
+    if annotation.endswith('.txt'):
+        compounds = assign_peaks(baseline_corrected_data, load_annotated_peaks(annotation_path / annotation), lc_file, lc_path)
+    elif annotation.endswith('.mzml'):
+        average_intensity(ms_path / annotation)
+        construct_xic(ms_path / annotation)
+        annotate_XICs(ms_path / annotation, ion_list)
+        annotate_lc_chromatograms((ms_path / annotation), baseline_corrected_data)
     
 
     #TODO: Only done until here

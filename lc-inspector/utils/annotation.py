@@ -38,30 +38,7 @@ def calculate_mz_axis(data):
     return mz_axis
 
 
-def average_intensity(path: str) -> pd.DataFrame:
-    """
-    Averages the intensity across all scans.
-
-    Parameters
-    ----------
-    path : str
-        The path to the .mzML file.
-
-    Returns
-    -------
-    data_matrix : pd.DataFrame
-        A DataFrame containing the m/z and intensity values.
-    """
-    
-    # Prepare paths
-    os.makedirs(Path(path).parents[2] / 'plots' / 'ms_spectra', exist_ok=True)
-    plot_path = Path(path).parents[2] / 'plots' / 'ms_spectra'
-    results_path = Path(path).parents[2] / 'results'
-    filename = os.path.basename(path)
-
-    # Load the data
-    print(f"Loading {filename} into memory...")
-    data = mzml.MzML(str(path))
+def average_intensity(data: list) -> pd.DataFrame:
     
     # Take only the scans where ms level is 1
     data = [scan for scan in data if scan['ms level'] == 1]
@@ -91,11 +68,6 @@ def average_intensity(path: str) -> pd.DataFrame:
     
     # Store the averaged intensity values in a DataFrame
     data_matrix = pd.DataFrame({'m/z': np.round(mz_axis, 4), 'intensity / a.u.': avg_int }, dtype=np.float64)
-    
-    plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
-    plt.xlabel('m/z')
-    plt.ylabel('average intensity / a.u.')
-    plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '.png')), dpi=300)
 
     # Save to a separate .csv file
     data_matrix.to_csv(results_path / filename.replace('.mzml', '.csv'), index=False)

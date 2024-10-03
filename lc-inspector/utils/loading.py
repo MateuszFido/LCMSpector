@@ -58,7 +58,6 @@ def load_annotated_peaks(file_path):
 
 
 def load_ms1_data(path: str) -> tuple[list, np.ndarray, str]:
-    #FIXME: Unused
     """
     Using the pyteomics library, load the data from the .mzML file into a pandas DataFrame.
     
@@ -73,7 +72,7 @@ def load_ms1_data(path: str) -> tuple[list, np.ndarray, str]:
         The list of Scan objects containing the MS data.
     """
     # Load the data
-    file = mzml.MzML(path)
+    file = mzml.MzML(str(path))
 
     # Take only the scans where ms level is 1
     data = [scan for scan in file if scan['ms level'] == 1]
