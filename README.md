@@ -2,6 +2,8 @@ Created on 2024-02-29
 Copyright (c) Mateusz Fido, ETH Zürich, 2024
 mateusz.fido@org.chem.ethz.ch
 
+![alt text](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/logo.png?raw=true)
+
 This package preprocesses, analyzes and annotates LC-MS data. 
 
 It was primarily designed to annotate LC-MS files of derivatized amino acids and polyamines but can be used with any targeted LC-MS workflow.
@@ -9,9 +11,6 @@ It was primarily designed to annotate LC-MS files of derivatized amino acids and
 Input can only be plaintext formats for LC chromatograms and mzML files for the MS data. 
 
 The script starts by parsing and preprocessing the given LC and MS files, interpolating intensity over a linearly-spaced m/z axis, reconstructing extracted ion chromatograms for a given set of peaks and plotting annotated LC spectra. 
-
-![alt text](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/logo.png?raw=true)
-
 
 # INSTALLATION:
 1. Clone the repository. 
