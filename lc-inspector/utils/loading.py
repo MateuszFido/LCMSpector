@@ -57,7 +57,7 @@ def load_annotated_peaks(file_path):
     return df
 
 
-def load_ms1_data(path: str) -> tuple[list, np.ndarray, str]:
+def load_ms1_data(path: str) -> list:
     """
     Using the pyteomics library, load the data from the .mzML file into a pandas DataFrame.
     

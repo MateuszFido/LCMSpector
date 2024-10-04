@@ -10,6 +10,9 @@ Input can only be plaintext formats for LC chromatograms and mzML files for the 
 
 The script starts by parsing and preprocessing the given LC and MS files, interpolating intensity over a linearly-spaced m/z axis, reconstructing extracted ion chromatograms for a given set of peaks and plotting annotated LC spectra. 
 
+![alt text](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/logo.png?raw=true)
+
+
 # INSTALLATION:
 1. Clone the repository. 
 2. Install Python 3.12 or later.

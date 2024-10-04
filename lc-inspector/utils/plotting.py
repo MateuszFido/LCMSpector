@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
+from matplotlib import gridspec
 import os
+from pathlib import Path
 
 def plot_absorbance_data(file_path, dataframe):
     # Create and save the plots as PNG files
@@ -8,8 +10,8 @@ def plot_absorbance_data(file_path, dataframe):
 
     # Plotting chromatogram before background correction
     plt.subplot(gs[0])
-    plt.plot(dataframe['Time (min)'], dataframe['Value (mAU)'], label='Before Correction', color='blue')
-    plt.plot(dataframe['Time (min)'], baseline, label='Baseline', color='red', linestyle='--')
+    plt.plot(dataframe['Time (min)'], dataframe['Uncorrected'], label='Before correction', color='blue')
+    plt.plot(dataframe['Time (min)'], dataframe['Baseline'], label='Baseline', color='red', linestyle='--')
     plt.title('Chromatogram Before Background Correction')
     plt.xlabel('Time (min)')
     plt.ylabel('Absorbance (mAU)')
@@ -17,7 +19,7 @@ def plot_absorbance_data(file_path, dataframe):
 
     # Plotting chromatogram after background correction
     plt.subplot(gs[1])
-    plt.plot(dataframe['Time (min)'], baseline_corrected, label='After Correction', color='green')
+    plt.plot(dataframe['Time (min)'], dataframe['Value (mAU)'], label='After correction', color='green')
     plt.title('Chromatogram After Background Correction')
     plt.xlabel('Time (min)')
     plt.ylabel('Absorbance (mAU)')
@@ -26,14 +28,20 @@ def plot_absorbance_data(file_path, dataframe):
     plt.tight_layout()
 
     # Create the "plots" directory if it doesn't exist
-    bg_dir = Path(file_path.parents[1] / 'plots' / 'background_correction')
-    os.makedirs(bg_dir, exist_ok=True)
+    plot_path = Path(file_path.parents[1] / 'plots' / 'background correction')
+    os.makedirs(plot_path, exist_ok=True)
     # Save the plot as a PNG file
-    plt.savefig(os.path.join(bg_dir, f'{os.path.basename(file_path)}_background_correction.png'))
+    filename = os.path.basename(file_path)
+    plt.savefig(os.path.join(plot_path, filename.replace('.txt', '-bg.png')), dpi=300)
     plt.close('all')
 
 def plot_average_ms_data(file_path, data_matrix):
+    plot_path = Path(file_path.parents[1] / 'plots' / 'average MS data')
+    os.makedirs(plot_path, exist_ok=True)
 
+    filename = os.path.basename(file_path)
+    
+    plt.figure(figsize=(12, 8))
     plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
     plt.xlabel('m/z')
     plt.ylabel('average intensity / a.u.')

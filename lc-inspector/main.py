@@ -6,11 +6,12 @@ from utils.preprocessing import baseline_correction
 import time, csv, re, sys, os
 from pathlib import Path
 from alive_progress import alive_bar
-from utils.annotation import annotate_lc_chromatograms, annotate_XICs, average_intensity, construct_xic
+from evaluation.annotation import annotate_lc_chromatograms, annotate_XICs
 from utils.sorting import get_path, check_data
 from utils.measurements import LCMeasurement, MSMeasurement
 import pandas as pd
 from settings import BASE_PATH
+from pprint import pprint
 
 def run():
     """
@@ -68,49 +69,38 @@ def run():
     # Perform a check on the data
     check_data()
 
-    lc_files = [file for file in os.listdir(lc_path) if file.endswith('.txt')]
-    ms_files = [file for file in os.listdir(ms_path) if file.endswith('.mzml')]
+    lc_filelist = [file for file in os.listdir(lc_path) if file.endswith('.txt')]
+    ms_filelist = [file for file in os.listdir(ms_path) if file.endswith('.mzml')]
 
-    for lc_file in lc_files:
+    
+    # Create the Measurement objects and perform preprocessing
+    lc_measurements = []
+    for lc_file in lc_filelist:
         print(f"Preprocessing {lc_file}...")
         lc_file = LCMeasurement(Path(lc_path) / lc_file)
-        lc_file.load_data()
+        lc_file.plot()
+        lc_measurements.append(lc_file)
     print("Done.")
 
-    for ms_file in ms_files:
+    ms_measurements = []
+    for ms_file in ms_filelist:
         print(f"Preprocessing {ms_file}...")
-        ms_file = MSMeasurement(Path(ms_path) / ms_file)
-        ms_file.load_data()
+        ms_file = MSMeasurement(Path(ms_path) / ms_file, 0.0001)
+        ms_file.plot()
+        ms_measurements.append(ms_file)
     print("Done.")
 
+    # Perform annotation 
+    for ms_file in ms_measurements:
+        ms_file.annotate_XICs(ion_list)
 
+    for lc_file in lc_measurements: 
+        lc_file.annotate_lc_chromatograms(ion_list)
 
-    if annotation.endswith('.txt'):
-        compounds = assign_peaks(baseline_corrected_data, load_annotated_peaks(annotation_path / annotation), lc_file, lc_path)
-    elif annotation.endswith('.mzml'):
-        average_intensity(ms_path / annotation)
-        construct_xic(ms_path / annotation)
-        annotate_XICs(ms_path / annotation, ion_list)
-        annotate_lc_chromatograms((ms_path / annotation), baseline_corrected_data)
-    
 
     #TODO: Only done until here
 
-    # Direct the output back to regular stdout
-    sys.stdout = stdout
-    
-
-
-    # Grab the concenctrations of calibration files
-    def extract_concentration(filename):
-        # First look for STMIX in the filename 
-        # If present, return the number(s) in the string as concentration
-        match = re.search(r'STMIX', filename)
-        if match:
-            return float(re.findall(r'(\d*[.]?\d+)', filename)[0])
-        else:
-            return None
-    
+    # Direct the output back to the log file
     all_compounds = []
     # Track progress with alive_bar
     with alive_bar(len(cal_files), title='Analyzing calibration files...', calibrate=2) as bar:
