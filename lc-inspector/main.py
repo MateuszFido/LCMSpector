@@ -6,12 +6,12 @@ from utils.preprocessing import baseline_correction
 import time, csv, re, sys, os
 from pathlib import Path
 from alive_progress import alive_bar
-from evaluation.annotation import annotate_lc_chromatograms, annotate_XICs
+from evaluation.annotation import annotate_XICs
 from utils.sorting import get_path, check_data
-from utils.measurements import LCMeasurement, MSMeasurement
+from utils.measurements import LCMeasurement, MSMeasurement, Compound
 import pandas as pd
 from settings import BASE_PATH
-from pprint import pprint
+import multiprocessing
 
 def run():
     """
@@ -51,16 +51,19 @@ def run():
 
     # TODO: Add all the ions and the possible neutral losses 
     ion_list = {
-        'Asp': dict.fromkeys([304.1024, 258.0606]),
-        'Glu': dict.fromkeys([318.1180, 272.0763]), 
-        'IntStd': dict.fromkeys([332.1337, 286.0919]),
-        'Asn': dict.fromkeys([303.1183, 257.0766]),
-        'Ser': dict.fromkeys([276.1075, 230.0658]),
-        'Gln': dict.fromkeys([317.1340, 271.0923])
+        'Asp': [304.1024, 258.0606],
+        'Glu': [318.1180, 272.0763], 
+        'IntStd': [332.1337, 286.0919],
+        'Asn': [303.1183, 257.0766],
+        'Ser': [276.1075, 230.0658],
+        'Gln': [317.1340, 271.0923],
+        'Ala': [260.1129, 216.0867],
+        'GABA': [274.1286, 230.1023]
     }
 
+    
     # Set up filepaths
-    annotation_path =  get_path('annotations/') 
+    annotation_path =  get_path('annotations/')
     ms_path =  get_path('MS/')
     lc_path =  get_path('LC/')
 
@@ -72,35 +75,57 @@ def run():
     lc_filelist = [file for file in os.listdir(lc_path) if file.endswith('.txt')]
     ms_filelist = [file for file in os.listdir(ms_path) if file.endswith('.mzml')]
 
-    
     # Create the Measurement objects and perform preprocessing
     lc_measurements = []
-    for lc_file in lc_filelist:
-        print(f"Preprocessing {lc_file}...")
-        lc_file = LCMeasurement(Path(lc_path) / lc_file)
-        lc_file.plot()
-        lc_measurements.append(lc_file)
+    with alive_bar(len(lc_filelist), title="Preprocessing LC data...", spinner="dots", bar="filling", calibrate=2) as bar:
+        for lc_file in lc_filelist:
+            print(f"Preprocessing {lc_file}...")
+            lc_file = LCMeasurement(Path(lc_path) / lc_file)
+            lc_file.plot()
+            lc_measurements.append(lc_file)
+            bar()
     print("Done.")
 
-    ms_measurements = []
-    for ms_file in ms_filelist:
-        print(f"Preprocessing {ms_file}...")
-        ms_file = MSMeasurement(Path(ms_path) / ms_file, 0.0001)
-        ms_file.plot()
-        ms_measurements.append(ms_file)
+    with alive_bar(len(ms_filelist), title="Preprocessing MS data...", spinner="dots", bar="filling", calibrate=2) as bar:
+        for ms_file in ms_filelist:
+            print(f"Preprocessing {ms_file}...")
+            ms_file = MSMeasurement(Path(ms_path) / ms_file, 0.1)
+            ms_file.plot()
+            ms_measurements.append(ms_file)
+            bar()
     print("Done.")
+
+#FIXME: NEW 
+
+def process_ms_file(ms_file):
+    ms_file = MSMeasurement(Path(ms_path) / ms_file, 0.1)
+    ms_file.plot()
+    return ms_file
+
+
+
 
     # Perform annotation 
     for ms_file in ms_measurements:
-        ms_file.annotate_XICs(ion_list)
+        compound_list = [Compound(name=ion, file=ms_file.filename, ions=ion_list[ion]) for ion in ion_list.keys()]
+        ms_file.annotate(compound_list)
+        ms_file.plot_annotated()
 
-    for lc_file in lc_measurements: 
-        lc_file.annotate_lc_chromatograms(ion_list)
+    for lc_file in lc_measurements:
+        corresponding_ms_file = next((ms_file for ms_file in ms_measurements if str(ms_file) == str(lc_file)), None)
+        if corresponding_ms_file is None:
+            print(f"Could not find a matching MS file for {lc_file}. Skipping.")
+            continue
+        lc_file.annotate(corresponding_ms_file.compounds)
+        lc_file.plot_annotated()
 
 
-    #TODO: Only done until here
+    #TODO: Calculate calibration curves and concentrations
+    
+
 
     # Direct the output back to the log file
+
     all_compounds = []
     # Track progress with alive_bar
     with alive_bar(len(cal_files), title='Analyzing calibration files...', calibrate=2) as bar:
@@ -167,13 +192,31 @@ def run():
 
     results.to_csv('data/results.csv')
 
+
+
+def main():
+    with multiprocessing.Pool(processes=multiprocessing.cpu_count()) as pool:
+        with alive_bar(len(ms_filelist), title="Preprocessing MS data...", spinner="dots", bar="filling", calibrate=2) as bar:
+            results = []
+            for ms_file in ms_filelist:
+                results.append(pool.apply_async(process_ms_file, args=(ms_file,)))
+                bar()
+            ms_measurements = [result.get() for result in results]
+    print("Done.")
+
+
+
+
+
+
+
 if __name__ == "__main__":
     # Log script run-time 
     st = time.time()
     # Sets up a log file to record the print stream during runtime
     stdout = sys.stdout
     log_file = open('data/debug.log', 'w+')
-    run()
+    main()
     # Report the run-time
     et = time.time()
     elapsed_time = et - st
