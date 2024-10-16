@@ -27,7 +27,7 @@ class Measurement:
     """
     def __init__(self, path):
         self.path = path
-        self.filename = os.path.basename(path)
+        self.filename = os.path.basename(path).split('.')[0]
         if "STMIX" in self.filename:
             self.calibration = True
         else:

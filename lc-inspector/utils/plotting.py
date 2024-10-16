@@ -48,6 +48,13 @@ def plot_average_ms_data(file_path, data_matrix):
     plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
     plt.xlabel('m/z')
     plt.ylabel('average intensity / a.u.')
+    # Plot the m/z of the 5 highest peaks in spectrum
+    highest_peaks = data_matrix.nlargest(5, 'intensity / a.u.')
+    texts=[]
+    for index, row in highest_peaks.iterrows():
+        texts.append(plt.text(row['m/z'], row['intensity / a.u.'], row['m/z']))
+    adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
+    plt.title(f'Average MS data of {filename}')
     plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '-avg.png')), dpi=300)
     plt.close('all')
 
@@ -74,7 +81,7 @@ def plot_annotated_LC(path, chromatogram, compounds):
     filename = os.path.basename(path)
 
     # Plot the LC data
-    plt.figure(figsize=(12, 8))
+    plt.figure(figsize=(20, 12))
     plt.title(f'{filename}')
     plt.xlabel('Retention time (min)')
     plt.ylabel('Absorbance (mAU)')
@@ -93,34 +100,62 @@ def plot_annotated_LC(path, chromatogram, compounds):
     plt.close()
 
 def plot_annotated_XICs(path, xics, compound_list):
+    """
+    Plot the XICs for the given compounds and annotate them with the respective m/z and scan time.
+
+    Parameters
+    ----------
+    path : str
+        The path to the .mzML file.
+    xics : pd.DataFrame
+        The DataFrame containing the XICs.
+    compound_list : list
+        A list of dictionaries containing the targeted ions for each compound.
+
+    Returns
+    -------
+    None
+
+    """
+    # Create the plots folder if it doesn't exist
     os.makedirs(Path(path).parents[1] / 'plots' / 'XICs', exist_ok=True)
     plot_path = Path(path).parents[1] / 'plots' / 'XICs'
     filename = os.path.basename(path)
     # Using gridspec, create a grid of subplots
 
+    # Calculate the number of columns and rows required for the grid
     tot = len(compound_list)
     cols = int(np.ceil(np.sqrt(tot)))
     rows = int(np.ceil(tot / cols))
 
-    gs = gridspec.GridSpec(rows, cols, width_ratios=[1]*cols, height_ratios=[1]*rows)
-    fig = plt.figure(figsize=(12, 8))
-    plt.subplots_adjust(hspace=0.5, wspace=0.3)
+    # Create the grid of subplots
+    gs = gridspec.GridSpec(rows, cols)
+    fig = plt.figure(figsize=(30, 20))
+    # Adjust the spacing between the subplots
+    plt.subplots_adjust(hspace=0.7, wspace=0.4)
+    # Add a title to the figure
     fig.suptitle(f'{filename}')
+    # Iterate over each compound and create a subplot for it
     for i, compound in enumerate(compound_list):
         ax = fig.add_subplot(gs[i])
+        # Iterate over each ion in the compound
+        texts = []
         for j, ion in enumerate(compound.ions.keys()):
-
+            # Find the closest m/z to the ion
             closest = np.abs(xics.iloc[0] - ion).idxmin()
+            # Find the scan time with the highest intensity
             scan_time = xics['Scan time (min)'].iloc[xics[closest][1:].idxmax()] # Skip the first two rows
-
+            # Plot the XIC and annotate it with the m/z and scan time
             ax.plot(xics['Scan time (min)'][1:], xics[closest][1:], label=f"{ion}")
             ax.plot(scan_time, xics[closest].iloc[xics[closest][1:].idxmax()], "o")
-            ax.text(x=scan_time, y=xics[closest].iloc[xics[closest][1:].idxmax()], s=f"{ion}\n({closest})", fontsize=8)
+            text = ax.text(x=scan_time, y=xics[closest].iloc[xics[closest][1:].idxmax()], s=f"{ion}\n({closest})", fontsize=8)
+            texts.append(text)
+        # Add a title to the subplot
         ax.set_title(f"{compound.name}")
         ax.set_xlabel('Scan time (min)')
         ax.set_ylabel('intensity / a.u.')
-        ax.legend(fontsize=8)
-
-        # Save in the folder plots/XICs
+        # Adjust the spacing between the text labels
+        adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
+    # Save in the folder plots/XICs
     plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '_XICs.png')), dpi=300)
     plt.close()

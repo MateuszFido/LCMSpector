@@ -34,13 +34,16 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
         for ion in compound.ions.keys():
             # Look for the closest m/z value in the first row of data 
             closest = np.abs(data.iloc[0] - ion).idxmin()
-
             # Check if the m/z difference is within the given mass accuracy
             if mass_accuracy <= 0.0001:
                 ppm_difference = np.abs((data[closest][0] - ion)) / ion * 1e6
                 if ppm_difference > 5:
                     print(f"Skipping {ion} for {compound.name}, as m/z difference is {closest} - {ion} = {round(ppm_difference, 2)} ppm.")
                     continue
+            elif data[closest].max() < 1e5:
+                print(f"Skipping {ion} for {compound.name}, as its intensity is {data[closest].max()}, which is lower than 1e5 cps.")
+                continue
+
 
             # Get the respective time value for the highest intensity of this m/z
             scan_time = data['Scan time (min)'].iloc[data[closest][1:].idxmax()] # Skip the first two rows
@@ -50,7 +53,6 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
             compound.ions[ion]['MS Intensity'] = round(data[closest].sum())
 
             print(f"Highest intensity of m/z={ion} ({compound.name}) was at {round(scan_time, 2)} mins.")
-        print(compound)
     
     return compound_list
 
