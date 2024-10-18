@@ -90,12 +90,11 @@ def plot_annotated_LC(path, chromatogram, compounds):
     for compound in compounds:
         for ion in compound.ions.keys():
             if compound.ions[ion]['RT'] is not None:
-                plt.plot(compound.ions[ion]['RT'], chromatogram['Value (mAU)'][compound.ions[ion]['Index']], 'o', markersize=10)
-                texts.append(plt.text(compound.ions[ion]['RT'], chromatogram['Value (mAU)'][compound.ions[ion]['Index']],
-                f"{compound.name}\n{ion}", fontsize=5, rotation=90))
-    adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
-
+                plt.plot(compound.ions[ion]['RT'], compound.ions[ion]['Apex'], 'o', markersize=10)
+                texts.append(plt.text(compound.ions[ion]['RT'], compound.ions[ion]['Apex']-np.random.random()/100,
+                f"{compound.name}\n{ion}", fontsize=5))
     
+    adjust_text(texts, avoid_self=False, time_lim=30, max_move=None, arrowprops=dict(arrowstyle='-', color='gray', alpha=.3))
     plt.savefig(os.path.join(plot_path, filename.replace('.txt', '_LC.png')), dpi=300)
     plt.close()
 
@@ -132,30 +131,33 @@ def plot_annotated_XICs(path, xics, compound_list):
     gs = gridspec.GridSpec(rows, cols)
     fig = plt.figure(figsize=(30, 20))
     # Adjust the spacing between the subplots
-    plt.subplots_adjust(hspace=0.7, wspace=0.4)
+    plt.subplots_adjust(hspace=0.5, wspace=0.5)
     # Add a title to the figure
     fig.suptitle(f'{filename}')
     # Iterate over each compound and create a subplot for it
     for i, compound in enumerate(compound_list):
+        texts = []
         ax = fig.add_subplot(gs[i])
         # Iterate over each ion in the compound
-        texts = []
         for j, ion in enumerate(compound.ions.keys()):
             # Find the closest m/z to the ion
+            if compound.ions[ion]["RT"] is None or compound.ions[ion]["MS Intensity"] is None:
+                continue
             closest = np.abs(xics.iloc[0] - ion).idxmin()
             # Find the scan time with the highest intensity
             scan_time = xics['Scan time (min)'].iloc[xics[closest][1:].idxmax()] # Skip the first two rows
             # Plot the XIC and annotate it with the m/z and scan time
-            ax.plot(xics['Scan time (min)'][1:], xics[closest][1:], label=f"{ion}")
+            ax.plot(xics['Scan time (min)'][1:], xics[closest][1:])
             ax.plot(scan_time, xics[closest].iloc[xics[closest][1:].idxmax()], "o")
-            text = ax.text(x=scan_time, y=xics[closest].iloc[xics[closest][1:].idxmax()], s=f"{ion}\n({closest})", fontsize=8)
+            text = ax.text(x=scan_time-np.random.random()/100, y=xics[closest].iloc[xics[closest][1:].idxmax()], s=f"{ion}\n({closest})", fontsize=5)
             texts.append(text)
         # Add a title to the subplot
         ax.set_title(f"{compound.name}")
         ax.set_xlabel('Scan time (min)')
         ax.set_ylabel('intensity / a.u.')
         # Adjust the spacing between the text labels
-        adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
+        adjust_text(texts, avoid_self=False, time_lim=10, arrowprops=dict(arrowstyle='-', color='gray', alpha=.3))
+
     # Save in the folder plots/XICs
     plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '_XICs.png')), dpi=300)
     plt.close()

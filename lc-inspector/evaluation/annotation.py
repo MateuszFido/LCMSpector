@@ -37,11 +37,11 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
             # Check if the m/z difference is within the given mass accuracy
             if mass_accuracy <= 0.0001:
                 ppm_difference = np.abs((data[closest][0] - ion)) / ion * 1e6
-                if ppm_difference > 5:
+                if ppm_difference > 3:
                     print(f"Skipping {ion} for {compound.name}, as m/z difference is {closest} - {ion} = {round(ppm_difference, 2)} ppm.")
                     continue
-            elif data[closest].max() < 1e5:
-                print(f"Skipping {ion} for {compound.name}, as its intensity is {data[closest].max()}, which is lower than 1e5 cps.")
+            if data[closest].max() < 1e4:
+                print(f"Skipping {ion} for {compound.name}, as its intensity is {data[closest].max()}, which is lower than 1e4 cps.")
                 continue
 
 
@@ -73,7 +73,7 @@ def annotate_LC_data(chromatogram, compounds):
 
                 lc_intensity = np.sum(chromatogram['Value (mAU)'][left_idx:right_idx])
                 compound.ions[ion]['LC Intensity'] = round(lc_intensity)
-                compound.ions[ion]['Index'] = closest
+                compound.ions[ion]['Apex'] = chromatogram['Value (mAU)'][closest]
 
         print(compound)
         
