@@ -90,11 +90,12 @@ def plot_annotated_LC(path, chromatogram, compounds):
     for compound in compounds:
         for ion in compound.ions.keys():
             if compound.ions[ion]['RT'] is not None:
-                plt.plot(compound.ions[ion]['RT'], compound.ions[ion]['Apex'], 'o', markersize=10)
+                # Plot the intensity of the ion at that retention time
+                plt.plot(compound.ions[ion]['RT'], compound.ions[ion]['Apex'], marker='o', markersize=5)
                 texts.append(plt.text(compound.ions[ion]['RT'], compound.ions[ion]['Apex']-np.random.random()/100,
                 f"{compound.name}\n{ion}", fontsize=5))
     
-    adjust_text(texts, avoid_self=False, time_lim=30, max_move=None, arrowprops=dict(arrowstyle='-', color='gray', alpha=.3))
+    adjust_text(texts, avoid_self=False, time_lim=30, max_move=None, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
     plt.savefig(os.path.join(plot_path, filename.replace('.txt', '_LC.png')), dpi=300)
     plt.close()
 
@@ -156,7 +157,7 @@ def plot_annotated_XICs(path, xics, compound_list):
         ax.set_xlabel('Scan time (min)')
         ax.set_ylabel('intensity / a.u.')
         # Adjust the spacing between the text labels
-        adjust_text(texts, avoid_self=False, time_lim=10, arrowprops=dict(arrowstyle='-', color='gray', alpha=.3))
+        adjust_text(texts, avoid_self=False, time_lim=10, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
 
     # Save in the folder plots/XICs
     plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '_XICs.png')), dpi=300)

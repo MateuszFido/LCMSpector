@@ -71,9 +71,10 @@ def annotate_LC_data(chromatogram, compounds):
                 left_idx = int(np.floor(left[list(lc_peaks[0]).index(closest)]))
                 right_idx = int(np.ceil(right[list(lc_peaks[0]).index(closest)]))
 
-                lc_intensity = np.sum(chromatogram['Value (mAU)'][left_idx:right_idx])
+                lc_intensity = np.trapz(chromatogram['Value (mAU)'][left_idx:right_idx])
+                
                 compound.ions[ion]['LC Intensity'] = round(lc_intensity)
-                compound.ions[ion]['Apex'] = chromatogram['Value (mAU)'][closest]
+                compound.ions[ion]['Apex'] = chromatogram['Value (mAU)'][left_idx:right_idx].max()
 
         print(compound)
         
