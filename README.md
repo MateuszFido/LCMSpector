@@ -1,3 +1,5 @@
+# THE FILES ON THIS BRANCH ARE DESIGNED TO BE RUN AS A SCRIPT ON AN HPC CLUSTER
+
 Created on 2024-02-29
 Copyright (c) Mateusz Fido, ETH Zürich, 2024
 mateusz.fido@org.chem.ethz.ch
