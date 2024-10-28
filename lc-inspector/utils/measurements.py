@@ -76,13 +76,13 @@ class LCMeasurement(Measurement):
         self.baseline_corrected = baseline_correction(self.data)
 
     def plot(self):
-        plot_absorbance_data(self.path, self.baseline_corrected)
+        self.plot = plot_absorbance_data(self.path, self.baseline_corrected)
 
     def annotate(self, compounds):
         self.compounds = annotate_LC_data(self.baseline_corrected, compounds)
 
     def plot_annotated(self):
-        plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
+        self.annotated_plot = plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
 class MSMeasurement(Measurement):
@@ -119,13 +119,13 @@ class MSMeasurement(Measurement):
         construct_xic(self.average, self.mz_axis)
 
     def plot(self):
-        plot_average_ms_data(self.path, self.average)
+        self.plot = plot_average_ms_data(self.path, self.average)
 
     def annotate(self, compounds):
         self.compounds = annotate_XICs(self.path, self.xics, compounds, self.mass_accuracy)
 
     def plot_annotated(self):
-        plot_annotated_XICs(self.path, self.xics, self.compounds)
+        self.annotated_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
 
 class Compound():

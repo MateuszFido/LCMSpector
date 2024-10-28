@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-from matplotlib import gridspec
+import matplotlib
+import matplotlib.gridspec as gridspec
 import os
 from pathlib import Path
 import numpy as np
@@ -8,6 +9,7 @@ from adjustText import adjust_text
 
 def plot_absorbance_data(file_path, dataframe):
     # Create and save the plots as PNG files
+    matplotlib.use('Agg') # non-interactive backend
     plt.figure(figsize=(12, 8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[1, 1])
 
@@ -31,19 +33,30 @@ def plot_absorbance_data(file_path, dataframe):
     plt.tight_layout()
 
     # Create the "plots" directory if it doesn't exist
-    plot_path = Path(file_path.parents[1] / 'plots' / 'background correction')
+    plot_path = Path(file_path).parents[1] / 'plots' / 'background correction'
     os.makedirs(plot_path, exist_ok=True)
-    # Save the plot as a PNG file
+
     filename = os.path.basename(file_path)
     plt.savefig(os.path.join(plot_path, filename.replace('.txt', '-bg.png')), dpi=300)
     plt.close('all')
 
-def plot_average_ms_data(file_path, data_matrix):
-    plot_path = Path(file_path.parents[1] / 'plots' / 'average MS data')
-    os.makedirs(plot_path, exist_ok=True)
 
-    filename = os.path.basename(file_path)
-    
+def plot_average_ms_data(file_path, data_matrix):
+    """
+    Plot the average MS data and annotate it with the m/z of the 5 highest peaks.
+
+    Parameters
+    ----------
+    file_path : Path
+        The path to the .mzML file used for naming and saving the plot.
+    data_matrix : pd.DataFrame
+        The DataFrame containing the m/z and intensity values.
+
+    Returns
+    -------
+    None
+    """
+    matplotlib.use('Agg')
     plt.figure(figsize=(12, 8))
     plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
     plt.xlabel('m/z')
@@ -54,6 +67,11 @@ def plot_average_ms_data(file_path, data_matrix):
     for index, row in highest_peaks.iterrows():
         texts.append(plt.text(row['m/z'], row['intensity / a.u.'], row['m/z']))
     adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
+    
+    plot_path = Path(file_path).parents[1] / 'plots' / 'average MS data'
+    os.makedirs(plot_path, exist_ok=True)
+    filename = os.path.basename(file_path)
+    
     plt.title(f'Average MS data of {filename}')
     plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '-avg.png')), dpi=300)
     plt.close('all')
