@@ -27,11 +27,13 @@ class Measurement:
     """
     def __init__(self, path):
         self.path = path
+        print(f"Loading {path}...")
         self.filename = os.path.basename(path).split('.')[0]
         if "STMIX" in self.filename:
             self.calibration = True
         else:
             self.calibration = False
+
 
     @abstractmethod
     def load_data(self):
@@ -74,6 +76,8 @@ class LCMeasurement(Measurement):
         super().__init__(path)
         self.data = load_absorbance_data(self.path)
         self.baseline_corrected = baseline_correction(self.data)
+        print(f"Loaded {self.path} successfully.")
+
 
     def plot(self):
         self.plot = plot_absorbance_data(self.path, self.baseline_corrected)
@@ -114,6 +118,8 @@ class MSMeasurement(Measurement):
         self.average = average_intensity(self.data, self.mz_axis)
         self.peaks = pick_peaks(self.average, self.mz_axis)
         self.xics = construct_xic(self.data, self.mz_axis, self.peaks)
+        print(f"Loaded {self.path} successfully.")
+
 
     def construct_xics(self):
         construct_xic(self.average, self.mz_axis)

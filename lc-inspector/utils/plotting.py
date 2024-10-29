@@ -92,7 +92,7 @@ def plot_annotated_LC(path, chromatogram, compounds):
     -------
     None
     '''
-
+    matplotlib.use('Agg')
     # Prepare the plotting folder
     os.makedirs(Path(path).parents[1] / 'plots' / 'LC chromatograms', exist_ok=True)
     plot_path = Path(path).parents[1] / 'plots' / 'LC chromatograms'
@@ -133,8 +133,8 @@ def plot_annotated_XICs(path, xics, compound_list):
     Returns
     -------
     None
-
     """
+    matplotlib.use('Agg')
     # Create the plots folder if it doesn't exist
     os.makedirs(Path(path).parents[1] / 'plots' / 'XICs', exist_ok=True)
     plot_path = Path(path).parents[1] / 'plots' / 'XICs'

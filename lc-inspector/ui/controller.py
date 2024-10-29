@@ -1,4 +1,5 @@
 # controller.py
+from utils.threading import Worker
 
 class Controller:
     def __init__(self, model, view):
@@ -19,12 +20,10 @@ class Controller:
         self.model = model
         self.view = view
         self.view.controller = self  # Set a reference to the controller in the view
-        self.model.controller = self  # Set a reference to the controller in the model
 
         # Connect view signals to controller methods
         self.view.browseLC.clicked.connect(self.load_lc_data)
         self.view.browseMS.clicked.connect(self.load_ms_data)
-        self.view.browseAnnotations.clicked.connect(self.load_annotations)
         self.view.processButton.clicked.connect(self.process_data)
 
     def load_lc_data(self):
@@ -55,10 +54,29 @@ class Controller:
                 self.view.show_critical_error("Please load LC files and either corresponding MS files or manual annotations before processing.")
                 return
             
-            # Call the process method in the model
-            self.model.process_data(self.model.ms_measurements, self.model.lc_measurements)
+            # Disable the process button
+            self.view.processButton.setEnabled(False)
 
-            self.view.show_message(self.view, "Success: data processing completed successfully.")
+            # Set the status message and show the progress bar
+            self.view.statusbar.showMessage("Processing data...")
+            self.view.progressBar.setVisible(True)
+            self.view.progressBar.setValue(0)  # Reset progress bar
+
+            # Create and start the worker thread
+            self.worker = Worker(self.model, self.model.ms_measurements, self.model.lc_measurements)
+            self.worker.progress_update.connect(self.view.progress_update.emit)  # Connect progress updates
+            self.worker.finished.connect(self.on_processing_finished)  # Connect finished signal
+            print("Starting the processing...")
+            self.worker.start()  # Start the worker thread
 
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
+
+    def on_processing_finished(self, results):
+        # Hide the progress bar after processing
+        self.view.progressBar.setVisible(False)
+        self.view.processButton.setEnabled(True)  # Enable the process button again
+        self.view.show_message("Success: data processing completed successfully.")
+        self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabResults), True)  # Enable the results tab
+        self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
+        self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)  # Enable the quantitation tab
