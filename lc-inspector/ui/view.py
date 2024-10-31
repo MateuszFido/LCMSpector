@@ -1,6 +1,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtSvgWidgets import QSvgWidget
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
@@ -45,20 +46,42 @@ class View(QtWidgets.QMainWindow):
         Slot to handle the dropped files.
         Updates the model with the new file paths.
         """
+        count_ok = 0
+        error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
-            self.listLC.addItem(file_path)  # Add each file path to the listLC widget
+            if file_path.lower().endswith(".txt"):
+                count_ok += 1
+                self.listLC.addItem(file_path)  # Add each file path to the listLC widget
+            elif not error_shown:
+                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported.")
+                error_shown = True
+            else:
+                continue
+        if count_ok > 0:
+            self.statusbar.showMessage(f"Files added, {count_ok} LC files loaded successfully.", 3000)
         self.update_lc_file_list()  # Update the model with the new LC files
-        self.statusbar.showMessage(f"Files added, {len(file_paths)} LC files loaded successfully.")
+
 
     def handle_files_dropped_MS(self, file_paths):
         """
         Slot to handle the dropped files.
         Updates the model with the new file paths.
         """
+        count_ok = 0
+        error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
-            self.listMS.addItem(file_path)  # Add each file path to the listLC widget
+            if file_path.lower().endswith(".mzml"):
+                count_ok += 1
+                self.listMS.addItem(file_path)  # Add each file path to the listLC widget
+            elif not error_shown:
+                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .mzML files are supported.")
+                error_shown = True
+            else:
+                continue
+        if count_ok > 0:
+            self.statusbar.showMessage(f"Files added, {count_ok} MS files loaded successfully.", 3000)
         self.update_ms_file_list()  # Update the model with the new LC files
-        self.statusbar.showMessage(f"Files added, {len(file_paths)} MS files loaded successfully.")
+
 
 
     def on_browseLC(self):
@@ -72,7 +95,7 @@ class View(QtWidgets.QMainWindow):
             for lc_file_path in lc_file_paths:
                 self.listLC.addItem(lc_file_path)  # Add each LC file path to the listLC widget
             self.update_lc_file_list()  # Update the model with the new LC files
-            self.statusbar.showMessage(f"Files added, {len(lc_file_paths)} LC files loaded successfully.")
+            self.statusbar.showMessage(f"Files added, {len(lc_file_paths)} LC files loaded successfully.", 3000)
 
     def on_browseMS(self):
         """
@@ -85,8 +108,9 @@ class View(QtWidgets.QMainWindow):
             for ms_file_path in ms_file_paths:
                 self.listMS.addItem(ms_file_path)  # Add each MS file path to the listMS widget
             self.update_ms_file_list()  # Update the model with the new MS files
-            self.statusbar.showMessage(f"Files added, {len(ms_file_paths)} MS files loaded successfully.")
+            self.statusbar.showMessage(f"Files added, {len(ms_file_paths)} MS files loaded successfully.", 3000)
 
+    # TODO: Implement
     # def on_browseAnnotations(self):
     #     """
     #     Slot for the browseAnnotations button. Opens a file dialog for selecting annotation files,
@@ -154,17 +178,7 @@ class View(QtWidgets.QMainWindow):
 
     def update_progress_bar(self, value):
         self.progressBar.setValue(value)
-
-    def show_message(self, message):
-        """
-        Shows a message in the status bar.
-
-        Parameters
-        ----------
-        message : str
-            The message to show in the status bar.
-        """
-        self.statusbar.showMessage(message)
+        self.progressLabel.setText(f"{value}%")
 
     def show_critical_error(self, message):
         QtWidgets.QMessageBox.critical(self, "Error", message)
@@ -285,18 +299,18 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.graphicsView_baseline = QtWidgets.QGraphicsView(parent=self.tabResults)
-        self.graphicsView_baseline.setObjectName("graphicsView_baseline")
-        self.gridLayout_2.addWidget(self.graphicsView_baseline, 0, 0, 1, 1)
-        self.graphicsView_avgMS = QtWidgets.QGraphicsView(parent=self.tabResults)
-        self.graphicsView_avgMS.setObjectName("graphicsView_avgMS")
-        self.gridLayout_2.addWidget(self.graphicsView_avgMS, 0, 1, 1, 1)
-        self.graphicsView_XICs = QtWidgets.QGraphicsView(parent=self.tabResults)
-        self.graphicsView_XICs.setObjectName("graphicsView_XICs")
-        self.gridLayout_2.addWidget(self.graphicsView_XICs, 1, 0, 1, 1)
-        self.graphicsView_annotatedLC = QtWidgets.QGraphicsView(parent=self.tabResults)
-        self.graphicsView_annotatedLC.setObjectName("graphicsView_annotatedLC")
-        self.gridLayout_2.addWidget(self.graphicsView_annotatedLC, 1, 1, 1, 1)
+        self.QSvgWidget_baseline = QSvgWidget(parent=self.tabResults)
+        self.QSvgWidget_baseline.setObjectName("QSvgWidget_baseline")
+        self.gridLayout_2.addWidget(self.QSvgWidget_baseline, 0, 0, 1, 1)
+        self.QSvgWidget_avgMS = QSvgWidget(parent=self.tabResults)
+        self.QSvgWidget_avgMS.setObjectName("QSvgWidget_avgMS")
+        self.gridLayout_2.addWidget(self.QSvgWidget_avgMS, 0, 1, 1, 1)
+        self.QSvgWidget_XICs = QSvgWidget(parent=self.tabResults)
+        self.QSvgWidget_XICs.setObjectName("QSvgWidget_XICs")
+        self.gridLayout_2.addWidget(self.QSvgWidget_XICs, 1, 0, 1, 1)
+        self.QSvgWidget_annotatedLC = QSvgWidget(parent=self.tabResults)
+        self.QSvgWidget_annotatedLC.setObjectName("QSvgWidget_annotatedLC")
+        self.gridLayout_2.addWidget(self.QSvgWidget_annotatedLC, 1, 1, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
         self.comboBox_currentfile.setObjectName("comboBox_currentfile")
@@ -343,9 +357,9 @@ class View(QtWidgets.QMainWindow):
         self.quant_ion_list_view.setObjectName("quant_ion_list_view")
         self.gridLayout_6.addWidget(self.quant_ion_list_view, 1, 0, 1, 1)
         self.gridLayout_7.addLayout(self.gridLayout_6, 0, 0, 3, 1)
-        self.graphicsView_calcurve = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
-        self.graphicsView_calcurve.setObjectName("graphicsView_calcurve")
-        self.gridLayout_7.addWidget(self.graphicsView_calcurve, 1, 1, 1, 1)
+        self.QSvgWidget_calcurve = QSvgWidget(parent=self.tabQuantitation)
+        self.QSvgWidget_calcurve.setObjectName("QSvgWidget_calcurve")
+        self.gridLayout_7.addWidget(self.QSvgWidget_calcurve, 1, 1, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the third tab
 
@@ -367,8 +381,12 @@ class View(QtWidgets.QMainWindow):
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
-        self.progressBar = QtWidgets.QProgressBar(parent=self.statusbar)
+        self.progressBar = QtWidgets.QProgressBar()
+        self.statusbar.addPermanentWidget(self.progressBar)
         self.progressBar.setVisible(False)  # Initially hidden
+        self.progressLabel = QtWidgets.QLabel()
+        self.statusbar.addPermanentWidget(self.progressLabel)
+        self.progressLabel.setVisible(False)  # Initially hidden
 
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 864, 37))
@@ -429,7 +447,7 @@ class View(QtWidgets.QMainWindow):
             MainWindow: The main window object for which the UI is being set up.
         """
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "LC-Inspector"))
         self.warning.setText(_translate("MainWindow", "Warning: Mass resolution above 60,000 is CPU-expensive and may take a long time to compute"))
         self.browseLC.setText(_translate("MainWindow", "Browse"))
         self.comboBox.setItemText(0, _translate("MainWindow", "Use MS-based annotations"))

@@ -52,7 +52,7 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
             compound.ions[ion]['RT'] = round(scan_time, 2)
             compound.ions[ion]['MS Intensity'] = round(data[closest].sum())
 
-            print(f"Highest intensity of m/z={ion} ({compound.name}) was at {round(scan_time, 2)} mins.")
+            # print(f"Highest intensity of m/z={ion} ({compound.name}) was at {round(scan_time, 2)} mins.")
     
     return compound_list
 
@@ -76,6 +76,6 @@ def annotate_LC_data(chromatogram, compounds):
                 compound.ions[ion]['LC Intensity'] = round(lc_intensity)
                 compound.ions[ion]['Apex'] = chromatogram['Value (mAU)'][left_idx:right_idx].max()
 
-        print(compound)
+        # print(compound)
         
     return compounds

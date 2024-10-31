@@ -219,14 +219,12 @@ def construct_xic(scans, mz_axis, peaks):
     trc = np.ndarray.tolist(data)
     trc.insert(1, scan_times)
     trc.insert(1, tic)
-        # Write the XICs to a .csv file
+    # Write the XICs to a .csv file
     # Use list comprehension for column titles
-    try:
-        if 'positive' in auxiliary.cvquery(scans[0], 'MS:1000130'):
-            mzs = [f'pos{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
-        else: 
-            mzs = [f'neg{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
-    except TypeError:
+    ion_mode = auxiliary.cvquery(scans[0], 'MS:1000130')
+    if ion_mode is not None and 'positive' in ion_mode:
+        mzs = [f'pos{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
+    else:
         mzs = [f'neg{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
 
     columns = ['MS1 scan ID', 'TIC (a.u.)', 'Scan time (min)']

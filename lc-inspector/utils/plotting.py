@@ -1,5 +1,6 @@
-import matplotlib.pyplot as plt
 import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import os
 from pathlib import Path
@@ -7,9 +8,31 @@ import numpy as np
 import pandas as pd
 from adjustText import adjust_text
 
-def plot_absorbance_data(file_path, dataframe):
-    # Create and save the plots as PNG files
-    matplotlib.use('Agg') # non-interactive backend
+def plot_absorbance_data(path, dataframe):
+    """
+    Generates and saves plots of absorbance data before and after background correction.
+
+    The function creates two plots: the first plot shows the chromatogram before background correction,
+    and the second plot shows the chromatogram after background correction. The plots are saved as SVG files
+    in the specified directory.
+
+    Parameters
+    ----------
+    path : str
+        The path where the plot files will be saved. It is used to determine the directory for saving plots.
+    
+    dataframe : pd.DataFrame
+        A pandas DataFrame containing the absorbance data. It must include the columns 'Time (min)', 
+        'Uncorrected', 'Baseline', and 'Value (mAU)'.
+
+    Returns
+    -------
+    None
+    """
+
+    filename = os.path.basename(path).split('.')[0]
+
+    # Create and save the plots as SVG files
     plt.figure(figsize=(12, 8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[1, 1])
 
@@ -33,21 +56,20 @@ def plot_absorbance_data(file_path, dataframe):
     plt.tight_layout()
 
     # Create the "plots" directory if it doesn't exist
-    plot_path = Path(file_path).parents[1] / 'plots' / 'background correction'
+    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)
 
-    filename = os.path.basename(file_path)
-    plt.savefig(os.path.join(plot_path, filename.replace('.txt', '-bg.png')), dpi=300)
+    plt.savefig(os.path.join(plot_path, filename+'-chromatogram.svg'), format='svg', bbox_inches='tight')
     plt.close('all')
 
 
-def plot_average_ms_data(file_path, data_matrix):
+def plot_average_ms_data(path, data_matrix):
     """
-    Plot the average MS data and annotate it with the m/z of the 5 highest peaks.
+    Plots the average MS data and annotate it with the m/z of the 5 highest peaks.
 
     Parameters
     ----------
-    file_path : Path
+    path : Path
         The path to the .mzML file used for naming and saving the plot.
     data_matrix : pd.DataFrame
         The DataFrame containing the m/z and intensity values.
@@ -56,7 +78,9 @@ def plot_average_ms_data(file_path, data_matrix):
     -------
     None
     """
-    matplotlib.use('Agg')
+
+    filename = os.path.basename(path).split('.')[0]
+
     plt.figure(figsize=(12, 8))
     plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
     plt.xlabel('m/z')
@@ -68,17 +92,16 @@ def plot_average_ms_data(file_path, data_matrix):
         texts.append(plt.text(row['m/z'], row['intensity / a.u.'], row['m/z']))
     adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
     
-    plot_path = Path(file_path).parents[1] / 'plots' / 'average MS data'
+    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)
-    filename = os.path.basename(file_path)
     
     plt.title(f'Average MS data of {filename}')
-    plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '-avg.png')), dpi=300)
+    plt.savefig(os.path.join(plot_path, filename+'-averageMS.svg'), format='svg', bbox_inches='tight')
     plt.close('all')
 
 def plot_annotated_LC(path, chromatogram, compounds):
     '''
-    Annotate the LC data with the given targeted list of ions and plot the results.
+    Annotates the LC data with the given targeted list of ions and plot the results.
 
     Parameters
     ----------
@@ -92,34 +115,38 @@ def plot_annotated_LC(path, chromatogram, compounds):
     -------
     None
     '''
-    matplotlib.use('Agg')
-    # Prepare the plotting folder
-    os.makedirs(Path(path).parents[1] / 'plots' / 'LC chromatograms', exist_ok=True)
-    plot_path = Path(path).parents[1] / 'plots' / 'LC chromatograms'
-    filename = os.path.basename(path)
+    filename = os.path.basename(path).split('.')[0]
 
     # Plot the LC data
     plt.figure(figsize=(20, 12))
     plt.title(f'{filename}')
+
     plt.xlabel('Retention time (min)')
     plt.ylabel('Absorbance (mAU)')
     plt.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'])
+
     texts=[]
     for compound in compounds:
         for ion in compound.ions.keys():
-            if compound.ions[ion]['RT'] is not None:
+            if compound.ions[ion]['RT'] is not None and compound.ions[ion]['Apex'] is not None:
                 # Plot the intensity of the ion at that retention time
                 plt.plot(compound.ions[ion]['RT'], compound.ions[ion]['Apex'], marker='o', markersize=5)
                 texts.append(plt.text(compound.ions[ion]['RT'], compound.ions[ion]['Apex']-np.random.random()/100,
                 f"{compound.name}\n{ion}", fontsize=5))
-    
-    adjust_text(texts, avoid_self=False, time_lim=30, max_move=None, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
-    plt.savefig(os.path.join(plot_path, filename.replace('.txt', '_LC.png')), dpi=300)
-    plt.close()
+
+    adjust_text(texts, avoid_self=False, time_lim=30, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
+
+    # Prepare the plotting folder
+    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
+    os.makedirs(plot_path, exist_ok=True)
+    plt.savefig(os.path.join(plot_path, filename+'-annotatedLC.svg'), format='svg', bbox_inches='tight')
+    plt.close('all')
+
+
 
 def plot_annotated_XICs(path, xics, compound_list):
     """
-    Plot the XICs for the given compounds and annotate them with the respective m/z and scan time.
+    Plots the XICs for the given compounds and annotate them with the respective m/z and scan time.
 
     Parameters
     ----------
@@ -134,13 +161,10 @@ def plot_annotated_XICs(path, xics, compound_list):
     -------
     None
     """
-    matplotlib.use('Agg')
-    # Create the plots folder if it doesn't exist
-    os.makedirs(Path(path).parents[1] / 'plots' / 'XICs', exist_ok=True)
-    plot_path = Path(path).parents[1] / 'plots' / 'XICs'
-    filename = os.path.basename(path)
-    # Using gridspec, create a grid of subplots
 
+    filename = os.path.basename(path).split('.')[0]
+
+    # Using gridspec, create a grid of subplots
     # Calculate the number of columns and rows required for the grid
     tot = len(compound_list)
     cols = int(np.ceil(np.sqrt(tot)))
@@ -178,5 +202,7 @@ def plot_annotated_XICs(path, xics, compound_list):
         adjust_text(texts, avoid_self=False, time_lim=10, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
 
     # Save in the folder plots/XICs
-    plt.savefig(os.path.join(plot_path, filename.replace('.mzml', '_XICs.png')), dpi=300)
-    plt.close()
+    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
+    os.makedirs(plot_path, exist_ok=True)
+    plt.savefig(os.path.join(plot_path, filename+'-XICs.svg'), format='svg')
+    plt.close('all')

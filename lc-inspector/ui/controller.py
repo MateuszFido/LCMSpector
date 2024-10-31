@@ -1,5 +1,5 @@
 # controller.py
-from utils.threading import Worker
+from utils.threading import Worker, AnnotationWorker
 
 class Controller:
     def __init__(self, model, view):
@@ -37,7 +37,7 @@ class Controller:
     def load_annotations(self):
         # Logic to load annotations is handled in the view
         pass
-
+        
     def process_data(self):
         # Call the process method in the model with the loaded file lists
         """
@@ -58,25 +58,57 @@ class Controller:
             self.view.processButton.setEnabled(False)
 
             # Set the status message and show the progress bar
-            self.view.statusbar.showMessage("Processing data...")
+            self.view.statusbar.showMessage("Processing data... [Step 1/3]")
             self.view.progressBar.setVisible(True)
+            self.view.progressLabel.setVisible(True)
+            self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)  # Reset progress bar
 
             # Create and start the worker thread
             self.worker = Worker(self.model, self.model.ms_measurements, self.model.lc_measurements)
             self.worker.progress_update.connect(self.view.progress_update.emit)  # Connect progress updates
-            self.worker.finished.connect(self.on_processing_finished)  # Connect finished signal
+            self.worker.finished.connect(self.start_ms_annotation)  # Connect finished signal
+            
             print("Starting the processing...")
             self.worker.start()  # Start the worker thread
 
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
 
+    def start_ms_annotation(self, results):
+        # Start the annotation for MS files
+        self.view.progressBar.setValue(0)  # Reset progress bar
+        self.view.progressLabel.setText("0%") # Reset progress label
+        self.view.statusbar.showMessage("Rebuilding extracted ion chromatograms... [Step 2/3]")
+
+        self.ms_annotation_worker = AnnotationWorker(self.model.annotate_MS, results)
+        self.ms_annotation_worker.progress_update.connect(self.view.progress_update.emit)
+        self.ms_annotation_worker.finished.connect(self.start_lc_annotation)
+        self.ms_annotation_worker.start()
+
+    def start_lc_annotation(self, results):
+        # Start the annotation for LC files
+        self.view.progressBar.setValue(0)  # Reset progress bar
+        self.view.progressLabel.setText("0%") # Reset progress label
+        self.view.statusbar.showMessage(f"Annotating LC chromatograms... [Step 3/3]")
+
+        self.lc_annotation_worker = AnnotationWorker(self.model.annotate_LC, results)
+        self.lc_annotation_worker.progress_update.connect(self.view.progress_update.emit)
+        self.lc_annotation_worker.finished.connect(self.on_processing_finished)
+        self.lc_annotation_worker.start()
+
     def on_processing_finished(self, results):
         # Hide the progress bar after processing
         self.view.progressBar.setVisible(False)
+        self.view.progressLabel.setVisible(False)
         self.view.processButton.setEnabled(True)  # Enable the process button again
-        self.view.show_message("Success: data processing completed successfully.")
+        self.view.statusbar.showMessage("Finished: data processing completed successfully.", 5000)
+
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabResults), True)  # Enable the results tab
         self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)  # Enable the quantitation tab
+
+        self.view.QSvgWidget_baseline.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-chromatogram.svg")
+        self.view.QSvgWidget_avgMS.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-averageMS.svg")
+        self.view.QSvgWidget_XICs.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-XICs.svg")
+        self.view.QSvgWidget_annotatedLC.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-annotatedLC.svg")

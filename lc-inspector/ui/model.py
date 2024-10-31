@@ -4,7 +4,7 @@ import concurrent.futures
 from pathlib import Path
 from alive_progress import alive_bar
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
-import dill 
+import sys
 
 class Model:
     """
@@ -41,6 +41,7 @@ class Model:
         self.annotations = []
         self.lc_results = []
         self.ms_results = []
+        self.results = []
         self.ion_list = {
     'Adenine':[306.1197,260.0779,476.1776,431.1436,136.0618,134.0472],
     'Adenosine':[438.1620,392.1201,436.1473,268.1041,266.0894],
@@ -109,9 +110,19 @@ class Model:
         ms_file.annotate(compound_list)
         ms_file.plot_annotated()
         return ms_file
+    
+    def annotate_lc_file(self, lc_file, annotated_ms_measurements):
+        corresponding_ms_file = next((ms_file for ms_file in annotated_ms_measurements if str(ms_file) == str(lc_file)), None)
+        if not corresponding_ms_file:
+            print(f"Could not find a matching MS file for {lc_file}. Skipping.")
+            return lc_file
+        lc_file.annotate(corresponding_ms_file.compounds)
+        lc_file.plot_annotated()
+
+        return lc_file
 
     def process_data(self, ms_filelist, lc_filelist, progress_callback=None):
-        
+
         total_files = len(ms_filelist) + len(lc_filelist)
         
         lc_results = []
@@ -140,33 +151,53 @@ class Model:
                 except Exception as e:
                     print(f"Error processing LC file {lc_file}: {e}")
         
-        return ms_results, lc_results
+        self.ms_results = ms_results
+        self.lc_results = lc_results
 
-    def annotate_data(self):
+        return lc_results, ms_results
+        
+
+    def annotate_MS(self, ms_file, progress_callback=None):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(self.annotate_ms_file, ms_file) for ms_file in self.ms_results]
-            for future in concurrent.futures.as_completed(futures):
+            for i, future in enumerate(concurrent.futures.as_completed(futures)):
                 future.result()
+                if progress_callback:
+                    progress_callback(int((i + 1) / len(futures) * 100))
         annotated_ms_measurements = [future.result() for future in futures]
+        self.annotated_ms_measurements = annotated_ms_measurements
+        return annotated_ms_measurements
 
-        for lc_file in self.lc_results:
-            corresponding_ms_file = next((ms_file for ms_file in annotated_ms_measurements if str(ms_file) == str(lc_file)), None)
-            if corresponding_ms_file is None:
-                print(f"Could not find a matching MS file for {lc_file}. Skipping.")
-                continue
-            lc_file.annotate(corresponding_ms_file.compounds)
-            lc_file.plot_annotated()
-            
-            for compound in lc_file.compounds:
-                for ion in compound.ions.keys():
-                    self.results.append({
-                        'File': lc_file.filename,
-                        'Ion (m/z)': ion,
-                        'Compound': compound.name,
-                        'RT (min)': compound.ions[ion]['RT'],
-                        'MS Intensity (cps)': compound.ions[ion]['MS Intensity'],
-                        'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity']
-                    })
 
-        df = pd.DataFrame.from_dict(self.results)
-        df.to_csv(get_path('results.csv'), index=False)
+    def annotate_LC(self, lc_file, progress_callback=None):
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = [executor.submit(self.annotate_lc_file, lc_file, self.annotated_ms_measurements) for lc_file in self.lc_results]
+            for i, future in enumerate(concurrent.futures.as_completed(futures)):
+                try:
+                    future.result()  # This will raise an exception if the function failed
+                    if progress_callback:
+                        progress_callback(int((i + 1) / len(futures) * 100))
+                except Exception as e:
+                    print(f"Error annotating LC file: {e}")
+        annotated_lc_measurements = [future.result() for future in futures]
+
+        return annotated_lc_measurements
+
+
+    def save_results(self, annotated_lc_measurements):
+        # TODO: Implement
+        results = []
+        for compound in lc_file.compounds:
+            for ion in compound.ions.keys():
+                results.append({
+                    'File': lc_file.filename,
+                    'Ion (m/z)': ion,
+                    'Compound': compound.name,
+                    'RT (min)': compound.ions[ion]['RT'],
+                    'MS Intensity (cps)': compound.ions[ion]['MS Intensity'],
+                    'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity']
+                })
+        df = pd.DataFrame.from_dict(annotated_lc_measurements)
+        df.to_csv('results.csv', index=False)
+        print(df)
+        return annotated_lc_measurements

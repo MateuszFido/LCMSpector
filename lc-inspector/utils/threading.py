@@ -14,6 +14,19 @@ class Worker(QThread):
         results = self.model.process_data(self.ms_filelist, self.lc_filelist, self.progress_update.emit)
         self.finished.emit(results)  # Emit results and errors when done
 
-    def run_annotation(self):
-        results = self.model.annotate_data(self.ms_filelist, self.lc_filelist, self.progress_update.emit)
-        self.finished.emit(results)  # Emit results and errors when done
+class AnnotationWorker(QThread):
+    progress_update = pyqtSignal(int)
+    finished = pyqtSignal(list)  # Signal to indicate processing is finished
+
+    def __init__(self, function, *args):
+        super().__init__()
+        self.function = function
+        self.args = args
+
+    def run(self):
+        try:
+            results = self.function(*self.args, self.progress_update.emit)
+            self.finished.emit(results)
+        except Exception as e:
+            print(f"Error in Worker: {e}")
+            self.finished.emit([])  # Emit an empty list or handle error appropriately
