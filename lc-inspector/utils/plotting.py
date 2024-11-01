@@ -33,7 +33,7 @@ def plot_absorbance_data(path, dataframe):
     filename = os.path.basename(path).split('.')[0]
 
     # Create and save the plots as SVG files
-    plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=(12, 8))
     gs = gridspec.GridSpec(2, 1, height_ratios=[1, 1])
 
     # Plotting chromatogram before background correction
@@ -61,6 +61,7 @@ def plot_absorbance_data(path, dataframe):
 
     plt.savefig(os.path.join(plot_path, filename+'-chromatogram.svg'), format='svg', bbox_inches='tight')
     plt.close('all')
+    return fig
 
 
 def plot_average_ms_data(path, data_matrix):
@@ -81,7 +82,7 @@ def plot_average_ms_data(path, data_matrix):
 
     filename = os.path.basename(path).split('.')[0]
 
-    plt.figure(figsize=(12, 8))
+    fig = plt.figure(figsize=(12, 8))
     plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
     plt.xlabel('m/z')
     plt.ylabel('average intensity / a.u.')
@@ -98,6 +99,9 @@ def plot_average_ms_data(path, data_matrix):
     plt.title(f'Average MS data of {filename}')
     plt.savefig(os.path.join(plot_path, filename+'-averageMS.svg'), format='svg', bbox_inches='tight')
     plt.close('all')
+    
+    return fig
+
 
 def plot_annotated_LC(path, chromatogram, compounds):
     '''
@@ -118,7 +122,7 @@ def plot_annotated_LC(path, chromatogram, compounds):
     filename = os.path.basename(path).split('.')[0]
 
     # Plot the LC data
-    plt.figure(figsize=(20, 12))
+    fig = plt.figure(figsize=(20, 12))
     plt.title(f'{filename}')
 
     plt.xlabel('Retention time (min)')
@@ -141,6 +145,8 @@ def plot_annotated_LC(path, chromatogram, compounds):
     os.makedirs(plot_path, exist_ok=True)
     plt.savefig(os.path.join(plot_path, filename+'-annotatedLC.svg'), format='svg', bbox_inches='tight')
     plt.close('all')
+
+    return fig
 
 
 
@@ -206,3 +212,5 @@ def plot_annotated_XICs(path, xics, compound_list):
     os.makedirs(plot_path, exist_ok=True)
     plt.savefig(os.path.join(plot_path, filename+'-XICs.svg'), format='svg')
     plt.close('all')
+
+    return fig

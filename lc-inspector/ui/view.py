@@ -1,7 +1,8 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
-from PyQt6.QtSvgWidgets import QSvgWidget
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
@@ -81,7 +82,6 @@ class View(QtWidgets.QMainWindow):
         if count_ok > 0:
             self.statusbar.showMessage(f"Files added, {count_ok} MS files loaded successfully.", 3000)
         self.update_ms_file_list()  # Update the model with the new LC files
-
 
 
     def on_browseLC(self):
@@ -182,6 +182,15 @@ class View(QtWidgets.QMainWindow):
 
     def show_critical_error(self, message):
         QtWidgets.QMessageBox.critical(self, "Error", message)
+
+    def update_combo_box(self, filenames):
+        self.comboBox_currentfile.clear()
+        self.comboBox_currentfile.addItems(filenames)
+
+    def display_plots(self, plots):
+        for plot in plots:
+            print(plot)
+                
 
     def setupUi(self, MainWindow):
         """
@@ -299,18 +308,18 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.QSvgWidget_baseline = QSvgWidget(parent=self.tabResults)
-        self.QSvgWidget_baseline.setObjectName("QSvgWidget_baseline")
-        self.gridLayout_2.addWidget(self.QSvgWidget_baseline, 0, 0, 1, 1)
-        self.QSvgWidget_avgMS = QSvgWidget(parent=self.tabResults)
-        self.QSvgWidget_avgMS.setObjectName("QSvgWidget_avgMS")
-        self.gridLayout_2.addWidget(self.QSvgWidget_avgMS, 0, 1, 1, 1)
-        self.QSvgWidget_XICs = QSvgWidget(parent=self.tabResults)
-        self.QSvgWidget_XICs.setObjectName("QSvgWidget_XICs")
-        self.gridLayout_2.addWidget(self.QSvgWidget_XICs, 1, 0, 1, 1)
-        self.QSvgWidget_annotatedLC = QSvgWidget(parent=self.tabResults)
-        self.QSvgWidget_annotatedLC.setObjectName("QSvgWidget_annotatedLC")
-        self.gridLayout_2.addWidget(self.QSvgWidget_annotatedLC, 1, 1, 1, 1)
+        self.canvas_baseline = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_baseline.setObjectName("canvas_baseline")
+        self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
+        self.canvas_avgMS = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_avgMS.setObjectName("canvas_avgMS")
+        self.gridLayout_2.addWidget(self.canvas_avgMS, 0, 1, 1, 1)
+        self.canvas_XICs = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_XICs.setObjectName("canvas_XICs")
+        self.gridLayout_2.addWidget(self.canvas_XICs, 1, 0, 1, 1)
+        self.canvas_annotatedLC = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 1, 1, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
         self.comboBox_currentfile.setObjectName("comboBox_currentfile")
@@ -357,9 +366,9 @@ class View(QtWidgets.QMainWindow):
         self.quant_ion_list_view.setObjectName("quant_ion_list_view")
         self.gridLayout_6.addWidget(self.quant_ion_list_view, 1, 0, 1, 1)
         self.gridLayout_7.addLayout(self.gridLayout_6, 0, 0, 3, 1)
-        self.QSvgWidget_calcurve = QSvgWidget(parent=self.tabQuantitation)
-        self.QSvgWidget_calcurve.setObjectName("QSvgWidget_calcurve")
-        self.gridLayout_7.addWidget(self.QSvgWidget_calcurve, 1, 1, 1, 1)
+        self.canvas_calcurve = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
+        self.canvas_calcurve.setObjectName("canvas_calcurve")
+        self.gridLayout_7.addWidget(self.canvas_calcurve, 1, 1, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the third tab
 
@@ -419,7 +428,6 @@ class View(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
-        self.label_results_currentfile.setBuddy(self.label_results_currentfile)
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)

@@ -41,7 +41,9 @@ class Model:
         self.annotations = []
         self.lc_results = []
         self.ms_results = []
+        self.plots = {}
         self.results = []
+
         self.ion_list = {
     'Adenine':[306.1197,260.0779,476.1776,431.1436,136.0618,134.0472],
     'Adenosine':[438.1620,392.1201,436.1473,268.1041,266.0894],
@@ -98,17 +100,20 @@ class Model:
     def process_ms_file(self, ms_file):
         ms_file = MSMeasurement(ms_file, 0.1)
         ms_file.plot()
+        self.plots.setdefault(ms_file.filename, {'avgMS': ms_file.plot})
         return ms_file
 
     def process_lc_file(self, lc_file):
         lc_file = LCMeasurement(lc_file)
         lc_file.plot()
+        self.plots.setdefault(lc_file.filename, {'chromatogram': lc_file.plot})
         return lc_file
 
     def annotate_ms_file(self, ms_file):
         compound_list = [Compound(name=ion, file=ms_file.filename, ions=self.ion_list[ion]) for ion in self.ion_list.keys()]
         ms_file.annotate(compound_list)
         ms_file.plot_annotated()
+        self.plots.setdefault(ms_file.filename, {'XICs': ms_file.annotated_plot})
         return ms_file
     
     def annotate_lc_file(self, lc_file, annotated_ms_measurements):
@@ -118,7 +123,7 @@ class Model:
             return lc_file
         lc_file.annotate(corresponding_ms_file.compounds)
         lc_file.plot_annotated()
-
+        self.plots.setdefault(lc_file.filename, {'annotatedLC': lc_file.annotated_plot})
         return lc_file
 
     def process_data(self, ms_filelist, lc_filelist, progress_callback=None):
@@ -180,9 +185,13 @@ class Model:
                 except Exception as e:
                     print(f"Error annotating LC file: {e}")
         annotated_lc_measurements = [future.result() for future in futures]
+        self.annotated_lc_measurements = annotated_lc_measurements
 
         return annotated_lc_measurements
 
+    def get_plots(self, filename):
+        print("Filename in get_plots:", filename)
+        return self.plots.get(filename, {})
 
     def save_results(self, annotated_lc_measurements):
         # TODO: Implement

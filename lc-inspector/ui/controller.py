@@ -25,6 +25,8 @@ class Controller:
         self.view.browseLC.clicked.connect(self.load_lc_data)
         self.view.browseMS.clicked.connect(self.load_ms_data)
         self.view.processButton.clicked.connect(self.process_data)
+        self.view.comboBox_currentfile.currentIndexChanged.connect(self.display_selected_plots)
+
 
     def load_lc_data(self):
         # Logic to load LC data is handled in the view
@@ -108,7 +110,16 @@ class Controller:
         self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)  # Enable the quantitation tab
 
-        self.view.QSvgWidget_baseline.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-chromatogram.svg")
-        self.view.QSvgWidget_avgMS.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-averageMS.svg")
-        self.view.QSvgWidget_XICs.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-XICs.svg")
-        self.view.QSvgWidget_annotatedLC.load("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/Mice/UPLC code/LC-Inspector/data/plots/STMIX5_02/STMIX5_02-annotatedLC.svg")
+        self.update_filenames_combo_box()
+
+       
+    def update_filenames_combo_box(self):
+        # Collect filenames from processed results
+        filenames = [lc_file.filename for lc_file in self.model.lc_results]
+        self.view.update_combo_box(filenames)
+    
+    def display_selected_plots(self):
+        selected_file = self.view.comboBox_currentfile.currentText()
+        print("Selected file:", selected_file)
+        plots = self.model.get_plots(selected_file)  # Retrieve plot data from the model
+        self.view.display_plots(plots)  # Update the view with the selected plots
