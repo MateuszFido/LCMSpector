@@ -1,14 +1,14 @@
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
 from adjustText import adjust_text
+import pyqtgraph as pg
+from pyqtgraph import exporters
+from PyQt6.QtCore import Qt
+from pyqtgraph import mkPen
 
-def plot_absorbance_data(path, dataframe):
+def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
     """
     Generates and saves plots of absorbance data before and after background correction.
 
@@ -32,41 +32,30 @@ def plot_absorbance_data(path, dataframe):
 
     filename = os.path.basename(path).split('.')[0]
 
-    # Create and save the plots as SVG files
-    fig = plt.figure(figsize=(12, 8))
-    gs = gridspec.GridSpec(2, 1, height_ratios=[1, 1])
-
-    # Plotting chromatogram before background correction
-    plt.subplot(gs[0])
-    plt.plot(dataframe['Time (min)'], dataframe['Uncorrected'], label='Before correction', color='blue')
-    plt.plot(dataframe['Time (min)'], dataframe['Baseline'], label='Baseline', color='red', linestyle='--')
-    plt.title('Chromatogram Before Background Correction')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Absorbance (mAU)')
-    plt.legend()
-
-    # Plotting chromatogram after background correction
-    plt.subplot(gs[1])
-    plt.plot(dataframe['Time (min)'], dataframe['Value (mAU)'], label='After correction', color='green')
-    plt.title('Chromatogram After Background Correction')
-    plt.xlabel('Time (min)')
-    plt.ylabel('Absorbance (mAU)')
-    plt.legend()
-
-    plt.tight_layout()
-
     # Create the "plots" directory if it doesn't exist
     plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)
 
-    plt.savefig(os.path.join(plot_path, filename+'-chromatogram.svg'), format='svg', bbox_inches='tight')
-    plt.close('all')
-    return fig
+    # Plotting chromatogram before background correction
+    widget.setBackground("w")
+    widget.plot(title='Chromatogram Before Background Correction')
+    widget.plot(dataframe['Time (min)'], dataframe['Uncorrected'], pen=pg.mkPen('b', width=2), name='Before correction')
+    widget.plot(dataframe['Time (min)'], dataframe['Baseline'], pen=pg.mkPen('r', width=2, style=Qt.PenStyle.DashLine), name='Baseline')
+    widget.setLabel('left', 'Absorbance (mAU)')
+    widget.setLabel('bottom', 'Time (min)')
+    widget.addLegend()
+
+    # Plotting chromatogram after background correction
+    widget.plot(title='Chromatogram After Background Correction')
+    widget.plot(dataframe['Time (min)'], dataframe['Value (mAU)'], pen=pg.mkPen('g', width=2), name='After correction')
+    widget.setLabel('left', 'Absorbance (mAU)')
+    widget.setLabel('bottom', 'Time (min)')
+    widget.addLegend()
 
 
-def plot_average_ms_data(path, data_matrix):
+def plot_average_ms_data(path: str, data_matrix: pd.DataFrame, widget: pg.PlotWidget):
     """
-    Plots the average MS data and annotate it with the m/z of the 5 highest peaks.
+    Plots the average MS data and annotates it with the m/z of the 5 highest peaks.
 
     Parameters
     ----------
@@ -82,28 +71,28 @@ def plot_average_ms_data(path, data_matrix):
 
     filename = os.path.basename(path).split('.')[0]
 
-    fig = plt.figure(figsize=(12, 8))
-    plt.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'])
-    plt.xlabel('m/z')
-    plt.ylabel('average intensity / a.u.')
-    # Plot the m/z of the 5 highest peaks in spectrum
-    highest_peaks = data_matrix.nlargest(5, 'intensity / a.u.')
-    texts=[]
-    for index, row in highest_peaks.iterrows():
-        texts.append(plt.text(row['m/z'], row['intensity / a.u.'], row['m/z']))
-    adjust_text(texts, arrowprops=dict(arrowstyle='->', color='red'))
-    
+    # Create the "plots" directory if it doesn't exist
     plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)
-    
-    plt.title(f'Average MS data of {filename}')
-    plt.savefig(os.path.join(plot_path, filename+'-averageMS.svg'), format='svg', bbox_inches='tight')
-    plt.close('all')
-    
-    return fig
 
+    # Plotting the average MS data
+    widget.setBackground("w")
+    widget.plot(title='Average MS Data')
+    widget.showGrid(x=True, y=True, alpha=0.2)
+    widget.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'], pen=mkPen('b', width=2))
 
-def plot_annotated_LC(path, chromatogram, compounds):
+    # Annotate the m/z of the 5 highest peaks
+    highest_peaks = data_matrix.nlargest(10, 'intensity / a.u.')
+    for index, row in highest_peaks.iterrows():
+        widget.plot([row['m/z']], [row['intensity / a.u.']], pen=mkPen('r', width=2), symbol='o', symbolSize=10)
+        text = pg.TextItem(text=str(row['m/z']), color='black')
+        text.setPos(row['m/z'], row['intensity / a.u.'])
+        widget.addItem(text)
+        
+    widget.setLabel('left', 'Average Intensity / a.u.')
+    widget.setLabel('bottom', 'm/z')
+
+def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, widget: pg.PlotWidget):
     '''
     Annotates the LC data with the given targeted list of ions and plot the results.
 
@@ -121,38 +110,33 @@ def plot_annotated_LC(path, chromatogram, compounds):
     '''
     filename = os.path.basename(path).split('.')[0]
 
+    # Create the "plots" directory if it doesn't exist
+    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
+    os.makedirs(plot_path, exist_ok=True)
+
     # Plot the LC data
-    fig = plt.figure(figsize=(20, 12))
-    plt.title(f'{filename}')
+    widget.setBackground("w")
+    widget.setLabel('left', 'Absorbance (mAU)')
+    widget.setLabel('bottom', 'Retention time (min)')
+    widget.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'], pen=mkPen('b', width=2))
 
-    plt.xlabel('Retention time (min)')
-    plt.ylabel('Absorbance (mAU)')
-    plt.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'])
-
-    texts=[]
+    # Annotate with compounds
     for compound in compounds:
         for ion in compound.ions.keys():
             if compound.ions[ion]['RT'] is not None and compound.ions[ion]['Apex'] is not None:
                 # Plot the intensity of the ion at that retention time
-                plt.plot(compound.ions[ion]['RT'], compound.ions[ion]['Apex'], marker='o', markersize=5)
-                texts.append(plt.text(compound.ions[ion]['RT'], compound.ions[ion]['Apex']-np.random.random()/100,
-                f"{compound.name}\n{ion}", fontsize=5))
-
-    adjust_text(texts, avoid_self=False, time_lim=30, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
-
-    # Prepare the plotting folder
-    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
-    os.makedirs(plot_path, exist_ok=True)
-    plt.savefig(os.path.join(plot_path, filename+'-annotatedLC.svg'), format='svg', bbox_inches='tight')
-    plt.close('all')
-
-    return fig
+                widget.plot([compound.ions[ion]['RT']], [compound.ions[ion]['Apex']], pen=mkPen('r', width=2), symbol='o', symbolSize=5)
+                
+                # Create a text item for annotation
+                text_item = pg.TextItem(text=f"{compound.name}\n{ion}", anchor=(0, 1), color='black')
+                text_item.setPos(compound.ions[ion]['RT'], compound.ions[ion]['Apex'] - np.random.random() / 100)
+                widget.addItem(text_item)
 
 
 
-def plot_annotated_XICs(path, xics, compound_list):
+def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widget: pg.GraphicsLayoutWidget):
     """
-    Plots the XICs for the given compounds and annotate them with the respective m/z and scan time.
+    Plots the XICs for the given compounds and annotates them with the respective m/z and scan time.
 
     Parameters
     ----------
@@ -170,47 +154,41 @@ def plot_annotated_XICs(path, xics, compound_list):
 
     filename = os.path.basename(path).split('.')[0]
 
-    # Using gridspec, create a grid of subplots
+    # Create the "plots" directory if it doesn't exist
+    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
+    os.makedirs(plot_path, exist_ok=True)
+
     # Calculate the number of columns and rows required for the grid
     tot = len(compound_list)
     cols = int(np.ceil(np.sqrt(tot)))
     rows = int(np.ceil(tot / cols))
 
-    # Create the grid of subplots
-    gs = gridspec.GridSpec(rows, cols)
-    fig = plt.figure(figsize=(30, 20))
-    # Adjust the spacing between the subplots
-    plt.subplots_adjust(hspace=0.5, wspace=0.5)
-    # Add a title to the figure
-    fig.suptitle(f'{filename}')
+    widget.setBackground("w")
     # Iterate over each compound and create a subplot for it
     for i, compound in enumerate(compound_list):
-        texts = []
-        ax = fig.add_subplot(gs[i])
+        plot_item = widget.addPlot(row=i // cols, col=i % cols)
+        plot_item.setTitle(compound.name)
+        plot_item.setLabel('left', 'Intensity / a.u.')
+        plot_item.setLabel('bottom', 'Scan time (min)')
+
         # Iterate over each ion in the compound
         for j, ion in enumerate(compound.ions.keys()):
             # Find the closest m/z to the ion
             if compound.ions[ion]["RT"] is None or compound.ions[ion]["MS Intensity"] is None:
                 continue
+            
             closest = np.abs(xics.iloc[0] - ion).idxmin()
             # Find the scan time with the highest intensity
-            scan_time = xics['Scan time (min)'].iloc[xics[closest][1:].idxmax()] # Skip the first two rows
-            # Plot the XIC and annotate it with the m/z and scan time
-            ax.plot(xics['Scan time (min)'][1:], xics[closest][1:])
-            ax.plot(scan_time, xics[closest].iloc[xics[closest][1:].idxmax()], "o")
-            text = ax.text(x=scan_time-np.random.random()/100, y=xics[closest].iloc[xics[closest][1:].idxmax()], s=f"{ion}\n({closest})", fontsize=5)
-            texts.append(text)
-        # Add a title to the subplot
-        ax.set_title(f"{compound.name}")
-        ax.set_xlabel('Scan time (min)')
-        ax.set_ylabel('intensity / a.u.')
-        # Adjust the spacing between the text labels
-        adjust_text(texts, avoid_self=False, time_lim=10, arrowprops=dict(arrowstyle='-', color='gray', alpha=.1))
+            scan_time = xics['Scan time (min)'].iloc[xics[closest][1:].idxmax()]  # Skip the first row
 
-    # Save in the folder plots/XICs
-    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
-    os.makedirs(plot_path, exist_ok=True)
-    plt.savefig(os.path.join(plot_path, filename+'-XICs.svg'), format='svg')
-    plt.close('all')
+            # Plot the XIC
+            #BUG: This does not work
+            plot_item.plot((xics['Scan time (min)'][1:], xics[closest][1:]), pen='b')
+            # Plot the point of highest intensity
+            highest_intensity = xics[closest].iloc[xics[closest][1:].idxmax()]
+            plot_item.plot([scan_time], [highest_intensity], pen=None, symbol='o', symbolBrush='r')
 
-    return fig
+            # Annotate the plot
+            text_item = pg.TextItem(f"{ion}\n({closest})", anchor=(0, 0))
+            text_item.setPos(scan_time - np.random.random() / 100, highest_intensity)
+            plot_item.addItem(text_item)

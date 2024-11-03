@@ -1,5 +1,6 @@
 # controller.py
 from utils.threading import Worker, AnnotationWorker
+from multiprocessing import Manager
 
 class Controller:
     def __init__(self, model, view):
@@ -50,6 +51,7 @@ class Controller:
         and if so, calls the process method in the model with those lists.
         If not, it shows an error message to the user.
         """
+        
         if (hasattr(self.model, 'ms_measurements') and hasattr(self.model, 'lc_measurements')) or (hasattr(self.model, 'lc_measurements') and hasattr(self.model, 'annotations')):
             # Ensure that the lists are not empty
             if not self.model.lc_measurements:
@@ -78,6 +80,8 @@ class Controller:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
 
     def start_ms_annotation(self, results):
+        del(self.model.lc_measurements)
+        del(self.model.ms_measurements)
         # Start the annotation for MS files
         self.view.progressBar.setValue(0)  # Reset progress bar
         self.view.progressLabel.setText("0%") # Reset progress label
@@ -100,6 +104,11 @@ class Controller:
         self.lc_annotation_worker.start()
 
     def on_processing_finished(self, results):
+        
+        # Memory clean-up
+        del(self.model.lc_results)
+        del(self.model.ms_results)
+
         # Hide the progress bar after processing
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
@@ -115,11 +124,14 @@ class Controller:
        
     def update_filenames_combo_box(self):
         # Collect filenames from processed results
-        filenames = [lc_file.filename for lc_file in self.model.lc_results]
+        filenames = [file.filename for file in self.model.annotated_lc_measurements]
         self.view.update_combo_box(filenames)
     
     def display_selected_plots(self):
         selected_file = self.view.comboBox_currentfile.currentText()
         print("Selected file:", selected_file)
-        plots = self.model.get_plots(selected_file)  # Retrieve plot data from the model
-        self.view.display_plots(plots)  # Update the view with the selected plots
+        try:
+            lc_file, ms_file = self.model.get_plots(selected_file)  # Retrieve plot data from the model
+        except TypeError as e:
+            print(f"Error: {e}")
+        self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots

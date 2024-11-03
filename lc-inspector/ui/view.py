@@ -1,8 +1,11 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+import pyqtgraph as pg
+from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
+import sys, traceback
+
+pg.setConfigOptions(antialias=True)
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
@@ -130,6 +133,8 @@ class View(QtWidgets.QMainWindow):
         Slot for the process button. Triggers the processing action in the controller.
         """
         pass  # This is handled by the controller
+    def on_exit(self):
+        sys.exit(0)
 
     def update_lc_file_list(self):
         # Update the model with the LC file paths
@@ -187,10 +192,33 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile.clear()
         self.comboBox_currentfile.addItems(filenames)
 
-    def display_plots(self, plots):
-        for plot in plots:
-            print(plot)
+    def display_plots(self, file_lc, file_ms):
+        self.canvas_baseline.clear()
+        try:
+            plot_absorbance_data(file_lc.path, file_lc.baseline_corrected, self.canvas_baseline)
+        except Exception as e: 
+            print(f"No baseline chromatogram found: {e}")
+        self.canvas_avgMS.clear()
+        try:
+            plot_average_ms_data(file_ms.path, file_ms.average, self.canvas_avgMS)
+        except Exception as e: 
+            print(f"No average MS found: {e}")
+        self.canvas_XICs.clear()
+        try:
+            plot_annotated_XICs(file_ms.path, file_ms.xics, file_ms.compounds, self.canvas_XICs)
+        except Exception: 
+            print(f"No XIC plot found: {traceback.format_exc()}")
+        self.canvas_annotatedLC.clear()
+        try:
+            plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_lc.compounds, self.canvas_annotatedLC)
+        except Exception as e: 
+            print(f"No annotated LC plot found: {e}")
+
                 
+    def update_resolution_label(self, resolution):
+        resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
+        self.resolutionLabel.setText(f"Mass resolution:\n{resolutions[resolution]}")
+
 
     def setupUi(self, MainWindow):
         """
@@ -281,12 +309,10 @@ class View(QtWidgets.QMainWindow):
         self.resSlider.setTickInterval(1)
         self.resSlider.setObjectName("resSlider")
         self.gridLayout.addWidget(self.resSlider, 0, 1, 2, 1)
-        self.labelMassRes = QtWidgets.QLabel(parent=self.tabUpload)
-        self.labelMassRes.setObjectName("labelMassRes")
-        self.gridLayout.addWidget(self.labelMassRes, 0, 0, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.labelRes = QtWidgets.QLabel(parent=self.tabUpload)
-        self.labelRes.setObjectName("labelRes")
-        self.gridLayout.addWidget(self.labelRes, 1, 0, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
+        self.resolutionLabel = QtWidgets.QLabel(parent=self.tabUpload)
+        self.resolutionLabel.setObjectName("resolutionLabel")
+        self.resolutionLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout.addWidget(self.resolutionLabel, 0, 0, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.gridLayout_3.addLayout(self.gridLayout, 3, 2, 1, 2)
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
@@ -308,16 +334,16 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.canvas_baseline = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_baseline = pg.PlotWidget(parent=self.tabResults)
         self.canvas_baseline.setObjectName("canvas_baseline")
         self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
-        self.canvas_avgMS = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.gridLayout_2.addWidget(self.canvas_avgMS, 0, 1, 1, 1)
-        self.canvas_XICs = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_XICs = pg.GraphicsLayoutWidget(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.gridLayout_2.addWidget(self.canvas_XICs, 1, 0, 1, 1)
-        self.canvas_annotatedLC = QtWidgets.QGraphicsView(parent=self.tabResults)
+        self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 1, 1, 1, 1)
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
@@ -431,12 +457,12 @@ class View(QtWidgets.QMainWindow):
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
-        self.resSlider.valueChanged['int'].connect(self.labelRes.setNum) # type: ignore
+        self.resSlider.valueChanged.connect(self.update_resolution_label) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         # Connect signals
         #TODO: Implement the rest of the menu items
         #self.actionSave.triggered.connect(self.on_save)
-        #self.actionExit.triggered.connect(self.on_exit)
+        self.actionExit.triggered.connect(self.on_exit)
         #self.actionPreferences.triggered.connect(self.on_preferences)
         #self.actionReadme.triggered.connect(self.on_readme)
         self.browseLC.clicked.connect(self.on_browseLC)
@@ -465,9 +491,8 @@ class View(QtWidgets.QMainWindow):
         self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
         self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
         self.resSlider.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
-        self.labelMassRes.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
-        self.labelMassRes.setText(_translate("MainWindow", "Mass resolution"))
-        self.labelRes.setText(_translate("MainWindow", "120000"))
+        self.resolutionLabel.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
+        self.resolutionLabel.setText(_translate("MainWindow", "Mass resolution:\n120,000"))
         self.processButton.setText(_translate("MainWindow", "Process"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload"))
         self.label_results_currentfile.setText(_translate("MainWindow", "Current file:"))
