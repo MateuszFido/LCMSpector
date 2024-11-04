@@ -135,60 +135,46 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
 
 
 def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widget: pg.GraphicsLayoutWidget):
-    """
-    Plots the XICs for the given compounds and annotates them with the respective m/z and scan time.
-
-    Parameters
-    ----------
-    path : str
-        The path to the .mzML file.
-    xics : pd.DataFrame
-        The DataFrame containing the XICs.
-    compound_list : list
-        A list of dictionaries containing the targeted ions for each compound.
-
-    Returns
-    -------
-    None
-    """
-
     filename = os.path.basename(path).split('.')[0]
-
-    # Create the "plots" directory if it doesn't exist
     plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)
 
-    # Calculate the number of columns and rows required for the grid
     tot = len(compound_list)
     cols = int(np.ceil(np.sqrt(tot)))
     rows = int(np.ceil(tot / cols))
 
     widget.setBackground("w")
-    # Iterate over each compound and create a subplot for it
     for i, compound in enumerate(compound_list):
         plot_item = widget.addPlot(row=i // cols, col=i % cols)
         plot_item.setTitle(compound.name)
-        plot_item.setLabel('left', 'Intensity / a.u.')
-        plot_item.setLabel('bottom', 'Scan time (min)')
+        args = ({'color': 'b', 'font-size': '10pt'})
+        plot_item.setLabel('bottom', text='Scan time', units='min', **args)
+        plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
 
-        # Iterate over each ion in the compound
         for j, ion in enumerate(compound.ions.keys()):
-            # Find the closest m/z to the ion
             if compound.ions[ion]["RT"] is None or compound.ions[ion]["MS Intensity"] is None:
                 continue
             
             closest = np.abs(xics.iloc[0] - ion).idxmin()
-            # Find the scan time with the highest intensity
+            
             scan_time = xics['Scan time (min)'].iloc[xics[closest][1:].idxmax()]  # Skip the first row
 
-            # Plot the XIC
-            #BUG: This does not work
-            plot_item.plot((xics['Scan time (min)'][1:], xics[closest][1:]), pen='b')
-            # Plot the point of highest intensity
+            # Check if closest is a valid column
+            if closest not in xics.columns:
+                print(f"Column {closest} does not exist in xics.")
+                continue
+
+            plotting_data = xics['Scan time (min)'][1:].to_numpy()
+            # Add xics[closest][1:].tonumpy() as y axis
+            plotting_data = np.append(plotting_data, xics[closest][1:].values)
+            plot_item.plot(plotting_data)
+            plot_item.pen = mkPen('b', width=1)
             highest_intensity = xics[closest].iloc[xics[closest][1:].idxmax()]
             plot_item.plot([scan_time], [highest_intensity], pen=None, symbol='o', symbolBrush='r')
 
-            # Annotate the plot
             text_item = pg.TextItem(f"{ion}\n({closest})", anchor=(0, 0))
             text_item.setPos(scan_time - np.random.random() / 100, highest_intensity)
             plot_item.addItem(text_item)
+            plot_item.getAxis('left').setHeight(100)
+            plot_item.setMinimumSize(100, 100)
+

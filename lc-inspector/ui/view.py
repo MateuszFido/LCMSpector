@@ -7,6 +7,7 @@ import sys, traceback
 
 pg.setConfigOptions(antialias=True)
 
+
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
     def __init__(self, parent=None):
@@ -194,25 +195,29 @@ class View(QtWidgets.QMainWindow):
 
     def display_plots(self, file_lc, file_ms):
         self.canvas_baseline.clear()
-        try:
-            plot_absorbance_data(file_lc.path, file_lc.baseline_corrected, self.canvas_baseline)
-        except Exception as e: 
-            print(f"No baseline chromatogram found: {e}")
+        if file_lc:
+            try:
+                plot_absorbance_data(file_lc.path, file_lc.baseline_corrected, self.canvas_baseline)
+            except Exception as e: 
+                print(f"No baseline chromatogram found: {e}")
         self.canvas_avgMS.clear()
-        try:
-            plot_average_ms_data(file_ms.path, file_ms.average, self.canvas_avgMS)
-        except Exception as e: 
-            print(f"No average MS found: {e}")
+        if file_ms:
+            try:
+                plot_average_ms_data(file_ms.path, file_ms.average, self.canvas_avgMS)
+            except AttributeError as e: 
+                print(f"No average MS found: {e}")
         self.canvas_XICs.clear()
-        try:
-            plot_annotated_XICs(file_ms.path, file_ms.xics, file_ms.compounds, self.canvas_XICs)
-        except Exception: 
-            print(f"No XIC plot found: {traceback.format_exc()}")
+        if file_ms:
+            try:
+                plot_annotated_XICs(file_ms.path, file_ms.xics, file_ms.compounds, self.canvas_XICs)
+            except AttributeError as e: 
+                print(f"No XIC plot found: {traceback.format_exc()}")
         self.canvas_annotatedLC.clear()
-        try:
-            plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_lc.compounds, self.canvas_annotatedLC)
-        except Exception as e: 
-            print(f"No annotated LC plot found: {e}")
+        if hasattr(file_lc, 'compounds'):
+            try:
+                plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_lc.compounds, self.canvas_annotatedLC)
+            except Exception as e: 
+                print(f"No annotated LC plot found: {e}")
 
                 
     def update_resolution_label(self, resolution):
@@ -339,13 +344,18 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
-        self.gridLayout_2.addWidget(self.canvas_avgMS, 0, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
         self.canvas_XICs = pg.GraphicsLayoutWidget(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
-        self.gridLayout_2.addWidget(self.canvas_XICs, 1, 0, 1, 1)
+        self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_2.addWidget(self.canvas_XICs, 1, 1, 1, 1)
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
-        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+
+        self.gridLayout_2.setColumnStretch(0, 2)  # Left column (larger canvases)
+        self.gridLayout_2.setColumnStretch(1, 5)  # Right column (smaller canvases)
+
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
         self.comboBox_currentfile.setObjectName("comboBox_currentfile")
