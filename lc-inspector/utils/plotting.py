@@ -118,19 +118,21 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
     widget.setBackground("w")
     widget.setLabel('left', 'Absorbance (mAU)')
     widget.setLabel('bottom', 'Retention time (min)')
-    widget.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'], pen=mkPen('b', width=2))
+    widget.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'], pen=mkPen('b', width=1))
 
     # Annotate with compounds
-    for compound in compounds:
+    for j, compound in enumerate(compounds):
         for i, ion in enumerate(compound.ions.keys()):
-            if compound.ions[ion]['RT'] is not None and compound.ions[ion]['Apex'] is not None:
-                # Plot the intensity of the ion at that retention time
-                widget.plot([compound.ions[ion]['RT']], [compound.ions[ion]['Apex']], pen=mkPen('r', width=2), symbol='o', symbolSize=5)
+            if compound.ions[ion]['LC RT'] is not None and compound.ions[ion]['Apex'] is not None:
+                # Find the intensity of compound.ions[ion] in chromatogram['Value (mAU)']
+                #BUG: labels overlap and the retention time is incorrect
+                intensity_at_RT = np.abs(chromatogram['Time (min)'] - compound.ions[ion]['RT']).idxmin()
+                widget.plot([compound.ions[ion]['LC RT']],  [compound.ions[ion]['Apex']], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
                 
                 # Create a text item for annotation
-                text_item = pg.TextItem(text=f"{compound.name}\n{ion}", anchor=(0, 1), color='black')
-                text_item.setPos(compound.ions[ion]['RT'], compound.ions[ion]['Apex']+compound.ions[ion]['Apex']*0.1*i)
-                text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+                text_item = pg.TextItem(text=f"{compound.name}\n{ion}", anchor=(0, 1))
+                text_item.setPos(compound.ions[ion]['LC RT']+0.1*j, compound.ions[ion]['Apex']-20*i)
+                text_item.setFont(pg.QtGui.QFont('Arial', 6, weight=pg.QtGui.QFont.Weight.ExtraLight))
                 widget.addItem(text_item)
 
 
@@ -141,7 +143,7 @@ def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widg
     os.makedirs(plot_path, exist_ok=True)
 
     tot = len(compound_list)
-    cols = int(np.ceil(np.sqrt(tot)))
+    cols = 5
     rows = int(np.ceil(tot / cols))
 
     widget.setBackground("w")
@@ -154,6 +156,7 @@ def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widg
         args = ({'color': 'b', 'font-size': '10pt'})
         plot_item.setLabel('bottom', text='Scan time', units='min', **args)
         plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
+        plot_item.getAxis('left').setHeight(100)
 
         for j, ion in enumerate(compound.ions.keys()):
             if compound.ions[ion]["RT"] is None or compound.ions[ion]["MS Intensity"] is None:
@@ -182,4 +185,4 @@ def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widg
             plot_item.getAxis('left').setHeight(100)
     
     #HACK: Force scrollArea to realize that the widget is bigger than it
-    widget.setMinimumSize(pg.QtCore.QSize(0,len(compound_list)*10))
+    widget.setMinimumSize(pg.QtCore.QSize(len(compound_list)*20,len(compound_list)*40))

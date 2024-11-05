@@ -75,6 +75,7 @@ def annotate_LC_data(chromatogram, compounds):
                 
                 compound.ions[ion]['LC Intensity'] = round(lc_intensity)
                 compound.ions[ion]['Apex'] = chromatogram['Value (mAU)'][left_idx:right_idx].max()
+                compound.ions[ion]['LC RT'] = round(chromatogram['Time (min)'][left_idx:right_idx].mean(), 2)
 
         # print(compound)
         
