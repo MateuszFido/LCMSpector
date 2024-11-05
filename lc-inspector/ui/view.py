@@ -1,12 +1,59 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
 import sys, traceback
 
 pg.setConfigOptions(antialias=True)
 
+class IonTable(QtWidgets.QTableWidget):
+    def __init__(self, parent=None):
+        super().__init__(10, 2, parent)
+        self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self.horizontalHeader().setStretchLastSection(True)
+        self.setHorizontalHeaderLabels(["Compound", "Expected m/z"])
+        self.setShowGrid(True)
+        self.setGridStyle(QtCore.Qt.PenStyle.SolidLine)
+        self.setObjectName("ionTable")
+        self.setStyleSheet("gridline-color: #e0e0e0;")
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_V and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.paste_from_clipboard()
+        elif event.key() == Qt.Key.Key_A and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.select_all()
+        elif event.key() == QtCore.Qt.Key.Key_Backspace or event.key() == QtCore.Qt.Key.Key_Delete:
+            self.clear_selection()
+        else:
+            super().keyPressEvent(event)
+
+    def select_all(self):
+        self.selectAll()
+
+    def clear_selection(self):
+        for item in self.selectedItems():
+            item.setText("")  # Clear the text of the selected item
+
+    def paste_from_clipboard(self):
+        clipboard = QtWidgets.QApplication.clipboard()
+        text = clipboard.text()
+
+        # Split the text into lines and then into cells
+        rows = text.splitlines()
+        current_row = self.currentRow()
+
+        for row_data in rows:
+            # Split the row data into columns (assuming tab-separated values)
+            columns = row_data.split('\t')
+            for col_index, value in enumerate(columns):
+                if current_row < self.rowCount():
+                    self.setItem(current_row, col_index, QtWidgets.QTableWidgetItem(value))
+                else:
+                    # If we exceed the current row count, add a new row
+                    self.insertRow(current_row)
+                    self.setItem(current_row, col_index, QtWidgets.QTableWidgetItem(value))
+            current_row += 1
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
@@ -87,6 +134,26 @@ class View(QtWidgets.QMainWindow):
             self.statusbar.showMessage(f"Files added, {count_ok} MS files loaded successfully.", 3000)
         self.update_ms_file_list()  # Update the model with the new LC files
 
+    def handle_files_dropped_annotations(self, file_paths):
+        """
+        Slot to handle the dropped files.
+        Updates the model with the new file paths.
+        """
+        count_ok = 0
+        error_shown = False # Safeguard to show error message only once
+        for file_path in file_paths:
+            if file_path.lower().endswith(".txt"):
+                count_ok += 1
+                self.listAnnotations.addItem(file_path)  # Add each file path to the listLC widget
+            elif not error_shown:
+                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported.")
+                error_shown = True
+            else:
+                continue
+        if count_ok > 0:
+            self.statusbar.showMessage(f"Files added, {count_ok} annotation files loaded successfully.", 3000)
+        self.update_annotation_file()  # Update the model with the new LC files
+
 
     def on_browseLC(self):
         """
@@ -114,19 +181,18 @@ class View(QtWidgets.QMainWindow):
             self.update_ms_file_list()  # Update the model with the new MS files
             self.statusbar.showMessage(f"Files added, {len(ms_file_paths)} MS files loaded successfully.", 3000)
 
-    # TODO: Implement
-    # def on_browseAnnotations(self):
-    #     """
-    #     Slot for the browseAnnotations button. Opens a file dialog for selecting annotation files,
-    #     which are then added to the listAnnotations widget and the model is updated.
-    #     """
-    #     annotation_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select Annotation Files", "", "Text Files (*.txt);;All Files (*)")
-    #     if annotation_file_paths:
-    #         self.listAnnotations.clear()
-    #         for annotation_file_path in annotation_file_paths:
-    #             self.listAnnotations.addItem(annotation_file_path)  # Add each annotation file path to the listAnnotations widget
-    #         self.update_annotation_file()  # Update the model with the new annotation files
-    #         self.statusbar.showMessage(f"Files added, {len(annotation_file_paths)} annotation files loaded successfully.")
+    def on_browseAnnotations(self):
+        """
+        Slot for the browseAnnotations button. Opens a file dialog for selecting annotation files,
+        which are then added to the listAnnotations widget and the model is updated.
+        """
+        annotation_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select Annotation Files", "", "Text Files (*.txt);;All Files (*)")
+        if annotation_file_paths:
+            self.listAnnotations.clear()
+            for annotation_file_path in annotation_file_paths:
+                self.listAnnotations.addItem(annotation_file_path)  # Add each annotation file path to the listAnnotations widget
+            self.update_annotation_file()  # Update the model with the new annotation files
+            self.statusbar.showMessage(f"Files added, {len(annotation_file_paths)} annotation files loaded successfully.", 3000)
 
     def on_process(self):
         # Trigger the processing action in the controller
@@ -224,7 +290,56 @@ class View(QtWidgets.QMainWindow):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
         self.resolutionLabel.setText(f"Mass resolution:\n{resolutions[resolution]}")
 
+    def change_MS_annotations(self):
+        if self.comboBox.currentText() == "Use MS-based annotations":
+            # Remove annotations widgets
+            self.gridLayout_3.removeWidget(self.listAnnotations)
+            self.listAnnotations.deleteLater()
+            self.labelAnnotations.setVisible(False)
+            self.browseAnnotations.setVisible(False)
+            # Replace with MS
+            self.listMS = DragDropListWidget(parent=self.tabUpload)
+            self.gridLayout_3.addWidget(self.listMS, 2, 2, 1, 2)
+            self.labelMSdata.setVisible(True)
+            self.browseMS.setVisible(True)
+        else:
+            # Remove MS widgets
+            self.gridLayout_3.removeWidget(self.listMS)
+            self.listMS.deleteLater()
+            self.labelMSdata.setVisible(False)
+            self.browseMS.setVisible(False)
+            # Replace with annotations
+            self.listAnnotations = DragDropListWidget(parent=self.tabUpload)
+            self.gridLayout_3.addWidget(self.listAnnotations, 2, 2, 1, 2)
+            self.labelAnnotations.setVisible(True)
+            self.browseAnnotations.setVisible(True)
+        # BUG: lists don't clear properly
+        self.listMS.clear()
+        self.listAnnotations.clear()
+        # Make updates to the model
+        self.update_ms_file_list()
+        self.update_annotation_file()
 
+    def copy_selection(self):
+        """
+        Adapted from: https://stackoverflow.com/a/55204654
+        """
+        selection = self.selectedIndexes()
+        if selection:
+            rows = sorted(index.row() for index in selection)
+            columns = sorted(index.column() for index in selection)
+            rowcount = rows[-1] - rows[0] + 1
+            colcount = columns[-1] - columns[0] + 1
+            table = [[''] * colcount for _ in range(rowcount)]
+            for index in selection:
+                row = index.row() - rows[0]
+                column = index.column() - columns[0]
+                table[row][column] = index.data()
+            stream = io.StringIO()
+            csv.writer(stream, delimiter='\t').writerows(table)
+            QtWidgets.qApp.clipboard().setText(stream.getvalue())
+        return
+            
     def setupUi(self, MainWindow):
         """
         Sets up the UI components for the main window.
@@ -265,8 +380,7 @@ class View(QtWidgets.QMainWindow):
         self.tabUpload.setObjectName("tabUpload")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.tabUpload)
         self.gridLayout_3.setObjectName("gridLayout_3")
-        self.ionTable = QtWidgets.QTableView(parent=self.tabUpload)
-        self.ionTable.setObjectName("ionTable")
+        self.ionTable = IonTable(parent=self.tabUpload)
         self.gridLayout_3.addWidget(self.ionTable, 2, 4, 1, 2)
         self.warning = QtWidgets.QLabel(parent=self.tabUpload)
         self.warning.setWordWrap(True)
@@ -282,12 +396,20 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_3.addWidget(self.comboBox, 0, 0, 1, 2)
         self.browseMS = QtWidgets.QPushButton(parent=self.tabUpload)
         self.browseMS.setObjectName("browseMS")
+        self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseAnnotations.setObjectName("browseAnnotations")
+        self.gridLayout_3.addWidget(self.browseAnnotations, 1, 3, 1, 1)
+        self.browseAnnotations.setVisible(False)
         self.gridLayout_3.addWidget(self.browseMS, 1, 3, 1, 1)
         self.labelLCdata = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelLCdata.setObjectName("labelLCdata")
         self.gridLayout_3.addWidget(self.labelLCdata, 1, 0, 1, 1)
         self.labelMSdata = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelMSdata.setObjectName("labelMSdata")
+        self.labelAnnotations = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelAnnotations.setObjectName("labelAnnotations")
+        self.gridLayout_3.addWidget(self.labelAnnotations, 1, 2, 1, 1)
+        self.labelAnnotations.setVisible(False)
         self.gridLayout_3.addWidget(self.labelMSdata, 1, 2, 1, 1)
         self.listLC = DragDropListWidget(parent=self.tabUpload)
         self.listLC.setObjectName("listLC")
@@ -345,16 +467,22 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
+        self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.canvas_XICs = pg.GraphicsLayoutWidget(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
+        self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_2.addWidget(self.canvas_XICs, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
 
         self.gridLayout_2.setColumnStretch(0, 2)  # Left column (larger canvases)
-        self.gridLayout_2.setColumnStretch(1, 5)  # Right column (smaller canvases)
+        self.gridLayout_2.setColumnStretch(1, 3)  # Right column (smaller canvases)
 
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
@@ -477,10 +605,12 @@ class View(QtWidgets.QMainWindow):
         #self.actionReadme.triggered.connect(self.on_readme)
         self.browseLC.clicked.connect(self.on_browseLC)
         self.browseMS.clicked.connect(self.on_browseMS)
-        #self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
+        self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
         self.processButton.clicked.connect(self.on_process)
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
+        self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
+
 
     def retranslateUi(self, MainWindow):
         """
@@ -497,6 +627,8 @@ class View(QtWidgets.QMainWindow):
         self.comboBox.setItemText(0, _translate("MainWindow", "Use MS-based annotations"))
         self.comboBox.setItemText(1, _translate("MainWindow", "Use pre-annotated chromatograms"))
         self.browseMS.setText(_translate("MainWindow", "Browse"))
+        self.browseAnnotations.setText(_translate("MainWindow", "Browse"))
+        self.labelAnnotations.setText(_translate("MainWindow", "Annotations (.txt)"))
         self.labelLCdata.setText(_translate("MainWindow", "LC data (.txt)"))
         self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
         self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))

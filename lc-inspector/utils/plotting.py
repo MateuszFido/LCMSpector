@@ -122,14 +122,15 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
 
     # Annotate with compounds
     for compound in compounds:
-        for ion in compound.ions.keys():
+        for i, ion in enumerate(compound.ions.keys()):
             if compound.ions[ion]['RT'] is not None and compound.ions[ion]['Apex'] is not None:
                 # Plot the intensity of the ion at that retention time
                 widget.plot([compound.ions[ion]['RT']], [compound.ions[ion]['Apex']], pen=mkPen('r', width=2), symbol='o', symbolSize=5)
                 
                 # Create a text item for annotation
                 text_item = pg.TextItem(text=f"{compound.name}\n{ion}", anchor=(0, 1), color='black')
-                text_item.setPos(compound.ions[ion]['RT'], compound.ions[ion]['Apex'] - np.random.random() / 100)
+                text_item.setPos(compound.ions[ion]['RT'], compound.ions[ion]['Apex']+compound.ions[ion]['Apex']*0.1*i)
+                text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
                 widget.addItem(text_item)
 
 
@@ -144,7 +145,10 @@ def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widg
     rows = int(np.ceil(tot / cols))
 
     widget.setBackground("w")
+
+    # Plot the XICs
     for i, compound in enumerate(compound_list):
+        big_array = []
         plot_item = widget.addPlot(row=i // cols, col=i % cols)
         plot_item.setTitle(compound.name)
         args = ({'color': 'b', 'font-size': '10pt'})
@@ -164,17 +168,18 @@ def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widg
                 print(f"Column {closest} does not exist in xics.")
                 continue
 
-            plotting_data = xics['Scan time (min)'][1:].to_numpy()
-            # Add xics[closest][1:].tonumpy() as y axis
-            plotting_data = np.append(plotting_data, xics[closest][1:].values)
+            plotting_data = np.transpose(np.array((xics['Scan time (min)'][1:].values, xics[closest][1:].values), dtype=np.float64))
+
             plot_item.plot(plotting_data)
             plot_item.pen = mkPen('b', width=1)
             highest_intensity = xics[closest].iloc[xics[closest][1:].idxmax()]
-            plot_item.plot([scan_time], [highest_intensity], pen=None, symbol='o', symbolBrush='r')
+            plot_item.plot([scan_time], [highest_intensity], pen=None, symbol='o', symbolBrush='r', symbolSize=5)
 
             text_item = pg.TextItem(f"{ion}\n({closest})", anchor=(0, 0))
+            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(scan_time - np.random.random() / 100, highest_intensity)
             plot_item.addItem(text_item)
             plot_item.getAxis('left').setHeight(100)
-            plot_item.setMinimumSize(100, 100)
-
+    
+    #HACK: Force scrollArea to realize that the widget is bigger than it
+    widget.setMinimumSize(pg.QtCore.QSize(0,len(compound_list)*10))
