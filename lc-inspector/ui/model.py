@@ -95,7 +95,7 @@ class Model:
             'Valine':[288.1442,242.1023,287.1369,118.0863,287.1369]}
 
     def process_ms_file(self, ms_file):
-        ms_file = MSMeasurement(ms_file, 0.1)
+        ms_file = MSMeasurement(ms_file, 0.0001)
         return ms_file
 
     def process_lc_file(self, lc_file):

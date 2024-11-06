@@ -123,15 +123,16 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
     # Annotate with compounds
     for j, compound in enumerate(compounds):
         for i, ion in enumerate(compound.ions.keys()):
-            if compound.ions[ion]['LC RT'] is not None and compound.ions[ion]['Apex'] is not None:
+            if compound.ions[ion]['RT'] is not None and compound.ions[ion]['Apex'] is not None:
                 # Find the intensity of compound.ions[ion] in chromatogram['Value (mAU)']
                 #BUG: labels overlap and the retention time is incorrect
                 intensity_at_RT = np.abs(chromatogram['Time (min)'] - compound.ions[ion]['RT']).idxmin()
-                widget.plot([compound.ions[ion]['LC RT']],  [compound.ions[ion]['Apex']], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
+                widget.plot([compound.ions[ion]['RT']],  [compound.ions[ion]['Apex']], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
                 
                 # Create a text item for annotation
                 text_item = pg.TextItem(text=f"{compound.name}\n{ion}", anchor=(0, 1))
-                text_item.setPos(compound.ions[ion]['LC RT']+0.1*j, compound.ions[ion]['Apex']-20*i)
+                #FIXME: Consdier HoverEvent if possible?
+                text_item.setPos(compound.ions[ion]['RT']+0.1*j, compound.ions[ion]['Apex']-20*i)
                 text_item.setFont(pg.QtGui.QFont('Arial', 6, weight=pg.QtGui.QFont.Weight.ExtraLight))
                 widget.addItem(text_item)
 

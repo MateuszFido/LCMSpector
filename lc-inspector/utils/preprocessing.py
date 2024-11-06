@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from pathlib import Path
 from utils.loading import load_absorbance_data
-import os
+import os, gc
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
 
@@ -86,27 +86,29 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     return mz_axis
 
 
-def average_intensity(data: list, mz_axis: np.ndarray) -> pd.DataFrame:
 
+def average_intensity(data: list, mz_axis: np.ndarray) -> pd.DataFrame:
     # Initialize the average intensity array
-    avg_int = np.zeros(len(mz_axis))
+    avg_int = np.zeros(len(mz_axis), dtype=np.float64)
     
-    csv_data = np.empty((len(mz_axis), len(data)+1), dtype=np.float64)
     # Iterate over the scans, calculate the average intensity and store it in avg_int
     for scan in data:
         # Get m/z values and their intensities from the MzML path
-        mz_array = np.ndarray.transpose(scan['m/z array'])
-        intensity_array = np.ndarray.transpose(scan['intensity array'])
+        mz_array = scan['m/z array'].astype(np.float64)  # Ensure correct type
+        intensity_array = scan['intensity array'].astype(np.float64)  # Ensure correct type
+        
         # Interpolate continuous intensity signal from discrete m/z
         int_interp = np.interp(mz_axis, mz_array, intensity_array)
-        avg_int += int_interp 
+        avg_int += int_interp
+        gc.collect()
 
     avg_int /= len(data)
     
     # Store the averaged intensity values in a DataFrame
-    data_matrix = pd.DataFrame({'m/z': np.round(mz_axis, 4), 'intensity / a.u.': avg_int }, dtype=np.float64)
+    data_matrix = pd.DataFrame({'m/z': np.round(mz_axis, 4), 'intensity / a.u.': avg_int}, dtype=np.float64)
    
     return data_matrix
+
 
 class Peak():
     '''Support class for Peak objects. \n
@@ -148,7 +150,7 @@ def pick_peaks(data, mz_axis):
     peaklist = []
 
     # Find peaks
-    peaks = find_peaks(data['intensity / a.u.'], distance=50, height=1000)
+    peaks = find_peaks(data['intensity / a.u.'], distance=50, height=1)
 
     # Calculate peak widths at 0.9 of peak amplitude
     widths, width_heights, left, right = peak_widths(data['intensity / a.u.'], peaks[0], rel_height=0.9)
@@ -175,14 +177,21 @@ def pick_peaks(data, mz_axis):
 
     return peaklist
 
+import numpy as np
+import pandas as pd
+
 def construct_xic(scans, mz_axis, peaks):
     """
     Construct the XICs from the chromatogram data.
 
     Parameters
     ----------
-    path : str
-        The path to the .mzML file.
+    scans : list
+        The list of scan data.
+    mz_axis : np.ndarray
+        The m/z axis for interpolation.
+    peaks : list
+        The list of peaks to construct XICs for.
 
     Returns
     -------
@@ -190,47 +199,49 @@ def construct_xic(scans, mz_axis, peaks):
         The XICs for the given peaks.
     """
 
-    # Initialize empty arrays to store the TIC, scan times, and XICs
+    # Initialize empty lists to store the TIC, scan times, and XICs
     tic = []
     scan_times = []
-    data = np.empty((len(peaks)+1, len(scans)), dtype=np.float64)
+    data = []
 
     # Construct the XICs
-    
     for j, scan in enumerate(scans):
         scan_times.append(auxiliary.cvquery(scan, 'MS:1000016'))
         tic.append(scan['total ion current'])
-        mz_array = np.ndarray.tolist(scan['m/z array'])
-        intensity_array = np.ndarray.tolist(scan['intensity array'])
-        # Interpolate intensity linearly for each scan from mz_array and intensity_array onto MZ_AXIS
-        int_interp = np.interp(mz_axis, mz_array, intensity_array) 
-        data[0][j] = scan['index']
-        i = 1
+        
+        mz_array = scan['m/z array']  # Keep as NumPy array
+        intensity_array = scan['intensity array']  # Keep as NumPy array
+        
+        # Interpolate intensity linearly for each scan from mz_array and intensity_array onto mz_axis
+        int_interp = np.interp(mz_axis, mz_array, intensity_array)
+        
+        # Initialize a row for the current scan
+        row = [scan['index']]
+        
         for peak in peaks:
-            if i < len(peaks)+2:
-                # TODO: Think about adding p-value comparisons for m/z that falls between two overlapping peaks
-                data[i][0] = np.round(mz_axis[peak.index], 4)
             feature_int = int_interp[peak.width[0]:peak.width[1]]
             time_trace = np.round(np.trapz(feature_int))
-            data[i][j] = time_trace
-            i += 1
+            row.append(time_trace)
+        
+        # Append the row to data
+        data.append(row)
 
-    # Add the TIC, scan times, and XICs to the data matrix
-    trc = np.ndarray.tolist(data)
-    trc.insert(1, scan_times)
-    trc.insert(1, tic)
-    # Write the XICs to a .csv file
-    # Use list comprehension for column titles
+    # Add the TIC and scan times to the data matrix
+    data.insert(0, ['MS1 scan ID'] + [np.round(mz_axis[peak.index], 4) for peak in peaks])
+    data.insert(1, ['TIC (a.u.)'] + tic)
+    data.insert(2, ['Scan time (min)'] + scan_times)
+
+    # Create DataFrame from the data
+    trc = pd.DataFrame(data).T
     ion_mode = auxiliary.cvquery(scans[0], 'MS:1000130')
+    
+    # Set column names based on ion mode
     if ion_mode is not None and 'positive' in ion_mode:
         mzs = [f'pos{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
     else:
         mzs = [f'neg{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
 
-    columns = ['MS1 scan ID', 'TIC (a.u.)', 'Scan time (min)']
-    columns.extend(mzs)
-
-    trc = pd.DataFrame(trc).T
+    columns = ['MS1 scan ID', 'TIC (a.u.)', 'Scan time (min)'] + mzs
     trc.columns = columns
 
     return trc

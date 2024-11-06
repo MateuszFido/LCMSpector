@@ -1,6 +1,7 @@
 # controller.py
 from utils.threading import Worker, AnnotationWorker
 from multiprocessing import Manager
+import gc
 
 class Controller:
     def __init__(self, model, view):
@@ -82,6 +83,8 @@ class Controller:
     def start_ms_annotation(self, results):
         del(self.model.lc_measurements)
         del(self.model.ms_measurements)
+        # Force garbage collection
+        gc.collect()
         # Start the annotation for MS files
         self.view.progressBar.setValue(0)  # Reset progress bar
         self.view.progressLabel.setText("0%") # Reset progress label
@@ -108,7 +111,8 @@ class Controller:
         # Memory clean-up
         del(self.model.lc_results)
         del(self.model.ms_results)
-
+        # Force garbage collection
+        gc.collect()
         # Hide the progress bar after processing
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
