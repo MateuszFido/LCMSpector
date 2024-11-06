@@ -58,26 +58,27 @@ class Measurement:
 
 class LCMeasurement(Measurement):
     """
-    Subclass of the abstract Measurement class. Represents a single .mzML LC file. Constructor takes the path to the .mzML file as an argument.
-    Upon initialization, performs all the necessary preprocessing steps, such as loading the data and baseline correction.
-    Parameters
-    ----------
-    path : str 
-        The path to the .mzML file.
-
-    -------
-    This subclass defines the following methods:
-    
-    plot(self) : None
-        Plots the baseline corrected data.
-
+    Subclass of the abstract Measurement class. Represents a single .mzML LC file.
     """
     def __init__(self, path):
         super().__init__(path)
-        self.data = load_absorbance_data(self.path)
-        self.baseline_corrected = baseline_correction(self.data)
-        print(f"Loaded {self.path} successfully.")
+        self._data = None  # Initialize as None
+        self._baseline_corrected = None  # Initialize as None
 
+    @property
+    def data(self):
+        if self._data is None:  # Load data only if it hasn't been loaded yet
+            print(f"Loading data for {self.path}...")
+            self._data = load_absorbance_data(self.path)
+            print(f"Loaded {self.path} successfully.")
+        return self._data
+
+    @property
+    def baseline_corrected(self):
+        if self._baseline_corrected is None:  # Load baseline corrected data only if it hasn't been loaded yet
+            print(f"Performing baseline correction for {self.path}...")
+            self._baseline_corrected = baseline_correction(self.data)
+        return self._baseline_corrected
 
     def plot(self):
         self.baseline_plot = plot_absorbance_data(self.path, self.baseline_corrected)
@@ -91,47 +92,58 @@ class LCMeasurement(Measurement):
 
 class MSMeasurement(Measurement):
     """
-    Subclass of the abstract Measurement class. Represents a single .mzML MS file. Constructor takes the path to the .mzML file as an argument, and, optionally, the desired mass accuracy.
-    Upon initialization, performs all the necessary preprocessing steps, such as loading the data, calculating the m/z axis, constructing the average spectrum, and rebuilding the XICs.
-    
-    Parameters
-    ----------
-    path : str 
-        The path to the .mzML file.
-    mass_accuracy : float, optional
-        The mass accuracy of the instrument, by default 0.0001.
-
-    -------
-    This subclass defines the following methods:
-    construct_xics(self) : None
-        Constructs the XICs.
-    plot(self) : None
-        Plots the average spectrum.
-    annotate_XICs(self, annotations) : None
-        Annotates the XICs with annotations.
+    Subclass of the abstract Measurement class. Represents a single .mzML MS file.
     """
-    def __init__(self, path, mass_accuracy = 0.0001):
+    def __init__(self, path, mass_accuracy=0.0001):
         super().__init__(path)
-        self.data = load_ms1_data(self.path)
-        self.mass_accuracy = mass_accuracy
-        self.mz_axis = calculate_mz_axis(self.data, self.mass_accuracy)
-        self.average = average_intensity(self.data, self.mz_axis)
-        self.peaks = pick_peaks(self.average, self.mz_axis)
-        self.xics = construct_xic(self.data, self.mz_axis, self.peaks)
-        print(f"Loaded {self.path} successfully.")
+        self._data = None  # Initialize as None
+        self._mass_accuracy = mass_accuracy
+        self._mz_axis = None  # Initialize as None
+        self._average = None  # Initialize as None
+        self._peaks = None  # Initialize as None
+        self._xics = None  # Initialize as None
 
+    @property
+    def data(self):
+        if self._data is None:  # Load data only if it hasn't been loaded yet
+            print(f"Loading data for {self.path}...")
+            self._data = load_ms1_data(self.path)
+            print(f"Loaded {self.path} successfully.")
+        return self._data
 
-    def construct_xics(self):
-        construct_xic(self.average, self.mz_axis)
+    @property
+    def mz_axis(self):
+        if self._mz_axis is None:  # Calculate m/z axis only if it hasn't been calculated yet
+            self._mz_axis = calculate_mz_axis(self.data, self._mass_accuracy)
+        return self._mz_axis
+
+    @property
+    def average(self):
+        if self._average is None:  # Calculate average intensity only if it hasn't been calculated yet
+            self._average = average_intensity(self.data, self.mz_axis)
+        return self._average
+
+    @property
+    def peaks(self):
+        if self._peaks is None:  # Pick peaks only if they haven't been picked yet
+            self._peaks = pick_peaks(self.average, self.mz_axis)
+        return self._peaks
+
+    @property
+    def xics(self):
+        if self._xics is None:  # Construct XICs only if they haven't been constructed yet
+            self._xics = construct_xic(self.data, self.mz_axis, self.peaks)
+        return self._xics
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.average)
 
     def annotate(self, compounds):
-        self.compounds = annotate_XICs(self.path, self.xics, compounds, self.mass_accuracy)
+        self.compounds = annotate_XICs(self.path, self.xics, compounds, self._mass_accuracy)
 
     def plot_annotated(self):
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
+
 
 
 class Compound():

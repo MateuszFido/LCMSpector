@@ -40,8 +40,10 @@ class Model:
         self.lc_measurements = []
         self.lc_results = []
         self.ms_results = []
-
-        self.ion_list = {
+        self.ion_list = self._initialize_ion_list()
+    
+    def _initialize_ion_list(self):
+        return {
             'Adenine':[306.1197,260.0779,476.1776,431.1436,136.0618,134.0472],
             'Adenosine':[438.1620,392.1201,436.1473,268.1041,266.0894],
             'Agmatine':[301.1871,255.1452,471.2450,425.2031,299.1724,129.1145,131.1292],
@@ -95,12 +97,10 @@ class Model:
             'Valine':[288.1442,242.1023,287.1369,118.0863,287.1369]}
 
     def process_ms_file(self, ms_file):
-        ms_file = MSMeasurement(ms_file, 0.0001)
-        return ms_file
+        return MSMeasurement(ms_file, 0.0001)
 
     def process_lc_file(self, lc_file):
-        lc_file = LCMeasurement(lc_file)
-        return lc_file
+        return LCMeasurement(lc_file)
 
     def annotate_ms_file(self, ms_file):
         compound_list = [Compound(name=ion, file=ms_file.filename, ions=self.ion_list[ion]) for ion in self.ion_list.keys()]
@@ -115,67 +115,49 @@ class Model:
         lc_file.annotate(corresponding_ms_file.compounds)
         return lc_file
 
-    def process_data(self, ms_filelist, lc_filelist, progress_callback=None):
-
-        total_files = len(ms_filelist) + len(lc_filelist)
-        
-        lc_results = []
-        ms_results = []
-
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures_ms = {executor.submit(self.process_ms_file, ms_file): ms_file for ms_file in ms_filelist}
-            futures_lc = {executor.submit(self.process_lc_file, lc_file): lc_file for lc_file in lc_filelist}
-            for i, future in enumerate(concurrent.futures.as_completed(futures_ms)):
-                ms_file = futures_ms[future]
-                try:
-                    result = future.result()
-                    ms_results.append(result)
-                    if progress_callback:
-                        progress_callback(int((i + 1) / len(futures_ms) * 100))  # Update progress
-                except Exception as e:
-                    print(f"Error processing MS file {ms_file}: {e}")
-
-            for i, future in enumerate(concurrent.futures.as_completed(futures_lc)):
-                lc_file = futures_lc[future]
-                try:
-                    result = future.result()
-                    lc_results.append(result)
-                    if progress_callback:
-                        progress_callback(int((len(futures_ms) + i + 1) / total_files * 100))  # Update progress
-                except Exception as e:
-                    print(f"Error processing LC file {lc_file}: {e}")
-        
-        self.ms_results = ms_results
-        self.lc_results = lc_results
-
-        return lc_results, ms_results
-        
-
-    def annotate_MS(self, ms_file, progress_callback=None):
-        with concurrent.futures.ProcessPoolExecutor() as executor:
-            futures = [executor.submit(self.annotate_ms_file, ms_file) for ms_file in self.ms_results]
-            for i, future in enumerate(concurrent.futures.as_completed(futures)):
+    def _collect_results(self, futures, progress_callback, file_type, offset=0):
+        results = []
+        for i, future in enumerate(concurrent.futures.as_completed(futures)):
+            file = futures[future]
+            try:
                 result = future.result()
+                results.append(result)
                 if progress_callback:
-                    progress_callback(int((i + 1) / len(futures) * 100))
+                    progress_callback(int((offset + i + 1) / len(futures) * 100))  # Update progress
+            except Exception as e:
+                print(f"Error processing {file_type} file {file}: {e}")
+        return results
+
+    def process_data(self, ms_filelist, lc_filelist, progress_callback=None):
+            total_files = len(ms_filelist) + len(lc_filelist)
+            
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                futures_ms = {executor.submit(self.process_ms_file, ms_file): ms_file for ms_file in ms_filelist}
+                futures_lc = {executor.submit(self.process_lc_file, lc_file): lc_file for lc_file in lc_filelist}
+
+                ms_results = self._collect_results(futures_ms, progress_callback, "MS")
+                lc_results = self._collect_results(futures_lc, progress_callback, "LC", len(futures_ms))
+
+            self.ms_results = ms_results
+            self.lc_results = lc_results
+
+            return lc_results, ms_results
         
-        annotated_ms_measurements = [future.result() for future in futures]
-        self.annotated_ms_measurements = annotated_ms_measurements
-        return annotated_ms_measurements
+
+    def annotate_MS(self, progress_callback=None):
+            with concurrent.futures.ProcessPoolExecutor() as executor:
+                futures = [executor.submit(self.annotate_ms_file, ms_file) for ms_file in self.ms_results]
+                annotated_ms_measurements = self._collect_results(futures, progress_callback, "MS")
+            
+            self.annotated_ms_measurements = annotated_ms_measurements
+            return annotated_ms_measurements
 
 
-    def annotate_LC(self, lc_file, progress_callback=None):
+    def annotate_LC(self, progress_callback=None):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(self.annotate_lc_file, lc_file, self.annotated_ms_measurements) for lc_file in self.lc_results]
-            for i, future in enumerate(concurrent.futures.as_completed(futures)):
-                try:
-                    result = future.result() 
-                    if progress_callback:
-                        progress_callback(int((i + 1) / len(futures) * 100))
-                except Exception as e:
-                    print(f"Error annotating LC file: {e}")
+            annotated_lc_measurements = self._collect_results(futures, progress_callback, "LC")
         
-        annotated_lc_measurements = [future.result() for future in futures]
         self.annotated_lc_measurements = annotated_lc_measurements
         return annotated_lc_measurements
 
@@ -200,7 +182,7 @@ class Model:
                     'MS Intensity (cps)': compound.ions[ion]['MS Intensity'],
                     'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity']
                 })
-        df = pd.DataFrame.from_dict(annotated_lc_measurements)
+        df = pd.DataFrame(results)
         df.to_csv('results.csv', index=False)
         print(df)
         return annotated_lc_measurements
