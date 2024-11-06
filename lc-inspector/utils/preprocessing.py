@@ -150,7 +150,7 @@ def pick_peaks(data, mz_axis):
     peaklist = []
 
     # Find peaks
-    peaks = find_peaks(data['intensity / a.u.'], distance=50, height=1)
+    peaks = find_peaks(data['intensity / a.u.'], distance=50, height=1000)
 
     # Calculate peak widths at 0.9 of peak amplitude
     widths, width_heights, left, right = peak_widths(data['intensity / a.u.'], peaks[0], rel_height=0.9)
@@ -186,12 +186,8 @@ def construct_xic(scans, mz_axis, peaks):
 
     Parameters
     ----------
-    scans : list
-        The list of scan data.
-    mz_axis : np.ndarray
-        The m/z axis for interpolation.
-    peaks : list
-        The list of peaks to construct XICs for.
+    path : str
+        The path to the .mzML file.
 
     Returns
     -------
@@ -199,49 +195,50 @@ def construct_xic(scans, mz_axis, peaks):
         The XICs for the given peaks.
     """
 
-    # Initialize empty lists to store the TIC, scan times, and XICs
+    # Initialize empty arrays to store the TIC, scan times, and XICs
     tic = []
     scan_times = []
-    data = []
+    data = np.empty((len(peaks)+1, len(scans)), dtype=np.float64)
 
     # Construct the XICs
+    
     for j, scan in enumerate(scans):
         scan_times.append(auxiliary.cvquery(scan, 'MS:1000016'))
         tic.append(scan['total ion current'])
-        
-        mz_array = scan['m/z array']  # Keep as NumPy array
-        intensity_array = scan['intensity array']  # Keep as NumPy array
-        
-        # Interpolate intensity linearly for each scan from mz_array and intensity_array onto mz_axis
-        int_interp = np.interp(mz_axis, mz_array, intensity_array)
-        
-        # Initialize a row for the current scan
-        row = [scan['index']]
-        
+        mz_array = np.ndarray.tolist(scan['m/z array'])
+        intensity_array = np.ndarray.tolist(scan['intensity array'])
+        # Interpolate intensity linearly for each scan from mz_array and intensity_array onto MZ_AXIS
+        int_interp = np.interp(mz_axis, mz_array, intensity_array) 
+        data[0][j] = scan['index']
+        i = 1
         for peak in peaks:
+            if i < len(peaks)+2:
+                # TODO: Think about adding p-value comparisons for m/z that falls between two overlapping peaks
+                data[i][0] = np.round(mz_axis[peak.index], 4)
             feature_int = int_interp[peak.width[0]:peak.width[1]]
             time_trace = np.round(np.trapz(feature_int))
-            row.append(time_trace)
-        
-        # Append the row to data
-        data.append(row)
+            data[i][j] = time_trace
+            i += 1
 
-    # Add the TIC and scan times to the data matrix
-    data.insert(0, ['MS1 scan ID'] + [np.round(mz_axis[peak.index], 4) for peak in peaks])
-    data.insert(1, ['TIC (a.u.)'] + tic)
-    data.insert(2, ['Scan time (min)'] + scan_times)
+    # Add the TIC, scan times, and XICs to the data matrix
+    trc = np.ndarray.tolist(data)
+    trc.insert(1, scan_times)
+    trc.insert(1, tic)
 
-    # Create DataFrame from the data
-    trc = pd.DataFrame(data).T
-    ion_mode = auxiliary.cvquery(scans[0], 'MS:1000130')
+    try:
+        ion_mode = auxiliary.cvquery(scans[0], 'MS:1000130')
+    except AttributeError:
+        ion_mode = 'negative'
     
-    # Set column names based on ion mode
-    if ion_mode is not None and 'positive' in ion_mode:
+    if ion_mode and 'positive' in ion_mode:
         mzs = [f'pos{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
-    else:
+    else: 
         mzs = [f'neg{np.round(mz_axis[peak.index], 4)}' for peak in peaks]
+    
+    columns = ['MS1 scan ID', 'TIC (a.u.)', 'Scan time (min)']
+    columns.extend(mzs)
 
-    columns = ['MS1 scan ID', 'TIC (a.u.)', 'Scan time (min)'] + mzs
+    trc = pd.DataFrame(trc).T
     trc.columns = columns
 
     return trc

@@ -1,8 +1,9 @@
 from PyQt6.QtCore import QThread, pyqtSignal
+import traceback
 
 class Worker(QThread):
     progress_update = pyqtSignal(int)
-    finished = pyqtSignal(list)  # Signal to indicate processing is finished
+    finished = pyqtSignal(tuple)  # Emit a tuple containing both results
 
     def __init__(self, model, ms_filelist, lc_filelist):
         super().__init__()
@@ -12,7 +13,7 @@ class Worker(QThread):
 
     def run(self):
         results = self.model.process_data(self.ms_filelist, self.lc_filelist, self.progress_update.emit)
-        self.finished.emit(results)  # Emit results and errors when done
+        self.finished.emit(results)  # Emit results as a tuple (lc_results, ms_results)
 
 class AnnotationWorker(QThread):
     progress_update = pyqtSignal(int)
@@ -29,4 +30,5 @@ class AnnotationWorker(QThread):
             self.finished.emit(results)
         except Exception as e:
             print(f"Error in Worker: {e}")
+            traceback.print_exc()
             self.finished.emit([])  # Emit an empty list or handle error appropriately

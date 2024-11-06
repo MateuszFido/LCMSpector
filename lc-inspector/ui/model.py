@@ -97,7 +97,7 @@ class Model:
             'Valine':[288.1442,242.1023,287.1369,118.0863,287.1369]}
 
     def process_ms_file(self, ms_file):
-        return MSMeasurement(ms_file, 0.0001)
+        return MSMeasurement(ms_file, 0.1)
 
     def process_lc_file(self, lc_file):
         return LCMeasurement(lc_file)
@@ -118,14 +118,13 @@ class Model:
     def _collect_results(self, futures, progress_callback, file_type, offset=0):
         results = []
         for i, future in enumerate(concurrent.futures.as_completed(futures)):
-            file = futures[future]
             try:
                 result = future.result()
                 results.append(result)
                 if progress_callback:
-                    progress_callback(int((offset + i + 1) / len(futures) * 100))  # Update progress
+                    progress_callback(int((offset + i + 1) / len(futures) * 200))  # Update progress
             except Exception as e:
-                print(f"Error processing {file_type} file {file}: {e}")
+                print(f"Error processing {file_type} file {result.filename}: {e}")
         return results
 
     def process_data(self, ms_filelist, lc_filelist, progress_callback=None):
@@ -145,19 +144,19 @@ class Model:
         
 
     def annotate_MS(self, progress_callback=None):
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                futures = [executor.submit(self.annotate_ms_file, ms_file) for ms_file in self.ms_results]
-                annotated_ms_measurements = self._collect_results(futures, progress_callback, "MS")
-            
-            self.annotated_ms_measurements = annotated_ms_measurements
-            return annotated_ms_measurements
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            futures = [executor.submit(self.annotate_ms_file, ms_file) for ms_file in self.ms_results]
+            annotated_ms_measurements = self._collect_results(futures, progress_callback, "MS")
+        print(annotated_ms_measurements)
+        self.annotated_ms_measurements = annotated_ms_measurements
+        return annotated_ms_measurements
 
 
     def annotate_LC(self, progress_callback=None):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(self.annotate_lc_file, lc_file, self.annotated_ms_measurements) for lc_file in self.lc_results]
             annotated_lc_measurements = self._collect_results(futures, progress_callback, "LC")
-        
+        print(annotated_lc_measurements)
         self.annotated_lc_measurements = annotated_lc_measurements
         return annotated_lc_measurements
 
