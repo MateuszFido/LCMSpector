@@ -1,9 +1,12 @@
-Created on 2024-02-29
-Copyright (c) Mateusz Fido, ETH Zürich, 2024
-mateusz.fido@org.chem.ethz.ch
+
+![License: MIT](https://img.shields.io/badge/License-MIT_License-green)(https://mit-license.org/)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13990448.svg)](https://doi.org/10.5281/zenodo.13990448)
 
 ![alt text](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/logo.png?raw=true)
 
+# Warning 
+
+The graphical user interface (UI) of `LC-Inspector` is currently in 
 
 This package preprocesses, analyzes and annotates LC-MS data. 
 
@@ -38,7 +41,7 @@ The graphical user interface version (on branches `main` and `gui-redesign`) all
 The script version (branches `cluster`, `ms-integration`) produces results in the form of .csv files in the 'data/results' folder, alongside plots of calibration curves, background corrected chromatograms and recognized peaks in the 'data/plots' folder. 
 
 
-# References: 
+# References
 
 pyteomics library 
 
@@ -48,3 +51,10 @@ https://cremerlab.github.io/hplc-py/
 
 https://github.com/cremerlab/hplc-py
 
+# Copyright
+
+This project is distributed under the permissive MIT license. Details can be found in `LICENSE.txt`.
+
+Created on 2024-02-29
+Copyright (c) Mateusz Fido, ETH Zürich, 2024
+mateusz.fido@org.chem.ethz.ch
