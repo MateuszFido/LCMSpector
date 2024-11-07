@@ -1,12 +1,12 @@
 
-![License: MIT](https://img.shields.io/badge/License-MIT_License-green)(https://mit-license.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT_License-green)](https://mit-license.org/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13990448.svg)](https://doi.org/10.5281/zenodo.13990448)
 
 ![alt text](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/logo.png?raw=true)
 
-# Warning 
+# Preface
 
-The graphical user interface (UI) of `LC-Inspector` is currently in 
+[WARNING] The graphical user interface (UI) of `LC-Inspector` is currently in early development. A lot of features visible in the UI is not functional yet. Bugs are prevalent and expected.
 
 This package preprocesses, analyzes and annotates LC-MS data. 
 
