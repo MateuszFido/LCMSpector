@@ -147,7 +147,6 @@ class Model:
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(self.annotate_ms_file, ms_file) for ms_file in self.ms_results]
             annotated_ms_measurements = self._collect_results(futures, progress_callback, "MS")
-        print(annotated_ms_measurements)
         self.annotated_ms_measurements = annotated_ms_measurements
         return annotated_ms_measurements
 
