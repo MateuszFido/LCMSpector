@@ -3,7 +3,9 @@ from utils.preprocessing import baseline_correction, calculate_mz_axis, average_
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from evaluation.annotation import annotate_XICs, annotate_LC_data
 from abc import ABC, abstractmethod
-import os
+import os, logging
+
+logger = logging.getLogger(__name__)
 
 class Measurement: 
     """
@@ -27,7 +29,6 @@ class Measurement:
     """
     def __init__(self, path):
         self.path = path
-        print(f"Loading {path}...")
         self.filename = os.path.basename(path).split('.')[0]
         if "STMIX" in self.filename:
             self.calibration = True
@@ -64,19 +65,17 @@ class LCMeasurement(Measurement):
         super().__init__(path)
         self._data = None  # Initialize as None
         self._baseline_corrected = None  # Initialize as None
+        logger.info(f"Loaded LC file {self.filename}.")
 
     @property
     def data(self):
         if self._data is None:  # Load data only if it hasn't been loaded yet
-            print(f"Loading data for {self.path}...")
             self._data = load_absorbance_data(self.path)
-            print(f"Loaded {self.path} successfully.")
         return self._data
 
     @property
     def baseline_corrected(self):
         if self._baseline_corrected is None:  # Load baseline corrected data only if it hasn't been loaded yet
-            print(f"Performing baseline correction for {self.path}...")
             self._baseline_corrected = baseline_correction(self.data)
         return self._baseline_corrected
 
@@ -93,6 +92,21 @@ class LCMeasurement(Measurement):
 class MSMeasurement(Measurement):
     """
     Subclass of the abstract Measurement class. Represents a single .mzML MS file.
+
+    Attributes
+    ----------
+    mass_accuracy : float
+        The mass accuracy of the m/z axis. Default: 0.0001
+    data : List of Scan objects
+        The list of Scan objects containing the MS data.
+    mz_axis : np.ndarray
+        The m/z axis for the intensity values.
+    average : pd.DataFrame
+        A DataFrame containing the m/z and intensity values.
+    peaks : pd.DataFrame
+        A DataFrame containing the m/z and intensity values of the peaks.
+    xics : pd.DataFrame
+        A DataFrame containing the m/z and intensity values of the XICs.
     """
     def __init__(self, path, mass_accuracy=0.0001):
         super().__init__(path)
@@ -102,13 +116,12 @@ class MSMeasurement(Measurement):
         self._average = None  # Initialize as None
         self._peaks = None  # Initialize as None
         self._xics = None  # Initialize as None
+        logger.info(f"Loaded MS file {self.filename}.")
 
     @property
     def data(self):
         if self._data is None:  # Load data only if it hasn't been loaded yet
-            print(f"Loading data for {self.path}...")
             self._data = load_ms1_data(self.path)
-            print(f"Loaded {self.path} successfully.")
         return self._data
 
     @property
@@ -143,8 +156,6 @@ class MSMeasurement(Measurement):
 
     def plot_annotated(self):
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
-
-
 
 class Compound():
     '''

@@ -1,13 +1,14 @@
 from utils.threading import Worker, AnnotationWorker
 from multiprocessing import Manager
-import gc
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Controller:
     def __init__(self, model, view):
         self.model = model
         self.view = view
         self.view.controller = self
-
         self.view.browseLC.clicked.connect(self.load_lc_data)
         self.view.browseMS.clicked.connect(self.load_ms_data)
         self.view.processButton.clicked.connect(self.process_data)
@@ -36,7 +37,7 @@ class Controller:
             self.worker.progress_update.connect(self.view.progress_update.emit)
             self.worker.finished.connect(self.start_ms_annotation)
             
-            print("Starting the processing...")
+            logger.info("Starting the processing...")
             self.worker.start()
 
         else:
@@ -46,7 +47,6 @@ class Controller:
         # Clean up the model's measurements to free memory
         del self.model.lc_measurements
         del self.model.ms_measurements
-        gc.collect()
 
         # Start the annotation for MS files
         self.view.progressBar.setValue(0)
@@ -73,7 +73,6 @@ class Controller:
         # Memory clean-up
         del self.model.lc_results
         del self.model.ms_results
-        gc.collect()
 
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
@@ -92,10 +91,9 @@ class Controller:
 
     def display_selected_plots(self):
         selected_file = self.view.comboBox_currentfile.currentText()
-        print("Selected file:", selected_file)
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
         except TypeError as e:
-            print(f"Error: {e}")
+            logger.error(f"Error processing {file_type} file {result.filename}: {e}")
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
 

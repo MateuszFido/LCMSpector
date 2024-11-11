@@ -1,16 +1,14 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
 from pathlib import Path
 from utils.loading import load_absorbance_data
-import os, gc
+from utils.sorting import get_path
+import os, logging
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
 
+logger = logging.getLogger(__name__)
 def baseline_correction(dataframe: pd.DataFrame) -> pd.DataFrame:
-    
-    # Extract Time (min) and Value (mAU) columns
     """
     Baseline corrects the chromatogram using the LLS algorithm.
     
@@ -28,7 +26,8 @@ def baseline_correction(dataframe: pd.DataFrame) -> pd.DataFrame:
         
     If the file_path parameter is specified, the function will also create and save plots of the chromatogram before and after background correction as PNG files.
     """
-    time = dataframe.copy()['Time (min)'].values
+    # Extract Time (min) and Value (mAU) columns
+    retention_time = dataframe.copy()['Time (min)'].values
     absorbance = dataframe.copy()['Value (mAU)'].values
     if (absorbance < 0).any():
         shift = np.median(absorbance[absorbance < 0])
@@ -55,8 +54,8 @@ def baseline_correction(dataframe: pd.DataFrame) -> pd.DataFrame:
         (absorbance - inv_tform), decimals=9)
     baseline = inv_tform + shift 
         
-    normalized = pd.DataFrame(data={'Time (min)': time, 'Value (mAU)': baseline_corrected, 'Baseline': baseline, 'Uncorrected': absorbance})
-        
+    normalized = pd.DataFrame(data={'Time (min)': retention_time, 'Value (mAU)': baseline_corrected, 'Baseline': baseline, 'Uncorrected': absorbance})
+    logger.info(f"Baseline corrected chromatogram calculated.")
     return normalized
 
 
@@ -74,6 +73,7 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     mz_axis : np.ndarray
         The m/z axis for the intensity values.
     """
+    
     # Look up the necessary fields from the first scan in the file for m/z axis determination
 
     low_mass = auxiliary.cvquery(data[0], 'MS:1000501')
@@ -88,6 +88,22 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
 
 
 def average_intensity(data: list, mz_axis: np.ndarray) -> pd.DataFrame:
+    """
+    Calculate the average intensity for each m/z value.
+
+    Parameters
+    ----------
+    data : List of Scan objects
+        The list of Scan objects containing the MS data.
+    mz_axis : np.ndarray
+        The m/z axis for the intensity values.
+
+    Returns
+    -------
+    data_matrix : pd.DataFrame
+        A DataFrame containing the m/z and intensity values.
+    """
+
     # Initialize the average intensity array
     avg_int = np.zeros(len(mz_axis), dtype=np.float64)
     
@@ -100,13 +116,12 @@ def average_intensity(data: list, mz_axis: np.ndarray) -> pd.DataFrame:
         # Interpolate continuous intensity signal from discrete m/z
         int_interp = np.interp(mz_axis, mz_array, intensity_array)
         avg_int += int_interp
-        gc.collect()
 
     avg_int /= len(data)
     
     # Store the averaged intensity values in a DataFrame
     data_matrix = pd.DataFrame({'m/z': np.round(mz_axis, 4), 'intensity / a.u.': avg_int}, dtype=np.float64)
-   
+
     return data_matrix
 
 
@@ -176,9 +191,6 @@ def pick_peaks(data, mz_axis):
     '''
 
     return peaklist
-
-import numpy as np
-import pandas as pd
 
 def construct_xic(scans, mz_axis, peaks):
     """

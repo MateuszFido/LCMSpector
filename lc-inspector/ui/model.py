@@ -1,11 +1,11 @@
 # model.py
+import sys, logging
 import pandas as pd
 import concurrent.futures
 from pathlib import Path
-from alive_progress import alive_bar
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
-import sys
 
+logger = logging.getLogger(__name__)
 class Model:
     """
     The Model class handles the loading, processing, and annotation of LC and MS measurement files.
@@ -35,13 +35,19 @@ class Model:
         Preprocesses and annotates LC and MS files concurrently.
     """
     
+    __slots__ = ['ms_measurements', 'lc_measurements', 'lc_results', 'ms_results',
+    'ion_list', 'compound_cache', 'annotated_ms_measurements', 'annotated_lc_measurements']
+
     def __init__(self):
         self.ms_measurements = []
         self.lc_measurements = []
         self.lc_results = []
         self.ms_results = []
         self.ion_list = self._initialize_ion_list()
-    
+        self.compound_cache = {}
+        self.annotated_ms_measurements = {}
+        self.annotated_lc_measurements = {}
+
     def _initialize_ion_list(self):
         return {
             'Adenine':[306.1197,260.0779,476.1776,431.1436,136.0618,134.0472],
@@ -95,7 +101,7 @@ class Model:
             'Urea':[231.0976,401.1555,355.1136,229.0829,61.0397,59.0250],
             'Uridine':[415.1348,414.1274,245.0769,243.0622],
             'Valine':[288.1442,242.1023,287.1369,118.0863,287.1369]}
-
+            
     def process_ms_file(self, ms_file):
         return MSMeasurement(ms_file, 0.1)
 
@@ -103,16 +109,36 @@ class Model:
         return LCMeasurement(lc_file)
 
     def annotate_ms_file(self, ms_file):
-        compound_list = [Compound(name=ion, file=ms_file.filename, ions=self.ion_list[ion]) for ion in self.ion_list.keys()]
+        compound_list = []
+        for ion in self.ion_list.keys():
+            # Create a unique key for the cache based on the compound name and file
+            cache_key = (ion, ms_file.filename)
+            if cache_key not in self.compound_cache:
+                # Create a new Compound instance and store it in the cache
+                compound = Compound(name=ion, file=ms_file.filename, ions=self.ion_list[ion])
+                self.compound_cache[cache_key] = compound
+            else:
+                # Reuse the cached Compound instance
+                compound = self.compound_cache[cache_key]
+            compound_list.append(compound)
+        
         ms_file.annotate(compound_list)
+        
         return ms_file
     
     def annotate_lc_file(self, lc_file, annotated_ms_measurements):
-        corresponding_ms_file = next((ms_file for ms_file in annotated_ms_measurements if str(ms_file) == str(lc_file)), None)
-        if not corresponding_ms_file:
-            print(f"Could not find a matching MS file for {lc_file}. Skipping.")
-            return lc_file
-        lc_file.annotate(corresponding_ms_file.compounds)
+        
+        if lc_file.filename not in self.annotated_lc_measurements:
+            ms_file_dict = {ms_file.filename: ms_file for ms_file in annotated_ms_measurements}
+            corresponding_ms_file = ms_file_dict.get(str(lc_file), None)
+            if not corresponding_ms_file:
+                logger.error(f"Error processing LC file {lc_file.filename}: No corresponding MS file.")
+                return lc_file
+            lc_file.annotate(corresponding_ms_file.compounds)
+            self.annotated_lc_measurements[lc_file.filename] = lc_file
+        else:
+            lc_file = self.annotated_lc_measurements[lc_file.filename]
+        
         return lc_file
 
     def _collect_results(self, futures, progress_callback, file_type, offset=0):
@@ -122,25 +148,25 @@ class Model:
                 result = future.result()
                 results.append(result)
                 if progress_callback:
-                    progress_callback(int((offset + i + 1) / len(futures) * 200))  # Update progress
+                    progress_callback(int((offset + i + 1) / len(futures) * 100))  # Update progress
             except Exception as e:
-                print(f"Error processing {file_type} file {result.filename}: {e}")
+                logger.error(f"Error processing {file_type} file {result.filename}: {e}")
         return results
 
     def process_data(self, ms_filelist, lc_filelist, progress_callback=None):
-            total_files = len(ms_filelist) + len(lc_filelist)
-            
-            with concurrent.futures.ProcessPoolExecutor() as executor:
-                futures_ms = {executor.submit(self.process_ms_file, ms_file): ms_file for ms_file in ms_filelist}
-                futures_lc = {executor.submit(self.process_lc_file, lc_file): lc_file for lc_file in lc_filelist}
+        total_files = len(ms_filelist) + len(lc_filelist)
+        
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures_ms = {executor.submit(self.process_ms_file, ms_file): ms_file for ms_file in ms_filelist}
+            futures_lc = {executor.submit(self.process_lc_file, lc_file): lc_file for lc_file in lc_filelist}
 
-                ms_results = self._collect_results(futures_ms, progress_callback, "MS")
-                lc_results = self._collect_results(futures_lc, progress_callback, "LC", len(futures_ms))
+            ms_results = self._collect_results(futures_ms, progress_callback, "MS")
+            lc_results = self._collect_results(futures_lc, progress_callback, "LC", len(futures_ms))
 
-            self.ms_results = ms_results
-            self.lc_results = lc_results
+        self.ms_results = ms_results
+        self.lc_results = lc_results
 
-            return lc_results, ms_results
+        return lc_results, ms_results
         
 
     def annotate_MS(self, progress_callback=None):
@@ -155,7 +181,6 @@ class Model:
         with concurrent.futures.ProcessPoolExecutor() as executor:
             futures = [executor.submit(self.annotate_lc_file, lc_file, self.annotated_ms_measurements) for lc_file in self.lc_results]
             annotated_lc_measurements = self._collect_results(futures, progress_callback, "LC")
-        print(annotated_lc_measurements)
         self.annotated_lc_measurements = annotated_lc_measurements
         return annotated_lc_measurements
 
@@ -163,11 +188,10 @@ class Model:
         # Find the corresponding MS and LC files
         ms_file = next((ms_file for ms_file in self.annotated_ms_measurements if ms_file.filename == filename), None)
         lc_file = next((lc_file for lc_file in self.annotated_lc_measurements if lc_file.filename == filename), None)
-
         return lc_file, ms_file
 
 
-    def save_results(self, annotated_lc_measurements):
+    def save_results(self, lc_file):
         # TODO: Implement
         results = []
         for compound in lc_file.compounds:
@@ -182,5 +206,5 @@ class Model:
                 })
         df = pd.DataFrame(results)
         df.to_csv('results.csv', index=False)
-        print(df)
-        return annotated_lc_measurements
+        
+        return

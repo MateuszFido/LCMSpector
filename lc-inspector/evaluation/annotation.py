@@ -1,13 +1,10 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import os
-import re
+import os,re,logging
 from scipy.signal import find_peaks, peak_widths
 from pathlib import Path
 
-
+logger = logging.getLogger(__name__)
 def annotate_XICs(path, data, compound_list, mass_accuracy):
     """
     Find the XICs for the given compounds and annotate them in the given DataFrame.
@@ -38,12 +35,11 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
             if mass_accuracy <= 0.0001:
                 ppm_difference = np.abs((data[closest][0] - ion)) / ion * 1e6
                 if ppm_difference > 3:
-                    print(f"Skipping {ion} for {compound.name}, as m/z difference is {closest} - {ion} = {round(ppm_difference, 2)} ppm.")
+                    logger.info(f"Skipping {ion} for {compound.name}, as m/z difference is {closest} - {ion} = {round(ppm_difference, 2)} ppm.")
                     continue
             if data[closest].max() < 1e4:
-                print(f"Skipping {ion} for {compound.name}, as its intensity is {data[closest].max()}, which is lower than 1e4 cps.")
+                logger.info(f"Skipping {ion} for {compound.name}, as its intensity is {data[closest].max()}, which is lower than 1e4 cps.")
                 continue
-
 
             # Get the respective time value for the highest intensity of this m/z
             scan_time = data['Scan time (min)'].iloc[data[closest][1:].idxmax()] # Skip the first two rows
@@ -52,7 +48,7 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
             compound.ions[ion]['RT'] = round(scan_time, 2)
             compound.ions[ion]['MS Intensity'] = round(data[closest].sum())
 
-            # print(f"Highest intensity of m/z={ion} ({compound.name}) was at {round(scan_time, 2)} mins.")
+            logger.info(f"Highest intensity of m/z={ion} ({compound.name}) was at {round(scan_time, 2)} mins.")
     
     return compound_list
 
@@ -77,6 +73,6 @@ def annotate_LC_data(chromatogram, compounds):
                 compound.ions[ion]['Apex'] = chromatogram['Value (mAU)'][left_idx:right_idx].max()
                 compound.ions[ion]['LC RT'] = round(chromatogram['Time (min)'][left_idx:right_idx].mean(), 2)
 
-        # print(compound)
+        logger.info(compound)
         
     return compounds

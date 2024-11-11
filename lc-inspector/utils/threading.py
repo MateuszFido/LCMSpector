@@ -1,6 +1,6 @@
 from PyQt6.QtCore import QThread, pyqtSignal
-import traceback
-
+import traceback, logging 
+logger = logging.getLogger(__name__)
 class Worker(QThread):
     progress_update = pyqtSignal(int)
     finished = pyqtSignal(tuple)  # Emit a tuple containing both results
@@ -29,6 +29,5 @@ class AnnotationWorker(QThread):
             results = self.function(*self.args, self.progress_update.emit)
             self.finished.emit(results)
         except Exception as e:
-            print(f"Error in Worker: {e}")
-            traceback.print_exc()
+            logger.warning(f"Error in Worker: {e}, \nTraceback: {traceback.print_exc()}")
             self.finished.emit([])  # Emit an empty list or handle error appropriately

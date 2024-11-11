@@ -3,9 +3,10 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
-import sys, traceback
+import sys, traceback, logging
 
 pg.setConfigOptions(antialias=True)
+logger = logging.getLogger(__name__)
 
 class IonTable(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
@@ -204,7 +205,6 @@ class View(QtWidgets.QMainWindow):
         sys.exit(0)
 
     def update_lc_file_list(self):
-        # Update the model with the LC file paths
         """
         Updates the model with the LC file paths currently in the listLC widget.
 
@@ -265,25 +265,25 @@ class View(QtWidgets.QMainWindow):
             try:
                 plot_absorbance_data(file_lc.path, file_lc.baseline_corrected, self.canvas_baseline)
             except Exception as e: 
-                print(f"No baseline chromatogram found: {e}")
+                logger.error(f"No baseline chromatogram found: {e}")
         self.canvas_avgMS.clear()
         if file_ms:
             try:
                 plot_average_ms_data(file_ms.path, file_ms.average, self.canvas_avgMS)
             except AttributeError as e: 
-                print(f"No average MS found: {e}")
+                logger.error(f"No average MS found: {e}")
         self.canvas_XICs.clear()
         if file_ms:
             try:
                 plot_annotated_XICs(file_ms.path, file_ms.xics, file_ms.compounds, self.canvas_XICs)
             except AttributeError as e: 
-                print(f"No XIC plot found: {traceback.format_exc()}")
+                logger.error(f"No XIC plot found: {traceback.format_exc()}")
         self.canvas_annotatedLC.clear()
         if hasattr(file_lc, 'compounds'):
             try:
                 plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_lc.compounds, self.canvas_annotatedLC)
             except Exception as e: 
-                print(f"No annotated LC plot found: {e}")
+                logger.error(f"No annotated LC plot found: {e}")
 
                 
     def update_resolution_label(self, resolution):
