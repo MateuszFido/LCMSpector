@@ -35,7 +35,6 @@ class Measurement:
         else:
             self.calibration = False
 
-
     @abstractmethod
     def load_data(self):
         pass
@@ -80,13 +79,13 @@ class LCMeasurement(Measurement):
         return self._baseline_corrected
 
     def plot(self):
-        self.baseline_plot = plot_absorbance_data(self.path, self.baseline_corrected)
+        plot_absorbance_data(self.path, self.baseline_corrected)
 
     def annotate(self, compounds):
-        self.compounds = annotate_LC_data(self.baseline_corrected, compounds)
+        annotate_LC_data(self.baseline_corrected, compounds)
 
     def plot_annotated(self):
-        self.annotated_plot = plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
+        plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
 class MSMeasurement(Measurement):

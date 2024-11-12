@@ -6,9 +6,12 @@ from utils.sorting import get_path
 import os, logging
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
+import static_frame as sf
+from calculation.wrappers import disk_cache 
 
 logger = logging.getLogger(__name__)
-def baseline_correction(dataframe: pd.DataFrame) -> pd.DataFrame:
+@disk_cache
+def baseline_correction(dataframe: pd.DataFrame) -> sf.Frame:
     """
     Baseline corrects the chromatogram using the LLS algorithm.
     
@@ -54,10 +57,9 @@ def baseline_correction(dataframe: pd.DataFrame) -> pd.DataFrame:
         (absorbance - inv_tform), decimals=9)
     baseline = inv_tform + shift 
         
-    normalized = pd.DataFrame(data={'Time (min)': retention_time, 'Value (mAU)': baseline_corrected, 'Baseline': baseline, 'Uncorrected': absorbance})
+    normalized = sf.FrameHE(data={'Time (min)': retention_time, 'Value (mAU)': baseline_corrected, 'Baseline': baseline, 'Uncorrected': absorbance})
     logger.info(f"Baseline corrected chromatogram calculated.")
     return normalized
-
 
 def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     """
@@ -86,7 +88,7 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     return mz_axis
 
 
-
+@disk_cache
 def average_intensity(data: list, mz_axis: np.ndarray) -> pd.DataFrame:
     """
     Calculate the average intensity for each m/z value.
@@ -120,10 +122,9 @@ def average_intensity(data: list, mz_axis: np.ndarray) -> pd.DataFrame:
     avg_int /= len(data)
     
     # Store the averaged intensity values in a DataFrame
-    data_matrix = pd.DataFrame({'m/z': np.round(mz_axis, 4), 'intensity / a.u.': avg_int}, dtype=np.float64)
+    data_matrix = sf.FrameHE.from_dict({'m/z': np.round(mz_axis, 4), 'intensity / a.u.': avg_int})
 
     return data_matrix
-
 
 class Peak():
     '''Support class for Peak objects. \n
@@ -144,9 +145,8 @@ class Peak():
         self.width = width # The width of the peak from scipy.peak_widths()
 
     def __str__(self):
-        return f"Feature with m/z range: {self.mz} and intensity range: {self.int_range}"
-
-        
+        return f"Feature with m/z range: {self.mz} and intensity range: {self.width}"
+@disk_cache
 def pick_peaks(data, mz_axis):
     '''
     Peak-picking function. Uses SciPy's find_peaks() to perform peak-picking on a given chromatogram. 
@@ -176,7 +176,7 @@ def pick_peaks(data, mz_axis):
         mz = mz_axis[int(np.floor(left[counter])):int(np.ceil(right[counter]))]   # m/z range
         width = [int(np.floor(left[counter])), int(np.ceil(right[counter]))]      # left and right base, rounded down and up respectively
         counter += 1
-        max_int_index = data['intensity / a.u.'].iloc[width[0]:width[1]].idxmax()
+        max_int_index = data['intensity / a.u.'][width[0]:width[1]].iloc_max()
         max_int = data['intensity / a.u.'].iloc[max_int_index]
         peak = Peak(max_int_index, mz, width) # create the Peak object
         peaklist.append(peak)    
@@ -192,6 +192,7 @@ def pick_peaks(data, mz_axis):
 
     return peaklist
 
+@disk_cache
 def construct_xic(scans, mz_axis, peaks):
     """
     Construct the XICs from the chromatogram data.
@@ -253,4 +254,4 @@ def construct_xic(scans, mz_axis, peaks):
     trc = pd.DataFrame(trc).T
     trc.columns = columns
 
-    return trc
+    return sf.FrameHE.from_pandas(trc)

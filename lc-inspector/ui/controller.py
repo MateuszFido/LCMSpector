@@ -1,4 +1,4 @@
-from utils.threading import Worker, AnnotationWorker
+from calculation.workers import Worker, AnnotationWorker
 from multiprocessing import Manager
 import logging
 

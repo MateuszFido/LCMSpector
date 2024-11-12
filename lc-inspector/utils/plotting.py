@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -8,6 +9,7 @@ from pyqtgraph import exporters
 from PyQt6.QtCore import Qt
 from pyqtgraph import mkPen
 
+@lru_cache(maxsize=None)
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
     """
     Generates and saves plots of absorbance data before and after background correction.
@@ -52,7 +54,7 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     widget.setLabel('bottom', 'Time (min)')
     widget.addLegend()
 
-
+@lru_cache(maxsize=None)
 def plot_average_ms_data(path: str, data_matrix: pd.DataFrame, widget: pg.PlotWidget):
     """
     Plots the average MS data and annotates it with the m/z of the 5 highest peaks.
@@ -91,7 +93,7 @@ def plot_average_ms_data(path: str, data_matrix: pd.DataFrame, widget: pg.PlotWi
         
     widget.setLabel('left', 'Average Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
-
+@lru_cache(maxsize=None)
 def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, widget: pg.PlotWidget):
     '''
     Annotates the LC data with the given targeted list of ions and plot the results.
@@ -137,7 +139,7 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
                 widget.addItem(text_item)
 
 
-
+@lru_cache(maxsize=None)
 def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widget: pg.GraphicsLayoutWidget):
     filename = os.path.basename(path).split('.')[0]
     plot_path = Path(path).parents[1] / 'plots' / f'{filename}'

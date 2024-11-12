@@ -101,12 +101,15 @@ class Model:
             'Urea':[231.0976,401.1555,355.1136,229.0829,61.0397,59.0250],
             'Uridine':[415.1348,414.1274,245.0769,243.0622],
             'Valine':[288.1442,242.1023,287.1369,118.0863,287.1369]}
-            
-    def process_ms_file(self, ms_file):
-        return MSMeasurement(ms_file, 0.1)
-
-    def process_lc_file(self, lc_file):
-        return LCMeasurement(lc_file)
+        
+    def process_raw_file(self, file):
+        if file.lower().endswith('.mzml'):
+            return MSMeasurement(file, 0.0001)
+        elif file.lower().endswith('.txt'):
+            return LCMeasurement(file)
+        else:
+            logger.error("Unknown file format.")
+            return
 
     def annotate_ms_file(self, ms_file):
         compound_list = []
@@ -127,7 +130,6 @@ class Model:
         return ms_file
     
     def annotate_lc_file(self, lc_file, annotated_ms_measurements):
-        
         if lc_file.filename not in self.annotated_lc_measurements:
             ms_file_dict = {ms_file.filename: ms_file for ms_file in annotated_ms_measurements}
             corresponding_ms_file = ms_file_dict.get(str(lc_file), None)
@@ -144,6 +146,7 @@ class Model:
     def _collect_results(self, futures, progress_callback, file_type, offset=0):
         results = []
         for i, future in enumerate(concurrent.futures.as_completed(futures)):
+            result = None
             try:
                 result = future.result()
                 results.append(result)
@@ -157,8 +160,8 @@ class Model:
         total_files = len(ms_filelist) + len(lc_filelist)
         
         with concurrent.futures.ThreadPoolExecutor() as executor:
-            futures_ms = {executor.submit(self.process_ms_file, ms_file): ms_file for ms_file in ms_filelist}
-            futures_lc = {executor.submit(self.process_lc_file, lc_file): lc_file for lc_file in lc_filelist}
+            futures_ms = {executor.submit(self.process_raw_file, ms_file): ms_file for ms_file in ms_filelist}
+            futures_lc = {executor.submit(self.process_raw_file, lc_file): lc_file for lc_file in lc_filelist}
 
             ms_results = self._collect_results(futures_ms, progress_callback, "MS")
             lc_results = self._collect_results(futures_lc, progress_callback, "LC", len(futures_ms))
