@@ -1,10 +1,9 @@
 import os
-import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.stats import pearsonr
 from statistics import linear_regression
 from pathlib import Path
-#FIXME: How is this different from cal_curves? 
+
 def calibrate(all_compounds, file_path):
     compounds_df = pd.DataFrame(
         {'Name': [compound.name for compound in all_compounds],

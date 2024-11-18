@@ -2,9 +2,10 @@ import pandas as pd
 import numpy as np
 import csv, re
 from pyteomics import mzml
-from alive_progress import alive_bar
+from calculation.wrappers import freezeargs
+from functools import lru_cache
 
-def load_absorbance_data(file_path):
+def load_absorbance_data(file_path) -> pd.DataFrame:
     # Read the .txt file skipping initial rows until the 'Chromatogram Data' section
     with open(file_path, 'r') as file:
         lines = file.readlines()
@@ -25,7 +26,7 @@ def load_absorbance_data(file_path):
         
     # Extract Time (min) and Value (mAU) columns
     chromatogram_data = df[['Time (min)', 'Value (mAU)']][1:].astype(np.float64)
-
+    
     return chromatogram_data
 
 def load_annotated_peaks(file_path):
@@ -51,13 +52,11 @@ def load_annotated_peaks(file_path):
                      delimiter='\t',
                      header=0,
                      usecols=lambda x: re.search(peakname, x) or re.search(rt, x) or re.search(area, x) or re.search(peak_start, x) or re.search(peak_stop, x))
-
-    print(df)
     
     return df
 
-
-def load_ms1_data(path: str) -> list:
+@lru_cache
+def load_ms1_data(path: str) -> tuple:
     """
     Using the pyteomics library, load the data from the .mzML file into a pandas DataFrame.
     
@@ -76,5 +75,4 @@ def load_ms1_data(path: str) -> list:
 
     # Take only the scans where ms level is 1
     data = [scan for scan in file if scan['ms level'] == 1]
-
-    return data
+    return tuple(data)

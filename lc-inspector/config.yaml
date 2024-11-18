@@ -1,0 +1,37 @@
+version: 1
+disable_existing_loggers: False
+loggers:
+    ui.model:
+        level: DEBUG
+        handlers: [file]
+    ui.controller:
+        level: DEBUG
+        handlers: [file]
+    ui.view:
+        level: DEBUG
+        handlers: [file]
+    utils.preprocessing:
+        level: DEBUG
+        handlers: [file]
+    utils.measurements:
+        level: DEBUG
+        handlers: [file]
+    utils.plotting:
+        level: DEBUG
+        handlers: [file]
+root:
+    level: DEBUG
+    handlers: [file]
+formatters:
+    simple:
+        format: '%(levelname)s %(asctime)s %(name)s - %(message)s'
+        datefmt: '%Y-%m-%d %H:%M:%S'
+handlers:
+    file:
+        class: logging.handlers.RotatingFileHandler
+        level: DEBUG
+        mode: a
+        encoding: utf-8
+        formatter: simple
+        filename: app.log
+        maxBytes: 104857600   # 100 MB

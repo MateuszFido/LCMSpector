@@ -1,33 +1,68 @@
-from PyQt6.QtCore import QThread, pyqtSignal
-import traceback, logging 
-logger = logging.getLogger(__name__)
-class Worker(QThread):
-    progress_update = pyqtSignal(int)
-    finished = pyqtSignal(tuple)  # Emit a tuple containing both results
+from PyQt6.QtCore import QObject, pyqtSignal, pyqtSlot, QRunnable
+import sys, traceback
 
-    def __init__(self, model, ms_filelist, lc_filelist):
+class WorkerSignals(QObject):
+    '''
+    Defines the signals available from a running worker thread.
+
+    Supported signals are:
+
+    finished
+        No data
+
+    error
+        tuple (exctype, value, traceback.format_exc() )
+
+    result
+        object data returned from processing, anything
+
+    progress
+        int indicating % progress
+
+    '''
+    finished = pyqtSignal()
+    error = pyqtSignal(tuple)
+    result = pyqtSignal(object)
+    progress = pyqtSignal(int)
+
+class Worker(QRunnable):
+    '''
+    Worker thread
+
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+
+    '''
+
+    def __init__(self, fn, *args, **kwargs):
         super().__init__()
-        self.model = model
-        self.ms_filelist = ms_filelist
-        self.lc_filelist = lc_filelist
-
-    def run(self):
-        results = self.model.process_data(self.ms_filelist, self.lc_filelist, self.progress_update.emit)
-        self.finished.emit(results)  # Emit results as a tuple (lc_results, ms_results)
-
-class AnnotationWorker(QThread):
-    progress_update = pyqtSignal(int)
-    finished = pyqtSignal(list)  # Signal to indicate processing is finished
-
-    def __init__(self, function, *args):
-        super().__init__()
-        self.function = function
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
         self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
 
+    @pyqtSlot()
     def run(self):
+        '''
+        Initialise the runner function with passed args, kwargs.
+        '''
+
+        # Retrieve args/kwargs here; and fire processing using them
         try:
-            results = self.function(*self.args, self.progress_update.emit)
-            self.finished.emit(results)
-        except Exception as e:
-            logger.warning(f"Error in Worker: {e}, \nTraceback: {traceback.print_exc()}")
-            self.finished.emit([])  # Emit an empty list or handle error appropriately
+            result = self.fn(
+                *self.args, **self.kwargs
+            )
+        except:
+            traceback.print_exc()
+            exctype, value = sys.exc_info()[:2]
+            self.signals.error.emit((exctype, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done

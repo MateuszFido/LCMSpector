@@ -1,15 +1,14 @@
+import os, settings, logging.config, yaml
+with open(os.path.join(os.path.dirname(__file__), "config.yaml"), "r") as f:
+    config = yaml.safe_load(f)
+    logging.config.dictConfig(config)
+    
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 from ui.model import Model
 from ui.view import View
 from ui.controller import Controller
-import os, settings, logging.config, yaml
 
 if __name__ == "__main__":
-    with open(os.path.join(os.path.dirname(__file__), "logger.yaml"), "rt") as f:
-        settings = yaml.safe_load(f.read())
-    
-    logging.config.dictConfig(settings)
-    
     app = QApplication([])
     model = Model()
     view = View()

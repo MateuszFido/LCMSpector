@@ -1,14 +1,14 @@
-from calculation.workers import Worker, AnnotationWorker
+from calculation.workers import Worker, WorkerSignals
 from multiprocessing import Manager
 import logging
 
 logger = logging.getLogger(__name__)
-
 class Controller:
     def __init__(self, model, view):
         self.model = model
         self.view = view
         self.view.controller = self
+        self.model.controller = self
         self.view.browseLC.clicked.connect(self.load_lc_data)
         self.view.browseMS.clicked.connect(self.load_ms_data)
         self.view.processButton.clicked.connect(self.process_data)
@@ -26,58 +26,28 @@ class Controller:
                 self.view.show_critical_error("Please load LC files and either corresponding MS files or manual annotations before processing.")
                 return
             
+            logger.info("Starting the processing...")
+
             self.view.processButton.setEnabled(False)
-            self.view.statusbar.showMessage("Processing data... [Step 1/3]")
+            self.view.statusbar.showMessage("Loading data into memory... [Step 1/3]")
             self.view.progressBar.setVisible(True)
             self.view.progressLabel.setVisible(True)
             self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)
 
-            self.worker = Worker(self.model, self.model.ms_measurements, self.model.lc_measurements)
-            self.worker.progress_update.connect(self.view.progress_update.emit)
-            self.worker.finished.connect(self.start_ms_annotation)
-            
-            logger.info("Starting the processing...")
-            self.worker.start()
+            self.model.lc_measurements, self.model.ms_measurements = self.model.process_data()
 
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
+        
+        self.on_processing_finished()
 
-    def start_ms_annotation(self, results):
-        # Clean up the model's measurements to free memory
-        del self.model.lc_measurements
-        del self.model.ms_measurements
 
-        # Start the annotation for MS files
-        self.view.progressBar.setValue(0)
-        self.view.progressLabel.setText("0%")
-        self.view.statusbar.showMessage("Rebuilding extracted ion chromatograms... [Step 2/3]")
-
-        self.ms_annotation_worker = AnnotationWorker(self.model.annotate_MS)
-        self.ms_annotation_worker.progress_update.connect(self.view.progress_update.emit)
-        self.ms_annotation_worker.finished.connect(self.start_lc_annotation)
-        self.ms_annotation_worker.start()
-
-    def start_lc_annotation(self, results):
-        # Start the annotation for LC files
-        self.view.progressBar.setValue(0)
-        self.view.progressLabel.setText("0%")
-        self.view.statusbar.showMessage("Annotating LC chromatograms... [Step 3/3]")
-
-        self.lc_annotation_worker = AnnotationWorker(self.model.annotate_LC)
-        self.lc_annotation_worker.progress_update.connect(self.view.progress_update.emit)
-        self.lc_annotation_worker.finished.connect(self.on_processing_finished)
-        self.lc_annotation_worker.start()
-
-    def on_processing_finished(self, results):
-        # Memory clean-up
-        del self.model.lc_results
-        del self.model.ms_results
-
+    def on_processing_finished(self):
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
         self.view.processButton.setEnabled(True)
-        self.view.statusbar.showMessage("Finished: data processing completed successfully.", 5000)
+        self.view.statusbar.showMessage("Finished.", 5000)
 
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabResults), True)
         self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
@@ -86,14 +56,14 @@ class Controller:
         self.update_filenames_combo_box()
 
     def update_filenames_combo_box(self):
-        filenames = [file.filename for file in self.model.annotated_lc_measurements]
+        filenames = list(self.model.lc_measurements.keys())
         self.view.update_combo_box(filenames)
 
     def display_selected_plots(self):
         selected_file = self.view.comboBox_currentfile.currentText()
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
-        except TypeError as e:
-            logger.error(f"Error processing {file_type} file {result.filename}: {e}")
+        except Exception as e:
+            logger.error(f"Error displaying plots for file {selected_file}: {e}")
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
 

@@ -82,7 +82,7 @@ class DragDropListWidget(QtWidgets.QListWidget):
             for url in event.mimeData().urls():
                 file_path = url.toLocalFile()
                 file_paths.append(file_path)
-            self.filesDropped.emit(file_paths)
+            self.filesDropped.emit(file_paths) 
         else:
             event.ignore()
 
@@ -264,6 +264,10 @@ class View(QtWidgets.QMainWindow):
         if file_lc:
             try:
                 plot_absorbance_data(file_lc.path, file_lc.baseline_corrected, self.canvas_baseline)
+                self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
+                self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
+                self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
+                self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
             except Exception as e: 
                 logger.error(f"No baseline chromatogram found: {e}")
         self.canvas_avgMS.clear()
@@ -289,6 +293,16 @@ class View(QtWidgets.QMainWindow):
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
         self.resolutionLabel.setText(f"Mass resolution:\n{resolutions[resolution]}")
+
+    def update_crosshair(self, e):
+        pos = e[0]
+        if self.canvas_baseline.sceneBoundingRect().contains(pos):
+            mousePoint = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(pos)
+            self.crosshair_v.setPos(mousePoint.x())
+            self.crosshair_h.setPos(mousePoint.y())
+            self.crosshair_v_label.setText(f"{mousePoint.x():.2f} min")
+            self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
+
 
     def change_MS_annotations(self):
         if self.comboBox.currentText() == "Use MS-based annotations":
@@ -339,7 +353,15 @@ class View(QtWidgets.QMainWindow):
             csv.writer(stream, delimiter='\t').writerows(table)
             QtWidgets.qApp.clipboard().setText(stream.getvalue())
         return
-            
+    
+    def show_scan_at_time_x(self, event):
+        mouse_pos = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(event._scenePos)
+        time_x = float(mouse_pos.x())
+        logger.info(f'Clicked the chromatogram at position: {time_x}')
+        self.canvas_avgMS.clear()
+        file = self.comboBox_currentfile.currentText()
+        plot_average_ms_data(time_x, self.controller.model.ms_measurements[file].data, self.canvas_avgMS)
+
     def setupUi(self, MainWindow):
         """
         Sets up the UI components for the main window.
@@ -463,6 +485,13 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.canvas_baseline = pg.PlotWidget(parent=self.tabResults)
         self.canvas_baseline.setObjectName("canvas_baseline")
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
+        self.crosshair_v = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine), movable=False)
+        self.crosshair_h = pg.InfiniteLine(angle=0, pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1), movable=False)
+
+        self.proxy = pg.SignalProxy(self.canvas_baseline.scene().sigMouseMoved, rateLimit=60, slot=self.update_crosshair)
+        self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
+
         self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
@@ -481,8 +510,8 @@ class View(QtWidgets.QMainWindow):
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
 
-        self.gridLayout_2.setColumnStretch(0, 2)  # Left column (larger canvases)
-        self.gridLayout_2.setColumnStretch(1, 3)  # Right column (smaller canvases)
+        self.gridLayout_2.setColumnStretch(0, 2)  # Left column
+        self.gridLayout_2.setColumnStretch(1, 2)  # Right column 
 
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)

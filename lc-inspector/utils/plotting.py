@@ -1,14 +1,16 @@
-import os
+import os, time, logging
 from functools import lru_cache
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from adjustText import adjust_text
 import pyqtgraph as pg
 from pyqtgraph import exporters
 from PyQt6.QtCore import Qt
 from pyqtgraph import mkPen
+from calculation.wrappers import freezeargs
+from pyteomics.auxiliary import cvquery
 
+logger = logging.getLogger(__name__)
 @lru_cache(maxsize=None)
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
     """
@@ -40,7 +42,7 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
 
     # Plotting chromatogram before background correction
     widget.setBackground("w")
-    widget.plot(title='Chromatogram Before Background Correction')
+    widget.setTitle(f'LC chromatogram of {filename}')
     widget.plot(dataframe['Time (min)'], dataframe['Uncorrected'], pen=pg.mkPen('b', width=2), name='Before correction')
     widget.plot(dataframe['Time (min)'], dataframe['Baseline'], pen=pg.mkPen('r', width=2, style=Qt.PenStyle.DashLine), name='Baseline')
     widget.setLabel('left', 'Absorbance (mAU)')
@@ -54,8 +56,8 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     widget.setLabel('bottom', 'Time (min)')
     widget.addLegend()
 
-@lru_cache(maxsize=None)
-def plot_average_ms_data(path: str, data_matrix: pd.DataFrame, widget: pg.PlotWidget):
+
+def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     """
     Plots the average MS data and annotates it with the m/z of the 5 highest peaks.
 
@@ -70,29 +72,36 @@ def plot_average_ms_data(path: str, data_matrix: pd.DataFrame, widget: pg.PlotWi
     -------
     None
     """
-
-    filename = os.path.basename(path).split('.')[0]
-
-    # Create the "plots" directory if it doesn't exist
-    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
-    os.makedirs(plot_path, exist_ok=True)
+    start_time = time.time()
+    scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
+    index = np.argmin(scan_time_diff)
+    logger.info(f"--- Index lookup took {(time.time() - start_time)/1000} miliseconds ---")
 
     # Plotting the average MS data
     widget.setBackground("w")
-    widget.plot(title='Average MS Data')
     widget.showGrid(x=True, y=True, alpha=0.2)
-    widget.plot(data_matrix['m/z'], data_matrix['intensity / a.u.'], pen=mkPen('b', width=2))
+    widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
+    widget.getPlotItem().setTitle(f'MS1 full-scan spectrum at {round(rt, 2)} minutes', color='#b8b8b8', size='12pt')
 
     # Annotate the m/z of the 5 highest peaks
-    highest_peaks = data_matrix.nlargest(10, 'intensity / a.u.')
-    for index, row in highest_peaks.iterrows():
-        widget.plot([row['m/z']], [row['intensity / a.u.']], pen=mkPen('r', width=2), symbol='o', symbolSize=10)
-        text = pg.TextItem(text=str(row['m/z']), color='black')
-        text.setPos(row['m/z'], row['intensity / a.u.'])
-        widget.addItem(text)
-        
-    widget.setLabel('left', 'Average Intensity / a.u.')
+    mzs = data_matrix[index]['m/z array']
+    intensities = data_matrix[index]['intensity array']
+    sorted_indices = np.argsort(intensities)[::-1]
+    sorted_mzs = mzs[sorted_indices]
+    sorted_intensities = intensities[sorted_indices]
+    for i in range(5):
+        widget.plot([sorted_mzs[i], sorted_mzs[i]], [0, sorted_intensities[i]], pen=mkPen('#a00000', width=1))
+        text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#298c8c', anchor=(0, 0))
+        text_item.setPos(sorted_mzs[i], sorted_intensities[i])
+        text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+        widget.addItem(text_item)
+
+    widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
+
+    
+    logger.info(f"---Plotting took {(time.time() - start_time)/1000} miliseconds ---")
+
 @lru_cache(maxsize=None)
 def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, widget: pg.PlotWidget):
     '''
@@ -187,5 +196,5 @@ def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widg
             plot_item.addItem(text_item)
             plot_item.getAxis('left').setHeight(100)
     
-    #HACK: Force scrollArea to realize that the widget is bigger than it
+    #HACK: Forces scrollArea to realize that the widget is bigger than itself
     widget.setMinimumSize(pg.QtCore.QSize(len(compound_list)*20,len(compound_list)*40))

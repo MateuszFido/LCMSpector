@@ -4,6 +4,21 @@ import static_frame as sf
 import hashlib, pickle, os
 from pathlib import Path
 from utils.sorting import get_path
+from frozendict import frozendict
+import functools
+
+def freezeargs(func):
+    """Convert a mutable dictionary into immutable.
+    Useful to be compatible with cache
+    """
+
+    @functools.wraps(func)
+    def wrapped(*args, **kwargs):
+        args = (frozendict(arg) if isinstance(arg, dict) else arg for arg in args)
+        kwargs = {k: frozendict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
+        return func(*args, **kwargs)
+    return wrapped
+
 
 def disk_cache(func):
     def wrapped(*args, **kwargs):

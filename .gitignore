@@ -6,3 +6,4 @@ __pycache__
 .Rhistory
 .vscode
 .venv
+app.log

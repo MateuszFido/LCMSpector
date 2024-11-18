@@ -55,14 +55,15 @@ def annotate_XICs(path, data, compound_list, mass_accuracy):
 
 
 def annotate_LC_data(chromatogram, compounds):
-    
+
     lc_peaks = find_peaks(chromatogram['Value (mAU)'], distance=10, prominence=10)        
     widths, width_heights, left, right = peak_widths(chromatogram['Value (mAU)'], lc_peaks[0], rel_height=0.9)
     lc_peaks_RTs = chromatogram['Time (min)'][lc_peaks[0]]
 
     for compound in compounds:
-        for ion in compound.ions:
-            if compound.ions[ion]['RT'] is not None:
+        for ion in compound.ions.keys():
+            if ion['RT'] is not None:
+
                 closest = np.abs(lc_peaks_RTs - compound.ions[ion]['RT']).idxmin()
                 left_idx = int(np.floor(left[list(lc_peaks[0]).index(closest)]))
                 right_idx = int(np.ceil(right[list(lc_peaks[0]).index(closest)]))
