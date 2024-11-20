@@ -3,17 +3,18 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
-import sys, traceback, logging
+import sys, traceback, logging, json, __main__
+from utils.measurements import Compound
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
 
 class IonTable(QtWidgets.QTableWidget):
     def __init__(self, parent=None):
-        super().__init__(10, 2, parent)
+        super().__init__(50, 3, parent)
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self.horizontalHeader().setStretchLastSection(True)
-        self.setHorizontalHeaderLabels(["Compound", "Expected m/z"])
+        self.setHorizontalHeaderLabels(["Compound", "Expected m/z", "Add. info"])
         self.setShowGrid(True)
         self.setGridStyle(QtCore.Qt.PenStyle.SolidLine)
         self.setObjectName("ionTable")
@@ -55,6 +56,18 @@ class IonTable(QtWidgets.QTableWidget):
                     self.insertRow(current_row)
                     self.setItem(current_row, col_index, QtWidgets.QTableWidgetItem(value))
             current_row += 1
+    
+    def get_items(self):
+        items = []
+        for row in range(self.rowCount()):
+            for col in range(2):
+                name = self.item(row, 0).text()
+                ions = [float(x) for x in self.item(row, 1).text().split(",")]
+                ion_info = self.item(row, 2).text().split(",")
+            compound = Compound(name, ions, ion_info)
+            print(compound)
+            items.append(compound)
+        return items
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
@@ -155,6 +168,39 @@ class View(QtWidgets.QMainWindow):
             self.statusbar.showMessage(f"Files added, {count_ok} annotation files loaded successfully.", 3000)
         self.update_annotation_file()  # Update the model with the new LC files
 
+    def update_ion_list(self):
+        #FIXME: Fix how this is handled
+        lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
+        if self.comboBoxIonLists.currentText() == "Amino acids and polyamines":
+            ion_list = lists["aminoacids_and_polyamines"]
+        elif self.comboBoxIonLists.currentText() == "Short chain fatty acids":
+            ion_list = lists["short_chain_fatty_acids"]
+        elif self.comboBoxIonLists.currentText() == "Amino acids":
+            pass
+            ion_list = lists["aminoacids"]
+        elif self.comboBoxIonLists.currentText() == "Polyamines":
+            pass
+            ion_list = lists["polyamines"]
+        elif self.comboBoxIonLists.currentText() == "Fatty acids":
+            pass
+            ion_list = lists["fatty_acids"]
+        else:
+            ion_list = None
+            pass
+
+        self.ionTable.clearContents()
+        if ion_list:
+            i=0
+            self.ionTable.setRowCount(len(ion_list))
+            for compound, keywords in ion_list.items():
+                self.ionTable.setItem(i, 0, QtWidgets.QTableWidgetItem(str(compound)))
+                for key, value in keywords.items():
+                    if key == "ions":
+                        self.ionTable.setItem(i, 1, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                    elif key == "info":
+                        self.ionTable.setItem(i, 2, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                i+=1
+
 
     def on_browseLC(self):
         """
@@ -201,6 +247,7 @@ class View(QtWidgets.QMainWindow):
         Slot for the process button. Triggers the processing action in the controller.
         """
         pass  # This is handled by the controller
+
     def on_exit(self):
         sys.exit(0)
 
@@ -270,18 +317,21 @@ class View(QtWidgets.QMainWindow):
                 self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
             except Exception as e: 
                 logger.error(f"No baseline chromatogram found: {e}")
+
         self.canvas_avgMS.clear()
         if file_ms:
             try:
                 plot_average_ms_data(file_ms.path, file_ms.average, self.canvas_avgMS)
             except AttributeError as e: 
                 logger.error(f"No average MS found: {e}")
+
         self.canvas_XICs.clear()
         if file_ms:
             try:
-                plot_annotated_XICs(file_ms.path, file_ms.xics, file_ms.compounds, self.canvas_XICs)
+                plot_annotated_XICs(file_ms.path, file_ms.data, file_ms.compounds, self.canvas_XICs)
             except AttributeError as e: 
                 logger.error(f"No XIC plot found: {traceback.format_exc()}")
+
         self.canvas_annotatedLC.clear()
         if hasattr(file_lc, 'compounds'):
             try:
@@ -289,7 +339,6 @@ class View(QtWidgets.QMainWindow):
             except Exception as e: 
                 logger.error(f"No annotated LC plot found: {e}")
 
-                
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
         self.resolutionLabel.setText(f"Mass resolution:\n{resolutions[resolution]}")
@@ -302,7 +351,6 @@ class View(QtWidgets.QMainWindow):
             self.crosshair_h.setPos(mousePoint.y())
             self.crosshair_v_label.setText(f"{mousePoint.x():.2f} min")
             self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
-
 
     def change_MS_annotations(self):
         if self.comboBox.currentText() == "Use MS-based annotations":
@@ -404,6 +452,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_3.setObjectName("gridLayout_3")
         self.ionTable = IonTable(parent=self.tabUpload)
         self.gridLayout_3.addWidget(self.ionTable, 2, 4, 1, 2)
+
         self.warning = QtWidgets.QLabel(parent=self.tabUpload)
         self.warning.setWordWrap(True)
         self.warning.setObjectName("warning")
@@ -441,7 +490,16 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_3.addWidget(self.listMS, 2, 2, 1, 2)
         self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelIonList.setObjectName("labelIonList")
-        self.gridLayout_3.addWidget(self.labelIonList, 1, 4, 1, 1)
+        self.gridLayout_3.addWidget(self.labelIonList, 0, 4, 1, 1)
+
+        
+        self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
+        self.comboBoxIonLists.setObjectName("comboBoxIonLists")
+        self.comboBoxIonLists.addItem("")
+        self.comboBoxIonLists.addItem("Amino acids and polyamines")
+        self.gridLayout_3.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+
+
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
         self.resSlider = QtWidgets.QSlider(parent=self.tabUpload)
@@ -495,6 +553,11 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
+        self.canvas_avgMS.setMouseEnabled(x=True, y=False)
+        self.canvas_avgMS.getPlotItem().getViewBox().setAspectLocked(lock=False)            
+        self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=1.0)
+        self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y', enable=True)
+
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
         self.scrollArea.setWidgetResizable(True)
@@ -639,7 +702,7 @@ class View(QtWidgets.QMainWindow):
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
-
+        self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
     def retranslateUi(self, MainWindow):
         """
@@ -663,6 +726,7 @@ class View(QtWidgets.QMainWindow):
         self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
         self.resSlider.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
         self.resolutionLabel.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
+        self.comboBoxIonLists.setToolTip(_translate("MainWindow", "Choose an ion list from the list of ion lists provided with the software"))
         self.resolutionLabel.setText(_translate("MainWindow", "Mass resolution:\n120,000"))
         self.processButton.setText(_translate("MainWindow", "Process"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload"))

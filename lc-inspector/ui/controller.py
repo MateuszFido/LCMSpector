@@ -30,11 +30,12 @@ class Controller:
 
             self.view.processButton.setEnabled(False)
             self.view.statusbar.showMessage("Loading data into memory... [Step 1/3]")
+            self.view.statusbar.showMessage("Loading data into memory... [Step 1/3]")
             self.view.progressBar.setVisible(True)
             self.view.progressLabel.setVisible(True)
             self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)
-
+            self.model.compounds = self.view.ionTable.get_items()
             self.model.lc_measurements, self.model.ms_measurements = self.model.process_data()
 
         else:

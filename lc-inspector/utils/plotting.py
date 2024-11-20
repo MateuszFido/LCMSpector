@@ -80,7 +80,7 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     # Plotting the average MS data
     widget.setBackground("w")
     widget.showGrid(x=True, y=True, alpha=0.2)
-    widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
+    curve = widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
     widget.getPlotItem().setTitle(f'MS1 full-scan spectrum at {round(rt, 2)} minutes', color='#b8b8b8', size='12pt')
 
     # Annotate the m/z of the 5 highest peaks
@@ -89,17 +89,16 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     sorted_indices = np.argsort(intensities)[::-1]
     sorted_mzs = mzs[sorted_indices]
     sorted_intensities = intensities[sorted_indices]
-    for i in range(5):
+    for i in range(0, 5):
         widget.plot([sorted_mzs[i], sorted_mzs[i]], [0, sorted_intensities[i]], pen=mkPen('#a00000', width=1))
         text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#298c8c', anchor=(0, 0))
         text_item.setPos(sorted_mzs[i], sorted_intensities[i])
-        text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+        text_item.setFont(pg.QtGui.QFont('Arial', 5, weight=pg.QtGui.QFont.Weight.ExtraLight))
         widget.addItem(text_item)
 
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
 
-    
     logger.info(f"---Plotting took {(time.time() - start_time)/1000} miliseconds ---")
 
 @lru_cache(maxsize=None)
@@ -149,7 +148,7 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
 
 
 @lru_cache(maxsize=None)
-def plot_annotated_XICs(path: str, xics: pd.DataFrame, compound_list: list, widget: pg.GraphicsLayoutWidget):
+def plot_annotated_XICs(path: str, xics: list, compound_list: list, widget: pg.GraphicsLayoutWidget):
     filename = os.path.basename(path).split('.')[0]
     plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)

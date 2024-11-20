@@ -36,13 +36,13 @@ class Model:
         Preprocesses and annotates LC and MS files concurrently.
     """
     
-    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'ion_list']
+    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds']
 
     def __init__(self):
         self.lc_measurements = {}
         self.ms_measurements = {}
         self.annotations = []
-        self.ion_list = ion_list
+        self.compounds = []
         
     def process_data(self):
         # TODO: Implement concurrency
@@ -58,7 +58,7 @@ class Model:
             lc_results[lc_result.filename] = lc_result
 
         for ms_file in self.ms_measurements:
-            ms_result = MSMeasurement(ms_file, 0.0001)
+            ms_result = MSMeasurement(ms_file, self.compounds, 0.0001)
             progress += 1
             self.controller.view.update_progress_bar(int(progress / total_files * 100))
             ms_results[ms_result.filename] = ms_result

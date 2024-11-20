@@ -78,7 +78,7 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     
     # Look up the necessary fields from the first scan in the file for m/z axis determination
 
-    low_mass = auxiliary.cvquery(data[0], 'MS:1000501')-10 # +10 m/z for safety in case the MS recorded beyond limit (happens on Orbitraps)
+    low_mass = auxiliary.cvquery(data[0], 'MS:1000501')-10 # +10 m/z for safety in case the MS recorded beyond limit
     high_mass = auxiliary.cvquery(data[0], 'MS:1000500')+10
     # Calculate the resolution of the m/z axis
     resolution = int((high_mass - low_mass) / mass_accuracy) 
@@ -87,16 +87,18 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     return mz_axis
 
 
-def construct_xics(data, ion_list, ppm):
-    xics = {}
-
-    for compound in ion_list:
-        for ion in compound.values():
-            # Look for the closest m/z value in the first row of data 
-            closest = np.abs(data.iloc[0] - ion).idxmin()
-            # Take the region from -{ppm} to +{ppm} 
-            # Check if the m/z difference is within the given mass accuracy
-            xic = data.iloc[:, (closest - ppm):(closest + ppm)]
-        xics[compound] = xic
-
-    return xics
+def construct_xics(data, compounds, mass_accuracy):
+    for compound in compounds:
+        for ion in compound.ions.keys():
+            xic = []
+            scan_id = []
+            # Find a 5 ppm range around the ion (theoretical mass - observed mass)
+            mass_range = (ion-3*mass_accuracy, ion+3*mass_accuracy)
+            for i, scan in enumerate(data):
+                indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
+                intensities = scan['intensity array'][indices]
+                xic.append(np.sum(intensities))
+                scan_id.append(i)
+            xic = np.array((scan_id, xic))
+        compound.ions[ion]['MS Intensity'] = xic
+    return compounds

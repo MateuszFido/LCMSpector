@@ -1,5 +1,4 @@
 import os
-from settings import BASE_PATH
 
 def get_path(path):
     return os.path.join(BASE_PATH, path)

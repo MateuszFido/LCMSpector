@@ -1,5 +1,6 @@
 from utils.loading import load_absorbance_data, load_ms1_data
 from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
+from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from evaluation.annotation import annotate_XICs, annotate_LC_data
 from abc import ABC, abstractmethod
@@ -64,11 +65,19 @@ class LCMeasurement(Measurement):
         super().__init__(path)
         self.data = load_absorbance_data(path)  # Initialize as None
         self.baseline_corrected = baseline_correction(self.data)  # Initialize as None
+        self.data = load_absorbance_data(path)  # Initialize as None
+        self.baseline_corrected = baseline_correction(self.data)  # Initialize as None
         logger.info(f"Loaded LC file {self.filename}.")
 
     def plot(self):
         plot_absorbance_data(self.path, self.baseline_corrected)
 
+    def annotate(self, ion_list):
+        compounds = []
+        for item in ion_list:
+            compound = Compound(name=item, file=self.filename, ions=item.values())
+            print(compound)
+        compounds.append(compound)
     def annotate(self, ion_list):
         compounds = []
         for item in ion_list:
@@ -100,15 +109,12 @@ class MSMeasurement(Measurement):
     xics : pd.DataFrame
         A DataFrame containing the m/z and intensity values of the XICs.
     """
-    def __init__(self, path, mass_accuracy=0.0001):
+    def __init__(self, path, ion_list, mass_accuracy=0.0001):
         super().__init__(path)
         self.data = load_ms1_data(path)  # Initialize as None
         self.mass_accuracy = mass_accuracy
+        self.xics = construct_xics(self.data, ion_list, self.mass_accuracy)
         logger.info(f"Loaded MS file {self.filename}.")
-
-    def xics(self, ion_list, mz_range):
-        result = construct_xic(self._average, ion_list, 3)
-        return result
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.average)
@@ -135,13 +141,14 @@ class Compound():
     rt : float
         The retention time of the compound.
     '''
-    def __init__(self, name: str, ions: dict):
-        self.name = name
+    def __init__(self, name: str, ions: list, ion_info: list):
+        self.name = str(name)
         self.ions = {ion: {"RT": None, "MS Intensity": None, "LC Intensity": None} for ion in ions}
+        self.ion_info = ion_info
         self._calibration_curve = None
 
     def __str__(self):
-        return f"Compound: {self.name}, ions: {self.ions}."
+        return f"Compound: {self.name}, ions: {self.ions}, ion info: {self.ion_info}"
 
     @property
     #TODO
