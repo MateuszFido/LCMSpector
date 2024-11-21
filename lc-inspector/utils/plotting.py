@@ -12,7 +12,6 @@ from calculation.wrappers import freezeargs
 from pyteomics.auxiliary import cvquery
 
 logger = logging.getLogger(__name__)
-@lru_cache(maxsize=None)
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
     """
     Generates and saves plots of absorbance data before and after background correction.
@@ -76,8 +75,8 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     start_time = time.time()
     scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
     index = np.argmin(scan_time_diff)
-    logger.info(f"--- Index lookup took {(time.time() - start_time)/1000} miliseconds ---")
 
+    widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
     widget.showGrid(x=True, y=True, alpha=0.2)
@@ -102,7 +101,6 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
 
     logger.info(f"---Plotting took {(time.time() - start_time)/1000} miliseconds ---")
 
-@lru_cache(maxsize=None)
 def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, widget: pg.PlotWidget):
     '''
     Annotates the LC data with the given targeted list of ions and plot the results.
@@ -124,7 +122,7 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
     # Create the "plots" directory if it doesn't exist
     plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
     os.makedirs(plot_path, exist_ok=True)
-
+    widget.clear()
     # Plot the LC data
     widget.setBackground("w")
     widget.setLabel('left', 'Absorbance (mAU)')
@@ -148,8 +146,8 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
                 widget.addItem(text_item)
 
 
-@lru_cache(maxsize=None)
 def plot_annotated_XICs(path: str, xics: tuple, widget: pg.GraphicsLayoutWidget):
+    widget.clear()
     tot = len(xics)
     cols = 5
     rows = int(np.ceil(2*tot / cols))
@@ -185,11 +183,27 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: pg.GraphicsLayoutWidget)
     #HACK: Forces scrollArea to realize that the widget is bigger than it is
     widget.setMinimumSize(pg.QtCore.QSize(len(xics)*20,len(xics)*40))
 
+def plot_single_XIC(path: str, compound: Compound, widget: pg.GraphicsLayoutWidget):
+    widget.clear()
+    plot_item = widget.addPlot()
+    plot_item.setMouseEnabled(x=True, y=False)
+    plot_item.setTitle(compound.name)
+    args = ({'color': 'b', 'font-size': '10pt'})
+    plot_item.setLabel('bottom', text='Scan time', units='min', **args)
+    plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
+    plot_item.getAxis('left').setHeight(100)
+    color_list = ('#a559aa', "#59a89c", "#f0c571", "#e02b35", "#082a54", '#9d2c00', '#7e4794', '#c8c8c8')
+    for j, ion in enumerate(compound.ions.keys()):
+        if compound.ions[ion]["MS Intensity"] is None:
+            continue
+        plotting_data = compound.ions[ion]["MS Intensity"]
+        plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1))
+        highest_intensity = np.argmax(plotting_data[1])
+        scan_time = plotting_data[0][highest_intensity]
+        plot_item.plot([scan_time], [plotting_data[1][highest_intensity]], pen=mkPen(color_list[j], width=1), symbol='o', symbolSize=5)
 
-class SecondWindow(QDialog):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("Second Window")
-        self.main_layout = QVBoxLayout()
-        #self.hello_label = pg.TextItem('Hello I am the second window.', color='blue')
-        #self.main_layout.addItem(self.hello_label)
+        text_item = pg.TextItem(f"{ion}", color=color_list[j], anchor=(0, 0))
+        text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+        text_item.setPos(scan_time, plotting_data[1][highest_intensity])
+        plot_item.addItem(text_item)
+        plot_item.getAxis('left').setHeight(100)

@@ -69,12 +69,10 @@ class IonTable(QtWidgets.QTableWidget):
         return items
 
 class PlotWindow(QDialog):
-    def __init__(self, plot_item):
+    def __init__(self):
         super().__init__()
-        self.plotWidget = pg.PlotWidget()
-        self.plotWidget.addItem(plot_item)
+        self.canvas = pg.GraphicsWidget()
         self.layout = QtWidgets.QVBoxLayout()
-        self.layout.addWidget(self.plotWidget)
         self.setLayout(self.layout)
 
 class DragDropListWidget(QtWidgets.QListWidget):
@@ -314,14 +312,10 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile.addItems(filenames)
 
     def on_xic_clicked(self, event):
+        #TODO: Change canvas_XICs to dock area
         items = self.canvas_XICs.scene().itemsNearEvent(event)
-        plot_items = [item for item in items if isinstance(item, pg.PlotItem)]
-        if plot_items is not None and len(plot_items) > 0:
-            # Copy so that the original plot stays untouched
-            #FIXME: Cannot directly copy PlotItem
-            plot_item_copy = plot_items[0]
-            new_window = PlotWindow(plot_item_copy)
-            new_window.show()
+        dock_area = pg.dockarea.DockArea()
+        plot_single_XIC(self.controller.model.ms_measurements[self.comboBox_currentfile.currentIndex()], items[0], self.canvas_XICs)
     
 
     def display_plots(self, file_lc, file_ms):
