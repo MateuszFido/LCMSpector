@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFileDialog, QApplication
+from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
 import sys, traceback, logging, json, __main__
@@ -65,9 +65,17 @@ class IonTable(QtWidgets.QTableWidget):
                 ions = [float(x) for x in self.item(row, 1).text().split(",")]
                 ion_info = self.item(row, 2).text().split(",")
             compound = Compound(name, ions, ion_info)
-            print(compound)
             items.append(compound)
         return items
+
+class PlotWindow(QDialog):
+    def __init__(self, plot_item):
+        super().__init__()
+        self.plotWidget = pg.PlotWidget()
+        self.plotWidget.addItem(plot_item)
+        self.layout = QtWidgets.QVBoxLayout()
+        self.layout.addWidget(self.plotWidget)
+        self.setLayout(self.layout)
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
@@ -169,7 +177,6 @@ class View(QtWidgets.QMainWindow):
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
-        #FIXME: Fix how this is handled
         lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
         if self.comboBoxIonLists.currentText() == "Amino acids and polyamines":
             ion_list = lists["aminoacids_and_polyamines"]
@@ -306,6 +313,17 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile.clear()
         self.comboBox_currentfile.addItems(filenames)
 
+    def on_xic_clicked(self, event):
+        items = self.canvas_XICs.scene().itemsNearEvent(event)
+        plot_items = [item for item in items if isinstance(item, pg.PlotItem)]
+        if plot_items is not None and len(plot_items) > 0:
+            # Copy so that the original plot stays untouched
+            #FIXME: Cannot directly copy PlotItem
+            plot_item_copy = plot_items[0]
+            new_window = PlotWindow(plot_item_copy)
+            new_window.show()
+    
+
     def display_plots(self, file_lc, file_ms):
         self.canvas_baseline.clear()
         if file_lc:
@@ -321,14 +339,14 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.clear()
         if file_ms:
             try:
-                plot_average_ms_data(file_ms.path, file_ms.average, self.canvas_avgMS)
+                plot_average_ms_data(0, file_ms.data, self.canvas_avgMS)
             except AttributeError as e: 
                 logger.error(f"No average MS found: {e}")
 
         self.canvas_XICs.clear()
         if file_ms:
             try:
-                plot_annotated_XICs(file_ms.path, file_ms.data, file_ms.compounds, self.canvas_XICs)
+                plot_annotated_XICs(file_ms.path, file_ms.xics, self.canvas_XICs)
             except AttributeError as e: 
                 logger.error(f"No XIC plot found: {traceback.format_exc()}")
 
@@ -408,7 +426,10 @@ class View(QtWidgets.QMainWindow):
         logger.info(f'Clicked the chromatogram at position: {time_x}')
         self.canvas_avgMS.clear()
         file = self.comboBox_currentfile.currentText()
-        plot_average_ms_data(time_x, self.controller.model.ms_measurements[file].data, self.canvas_avgMS)
+        try:
+            plot_average_ms_data(time_x, self.controller.model.ms_measurements[file].data, self.canvas_avgMS)
+        except Exception as e:
+            logger.error(f"Error displaying average MS for file {file}: {e}")
 
     def setupUi(self, MainWindow):
         """
@@ -562,12 +583,13 @@ class View(QtWidgets.QMainWindow):
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
-        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.canvas_XICs = pg.GraphicsLayoutWidget(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
+        
         self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
@@ -703,6 +725,7 @@ class View(QtWidgets.QMainWindow):
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
+        self.canvas_XICs.scene().sigMouseClicked.connect(self.on_xic_clicked)
 
     def retranslateUi(self, MainWindow):
         """

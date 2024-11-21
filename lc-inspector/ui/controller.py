@@ -21,23 +21,25 @@ class Controller:
         pass
 
     def process_data(self):
+        self.model.compounds = self.view.ionTable.get_items()
         if (hasattr(self.model, 'ms_measurements') and hasattr(self.model, 'lc_measurements')) or (hasattr(self.model, 'lc_measurements') and hasattr(self.model, 'annotations')):
             if not self.model.lc_measurements:
                 self.view.show_critical_error("Please load LC files and either corresponding MS files or manual annotations before processing.")
                 return
+            if not self.model.compounds or not self.model.compounds[0].ions:
+                self.view.show_critical_error("Please define m/z values to trace or choose from the predefined lists before processing.")
+                return
             
             logger.info("Starting the processing...")
-
+            # Handle pre-processing UI events
             self.view.processButton.setEnabled(False)
-            self.view.statusbar.showMessage("Loading data into memory... [Step 1/3]")
             self.view.statusbar.showMessage("Loading data into memory... [Step 1/3]")
             self.view.progressBar.setVisible(True)
             self.view.progressLabel.setVisible(True)
             self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)
-            self.model.compounds = self.view.ionTable.get_items()
+            # Start processing
             self.model.lc_measurements, self.model.ms_measurements = self.model.process_data()
-
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
         
@@ -54,6 +56,8 @@ class Controller:
         self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)
 
+        # Resize view to fit the screen
+        self.view.showMaximized()
         self.update_filenames_combo_box()
 
     def update_filenames_combo_box(self):

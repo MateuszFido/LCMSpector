@@ -2,6 +2,9 @@ import os, logging.config, yaml, json
 with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r") as f:
     config = yaml.safe_load(f)
     logging.config.dictConfig(config)
+logger = logging.getLogger(__name__)
+logger.info(f"-------------------------------------\nStarting LC-Inspector at {os.getcwd()}...")
+
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
 from ui.model import Model
 from ui.view import View

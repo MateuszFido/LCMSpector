@@ -100,5 +100,5 @@ def construct_xics(data, compounds, mass_accuracy):
                 xic.append(np.sum(intensities))
                 scan_id.append(i)
             xic = np.array((scan_id, xic))
-        compound.ions[ion]['MS Intensity'] = xic
-    return compounds
+            compound.ions[ion]['MS Intensity'] = xic
+    return tuple(compounds)

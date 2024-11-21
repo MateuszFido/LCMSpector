@@ -117,7 +117,7 @@ class MSMeasurement(Measurement):
         logger.info(f"Loaded MS file {self.filename}.")
 
     def plot(self):
-        self.average_plot = plot_average_ms_data(self.path, self.average)
+        self.average_plot = plot_average_ms_data(self.path, self.data)
 
     def annotate(self, compounds):
         self.compounds = annotate_XICs(self.path, self.xics, compounds, self.mass_accuracy)

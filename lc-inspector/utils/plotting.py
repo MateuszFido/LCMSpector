@@ -6,6 +6,7 @@ import pandas as pd
 import pyqtgraph as pg
 from pyqtgraph import exporters
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from pyqtgraph import mkPen
 from calculation.wrappers import freezeargs
 from pyteomics.auxiliary import cvquery
@@ -148,52 +149,47 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
 
 
 @lru_cache(maxsize=None)
-def plot_annotated_XICs(path: str, xics: list, compound_list: list, widget: pg.GraphicsLayoutWidget):
-    filename = os.path.basename(path).split('.')[0]
-    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
-    os.makedirs(plot_path, exist_ok=True)
-
-    tot = len(compound_list)
+def plot_annotated_XICs(path: str, xics: tuple, widget: pg.GraphicsLayoutWidget):
+    tot = len(xics)
     cols = 5
-    rows = int(np.ceil(tot / cols))
+    rows = int(np.ceil(2*tot / cols))
 
     widget.setBackground("w")
 
     # Plot the XICs
-    for i, compound in enumerate(compound_list):
-        big_array = []
+    for i, compound in enumerate(xics):
         plot_item = widget.addPlot(row=i // cols, col=i % cols)
+        plot_item.setMouseEnabled(x=True, y=False)
         plot_item.setTitle(compound.name)
         args = ({'color': 'b', 'font-size': '10pt'})
         plot_item.setLabel('bottom', text='Scan time', units='min', **args)
         plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
         plot_item.getAxis('left').setHeight(100)
-
+        color_list = ('#a559aa', "#59a89c", "#f0c571", "#e02b35", "#082a54", '#9d2c00', '#7e4794', '#c8c8c8')
         for j, ion in enumerate(compound.ions.keys()):
-            if compound.ions[ion]["RT"] is None or compound.ions[ion]["MS Intensity"] is None:
+            if compound.ions[ion]["MS Intensity"] is None:
                 continue
-            
-            closest = np.abs(xics.iloc[0] - ion).idxmin()
-            
-            scan_time = xics['Scan time (min)'].iloc[xics[closest][1:].idxmax()]  # Skip the first row
+            plotting_data = compound.ions[ion]["MS Intensity"]
+            plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1))
+            highest_intensity = np.argmax(plotting_data[1])
+            scan_time = plotting_data[0][highest_intensity]
+            plot_item.plot([scan_time], [plotting_data[1][highest_intensity]], pen=mkPen(color_list[j], width=1), symbol='o', symbolSize=5)
 
-            # Check if closest is a valid column
-            if closest not in xics.columns:
-                print(f"Column {closest} does not exist in xics.")
-                continue
-
-            plotting_data = np.transpose(np.array((xics['Scan time (min)'][1:].values, xics[closest][1:].values), dtype=np.float64))
-
-            plot_item.plot(plotting_data)
-            plot_item.pen = mkPen('b', width=1)
-            highest_intensity = xics[closest].iloc[xics[closest][1:].idxmax()]
-            plot_item.plot([scan_time], [highest_intensity], pen=None, symbol='o', symbolBrush='r', symbolSize=5)
-
-            text_item = pg.TextItem(f"{ion}\n({closest})", anchor=(0, 0))
+            text_item = pg.TextItem(f"{ion}", color=color_list[j], anchor=(0, 0))
             text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
-            text_item.setPos(scan_time - np.random.random() / 100, highest_intensity)
+            text_item.setPos(scan_time, plotting_data[1][highest_intensity])
             plot_item.addItem(text_item)
             plot_item.getAxis('left').setHeight(100)
     
-    #HACK: Forces scrollArea to realize that the widget is bigger than itself
-    widget.setMinimumSize(pg.QtCore.QSize(len(compound_list)*20,len(compound_list)*40))
+
+    #HACK: Forces scrollArea to realize that the widget is bigger than it is
+    widget.setMinimumSize(pg.QtCore.QSize(len(xics)*20,len(xics)*40))
+
+
+class SecondWindow(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Second Window")
+        self.main_layout = QVBoxLayout()
+        #self.hello_label = pg.TextItem('Hello I am the second window.', color='blue')
+        #self.main_layout.addItem(self.hello_label)

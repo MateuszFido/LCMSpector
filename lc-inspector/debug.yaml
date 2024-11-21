@@ -1,6 +1,9 @@
 version: 1
 disable_existing_loggers: False
 loggers:
+    main:
+        level: DEBUG
+        handlers: [file]
     ui.model:
         level: DEBUG
         handlers: [file]

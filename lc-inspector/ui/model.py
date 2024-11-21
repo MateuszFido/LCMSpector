@@ -4,7 +4,6 @@ import pandas as pd
 import concurrent.futures
 from pathlib import Path
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
-from settings import ion_list
 
 logger = logging.getLogger(__name__)
 class Model:
