@@ -5,6 +5,7 @@ import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
 import sys, traceback, logging, json, __main__
 from utils.measurements import Compound
+from pyqtgraph.dockarea import Dock, DockArea
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -314,7 +315,7 @@ class View(QtWidgets.QMainWindow):
     def on_xic_clicked(self, event):
         #TODO: Change canvas_XICs to dock area
         items = self.canvas_XICs.scene().itemsNearEvent(event)
-        dock_area = pg.dockarea.DockArea()
+        dock_area = DockArea()
         plot_single_XIC(self.controller.model.ms_measurements[self.comboBox_currentfile.currentIndex()], items[0], self.canvas_XICs)
     
 
@@ -328,14 +329,14 @@ class View(QtWidgets.QMainWindow):
                 self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
                 self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
             except Exception as e: 
-                logger.error(f"No baseline chromatogram found: {e}")
+                logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
 
         self.canvas_avgMS.clear()
         if file_ms:
             try:
                 plot_average_ms_data(0, file_ms.data, self.canvas_avgMS)
             except AttributeError as e: 
-                logger.error(f"No average MS found: {e}")
+                logger.error(f"No average MS found: {traceback.format_exc()}")
 
         self.canvas_XICs.clear()
         if file_ms:
@@ -345,11 +346,11 @@ class View(QtWidgets.QMainWindow):
                 logger.error(f"No XIC plot found: {traceback.format_exc()}")
 
         self.canvas_annotatedLC.clear()
-        if hasattr(file_lc, 'compounds'):
+        if file_lc.filename == file_ms.filename:
             try:
-                plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_lc.compounds, self.canvas_annotatedLC)
+                plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_ms.xics, self.canvas_annotatedLC)
             except Exception as e: 
-                logger.error(f"No annotated LC plot found: {e}")
+                logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
 
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
@@ -579,7 +580,7 @@ class View(QtWidgets.QMainWindow):
         self.scrollArea.setObjectName("scrollArea")
         self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.canvas_XICs = pg.GraphicsLayoutWidget(parent=self.tabResults)
+        self.canvas_XICs = DockArea(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
@@ -719,7 +720,6 @@ class View(QtWidgets.QMainWindow):
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
-        self.canvas_XICs.scene().sigMouseClicked.connect(self.on_xic_clicked)
 
     def retranslateUi(self, MainWindow):
         """

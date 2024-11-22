@@ -4,12 +4,14 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-from pyqtgraph import exporters
+from scipy.signal import find_peaks, peak_widths
+from pyqtgraph import exporters, mkPen
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout
-from pyqtgraph import mkPen
+from pyqtgraph.dockarea import DockArea
 from calculation.wrappers import freezeargs
 from pyteomics.auxiliary import cvquery
+from static_frame import FrameHE
 
 logger = logging.getLogger(__name__)
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
@@ -35,10 +37,6 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     """
 
     filename = os.path.basename(path).split('.')[0]
-
-    # Create the "plots" directory if it doesn't exist
-    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
-    os.makedirs(plot_path, exist_ok=True)
 
     # Plotting chromatogram before background correction
     widget.setBackground("w")
@@ -99,9 +97,7 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
 
-    logger.info(f"---Plotting took {(time.time() - start_time)/1000} miliseconds ---")
-
-def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, widget: pg.PlotWidget):
+def plot_annotated_LC(path: str, chromatogram: FrameHE, compounds: list, widget: pg.PlotWidget):
     '''
     Annotates the LC data with the given targeted list of ions and plot the results.
 
@@ -119,91 +115,78 @@ def plot_annotated_LC(path: str, chromatogram: pd.DataFrame, compounds: list, wi
     '''
     filename = os.path.basename(path).split('.')[0]
 
-    # Create the "plots" directory if it doesn't exist
-    plot_path = Path(path).parents[1] / 'plots' / f'{filename}'
-    os.makedirs(plot_path, exist_ok=True)
     widget.clear()
     # Plot the LC data
     widget.setBackground("w")
     widget.setLabel('left', 'Absorbance (mAU)')
     widget.setLabel('bottom', 'Retention time (min)')
     widget.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'], pen=mkPen('b', width=1))
-
+    start_time = time.time()
+    lc_peaks = find_peaks(chromatogram['Value (mAU)'], distance=10, prominence=10)        
+    widths, width_heights, left, right = peak_widths(chromatogram['Value (mAU)'], lc_peaks[0], rel_height=0.9)
+    lc_peaks_RTs = chromatogram['Time (min)'][lc_peaks[0]]
+    plotting_data = np.array(lc_peaks_RTs, chromatogram['Value (mAU)'][lc_peaks[0]])
+    #FIXME: Doesn't work
+    widget.plot(plotting_data, pen=mkPen('r', width=1), symbol='o', symbolSize=5)
+    
     # Annotate with compounds
     for j, compound in enumerate(compounds):
+        continue
         for i, ion in enumerate(compound.ions.keys()):
-            if compound.ions[ion]['RT'] is not None and compound.ions[ion]['Apex'] is not None:
-                # Find the intensity of compound.ions[ion] in chromatogram['Value (mAU)']
-                #BUG: labels overlap and the retention time is incorrect
-                intensity_at_RT = np.abs(chromatogram['Time (min)'] - compound.ions[ion]['RT']).idxmin()
-                widget.plot([compound.ions[ion]['RT']],  [compound.ions[ion]['Apex']], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
+            if compound.ions[ion]['RT'] is not None:
                 
-                # Create a text item for annotation
-                text_item = pg.TextItem(text=f"{compound.name}\n{ion}", anchor=(0, 1))
-                #FIXME: Consdier HoverEvent if possible?
-                text_item.setPos(compound.ions[ion]['RT']+0.1*j, compound.ions[ion]['Apex']-20*i)
-                text_item.setFont(pg.QtGui.QFont('Arial', 6, weight=pg.QtGui.QFont.Weight.ExtraLight))
-                widget.addItem(text_item)
+                closest = lc_peaks[0][int((np.argmin(np.abs(lc_peaks[0] - compound.ions[ion]['RT']))))]
+                # Find the intensity of compound.ions[ion] in chromatogram['Value (mAU)']
+                peak = widget.plot([lc_peaks_RTs[closest]], [chromatogram['Value (mAU)'][closest]], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
+                peak.sigPointsClicked.connect(highlight_peak)
+                #FIXME: This is very slow
+                #text_item = pg.TextItem(text=f"{compound.ion_info[i]}", color='#298c8c', anchor=(0, 0))
+                #text_item.setFont(pg.QtGui.QFont('Arial', 5, weight=pg.QtGui.QFont.Weight.ExtraLight))
+                #text_item.setPos(lc_peaks_RTs[closest], chromatogram['Value (mAU)'][closest]+i)
+                # widget.addItem(text_item)
 
+    logger.info(f"---Plotting annotated LC of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
 
-def plot_annotated_XICs(path: str, xics: tuple, widget: pg.GraphicsLayoutWidget):
-    widget.clear()
+def highlight_peak(event):
+    print(event)
+
+def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
+    filename = os.path.basename(path).split('.')[0]
+    start_time = time.time()
     tot = len(xics)
     cols = 5
     rows = int(np.ceil(2*tot / cols))
 
-    widget.setBackground("w")
-
     # Plot the XICs
     for i, compound in enumerate(xics):
-        plot_item = widget.addPlot(row=i // cols, col=i % cols)
+        if i % cols == 0:
+            dock_0 = widget.addDock(position='bottom', name=f'{compound.name}', widget=pg.PlotWidget(), size=(100, 100))
+            plot_item = dock_0.widgets[0]
+        else:
+            dock = widget.addDock(position='right', relativeTo=dock_0, name=f'{compound.name}', widget=pg.PlotWidget(), size=(100, 100))
+            plot_item = dock.widgets[0]
+        plot_item.setBackground("w")
         plot_item.setMouseEnabled(x=True, y=False)
-        plot_item.setTitle(compound.name)
         args = ({'color': 'b', 'font-size': '10pt'})
         plot_item.setLabel('bottom', text='Scan time', units='min', **args)
         plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
-        plot_item.getAxis('left').setHeight(100)
         color_list = ('#a559aa', "#59a89c", "#f0c571", "#e02b35", "#082a54", '#9d2c00', '#7e4794', '#c8c8c8')
+        plot_item.addLegend()
         for j, ion in enumerate(compound.ions.keys()):
             if compound.ions[ion]["MS Intensity"] is None:
                 continue
             plotting_data = compound.ions[ion]["MS Intensity"]
-            plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1))
+            plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion} ({compound.ion_info[j]})')
             highest_intensity = np.argmax(plotting_data[1])
             scan_time = plotting_data[0][highest_intensity]
             plot_item.plot([scan_time], [plotting_data[1][highest_intensity]], pen=mkPen(color_list[j], width=1), symbol='o', symbolSize=5)
 
-            text_item = pg.TextItem(f"{ion}", color=color_list[j], anchor=(0, 0))
+            text_item = pg.TextItem(f"{compound.ion_info[j]}", color=color_list[j], anchor=(0, 0))
             text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(scan_time, plotting_data[1][highest_intensity])
             plot_item.addItem(text_item)
-            plot_item.getAxis('left').setHeight(100)
-    
 
     #HACK: Forces scrollArea to realize that the widget is bigger than it is
     widget.setMinimumSize(pg.QtCore.QSize(len(xics)*20,len(xics)*40))
-
-def plot_single_XIC(path: str, compound: Compound, widget: pg.GraphicsLayoutWidget):
-    widget.clear()
-    plot_item = widget.addPlot()
-    plot_item.setMouseEnabled(x=True, y=False)
-    plot_item.setTitle(compound.name)
-    args = ({'color': 'b', 'font-size': '10pt'})
-    plot_item.setLabel('bottom', text='Scan time', units='min', **args)
-    plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
-    plot_item.getAxis('left').setHeight(100)
-    color_list = ('#a559aa', "#59a89c", "#f0c571", "#e02b35", "#082a54", '#9d2c00', '#7e4794', '#c8c8c8')
-    for j, ion in enumerate(compound.ions.keys()):
-        if compound.ions[ion]["MS Intensity"] is None:
-            continue
-        plotting_data = compound.ions[ion]["MS Intensity"]
-        plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1))
-        highest_intensity = np.argmax(plotting_data[1])
-        scan_time = plotting_data[0][highest_intensity]
-        plot_item.plot([scan_time], [plotting_data[1][highest_intensity]], pen=mkPen(color_list[j], width=1), symbol='o', symbolSize=5)
-
-        text_item = pg.TextItem(f"{ion}", color=color_list[j], anchor=(0, 0))
-        text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
-        text_item.setPos(scan_time, plotting_data[1][highest_intensity])
-        plot_item.addItem(text_item)
-        plot_item.getAxis('left').setHeight(100)
+    state = widget.saveState()
+    logger.info(f"---Plotting annotated XICs of {filename} took {(time.time() - start_time)/1000} miliseconds ---")

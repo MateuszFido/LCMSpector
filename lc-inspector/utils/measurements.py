@@ -2,7 +2,6 @@ from utils.loading import load_absorbance_data, load_ms1_data
 from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
 from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
-from evaluation.annotation import annotate_XICs, annotate_LC_data
 from abc import ABC, abstractmethod
 import os, logging
 
@@ -118,9 +117,6 @@ class MSMeasurement(Measurement):
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)
-
-    def annotate(self, compounds):
-        self.compounds = annotate_XICs(self.path, self.xics, compounds, self.mass_accuracy)
 
     def plot_annotated(self):
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
