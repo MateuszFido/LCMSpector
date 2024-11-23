@@ -101,5 +101,6 @@ def construct_xics(data, compounds, mass_accuracy):
                 scan_id.append(i)
             xic = np.array((scan_id, xic))
             compound.ions[ion]['MS Intensity'] = xic
-            compound.ions[ion]['RT'] = np.argmax(xic[1])
+            # Get the scan time of the index with the highest intensity
+            compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016') 
     return tuple(compounds)

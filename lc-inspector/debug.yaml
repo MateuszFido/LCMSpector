@@ -33,7 +33,7 @@ handlers:
     file:
         class: logging.handlers.RotatingFileHandler
         level: DEBUG
-        mode: a
+        mode: w
         encoding: utf-8
         formatter: simple
         filename: app.log

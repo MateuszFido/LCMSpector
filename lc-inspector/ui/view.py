@@ -6,6 +6,7 @@ from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_anno
 import sys, traceback, logging, json, __main__
 from utils.measurements import Compound
 from pyqtgraph.dockarea import Dock, DockArea
+import numpy as np
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -352,17 +353,32 @@ class View(QtWidgets.QMainWindow):
         self.canvas_annotatedLC.clear()
         if file_lc.filename == file_ms.filename:
             try:
-                self.curve_list = plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_ms.xics, self.canvas_annotatedLC)
+                self.curve_list = plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, self.canvas_annotatedLC)
                 for curve in self.curve_list.keys():
-                    curve.sigClicked.connect(lambda c: self.highlight_peak(c))
+                    curve.sigClicked.connect(lambda c: self.highlight_peak(c, file_ms.xics))
             except Exception as e: 
                 logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
 
-    def highlight_peak(self, selected_curve):
-        selected_curve.setBrush(pg.mkBrush('blue'))
+    def highlight_peak(self, selected_curve, xics):
+        # Clear previous annotations
         for curve in self.curve_list:
             if curve != selected_curve:
                 curve.setBrush(self.curve_list[curve])
+        for item in self.canvas_annotatedLC.items():
+            if isinstance(item, pg.TextItem):
+                self.canvas_annotatedLC.removeItem(item)
+        # Annotate the selected peak with every compound
+        for compound in xics:
+            for j, ion in enumerate(compound.ions.keys()):
+                if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], 0.1)): # If the ion's RT is within 6 seconds of the selected peak
+                    logger.info(f"Compound: {compound.name}, Ion: {ion}{compound.ions[ion]['RT']}, data: {selected_curve.getData()[0]}, boolean array: {np.isclose(ion, selected_curve.getData()[0], 0.2)}")
+                    text_item = pg.TextItem(text=f"{compound.ion_info[j]}", color='#483d8b', anchor=(0, 0))
+                    text_item.setFont(pg.QtGui.QFont('Arial', 8, weight=pg.QtGui.QFont.Weight.ExtraLight))
+                    # FIXME: Labels overlap
+                    text_item.setPos(np.mean(selected_curve.getData()[0]), np.max(selected_curve.getData()[1])-0.1*j*np.max(selected_curve.getData()[1]))
+                    self.canvas_annotatedLC.addItem(text_item)
+        selected_curve.setBrush(pg.mkBrush('#483d8b'))
+        
 
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]

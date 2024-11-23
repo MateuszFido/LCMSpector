@@ -97,7 +97,7 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
 
-def plot_annotated_LC(path: str, chromatogram: FrameHE, compounds: list, widget: pg.PlotWidget):
+def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
     '''
     Annotates the LC data with the given targeted list of ions and plot the results.
 
@@ -126,7 +126,7 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, compounds: list, widget:
     lc_peaks = find_peaks(chromatogram['Value (mAU)'], distance=10, prominence=10)        
     widths, width_heights, left, right = peak_widths(chromatogram['Value (mAU)'], lc_peaks[0], rel_height=0.9)
     lc_peaks_RTs = chromatogram['Time (min)'][lc_peaks[0]]
-    colors = [(65,35,67,200), (35,66,61,200), (94,77,44,200), (88,17,21,200), (3,16,33,200), (62,17,0,200), (78,78,78,200)]
+    colors = [(65,35,67,255), (35,66,61,255), (94,77,44,255), (88,17,21,255), (3,16,33,255), (62,17,0,255), (78,78,78,255)]
     curve_dict = {}
     for i, peak_idx in enumerate(lc_peaks[0]):
         peak_curve = np.transpose(np.array((chromatogram['Time (min)'][int(left[i]):int(right[i])], chromatogram['Value (mAU)'][int(left[i]):int(right[i])])))
@@ -136,23 +136,6 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, compounds: list, widget:
         plot_item = widget.plot(peak_curve, pen=pen, name=f'Peak {i}', fillLevel=1.0, brush=default_brush)
         plot_item.setCurveClickable(True)
         curve_dict[plot_item.curve] = default_brush
-        # widget.plot([lc_peaks_RTs[peak]], [chromatogram['Value (mAU)'][peak]], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
-    
-    # # Annotate with compounds
-    # for j, compound in enumerate(compounds):
-    #     continue
-    #     for i, ion in enumerate(compound.ions.keys()):
-    #         if compound.ions[ion]['RT'] is not None:
-                
-    #             closest = lc_peaks[0][int((np.argmin(np.abs(lc_peaks[0] - compound.ions[ion]['RT']))))]
-    #             # Find the intensity of compound.ions[ion] in chromatogram['Value (mAU)']
-    #             peak = widget.plot([lc_peaks_RTs[closest]], [chromatogram['Value (mAU)'][closest]], pen=mkPen('r', width=1), symbol='o', symbolSize=5)
-    #             # peak.sigPointsClicked.connect(lambda: highlight_peak(curve, ))
-    #             #FIXME: This is very slow
-    #             #text_item = pg.TextItem(text=f"{compound.ion_info[i]}", color='#298c8c', anchor=(0, 0))
-    #             #text_item.setFont(pg.QtGui.QFont('Arial', 5, weight=pg.QtGui.QFont.Weight.ExtraLight))
-    #             #text_item.setPos(lc_peaks_RTs[closest], chromatogram['Value (mAU)'][closest]+i)
-    #             # widget.addItem(text_item)
 
     logger.info(f"---Plotting annotated LC of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
     return curve_dict
