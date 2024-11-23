@@ -62,11 +62,15 @@ class IonTable(QtWidgets.QTableWidget):
         items = []
         for row in range(self.rowCount()):
             for col in range(2):
+                if self.item(row, col) is None:
+                    continue
                 name = self.item(row, 0).text()
                 ions = [float(x) for x in self.item(row, 1).text().split(",")]
                 ion_info = self.item(row, 2).text().split(",")
             compound = Compound(name, ions, ion_info)
             items.append(compound)
+        if len(items) == 0:
+            self.show_critical_error("No ions found in table.")
         return items
 
 class PlotWindow(QDialog):
@@ -348,9 +352,17 @@ class View(QtWidgets.QMainWindow):
         self.canvas_annotatedLC.clear()
         if file_lc.filename == file_ms.filename:
             try:
-                plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_ms.xics, self.canvas_annotatedLC)
+                self.curve_list = plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, file_ms.xics, self.canvas_annotatedLC)
+                for curve in self.curve_list.keys():
+                    curve.sigClicked.connect(lambda c: self.highlight_peak(c))
             except Exception as e: 
                 logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
+
+    def highlight_peak(self, selected_curve):
+        selected_curve.setBrush(pg.mkBrush('blue'))
+        for curve in self.curve_list:
+            if curve != selected_curve:
+                curve.setBrush(self.curve_list[curve])
 
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
