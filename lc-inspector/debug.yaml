@@ -33,8 +33,7 @@ handlers:
     file:
         class: logging.handlers.RotatingFileHandler
         level: DEBUG
-        mode: w
         encoding: utf-8
         formatter: simple
         filename: app.log
-        maxBytes: 104857600   # 100 MB
+        mode: 'w'

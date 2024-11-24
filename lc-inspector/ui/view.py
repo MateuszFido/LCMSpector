@@ -184,8 +184,8 @@ class View(QtWidgets.QMainWindow):
         lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
         if self.comboBoxIonLists.currentText() == "Amino acids and polyamines":
             ion_list = lists["aminoacids_and_polyamines"]
-        elif self.comboBoxIonLists.currentText() == "Short chain fatty acids":
-            ion_list = lists["short_chain_fatty_acids"]
+        elif self.comboBoxIonLists.currentText() == "Short-chain fatty acids":
+            ion_list = lists["scfas"]
         elif self.comboBoxIonLists.currentText() == "Amino acids":
             pass
             ion_list = lists["aminoacids"]
@@ -368,16 +368,21 @@ class View(QtWidgets.QMainWindow):
             if isinstance(item, pg.TextItem):
                 self.canvas_annotatedLC.removeItem(item)
         # Annotate the selected peak with every compound
+        text_items = []
         for compound in xics:
             for j, ion in enumerate(compound.ions.keys()):
-                if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], 0.1)): # If the ion's RT is within 6 seconds of the selected peak
-                    logger.info(f"Compound: {compound.name}, Ion: {ion}{compound.ions[ion]['RT']}, data: {selected_curve.getData()[0]}, boolean array: {np.isclose(ion, selected_curve.getData()[0], 0.2)}")
-                    text_item = pg.TextItem(text=f"{compound.ion_info[j]}", color='#483d8b', anchor=(0, 0))
+                if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], 0.05)): # If the ion's RT overlaps with the selected peak
+                    logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, \
+                        overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
+                    text_item = pg.TextItem(text=f"{compound.ion_info[j]} ({ion})", color='black', anchor=(0, 0))
                     text_item.setFont(pg.QtGui.QFont('Arial', 8, weight=pg.QtGui.QFont.Weight.ExtraLight))
-                    # FIXME: Labels overlap
-                    text_item.setPos(np.mean(selected_curve.getData()[0]), np.max(selected_curve.getData()[1])-0.1*j*np.max(selected_curve.getData()[1]))
+                    text_items.append(text_item)
                     self.canvas_annotatedLC.addItem(text_item)
-        selected_curve.setBrush(pg.mkBrush('#483d8b'))
+        selected_curve.setBrush(pg.mkBrush('#e52b50'))
+        positions = np.linspace(self.canvas_annotatedLC.getPlotItem().vb.viewRange()[1][1], self.canvas_annotatedLC.getPlotItem().vb.viewRange()[1][1]/2, 10)
+        for i, text_item in enumerate(text_items):
+            text_item.setPos(float(np.mean(selected_curve.getData()[0]+5*i//len(positions))), float(positions[i%len(positions)]))
+
         
 
     def update_resolution_label(self, resolution):
@@ -541,6 +546,8 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
         self.comboBoxIonLists.addItem("")
         self.comboBoxIonLists.addItem("Amino acids and polyamines")
+        self.comboBoxIonLists.addItem("Short-chain fatty acids")
+        self.comboBoxIonLists.addItem("Fatty acids")
         self.gridLayout_3.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
 
 

@@ -54,7 +54,7 @@
         },
         "DOPA": {
             "ions": [368.134, 322.0922, 366.1194, 198.0761, 196.0615],
-            "info": ["DOPA-I1", "DOPA-I2", "DOPA-I3", "DOPA-I4", "DOPA-I5"]
+            "info": ["DOPA-D", "DOPA-NL", "DOPA-D-neg", "DOPA-I-pos", "DOPA-I-neg"]
         },
         "Dopamine": {
             "ions": [324.1442, 278.1023, 322.1296, 154.0863, 152.0717],
@@ -190,21 +190,35 @@
         }
     },
     "scfas": {
+        "Formate": {
+            "ions": [47.0128, 44.9982, 91.0026],
+            "info": ["Formate-(+)", "Formate-(-)", "Formate dimer (+)"]
+        },
         "Acetate": {
-            "ions": [99.0339, 98.0192],
-            "info": ["Acetate-I1", "Acetate-I2"]
+            "ions": [61.0284, 59.0139],
+            "info": ["Acetate-(+)", "Acetate-(-)"]
         },
         "Butyrate": {
-            "ions": [117.0439, 116.0292],
-            "info": ["Butyrate-I1", "Butyrate-I2"]
+            "ions": [89.0597, 87.04515],
+            "info": ["Butyrate-(+)", "Butyrate-(-)"]
+        },
+        "Propionate": {
+            "ions": [75.0441, 73.0295],
+            "info": ["Propionate-(+)", "Propionate-(-)"]
+        }
+    },
+    "fatty acids": {
+        "Palmitic acid": {
+            "ions": [145.065, 143.0503],
+            "info": ["Palmitic acid-I1", "Palmitic acid-I2"]
+        },
+        "Myristic acid": {
+            "ions": [183.087, 181.0723],
+            "info": ["Myristic acid-I1", "Myristic acid-I2"]
         },
         "Ethylbutyrate": {
             "ions": [137.0539, 136.0392],
             "info": ["Ethylbutyrate-I1", "Ethylbutyrate-I2"]
-        },
-        "Propionate": {
-            "ions": [101.0339, 100.0192],
-            "info": ["Propionate-I1", "Propionate-I2"]
         }
     }
 }
