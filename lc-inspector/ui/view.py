@@ -318,7 +318,6 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile.addItems(filenames)
 
     def on_xic_clicked(self, event):
-        #TODO: Change canvas_XICs to dock area
         items = self.canvas_XICs.scene().itemsNearEvent(event)
         dock_area = DockArea()
         plot_single_XIC(self.controller.model.ms_measurements[self.comboBox_currentfile.currentIndex()], items[0], self.canvas_XICs)
@@ -363,7 +362,10 @@ class View(QtWidgets.QMainWindow):
         # Clear previous annotations
         for curve in self.curve_list:
             if curve != selected_curve:
-                curve.setBrush(self.curve_list[curve])
+                color = QtGui.QColor(self.curve_list[curve])
+                color.setAlpha(50)
+                curve.setBrush(color)
+                curve.setPen(color)
         for item in self.canvas_annotatedLC.items():
             if isinstance(item, pg.TextItem):
                 self.canvas_annotatedLC.removeItem(item)
@@ -372,18 +374,44 @@ class View(QtWidgets.QMainWindow):
         for compound in xics:
             for j, ion in enumerate(compound.ions.keys()):
                 if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], 0.05)): # If the ion's RT overlaps with the selected peak
-                    logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, \
-                        overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
-                    text_item = pg.TextItem(text=f"{compound.ion_info[j]} ({ion})", color='black', anchor=(0, 0))
-                    text_item.setFont(pg.QtGui.QFont('Arial', 8, weight=pg.QtGui.QFont.Weight.ExtraLight))
+                    logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
+                    text_item = pg.TextItem(text=f"{compound.ion_info[j]} ({ion})", color='#232323', anchor=(0, 0))
+                    text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
                     text_items.append(text_item)
                     self.canvas_annotatedLC.addItem(text_item)
-        selected_curve.setBrush(pg.mkBrush('#e52b50'))
-        positions = np.linspace(self.canvas_annotatedLC.getPlotItem().vb.viewRange()[1][1], self.canvas_annotatedLC.getPlotItem().vb.viewRange()[1][1]/2, 10)
+        selected_curve.setBrush(pg.mkBrush('#ee6677'))
+        selected_curve.setPen(pg.mkPen('#ee6677'))
+        positions = np.linspace(np.max(selected_curve.getData()[1]), np.max(selected_curve.getData()[1])+400, 10)
         for i, text_item in enumerate(text_items):
-            text_item.setPos(float(np.mean(selected_curve.getData()[0]+5*i//len(positions))), float(positions[i%len(positions)]))
+            text_item.setPos(float(np.median(selected_curve.getData()[0]+7*(i//10))), float(positions[i%len(positions)]))
 
-        
+    def update_labels_avgMS(self):
+        try:
+            data = self.canvas_avgMS.getPlotItem().listDataItems()[0].getData()
+        except IndexError as e:
+            logger.error(f"Error getting data items for MS viewing. {traceback.format_exc()}")
+            return
+        current_view_range = self.canvas_avgMS.getViewBox().viewRange()
+        # Get the intensity range within the current view range
+        mz_range = data[0][np.logical_and(data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1])]
+        indices = [i for i, x in enumerate(data[0]) if x in mz_range]
+        intensity_range = data[1][indices]
+        print(mz_range, intensity_range)
+        # intensity_range = data[1][mz_range]
+
+        #intensities = self.canvas_avgMS.getPlotItem().dataItems[1].getData()[1]
+        # print(intensities)
+        # Annotate the m/z of the 5 highest peaks
+        # mzs = data_matrix[index]['m/z array']
+        # intensities = data_matrix[index]['intensity array']
+        # sorted_indices = np.argsort(intensities)[::-1]
+        # sorted_mzs = mzs[sorted_indices]
+        # sorted_intensities = intensities[sorted_indices]
+        # for i in range(0, 5):
+        #     text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#298c8c', anchor=(0, 0))
+        #     text_item.setPos(sorted_mzs[i], sorted_intensities[i])
+        #     text_item.setFont(pg.QtGui.QFont('Arial', 5, weight=pg.QtGui.QFont.Weight.ExtraLight))
+        #     widget.addItem(text_item)
 
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
@@ -608,6 +636,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.getPlotItem().getViewBox().setAspectLocked(lock=False)            
         self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=1.0)
         self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y', enable=True)
+        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChanged.connect(self.update_labels_avgMS)
 
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)

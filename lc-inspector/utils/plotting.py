@@ -80,20 +80,6 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     widget.showGrid(x=True, y=True, alpha=0.2)
     curve = widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
     widget.getPlotItem().setTitle(f'MS1 full-scan spectrum at {round(rt, 2)} minutes', color='#b8b8b8', size='12pt')
-
-    # Annotate the m/z of the 5 highest peaks
-    mzs = data_matrix[index]['m/z array']
-    intensities = data_matrix[index]['intensity array']
-    sorted_indices = np.argsort(intensities)[::-1]
-    sorted_mzs = mzs[sorted_indices]
-    sorted_intensities = intensities[sorted_indices]
-    for i in range(0, 5):
-        widget.plot([sorted_mzs[i], sorted_mzs[i]], [0, sorted_intensities[i]], pen=mkPen('#a00000', width=1))
-        text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#298c8c', anchor=(0, 0))
-        text_item.setPos(sorted_mzs[i], sorted_intensities[i])
-        text_item.setFont(pg.QtGui.QFont('Arial', 5, weight=pg.QtGui.QFont.Weight.ExtraLight))
-        widget.addItem(text_item)
-
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
 
@@ -121,16 +107,15 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
     widget.setLabel('left', 'Absorbance (mAU)')
     widget.setLabel('bottom', 'Retention time (min)')
     widget.setTitle(f'Chromatogram of {filename} with annotations (click a peak to select it)')
-    widget.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'], pen=mkPen('b', width=1))
+    widget.plot(chromatogram['Time (min)'], chromatogram['Value (mAU)'], pen=mkPen('#dddddd', width=1))
     start_time = time.time()
     lc_peaks = find_peaks(chromatogram['Value (mAU)'], distance=10, prominence=10)        
     widths, width_heights, left, right = peak_widths(chromatogram['Value (mAU)'], lc_peaks[0], rel_height=0.9)
     lc_peaks_RTs = chromatogram['Time (min)'][lc_peaks[0]]
-    colors = [(65,35,67,255), (35,66,61,255), (94,77,44,255), (88,17,21,255), (3,16,33,255), (62,17,0,255), (78,78,78,255)]
+    colors = ['#cc6677', '#332288', '#ddcc77', '#117733', '#88ccee', '#882255', '#44aa99', '#999933', '#aa4499']
     curve_dict = {}
     for i, peak_idx in enumerate(lc_peaks[0]):
         peak_curve = np.transpose(np.array((chromatogram['Time (min)'][int(left[i]):int(right[i])], chromatogram['Value (mAU)'][int(left[i]):int(right[i])])))
-        #print(peak_curve)
         pen = mkPen(colors[i % len(colors)], width=1)
         default_brush = pg.mkBrush(colors[i % len(colors)])
         plot_item = widget.plot(peak_curve, pen=pen, name=f'Peak {i}', fillLevel=1.0, brush=default_brush)
