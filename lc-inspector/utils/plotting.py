@@ -73,7 +73,6 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     start_time = time.time()
     scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
     index = np.argmin(scan_time_diff)
-
     widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
@@ -82,6 +81,19 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     widget.getPlotItem().setTitle(f'MS1 full-scan spectrum at {round(rt, 2)} minutes', color='#b8b8b8', size='12pt')
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
+
+    # Annotate the m/z of the 5 highest peaks
+    mzs = data_matrix[index]['m/z array']
+    intensities = data_matrix[index]['intensity array']
+    peaks, _ = find_peaks(intensities, prominence=10)
+    sorted_indices = np.argsort(intensities[peaks])[::-1]
+    sorted_mzs = mzs[peaks][sorted_indices][0:10]
+    sorted_intensities = intensities[peaks][sorted_indices][0:10]
+    for i in range(0, 10):
+        text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#232323', anchor=(0, 0))
+        text_item.setPos(sorted_mzs[i], sorted_intensities[i])
+        text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+        widget.addItem(text_item)
 
 def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
     '''

@@ -7,6 +7,7 @@ import sys, traceback, logging, json, __main__
 from utils.measurements import Compound
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
+from scipy.signal import find_peaks
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -386,6 +387,10 @@ class View(QtWidgets.QMainWindow):
             text_item.setPos(float(np.median(selected_curve.getData()[0]+7*(i//10))), float(positions[i%len(positions)]))
 
     def update_labels_avgMS(self):
+        # Remove all the previous labels
+        for item in self.canvas_avgMS.items():
+            if isinstance(item, pg.TextItem):
+                self.canvas_avgMS.removeItem(item)
         try:
             data = self.canvas_avgMS.getPlotItem().listDataItems()[0].getData()
         except IndexError as e:
@@ -396,22 +401,17 @@ class View(QtWidgets.QMainWindow):
         mz_range = data[0][np.logical_and(data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1])]
         indices = [i for i, x in enumerate(data[0]) if x in mz_range]
         intensity_range = data[1][indices]
-        print(mz_range, intensity_range)
-        # intensity_range = data[1][mz_range]
-
-        #intensities = self.canvas_avgMS.getPlotItem().dataItems[1].getData()[1]
-        # print(intensities)
-        # Annotate the m/z of the 5 highest peaks
-        # mzs = data_matrix[index]['m/z array']
-        # intensities = data_matrix[index]['intensity array']
-        # sorted_indices = np.argsort(intensities)[::-1]
-        # sorted_mzs = mzs[sorted_indices]
-        # sorted_intensities = intensities[sorted_indices]
-        # for i in range(0, 5):
-        #     text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#298c8c', anchor=(0, 0))
-        #     text_item.setPos(sorted_mzs[i], sorted_intensities[i])
-        #     text_item.setFont(pg.QtGui.QFont('Arial', 5, weight=pg.QtGui.QFont.Weight.ExtraLight))
-        #     widget.addItem(text_item)
+        peaks, _ = find_peaks(intensity_range, prominence=10)
+        # Get the 10 highest peaks within the current view range
+        sorted_indices= np.argsort(intensity_range[peaks])[::-1]
+        # Get their mz values
+        mzs = mz_range[peaks][sorted_indices][0:10]
+        intensities = intensity_range[peaks][sorted_indices][0:10]
+        for mz, intensity in zip(mzs, intensities):
+            text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
+            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+            text_item.setPos(mz, intensity)
+            self.canvas_avgMS.addItem(text_item)
 
     def update_resolution_label(self, resolution):
         resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
@@ -636,7 +636,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.getPlotItem().getViewBox().setAspectLocked(lock=False)            
         self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=1.0)
         self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y', enable=True)
-        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChanged.connect(self.update_labels_avgMS)
+        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(self.update_labels_avgMS)
 
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
