@@ -183,22 +183,18 @@ class View(QtWidgets.QMainWindow):
 
     def update_ion_list(self):
         lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
-        if self.comboBoxIonLists.currentText() == "Amino acids and polyamines":
+        if self.comboBoxIonLists.currentText() == "Amino acids and polyamines (DEEMM)":
             ion_list = lists["aminoacids_and_polyamines"]
         elif self.comboBoxIonLists.currentText() == "Short-chain fatty acids":
             ion_list = lists["scfas"]
-        elif self.comboBoxIonLists.currentText() == "Amino acids":
-            pass
-            ion_list = lists["aminoacids"]
-        elif self.comboBoxIonLists.currentText() == "Polyamines":
-            pass
-            ion_list = lists["polyamines"]
+        elif self.comboBoxIonLists.currentText() == "Phenolic acids":
+            ion_list = lists["phenolic_acids"]
+        elif self.comboBoxIonLists.currentText() == "Flavonoids":
+            ion_list = lists["flavonoids"]
         elif self.comboBoxIonLists.currentText() == "Fatty acids":
-            pass
             ion_list = lists["fatty_acids"]
         else:
             ion_list = None
-            pass
 
         self.ionTable.clearContents()
         if ion_list:
@@ -374,7 +370,7 @@ class View(QtWidgets.QMainWindow):
         text_items = []
         for compound in xics:
             for j, ion in enumerate(compound.ions.keys()):
-                if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], 0.05)): # If the ion's RT overlaps with the selected peak
+                if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], atol=0.1)): # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
                     logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
                     text_item = pg.TextItem(text=f"{compound.ion_info[j]} ({ion})", color='#232323', anchor=(0, 0))
                     text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
@@ -573,9 +569,11 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
         self.comboBoxIonLists.addItem("")
-        self.comboBoxIonLists.addItem("Amino acids and polyamines")
+        self.comboBoxIonLists.addItem("Amino acids and polyamines (DEEMM)")
         self.comboBoxIonLists.addItem("Short-chain fatty acids")
         self.comboBoxIonLists.addItem("Fatty acids")
+        self.comboBoxIonLists.addItem("Phenolic acids")
+        self.comboBoxIonLists.addItem("Flavonoids")
         self.gridLayout_3.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
 
 
@@ -652,6 +650,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+        self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
 
         self.gridLayout_2.setColumnStretch(0, 2)  # Left column

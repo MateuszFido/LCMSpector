@@ -58,79 +58,75 @@
         },
         "Dopamine": {
             "ions": [324.1442, 278.1023, 322.1296, 154.0863, 152.0717],
-            "info": ["Dopamine-I1", "Dopamine-I2", "Dopamine-I3", "Dopamine-I4", "Dopamine-I5"]
+            "info": ["Dopamine-D", "Dopamine-NL", "Dopamine-D-neg", "Dopamine-I-pos", "Dopamine-I-neg"]
         },
         "GABA": {
             "ions": [274.1286, 228.0867, 272.1139, 104.0707, 102.056],
-            "info": ["GABA-I1", "GABA-I2", "GABA-I3", "GABA-I4", "GABA-I5"]
+            "info": ["GABA-D", "GABA-NL", "GABA-D-neg", "GABA-I-pos", "GABA-I-neg"]
         },
         "Glutamic acid": {
             "ions": [304.1027, 272.0765, 302.0881, 148.0605, 146.0458],
-            "info": ["Glutamic acid-I1", "Glutamic acid-I2", "Glutamic acid-I3", "Glutamic acid-I4", "Glutamic acid-I5"]
+            "info": ["Glutamic acid-D", "Glutamic acid-NL", "Glutamic acid-D-neg", "Glutamic acid-I-pos", "Glutamic acid-I-neg"]
         },
         "Glutamine": {
             "ions": [317.1344, 271.0925, 315.1197, 147.0765, 145.0618],
-            "info": ["Glutamine-I1", "Glutamine-I2", "Glutamine-I3", "Glutamine-I4", "Glutamine-I5"]
+            "info": ["Glutamine-D", "Glutamine-NL", "Glutamine-D-neg", "Glutamine-I-pos", "Glutamine-I-neg"]
         },
         "Glycine": {
             "ions": [246.0973, 200.0554, 244.0826, 76.0394, 74.0247],
-            "info": ["Glycine-I1", "Glycine-I2", "Glycine-I3", "Glycine-I4", "Glycine-I5"]
+            "info": ["Glycine-D", "Glycine-NL", "Glycine-D-neg", "Glycine-I-pos", "Glycine-I-neg"]
         },
         "Histamine": {
             "ions": [282.1449, 236.103, 280.1302, 112.087, 110.0723],
-            "info": ["Histamine-I1", "Histamine-I2", "Histamine-I3", "Histamine-I4", "Histamine-I5"]
+            "info": ["Histamine-D", "Histamine-NL", "Histamine-D-neg", "Histamine-I-pos", "Histamine-I-neg"]
         },
         "Histidine": {
             "ions": [326.1347, 280.0928, 452.2028, 450.1508, 324.1201, 156.0768, 154.0622],
-            "info": ["Histidine-I1", "Histidine-I2", "Histidine-I3", "Histidine-I4", "Histidine-I5", "Histidine-I6", "Histidine-I7"]
+            "info": ["Histidine-D", "Histidine-NL", "Histidine-D-D", "Histidine-D-NL", "Histidine-D-neg", "Histidine-I-pos", "Histidine-I-neg"]
         },
         "Homocitrulline": {
             "ions": [360.1766, 314.1347, 358.1619, 190.1187, 188.104],
-            "info": ["Homocitrulline-I1", "Homocitrulline-I2", "Homocitrulline-I3", "Homocitrulline-I4", "Homocitrulline-I5"]
+            "info": ["Homocitrulline-D", "Homocitrulline-NL", "Homocitrulline-D-neg", "Homocitrulline-I-pos", "Homocitrulline-I-neg"]
         },
         "Hypoxanthine": {
             "ions": [307.1037, 305.0891, 137.0458, 135.0312],
-            "info": ["Hypoxanthine-I1", "Hypoxanthine-I2", "Hypoxanthine-I3", "Hypoxanthine-I4"]
-        },
-        "Isoleucine": {
-            "ions": [302.1599, 256.118, 300.1452, 132.102, 130.0873],
-            "info": ["Isoleucine-I1", "Isoleucine-I2", "Isoleucine-I3", "Isoleucine-I4", "Isoleucine-I5"]
+            "info": ["Hypoxanthine-D", "Hypoxanthine-D-neg", "Hypoxanthine-I-pos", "Hypoxanthine-I-neg"]
         },
         "Kynurenine": {
             "ions": [379.15, 333.1082, 549.2079, 503.1661, 377.1354, 547.1933, 209.0921, 207.0775],
-            "info": ["Kynurenine-I1", "Kynurenine-I2", "Kynurenine-I3", "Kynurenine-I4", "Kynurenine-I5", "Kynurenine-I6", "Kynurenine-I7", "Kynurenine-I8"]
+            "info": ["Kynurenine-D", "Kynurenine-NL", "Kynurenine-D-D", "Kynurenine-D-NL", "Kynurenine-D-neg", "Kynurenine-D-D-neg", "Kynurenine-I-pos", "Kynurenine-I-neg"]
         },
         "Leucine": {
             "ions": [302.1599, 258.1336, 300.1452, 132.102, 130.0873],
-            "info": ["Leucine-I1", "Leucine-I2", "Leucine-I3", "Leucine-I4", "Leucine-I5"]
+            "info": ["(Iso)Leucine-D", "(Iso)Leucine-NL", "(Iso)Leucine-D-neg", "(Iso)Leucine-I-pos", "(Iso)Leucine-I-neg"]
         },
         "Lysine": {
             "ions": [317.1708, 271.1289, 487.2287, 441.1868, 315.1561, 485.214, 147.1129, 145.0982],
-            "info": ["Lysine-I1", "Lysine-I2", "Lysine-I3", "Lysine-I4", "Lysine-I5", "Lysine-I6", "Lysine-I7", "Lysine-I8"]
+            "info": ["Lysine-D", "Lysine-NL", "Lysine-D-D", "Lysine-D-NL", "Lysine-D-neg", "Lysine-D-D-neg", "Lysine-I-pos", "Lysine-I-neg"]
         },
         "Methionine": {
             "ions": [320.1163, 274.0744, 318.1016, 150.0584, 148.0437],
-            "info": ["Methionine-I1", "Methionine-I2", "Methionine-I3", "Methionine-I4", "Methionine-I5"]
+            "info": ["Methionine-D", "Methionine-NL", "Methionine-D-neg", "Methionine-I-pos", "Methionine-I-neg"]
         },
         "NH3": {
-            "ions": [188.0918, 142.0499, 358.1497, 312.1078, 186.0771, 18.0339, 16.0192],
-            "info": ["NH3-I1", "NH3-I2", "NH3-I3", "NH3-I4", "NH3-I5", "NH3-I6", "NH3-I7"]
+            "ions": [188.0918, 142.0499, 358.1497, 312.1078, 186.0771],
+            "info": ["NH3-D", "NH3-D-NL", "NH3-D-D", "NH3-D-NL", "NH3-D-neg"]
         },
         "Niacinamide": {
             "ions": [293.1132, 247.0714, 123.0553],
-            "info": ["Niacinamide-I1", "Niacinamide-I2", "Niacinamide-I3"]
+            "info": ["Niacinamide-D", "Niacinamide-NL", "Niacinamide-I-pos"]
         },
         "Ornithine": {
             "ions": [303.1551, 257.1132, 473.213, 427.1712, 301.1405, 471.1984, 133.0972, 131.0826],
-            "info": ["Ornithine-I1", "Ornithine-I2", "Ornithine-I3", "Ornithine-I4", "Ornithine-I5", "Ornithine-I6", "Ornithine-I7", "Ornithine-I8"]
+            "info": ["Ornithine-D", "Ornithine-NL", "Ornithine-D-D", "Ornithine-D-NL", "Ornithine-D-neg", "Ornithine-D-D-neg", "Ornithine-I-pos", "Ornithine-I-neg"]
         },
         "Orotic acid": {
             "ions": [327.0823, 497.1402, 325.0677, 157.0244, 155.0098],
-            "info": ["Orotic acid-I1", "Orotic acid-I2", "Orotic acid-I3", "Orotic acid-I4", "Orotic acid-I5"]
+            "info": ["Orotic acid-D", "Orotic acid-D-D", "Orotic acid-D-neg", "Orotic acid-I-pos", "Orotic acid-I-neg"]
         },
         "Phenylalanine": {
             "ions": [336.1442, 290.1023, 334.1296, 166.0863, 164.0717],
-            "info": ["Phenylalanine-I1", "Phenylalanine-I2", "Phenylalanine-I3", "Phenylalanine-I4", "Phenylalanine-I5"]
+            "info": ["Phenylalanine-D", "Phenylalanine-NL", "Phenylalanine-D-neg", "Phenylalanine-I-pos", "Phenylalanine-I-neg"]
         },
         "Proline": {
             "ions": [286.1286, 284.1139, 116.0707, 114.056],
@@ -138,55 +134,79 @@
         },
         "Putrescine": {
             "ions": [259.1653, 213.1234, 429.2232, 383.1813, 89.1074, 87.0927],
-            "info": ["Putrescine-I1", "Putrescine-I2", "Putrescine-I3", "Putrescine-I4", "Putrescine-I5", "Putrescine-I6"]
+            "info": ["Putrescine-D", "Putrescine-NL", "Putrescine-D-D", "Putrescine-D-NL", "Putrescine-I-pos", "Putrescine-I-neg"]
         },
         "Riboflavin": {
             "ions": [547.2035, 545.1889, 377.1456, 375.131],
-            "info": ["Riboflavin-I1", "Riboflavin-I2", "Riboflavin-I3", "Riboflavin-I4"]
+            "info": ["Riboflavin-D", "Riboflavin-D-neg", "Riboflavin-I-pos", "Riboflavin-I-neg"]
         },
         "SAM": {
-            "ions": [285.1049, 262.0839, 370.1338, 347.1129, 399.1446, 398.1372],
-            "info": ["SAM-I1", "SAM-I2", "SAM-I3", "SAM-I4", "SAM-I5", "SAM-I6"]
+            "ions": [569.2025, 399.1446, 398.1372],
+            "info": ["SAM-D", "SAM-I-pos", "SAM-I-neg"]
         },
         "Serine": {
             "ions": [276.1078, 230.066, 274.0932, 106.0499, 104.0353],
-            "info": ["Serine-I1", "Serine-I2", "Serine-I3", "Serine-I4", "Serine-I5"]
+            "info": ["Serine-D", "Serine-NL", "Serine-D-neg", "Serine-I-pos", "Serine-I-neg"]
         },
         "Serotonin": {
             "ions": [347.1602, 301.1183, 345.1455, 177.1023, 175.0876],
-            "info": ["Serotonin-I1", "Serotonin-I2", "Serotonin-I3", "Serotonin-I4", "Serotonin-I5"]
+            "info": ["Serotonin-D", "Serotonin-NL", "Serotonin-D-neg", "Serotonin-I-pos", "Serotonin-I-neg"]
         },
         "Spermidine": {
             "ions": [316.2231, 270.1813, 486.281, 440.2392, 314.2085, 146.1652, 144.1506],
-            "info": ["Spermidine-I1", "Spermidine-I2", "Spermidine-I3", "Spermidine-I4", "Spermidine-I5", "Spermidine-I6", "Spermidine-I7"]
+            "info": ["Spermidine-D", "Spermidine-NL", "Spermidine-D-D", "Spermidine-D-NL", "Spermidine-D-neg", "Spermidine-I-pos", "Spermidine-I-neg"]
         },
         "Spermine": {
             "ions": [373.281, 327.2391, 543.3389, 497.297, 371.2663, 203.2231, 201.2084],
-            "info": ["Spermine-I1", "Spermine-I2", "Spermine-I3", "Spermine-I4", "Spermine-I5", "Spermine-I6", "Spermine-I7"]
+            "info": ["Spermine-D", "Spermine-NL", "Spermine-D-D", "Spermine-D-NL", "Spermine-D-neg", "Spermine-I-pos", "Spermine-I-neg"]
         },
         "TMAO": {
             "ions": [230.1387, 115.573, 76.0757],
-            "info": ["TMAO-I1", "TMAO-I2", "TMAO-I3"]
+            "info": ["TMAO-D", "TMAO-NL", "TMAO-I-pos"]
         },
         "Taurine": {
             "ions": [296.0799, 250.038, 294.0652, 126.022, 124.0073],
-            "info": ["Taurine-I1", "Taurine-I2", "Taurine-I3", "Taurine-I4", "Taurine-I5"]
+            "info": ["Taurine-D", "Taurine-NL", "Taurine-D-neg", "Taurine-I-pos", "Taurine-I-neg"]
         },
         "Threonine": {
-            "ions": [290.1235, 244.0816, 288.1088, 288.1088, 118.0509],
-            "info": ["Threonine-I1, Threonine-I2", "Threonine-I3", "Threonine-I4", "Threonine-I5"]
+            "ions": [290.1235, 244.0816, 288.1088, 120.0656, 118.0509],
+            "info": ["Threonine-D", "Threonine-D-NL", "Threonine-D-neg", "Threonine-I-pos", "Threonine-I-neg"]
+        },
+        "Tryptamine": {
+            "ions": [331.1653, 285.1234, 501.2232, 455.1813, 329.1506, 161.1074, 159.0927],
+            "info": ["Tryptamine-D", "Tryptamine-NL", "Tryptamine-D-D", "Tryptamine-D-NL", "Tryptamine-D-neg", "Tryptamine-I-pos", "Tryptamine-I-neg"]
         },
         "Tryptophan": {
-            "ions": [335.1414, 289.0995, 333.1267, 165.0835, 163.0688],
-            "info": ["Tryptophan-I1", "Tryptophan-I2", "Tryptophan-I3", "Tryptophan-I4", "Tryptophan-I5"]
+            "ions": [375.1551, 329.1132, 373.1405, 205.0972, 203.0826],
+            "info": ["Tryptophan-D", "Tryptophan-NL", "Tryptophan-D-neg", "Tryptophan-I-pos", "Tryptophan-I-neg"]
         },
         "Tyrosine": {
-            "ions": [339.1503, 293.1084, 337.1356, 169.0924, 167.0777],
-            "info": ["Tyrosine-I1", "Tyrosine-I2", "Tyrosine-I3", "Tyrosine-I4", "Tyrosine-I5"]
+            "ions": [352.1391, 306.0973, 350.1245, 182.0812, 180.0666],
+            "info": ["Tyrosine-D", "Tyrosine-NL", "Tyrosine-D-neg", "Tyrosine-I-pos", "Tyrosine-I-neg"]
+        },
+        "Uracil": {
+            "ions": [283.0925, 453.1504, 113.0346],
+            "info": ["Uracil-D", "Uracil-D-D", "Uracil-I-pos"]
+        },
+        "Uridine": {
+            "ions": [415.1348, 413.1201, 371.1086, 245.0769, 243.0622],
+            "info": ["Uridine-D", "Uridine-D-neg", "Uridine-NL", "Uridine-I-pos", "Uridine-I-neg"]
+        },
+        "Urea": {
+            "ions": [231.0976, 401.1555, 355.1136, 229.0829, 61.0397, 59.025],
+            "info": ["Urea-D", "Urea-D-D", "Urea-D-NL", "Urea-D-neg", "Urea-I-pos", "Urea-I-neg"]
         },
         "Valine": {
-            "ions": [308.1122, 262.0703, 306.0975, 138.0543, 136.0396],
-            "info": ["Valine-I1", "Valine-I2", "Valine-I3", "Valine-I4", "Valine-I5"]
+            "ions": [288.1442, 242.1023, 287.1369, 118.0863, 287.1369],
+            "info": ["Valine-D", "Valine-NL", "Valine-D-neg", "Valine-I-pos", "Valine-I-neg"]
+        },
+        "Carbamoyl Phosphate": {
+            "ions": [332.134, 286.0922, 310.0333],
+            "info": ["Carbamoyl phosphate-D", "Carbamoyl phosphate-NL", "Carbamoyl phosphate-D-neg"]
+        },
+        "Aminoadipic acid": {
+            "ions": [332.134, 286.0922, 330.1194, 162.0761, 160.0615],
+            "info": ["Aminoadipic acid-D", "Aminoadipic acid-NL", "Aminoadipic acid-D-neg", "Aminoadipic acid-I-pos", "Aminoadipic acid-I-neg"]
         }
     },
     "scfas": {
@@ -207,7 +227,121 @@
             "info": ["Propionate-(+)", "Propionate-(-)"]
         }
     },
-    "fatty acids": {
+
+    "flavonoids": {
+        "Apigenin": {
+            "ions":[],
+            "info":[]
+        },
+        "Catechin": {
+            "ions":[],
+            "info":[]
+        },
+        "Chrysin": {
+            "ions":[],
+            "info":[]
+        },
+        "Galangin": {
+            "ions":[],
+            "info":[]
+        },
+        "Genistein": {
+            "ions":[],
+            "info":[]
+        },
+        "Isorhamnetin": {
+            "ions":[],
+            "info":[]
+        },
+        "Kaempferol": {
+            "ions":[],
+            "info":[]
+        },
+        "Luteolin": {
+            "ions":[],
+            "info":[]
+        },
+        "Myricetin": {
+            "ions":[],
+            "info":[]
+        },
+        "Pinobanksin": {
+            "ions":[],
+            "info":[]
+        },
+        "Pinocembrin": {
+            "ions":[],
+            "info":[]
+        },
+        "Quercetin": {
+            "ions":[],
+            "info":[]
+        },
+        "Rutin": {
+            "ions":[],
+            "info":[]
+        }
+    },
+
+    "phenolic_acids": {
+        "2-cis,4-trans Abscisic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "2-Hydroxycinnamic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Caffeic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Chlorogenic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Cinnamic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Ellagic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Ferulic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Gallic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "p-Coumaric acid": {
+            "ions":[],
+            "info":[]
+        },
+        "p-Hydroxybenzoic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Protocatechuic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Sinapic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Syringic acid": {
+            "ions":[],
+            "info":[]
+        },
+        "Vanillic acid": {
+            "ions":[],
+            "info":[]
+        }
+    },
+    "fatty_acids": {
         "Palmitic acid": {
             "ions": [145.065, 143.0503],
             "info": ["Palmitic acid-I1", "Palmitic acid-I2"]
