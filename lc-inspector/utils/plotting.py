@@ -155,10 +155,10 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
         plot_item.setBackground("w")
         plot_item.setMouseEnabled(x=True, y=False)
         args = ({'color': 'b', 'font-size': '10pt'})
-        plot_item.setLabel('bottom', text='Scan time', units='min', **args)
-        plot_item.setLabel('left', text='Intensity', units='a.u.', **args)
+        plot_item.setLabel('bottom', text='Time (min)', **args)
+        plot_item.setLabel('left', text='Intensity (a.u.)', **args)
         color_list = ('#a559aa', "#59a89c", "#f0c571", "#e02b35", "#082a54", '#9d2c00', '#7e4794', '#c8c8c8')
-        plot_item.addLegend()
+        plot_item.addLegend().setPos(0,0)
         for j, ion in enumerate(compound.ions.keys()):
             if compound.ions[ion]["MS Intensity"] is None:
                 continue
@@ -172,8 +172,13 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
             text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(scan_time, plotting_data[1][highest_intensity])
             plot_item.addItem(text_item)
+            plot_item.getViewBox().enableAutoRange(axis='y', enable=True)
+            plot_item.getViewBox().setAutoVisible(y=1.0)
 
     #HACK: Forces scrollArea to realize that the widget is bigger than it is
     widget.setMinimumSize(pg.QtCore.QSize(len(xics)*20,len(xics)*40))
-    state = widget.saveState()
     logger.info(f"---Plotting annotated XICs of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
+
+def plot_calibration_curve(compound, widget: pg.PlotWidget):
+    pass
+    widget.plot(compound.calibration_curve, pen=mkPen('b', width=1), name='compound.name')

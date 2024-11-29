@@ -259,6 +259,13 @@ class View(QtWidgets.QMainWindow):
     def on_exit(self):
         sys.exit(0)
 
+    def on_calculate_calcurves(self):
+        # Trigger the calculate_calcurves action in the controller
+        """
+        Slot for the calculate_calcurves button. Triggers the calculate_calcurves action in the controller.
+        """
+        pass  # This is handled by the controller
+
     def update_lc_file_list(self):
         """
         Updates the model with the LC file paths currently in the listLC widget.
@@ -314,11 +321,27 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile.clear()
         self.comboBox_currentfile.addItems(filenames)
 
-    def on_xic_clicked(self, event):
-        items = self.canvas_XICs.scene().itemsNearEvent(event)
-        dock_area = DockArea()
-        plot_single_XIC(self.controller.model.ms_measurements[self.comboBox_currentfile.currentIndex()], items[0], self.canvas_XICs)
-    
+    def update_table_quantitation(self, concentrations):
+        self.tableWidget_files.clear()
+        self.tableWidget_files.setColumnCount(3)
+        self.tableWidget_files.setShowGrid(True)
+        self.tableWidget_files.setStyleSheet("gridline-color: #e0e0e0;")
+        for row, item in enumerate(concentrations):
+            self.tableWidget_files.insertRow(row)
+            self.tableWidget_files.setItem(row, 0, QtWidgets.QTableWidgetItem(item[0]))
+            self.tableWidget_files.setItem(row, 1, QtWidgets.QTableWidgetItem(item[1]))
+            checkbox = QtWidgets.QTableWidgetItem("")
+            checkbox.setCheckState(Qt.CheckState.Unchecked)
+            self.tableWidget_files.setItem(row, 2, checkbox)
+        self.tableWidget_files.setHorizontalHeaderLabels(["File", "Concentration", "Use for calibration?"])
+
+
+    def update_choose_compound(self, compounds):
+        self.comboBoxChooseCompound.clear()
+        for compound in compounds:
+            self.comboBoxChooseCompound.addItem(compound.name)
+        self.tableWidget_concentrations.setColumnCount(len(compounds))
+        self.tableWidget_concentrations.setHorizontalHeaderLabels([compound.name for compound in compounds])
 
     def display_plots(self, file_lc, file_ms):
         self.canvas_baseline.clear()
@@ -347,13 +370,24 @@ class View(QtWidgets.QMainWindow):
                 logger.error(f"No XIC plot found: {traceback.format_exc()}")
 
         self.canvas_annotatedLC.clear()
-        if file_lc.filename == file_ms.filename:
-            try:
-                self.curve_list = plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, self.canvas_annotatedLC)
-                for curve in self.curve_list.keys():
-                    curve.sigClicked.connect(lambda c: self.highlight_peak(c, file_ms.xics))
-            except Exception as e: 
-                logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
+        if file_lc and file_ms:
+            if file_lc.filename == file_ms.filename:
+                try:
+                    self.curve_list = plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, self.canvas_annotatedLC)
+                    for curve in self.curve_list.keys():
+                        curve.sigClicked.connect(lambda c: self.highlight_peak(c, file_ms.xics))
+                except Exception as e: 
+                    logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
+
+    def display_calibration_curve(self):
+        self.canvas_calibration.clear()
+        for compound in self.controller.model.compounds:
+            if compound.name == self.comboBoxChooseCompound.currentText():
+                current_compound = compound
+        try:
+            plot_calibration_curve(current_compound, calibration_files, self.canvas_calibration)
+        except Exception as e: 
+            logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -378,9 +412,9 @@ class View(QtWidgets.QMainWindow):
                     self.canvas_annotatedLC.addItem(text_item)
         selected_curve.setBrush(pg.mkBrush('#ee6677'))
         selected_curve.setPen(pg.mkPen('#ee6677'))
-        positions = np.linspace(np.max(selected_curve.getData()[1]), np.max(selected_curve.getData()[1])+400, 10)
+        positions = np.linspace(np.max(selected_curve.getData()[1])/2, np.max(selected_curve.getData()[1])+400, 20)
         for i, text_item in enumerate(text_items):
-            text_item.setPos(float(np.median(selected_curve.getData()[0]+7*(i//10))), float(positions[i%len(positions)]))
+            text_item.setPos(float(np.median(selected_curve.getData()[0]+i//20)), float(positions[i%len(positions)]))
 
     def update_labels_avgMS(self):
         # Remove all the previous labels
@@ -564,7 +598,6 @@ class View(QtWidgets.QMainWindow):
         self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelIonList.setObjectName("labelIonList")
         self.gridLayout_3.addWidget(self.labelIonList, 0, 4, 1, 1)
-
         
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
@@ -575,7 +608,6 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists.addItem("Phenolic acids")
         self.comboBoxIonLists.addItem("Flavonoids")
         self.gridLayout_3.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
-
 
         self.gridLayout = QtWidgets.QGridLayout()
         self.gridLayout.setObjectName("gridLayout")
@@ -665,48 +697,60 @@ class View(QtWidgets.QMainWindow):
 
         self.tabQuantitation = QtWidgets.QWidget()
         self.tabQuantitation.setObjectName("tabQuantitation")
-        self.gridLayout_7 = QtWidgets.QGridLayout(self.tabQuantitation)
-        self.gridLayout_7.setObjectName("gridLayout_7")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.label_3 = QtWidgets.QLabel(parent=self.tabQuantitation)
+        self.gridLayout_6 = QtWidgets.QGridLayout(self.tabQuantitation)
+        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.gridLayout_quant = QtWidgets.QGridLayout()
+        self.gridLayout_quant.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
+        self.gridLayout_quant.setObjectName("gridLayout_quant")
+        self.gridLayout_top_left = QtWidgets.QGridLayout()
+        self.gridLayout_top_left.setObjectName("gridLayout_top_left")
+        self.label_calibrate = QtWidgets.QLabel(parent=self.tabQuantitation)
+        self.label_calibrate.setWordWrap(True)
+        self.label_calibrate.setObjectName("label_calibrate")
+        self.gridLayout_top_left.addWidget(self.label_calibrate, 0, 0, 1, 1)
+        self.calibrateButton = QtWidgets.QPushButton(parent=self.tabQuantitation)
+        self.calibrateButton.setObjectName("calibrateButton")
+        self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
+        self.tableWidget_files = QtWidgets.QTableWidget(parent=self.tabQuantitation)
+        self.tableWidget_files.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self.tableWidget_files.setObjectName("tableWidget_files")
+        self.tableWidget_files.setColumnCount(3)
+        self.tableWidget_files.setRowCount(7)
+        self.gridLayout_top_left.addWidget(self.tableWidget_files, 1, 0, 1, 2)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 1, 1)
+        self.gridLayout_top_right = QtWidgets.QGridLayout()
+        self.gridLayout_top_right.setObjectName("gridLayout_top_right")
+        self.label_curr_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
-        self.label_3.setSizePolicy(sizePolicy)
-        self.label_3.setObjectName("label_3")
-        self.horizontalLayout_2.addWidget(self.label_3)
-        self.comboBox_2 = QtWidgets.QComboBox(parent=self.tabQuantitation)
-        self.comboBox_2.setMinimumSize(QtCore.QSize(0, 32))
-        self.comboBox_2.setObjectName("comboBox_2")
-        self.horizontalLayout_2.addWidget(self.comboBox_2)
-        self.gridLayout_7.addLayout(self.horizontalLayout_2, 0, 1, 1, 1)
+        sizePolicy.setHeightForWidth(self.label_curr_compound.sizePolicy().hasHeightForWidth())
+        self.label_curr_compound.setSizePolicy(sizePolicy)
+        self.label_curr_compound.setObjectName("label_curr_compound")
+        self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 1)
+        self.label_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
+        self.label_curr_compound.setSizePolicy(sizePolicy)
+        self.label_curr_compound.setObjectName("label_curr_compound")
+        self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 1)
+        self.comboBoxChooseCompound = QtWidgets.QComboBox(parent=self.tabQuantitation)
+        self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
+        self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
+        self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 1)
+        self.canvas_calibration = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
+        self.canvas_calibration.setObjectName("canvas_calibration")
+        self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 2)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
         self.tableWidget_concentrations = QtWidgets.QTableWidget(parent=self.tabQuantitation)
         self.tableWidget_concentrations.setObjectName("tableWidget_concentrations")
-        self.tableWidget_concentrations.setColumnCount(0)
-        self.tableWidget_concentrations.setRowCount(0)
-        self.gridLayout_7.addWidget(self.tableWidget_concentrations, 2, 1, 1, 1)
-        self.gridLayout_6 = QtWidgets.QGridLayout()
-        self.gridLayout_6.setObjectName("gridLayout_6")
-        self.horizontalLayout = QtWidgets.QHBoxLayout()
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.quant_label = QtWidgets.QLabel(parent=self.tabQuantitation)
-        self.quant_label.setObjectName("quant_label")
-        self.horizontalLayout.addWidget(self.quant_label)
-        self.pushButton = QtWidgets.QPushButton(parent=self.tabQuantitation)
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout.addWidget(self.pushButton)
-        self.gridLayout_6.addLayout(self.horizontalLayout, 0, 0, 1, 1)
-        self.quant_ion_list_view = QtWidgets.QListView(parent=self.tabQuantitation)
-        self.quant_ion_list_view.setObjectName("quant_ion_list_view")
-        self.gridLayout_6.addWidget(self.quant_ion_list_view, 1, 0, 1, 1)
-        self.gridLayout_7.addLayout(self.gridLayout_6, 0, 0, 3, 1)
-        self.canvas_calcurve = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
-        self.canvas_calcurve.setObjectName("canvas_calcurve")
-        self.gridLayout_7.addWidget(self.canvas_calcurve, 1, 1, 1, 1)
+        self.tableWidget_concentrations.setColumnCount(7)
+        self.tableWidget_concentrations.setRowCount(8)
+        self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 1, 1)
+        self.heatmap = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
+        self.heatmap.setObjectName("heatmap")
+        self.gridLayout_quant.addWidget(self.heatmap, 1, 1, 1, 1)
+        self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
-        self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the third tab
+        self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the second tab
 
         self.gridLayout_4.addWidget(self.tabWidget, 2, 0, 1, 1)
         self.logo = QtWidgets.QLabel(parent=self.centralwidget)
@@ -715,7 +759,7 @@ class View(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.logo.sizePolicy().hasHeightForWidth())
         self.logo.setSizePolicy(sizePolicy)
-        self.logo.setMaximumSize(QtCore.QSize(900, 70))
+        self.logo.setMaximumSize(QtCore.QSize(860, 70))
         self.logo.setText("")
         self.logo.setPixmap(QtGui.QPixmap("logo.png"))
         self.logo.setScaledContents(True)
@@ -783,6 +827,8 @@ class View(QtWidgets.QMainWindow):
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
+        self.calibrateButton.clicked.connect(self.on_calculate_calcurves)
+        self.comboBoxChooseCompound.currentIndexChanged.connect(self.display_calibration_curve)
 
     def retranslateUi(self, MainWindow):
         """
@@ -812,9 +858,9 @@ class View(QtWidgets.QMainWindow):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload"))
         self.label_results_currentfile.setText(_translate("MainWindow", "Current file:"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabResults), _translate("MainWindow", "Results"))
-        self.label_3.setText(_translate("MainWindow", "Compound:"))
-        self.quant_label.setText(_translate("MainWindow", "Choose which file(s) to use for calibration:"))
-        self.pushButton.setText(_translate("MainWindow", "Calibrate"))
+        self.label_curr_compound.setText(_translate("MainWindow", "Compound:"))
+        self.label_calibrate.setText(_translate("MainWindow", "Select the files to be used for calibration."))
+        self.calibrateButton.setText(_translate("MainWindow", "Calculate"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabQuantitation), _translate("MainWindow", "Quantitation"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))

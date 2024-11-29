@@ -130,7 +130,7 @@
         },
         "Proline": {
             "ions": [286.1286, 284.1139, 116.0707, 114.056],
-            "info": ["Proline-I1", "Proline-I2", "Proline-I3", "Proline-I4"]
+            "info": ["Proline-D", "Proline-D-neg", "Proline-I-pos", "Proline-I-neg"]
         },
         "Putrescine": {
             "ions": [259.1653, 213.1234, 429.2232, 383.1813, 89.1074, 87.0927],
@@ -193,8 +193,8 @@
             "info": ["Uridine-D", "Uridine-D-neg", "Uridine-NL", "Uridine-I-pos", "Uridine-I-neg"]
         },
         "Urea": {
-            "ions": [231.0976, 401.1555, 355.1136, 229.0829, 61.0397, 59.025],
-            "info": ["Urea-D", "Urea-D-D", "Urea-D-NL", "Urea-D-neg", "Urea-I-pos", "Urea-I-neg"]
+            "ions": [231.0976, 185.0557, 401.1555, 355.1136, 229.0829, 61.0397, 59.025],
+            "info": ["Urea-D", "Urea-NL", "Urea-D-D", "Urea-D-NL", "Urea-D-neg", "Urea-I-pos", "Urea-I-neg"]
         },
         "Valine": {
             "ions": [288.1442, 242.1023, 287.1369, 118.0863, 287.1369],

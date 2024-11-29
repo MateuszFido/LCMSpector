@@ -3,7 +3,7 @@ import pandas as pd
 from pathlib import Path
 from utils.loading import load_absorbance_data
 from utils.sorting import get_path
-import os, logging, sys
+import os, logging, sys, copy
 from collections import defaultdict
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
@@ -61,7 +61,9 @@ def baseline_correction(dataframe: sf.FrameHE) -> sf.FrameHE:
     logger.info(f"Baseline corrected chromatogram calculated.")
     return normalized
 
+# Currently unused 
 def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
+    
     """
     Calculate the m/z axis from a list of Scan objects.
 
@@ -87,18 +89,19 @@ def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     return mz_axis
 
 
-def construct_xics(data, compounds, mass_accuracy):
+def construct_xics(data, ion_list, mass_accuracy):
+    compounds = copy.deepcopy(ion_list)
     for compound in compounds:
         for ion in compound.ions.keys():
             xic = []
             scan_id = []
             # Find a 5 ppm range around the ion (theoretical mass - observed mass)
             mass_range = (ion-3*mass_accuracy, ion+3*mass_accuracy)
-            for i, scan in enumerate(data):
+            for scan in data:
                 indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
                 intensities = scan['intensity array'][indices]
                 xic.append(np.sum(intensities))
-                scan_id.append(i)
+                scan_id.append(auxiliary.cvquery(scan, 'MS:1000016'))
             xic = np.array((scan_id, xic))
             compound.ions[ion]['MS Intensity'] = xic
             # Get the scan time of the index with the highest intensity

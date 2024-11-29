@@ -9,8 +9,6 @@ class Controller:
         self.view = view
         self.view.controller = self
         self.model.controller = self
-        self.view.browseLC.clicked.connect(self.load_lc_data)
-        self.view.browseMS.clicked.connect(self.load_ms_data)
         self.view.processButton.clicked.connect(self.process_data)
         self.view.comboBox_currentfile.currentIndexChanged.connect(self.display_selected_plots)
 
@@ -58,11 +56,15 @@ class Controller:
 
         # Resize view to fit the screen
         self.view.showMaximized()
-        self.update_filenames_combo_box()
-
-    def update_filenames_combo_box(self):
+        self.update_filenames()
+        self.view.update_choose_compound(self.model.compounds)
+    
+    def update_filenames(self):
         filenames = list(self.model.lc_measurements.keys())
         self.view.update_combo_box(filenames)
+        # Grab the return values of extract_concentration() for every file in lc_measurements
+        concentrations = [[file, self.model.lc_measurements[file].extract_concentration()] for file in filenames]
+        self.view.update_table_quantitation(concentrations)
 
     def display_selected_plots(self):
         selected_file = self.view.comboBox_currentfile.currentText()

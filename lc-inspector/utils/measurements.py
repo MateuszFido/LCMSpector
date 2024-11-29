@@ -3,7 +3,7 @@ from utils.preprocessing import baseline_correction, calculate_mz_axis, construc
 from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from abc import ABC, abstractmethod
-import os, logging
+import os, logging, re
 
 logger = logging.getLogger(__name__)
 
@@ -44,11 +44,11 @@ class Measurement:
         pass
 
     def extract_concentration(self):
-        # First look for STMIX in the filename 
-        # If present, return the number(s) in the string as concentration
-        match = re.search(r'STMIX', self.filename)
+        # Extract the concentration from the filename, by looking anywhere in the string
+        # for a number followed by an optional decimal and followed by mM, uM, nM or pM
+        match = re.search(r'([0-9]++)(.?)(uM|mM|nM|pM|mol|mol\/|umol)+', self.filename)
         if match:
-            return float(re.findall(r'(\d*[.]?\d+)', self.filename)[0])
+            return str(match.group(1)) + ' ' + str(match.group(3))
         else:
             return None
 
@@ -64,26 +64,10 @@ class LCMeasurement(Measurement):
         super().__init__(path)
         self.data = load_absorbance_data(path)  # Initialize as None
         self.baseline_corrected = baseline_correction(self.data)  # Initialize as None
-        self.data = load_absorbance_data(path)  # Initialize as None
-        self.baseline_corrected = baseline_correction(self.data)  # Initialize as None
         logger.info(f"Loaded LC file {self.filename}.")
 
     def plot(self):
         plot_absorbance_data(self.path, self.baseline_corrected)
-
-    def annotate(self, ion_list):
-        compounds = []
-        for item in ion_list:
-            compound = Compound(name=item, file=self.filename, ions=item.values())
-            print(compound)
-        compounds.append(compound)
-    def annotate(self, ion_list):
-        compounds = []
-        for item in ion_list:
-            compound = Compound(name=item, file=self.filename, ions=item.values())
-            print(compound)
-        compounds.append(compound)
-        annotate_LC_data(self.baseline_corrected, compounds)
 
     def plot_annotated(self):
         plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
