@@ -2,6 +2,7 @@
 import sys, logging, traceback, re
 import numpy as np
 import concurrent.futures
+from scipy.stats import linregress
 from pathlib import Path
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
 
@@ -71,20 +72,23 @@ class Model:
         return lc_file, ms_file
 
     def calibrate(self, selected_files):
-        for file in selected_files:
-            concentration = selected_files[file].split(" ")
+        j=0
+        for file, concentration in selected_files.items(): 
+            concentration = concentration.split(" ")
             try:
-                suffix = concentration[1]
+                suffix = concentration[1].lower()
             except IndexError:
-                continue
-            if suffix == "mM":
-                concentration = float(concentration[0])*0.001
-            elif suffix == "uM":
-                concentration = float(concentration[0])*0.000001
-            elif suffix == "nM":
-                concentration = float(concentration[0])*0.000000001
-            elif suffix == "pM":
-                concentration = float(concentration[0])*0.000000000001
+                suffix = None
+            if suffix == "m":
+                concentration = float(concentration[0])*1e3
+            elif suffix == "mm":
+                concentration = float(concentration[0]) # Default to mmol/L
+            elif suffix == "um":
+                concentration = float(concentration[0])*1e-3
+            elif suffix == "nm":
+                concentration = float(concentration[0])*1e-6
+            elif suffix == "pm":
+                concentration = float(concentration[0])*1e-9
             else:
                 concentration = float(concentration[0])
             try: 
@@ -95,11 +99,15 @@ class Model:
                         for ion in compound.ions.keys():
                             compound_intensity += np.round(np.sum(ms_file.xics[i].ions[ion]['MS Intensity'][1]), 0)
                         compound.calibration_curve[concentration] = compound_intensity
+                        if j == len(selected_files)-1:
+                            slope, intercept, r_value, p_value, std_err = linregress(list(compound.calibration_curve.keys()), list(compound.calibration_curve.values()))
+                            compound.calibration_parameters = {'slope': slope, 'intercept': intercept, 'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
                 else:
                     logger.error(f"No xics found for file {file}.")
                     continue
             except Exception as e:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
+            j += 1
 
     def save_results(self, lc_file):
         # TODO: Implement

@@ -181,9 +181,14 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
 
 def plot_calibration_curve(compound, widget: pg.PlotWidget):
     widget.setBackground("w")
-    #BUG: Calibration curve is None here
-    print(compound.calibration_curve)
-    x = [key for key in compound.calibration_curve.keys()]
-    y = [value for value in compound.calibration_curve.values()]
-    widget.plot(x=x, y=y, pen=mkPen('b', width=1), name=compound.name)
-    widget.setWindowTitle(f'Calibration curve for {compound.name}')
+    x=list(compound.calibration_curve.keys())
+    y=list(compound.calibration_curve.values())
+    m=int(round(compound.calibration_parameters['slope']))
+    b=int(round(compound.calibration_parameters['intercept']))
+    curve=np.array([m*x+b for x in x])
+    print("x:", x, "\ny:", y, "\nm:", m, "\nb:", b, "\ncurve:", curve)
+    widget.plot(x, y, name=compound.name, pen=None, symbol='o', symbolSize=5)
+    widget.plot(x, curve, pen=mkPen('r', width=1))
+    widget.plotItem.setTitle(f'Calibration curve for {compound.name}')
+    widget.setLabel('left', 'Intensity / a.u.')
+    widget.setLabel('bottom', 'Concentration (mM)')

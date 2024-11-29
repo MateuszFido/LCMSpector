@@ -58,7 +58,6 @@ class Controller:
         # Resize view to fit the screen
         self.view.showMaximized()
         self.update_filenames()
-        self.view.update_choose_compound(self.model.compounds)
     
     def update_filenames(self):
         filenames = list(self.model.lc_measurements.keys())
@@ -76,8 +75,13 @@ class Controller:
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
 
     def calibrate(self):
+        self.view.comboBoxChooseCompound.setEnabled(True)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
         selected_files = self.view.get_calibration_files()
         if selected_files:
             self.model.calibrate(selected_files)
-        self.view.comboBoxChooseCompound.setEnabled(True)
-        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
+        else:
+            logger.error("No files selected for calibration.")
+        self.view.update_choose_compound(self.model.compounds)
+
+        
