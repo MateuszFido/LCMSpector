@@ -2,7 +2,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
-from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs
+from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve
 import sys, traceback, logging, json, __main__
 from utils.measurements import Compound
 from pyqtgraph.dockarea import Dock, DockArea
@@ -259,13 +259,6 @@ class View(QtWidgets.QMainWindow):
     def on_exit(self):
         sys.exit(0)
 
-    def on_calculate_calcurves(self):
-        # Trigger the calculate_calcurves action in the controller
-        """
-        Slot for the calculate_calcurves button. Triggers the calculate_calcurves action in the controller.
-        """
-        pass  # This is handled by the controller
-
     def update_lc_file_list(self):
         """
         Updates the model with the LC file paths currently in the listLC widget.
@@ -334,7 +327,15 @@ class View(QtWidgets.QMainWindow):
             checkbox.setCheckState(Qt.CheckState.Unchecked)
             self.tableWidget_files.setItem(row, 2, checkbox)
         self.tableWidget_files.setHorizontalHeaderLabels(["File", "Concentration", "Use for calibration?"])
+        self.tableWidget_files.resizeColumnsToContents()
 
+    def get_calibration_files(self):
+        selected_files = {}
+        for i in range(self.tableWidget_files.rowCount()):
+            item = self.tableWidget_files.item(i, 2)
+            if item is not None and item.checkState() == Qt.CheckState.Checked:
+                selected_files[self.tableWidget_files.item(i, 0).text()] = self.tableWidget_files.item(i, 1).text()
+        return selected_files
 
     def update_choose_compound(self, compounds):
         self.comboBoxChooseCompound.clear()
@@ -383,11 +384,10 @@ class View(QtWidgets.QMainWindow):
         self.canvas_calibration.clear()
         for compound in self.controller.model.compounds:
             if compound.name == self.comboBoxChooseCompound.currentText():
-                current_compound = compound
-        try:
-            plot_calibration_curve(current_compound, calibration_files, self.canvas_calibration)
-        except Exception as e: 
-            logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
+                try:
+                    plot_calibration_curve(compound, self.canvas_calibration)
+                except Exception as e: 
+                    logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -713,6 +713,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
         self.tableWidget_files = QtWidgets.QTableWidget(parent=self.tabQuantitation)
         self.tableWidget_files.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
+        self.tableWidget_files.horizontalHeader().setStretchLastSection(True)
         self.tableWidget_files.setObjectName("tableWidget_files")
         self.tableWidget_files.setColumnCount(3)
         self.tableWidget_files.setRowCount(7)
@@ -735,8 +736,9 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxChooseCompound = QtWidgets.QComboBox(parent=self.tabQuantitation)
         self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
         self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
+        self.comboBoxChooseCompound.setEnabled(False)
         self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 1)
-        self.canvas_calibration = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
+        self.canvas_calibration = pg.PlotWidget()
         self.canvas_calibration.setObjectName("canvas_calibration")
         self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 2)
         self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
@@ -827,8 +829,6 @@ class View(QtWidgets.QMainWindow):
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
-        self.calibrateButton.clicked.connect(self.on_calculate_calcurves)
-        self.comboBoxChooseCompound.currentIndexChanged.connect(self.display_calibration_curve)
 
     def retranslateUi(self, MainWindow):
         """

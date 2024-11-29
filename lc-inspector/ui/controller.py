@@ -1,8 +1,8 @@
 from calculation.workers import Worker, WorkerSignals
 from multiprocessing import Manager
-import logging
-
+import logging, traceback
 logger = logging.getLogger(__name__)
+
 class Controller:
     def __init__(self, model, view):
         self.model = model
@@ -11,6 +11,7 @@ class Controller:
         self.model.controller = self
         self.view.processButton.clicked.connect(self.process_data)
         self.view.comboBox_currentfile.currentIndexChanged.connect(self.display_selected_plots)
+        self.view.calibrateButton.clicked.connect(self.calibrate)
 
     def load_lc_data(self):
         pass
@@ -71,6 +72,12 @@ class Controller:
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
         except Exception as e:
-            logger.error(f"Error displaying plots for file {selected_file}: {e}")
+            logger.error(f"Error displaying plots for file {selected_file}: {traceback.format_exc()}")
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
 
+    def calibrate(self):
+        selected_files = self.view.get_calibration_files()
+        if selected_files:
+            self.model.calibrate(selected_files)
+        self.view.comboBoxChooseCompound.setEnabled(True)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)

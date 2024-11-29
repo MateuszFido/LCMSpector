@@ -180,5 +180,10 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
     logger.info(f"---Plotting annotated XICs of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
 
 def plot_calibration_curve(compound, widget: pg.PlotWidget):
-    pass
-    widget.plot(compound.calibration_curve, pen=mkPen('b', width=1), name='compound.name')
+    widget.setBackground("w")
+    #BUG: Calibration curve is None here
+    print(compound.calibration_curve)
+    x = [key for key in compound.calibration_curve.keys()]
+    y = [value for value in compound.calibration_curve.values()]
+    widget.plot(x=x, y=y, pen=mkPen('b', width=1), name=compound.name)
+    widget.setWindowTitle(f'Calibration curve for {compound.name}')

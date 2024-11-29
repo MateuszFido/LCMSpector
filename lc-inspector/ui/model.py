@@ -1,6 +1,6 @@
 # model.py
-import sys, logging
-import pandas as pd
+import sys, logging, traceback, re
+import numpy as np
 import concurrent.futures
 from pathlib import Path
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
@@ -69,6 +69,37 @@ class Model:
         ms_file = self.ms_measurements.get(filename, None)
         lc_file = self.lc_measurements.get(filename, None)
         return lc_file, ms_file
+
+    def calibrate(self, selected_files):
+        for file in selected_files:
+            concentration = selected_files[file].split(" ")
+            try:
+                suffix = concentration[1]
+            except IndexError:
+                continue
+            if suffix == "mM":
+                concentration = float(concentration[0])*0.001
+            elif suffix == "uM":
+                concentration = float(concentration[0])*0.000001
+            elif suffix == "nM":
+                concentration = float(concentration[0])*0.000000001
+            elif suffix == "pM":
+                concentration = float(concentration[0])*0.000000000001
+            else:
+                concentration = float(concentration[0])
+            try: 
+                ms_file = self.ms_measurements.get(file)
+                if ms_file.xics:
+                    for i, compound in enumerate(self.compounds):
+                        compound_intensity = 0
+                        for ion in compound.ions.keys():
+                            compound_intensity += np.round(np.sum(ms_file.xics[i].ions[ion]['MS Intensity'][1]), 0)
+                        compound.calibration_curve[concentration] = compound_intensity
+                else:
+                    logger.error(f"No xics found for file {file}.")
+                    continue
+            except Exception as e:
+                    logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
 
     def save_results(self, lc_file):
         # TODO: Implement

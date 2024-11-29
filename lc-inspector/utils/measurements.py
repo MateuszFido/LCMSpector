@@ -4,6 +4,7 @@ from utils.preprocessing import baseline_correction, calculate_mz_axis, construc
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from abc import ABC, abstractmethod
 import os, logging, re
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ class Measurement:
     """
     def __init__(self, path):
         self.path = path
-        self.filename = os.path.basename(path).split('.')[0]
+        self.filename = Path(path).stem
         if "STMIX" in self.filename:
             self.calibration = True
         else:
@@ -46,7 +47,7 @@ class Measurement:
     def extract_concentration(self):
         # Extract the concentration from the filename, by looking anywhere in the string
         # for a number followed by an optional decimal and followed by mM, uM, nM or pM
-        match = re.search(r'([0-9]++)(.?)(uM|mM|nM|pM|mol|mol\/|umol)+', self.filename)
+        match = re.search(r'(\d+(\.\d+)?).?_*([a-z][A-Z]{1,3})', self.filename)
         if match:
             return str(match.group(1)) + ' ' + str(match.group(3))
         else:
@@ -125,13 +126,7 @@ class Compound():
         self.name = str(name)
         self.ions = {ion: {"RT": None, "MS Intensity": None, "LC Intensity": None} for ion in ions}
         self.ion_info = ion_info
-        self._calibration_curve = None
+        self.calibration_curve = {}
 
     def __str__(self):
         return f"Compound: {self.name}, ions: {self.ions}, ion info: {self.ion_info}"
-
-    @property
-    #TODO
-    def calibration_curve():
-        self.calibration_curve = None
-        pass
