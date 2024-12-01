@@ -77,6 +77,7 @@ class Controller:
     def calibrate(self):
         self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
         selected_files = self.view.get_calibration_files()
         if selected_files:
             self.model.calibrate(selected_files)

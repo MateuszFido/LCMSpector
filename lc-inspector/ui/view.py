@@ -335,14 +335,15 @@ class View(QtWidgets.QMainWindow):
             item = self.tableWidget_files.item(i, 2)
             if item is not None and item.checkState() == Qt.CheckState.Checked:
                 selected_files[self.tableWidget_files.item(i, 0).text()] = self.tableWidget_files.item(i, 1).text()
+        if not selected_files:
+            logger.error("No files selected for calibration.")
+            self.show_critical_error("No files selected for calibration.")
         return selected_files
 
     def update_choose_compound(self, compounds):
         self.comboBoxChooseCompound.clear()
         for compound in compounds:
             self.comboBoxChooseCompound.addItem(compound.name)
-        self.tableWidget_concentrations.setColumnCount(len(compounds))
-        self.tableWidget_concentrations.setHorizontalHeaderLabels([compound.name for compound in compounds])
 
     def display_plots(self, file_lc, file_ms):
         self.canvas_baseline.clear()
@@ -386,8 +387,26 @@ class View(QtWidgets.QMainWindow):
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
                     plot_calibration_curve(compound, self.canvas_calibration)
+                    self.display_concentrations(compound)
                 except Exception as e: 
                     logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
+
+    def display_concentrations(self, compound):
+        for ms_file in self.controller.model.ms_measurements:
+            if self.controller.model.ms_measurements[ms_file].xics:
+                print(self.controller.model.ms_measurements[ms_file].xics)
+        if isinstance(compound, Compound):
+            self.tableWidget_concentrations.clear()
+            self.tableWidget_concentrations.setColumnCount(len(compound.ions.keys()))
+            self.tableWidget_concentrations.setShowGrid(True)
+            self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
+            self.tableWidget_concentrations.setHorizontalHeaderLabels(str(x) for x in compound.ions.keys())
+            for i in range(self.tableWidget_files.rowCount()):
+                self.tableWidget_concentrations.insertRow(i)
+                self.tableWidget_concentrations.setVerticalHeaderItem(i, self.tableWidget_files.item(i,0))
+
+
+
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -744,8 +763,6 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
         self.tableWidget_concentrations = QtWidgets.QTableWidget(parent=self.tabQuantitation)
         self.tableWidget_concentrations.setObjectName("tableWidget_concentrations")
-        self.tableWidget_concentrations.setColumnCount(7)
-        self.tableWidget_concentrations.setRowCount(8)
         self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 1, 1)
         self.heatmap = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
         self.heatmap.setObjectName("heatmap")
