@@ -316,6 +316,7 @@ class View(QtWidgets.QMainWindow):
 
     def update_table_quantitation(self, concentrations):
         self.tableWidget_files.clear()
+        self.tableWidget_files.setRowCount(0)
         self.tableWidget_files.setColumnCount(3)
         self.tableWidget_files.setShowGrid(True)
         self.tableWidget_files.setStyleSheet("gridline-color: #e0e0e0;")
@@ -387,26 +388,27 @@ class View(QtWidgets.QMainWindow):
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
                     plot_calibration_curve(compound, self.canvas_calibration)
-                    self.display_concentrations(compound)
-                except Exception as e: 
+                except TypeError as e: 
                     logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
 
-    def display_concentrations(self, compound):
-        for ms_file in self.controller.model.ms_measurements:
-            if self.controller.model.ms_measurements[ms_file].xics:
-                print(self.controller.model.ms_measurements[ms_file].xics)
-        if isinstance(compound, Compound):
-            self.tableWidget_concentrations.clear()
-            self.tableWidget_concentrations.setColumnCount(len(compound.ions.keys()))
-            self.tableWidget_concentrations.setShowGrid(True)
-            self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
-            self.tableWidget_concentrations.setHorizontalHeaderLabels(str(x) for x in compound.ions.keys())
-            for i in range(self.tableWidget_files.rowCount()):
-                self.tableWidget_concentrations.insertRow(i)
-                self.tableWidget_concentrations.setVerticalHeaderItem(i, self.tableWidget_files.item(i,0))
-
-
-
+    def display_concentrations(self):
+        compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
+        self.tableWidget_concentrations.clear()
+        self.tableWidget_concentrations.setRowCount(0)
+        self.tableWidget_concentrations.setColumnCount(len(compound.ions.keys())+2)
+        self.tableWidget_concentrations.setShowGrid(True)
+        self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
+        labels = ['File', *(str(x) for x in compound.ions.keys()), 'Concentration']
+        self.tableWidget_concentrations.setHorizontalHeaderLabels(labels)
+        for i in range(self.tableWidget_files.rowCount()):
+            ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
+            self.tableWidget_concentrations.insertRow(i)
+            self.tableWidget_concentrations.setItem(i, 0, QtWidgets.QTableWidgetItem(self.tableWidget_files.item(i, 0).text()))
+            for ms_compound in ms_file.xics:
+                if ms_compound.name == compound.name:
+                    for j, ion in enumerate(ms_compound.ions.keys()):
+                        self.tableWidget_concentrations.setItem(i, j+1, QtWidgets.QTableWidgetItem(str(np.round(np.sum(ms_compound.ions[ion]['MS Intensity']),0))+" a.u."))
+                    self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem(str(ms_compound.concentration)+" mM"))
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -734,8 +736,6 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_files.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self.tableWidget_files.horizontalHeader().setStretchLastSection(True)
         self.tableWidget_files.setObjectName("tableWidget_files")
-        self.tableWidget_files.setColumnCount(3)
-        self.tableWidget_files.setRowCount(7)
         self.gridLayout_top_left.addWidget(self.tableWidget_files, 1, 0, 1, 2)
         self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 1, 1)
         self.gridLayout_top_right = QtWidgets.QGridLayout()

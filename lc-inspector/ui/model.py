@@ -5,6 +5,7 @@ import concurrent.futures
 from scipy.stats import linregress
 from pathlib import Path
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
+from evaluation.calc_conc import calculate_concentration
 
 logger = logging.getLogger(__name__)
 class Model:
@@ -108,6 +109,13 @@ class Model:
             except Exception as e:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
             j += 1
+        for ms_file in self.ms_measurements.values():
+            for ms_compound, model_compound in zip(ms_file.xics, self.compounds):
+                ms_compound.concentration = 0
+                for ion in ms_compound.ions.keys():
+                    ion_intensity = np.round(np.sum(ms_compound.ions[ion]['MS Intensity'][1]), 0)
+                    ms_compound.concentration += ion_intensity
+                ms_compound.concentration = calculate_concentration(ms_compound.concentration, model_compound.calibration_parameters)
 
     def save_results(self, lc_file):
         # TODO: Implement

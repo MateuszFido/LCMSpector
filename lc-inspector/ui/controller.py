@@ -12,6 +12,8 @@ class Controller:
         self.view.processButton.clicked.connect(self.process_data)
         self.view.comboBox_currentfile.currentIndexChanged.connect(self.display_selected_plots)
         self.view.calibrateButton.clicked.connect(self.calibrate)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
 
     def load_lc_data(self):
         pass
@@ -75,14 +77,16 @@ class Controller:
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
 
     def calibrate(self):
-        self.view.comboBoxChooseCompound.setEnabled(True)
-        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
-        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
         selected_files = self.view.get_calibration_files()
         if selected_files:
-            self.model.calibrate(selected_files)
+            try:
+                self.model.calibrate(selected_files)
+            except Exception as e:
+                logger.error(f"Error calibrating files: {traceback.format_exc()}")
+                return
         else:
             logger.error("No files selected for calibration.")
+        self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.update_choose_compound(self.model.compounds)
 
         
