@@ -1,6 +1,4 @@
 import os, time, logging
-from functools import lru_cache
-from pathlib import Path
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -70,7 +68,7 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     -------
     None
     """
-    start_time = time.time()
+    time.time()
     scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
     index = np.argmin(scan_time_diff)
     widget.clear()
@@ -123,7 +121,7 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
     start_time = time.time()
     lc_peaks = find_peaks(chromatogram['Value (mAU)'], distance=10, prominence=10)        
     widths, width_heights, left, right = peak_widths(chromatogram['Value (mAU)'], lc_peaks[0], rel_height=0.9)
-    lc_peaks_RTs = chromatogram['Time (min)'][lc_peaks[0]]
+    chromatogram['Time (min)'][lc_peaks[0]]
     colors = ['#cc6677', '#332288', '#ddcc77', '#117733', '#88ccee', '#882255', '#44aa99', '#999933', '#aa4499']
     curve_dict = {}
     for i, peak_idx in enumerate(lc_peaks[0]):
@@ -142,7 +140,7 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
     start_time = time.time()
     tot = len(xics)
     cols = 5
-    rows = int(np.ceil(2*tot / cols))
+    int(np.ceil(2*tot / cols))
 
     # Plot the XICs
     for i, compound in enumerate(xics):

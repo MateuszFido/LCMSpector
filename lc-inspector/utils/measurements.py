@@ -2,7 +2,7 @@ from utils.loading import load_absorbance_data, load_ms1_data
 from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
 from utils.preprocessing import baseline_correction, calculate_mz_axis, construct_xics
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 import os, logging, re
 from pathlib import Path
 

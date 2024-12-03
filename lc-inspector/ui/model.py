@@ -1,10 +1,9 @@
 # model.py
-import sys, logging, traceback, re
+import logging
+import traceback
 import numpy as np
-import concurrent.futures
 from scipy.stats import linregress
 import pandas as pd
-from pathlib import Path
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
 from evaluation.calc_conc import calculate_concentration
 
@@ -107,7 +106,7 @@ class Model:
                 else:
                     logger.error(f"No xics found for file {file}.")
                     continue
-            except Exception as e:
+            except Exception:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
             j += 1
         for ms_file in self.ms_measurements.values():

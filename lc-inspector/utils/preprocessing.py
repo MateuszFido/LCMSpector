@@ -1,10 +1,9 @@
 import numpy as np
 import pandas as pd
-from pathlib import Path
 from utils.loading import load_absorbance_data
 from utils.sorting import get_path
-import os, logging, sys, copy
-from collections import defaultdict
+import logging
+import copy
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
 import static_frame as sf

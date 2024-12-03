@@ -1,5 +1,4 @@
 from calculation.workers import Worker, WorkerSignals
-from multiprocessing import Manager
 import logging, traceback
 logger = logging.getLogger(__name__)
 
@@ -72,7 +71,7 @@ class Controller:
         selected_file = self.view.comboBox_currentfile.currentText()
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
-        except Exception as e:
+        except Exception:
             logger.error(f"Error displaying plots for file {selected_file}: {traceback.format_exc()}")
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
 
@@ -81,7 +80,7 @@ class Controller:
         if selected_files:
             try:
                 self.model.calibrate(selected_files)
-            except Exception as e:
+            except Exception:
                 logger.error(f"Error calibrating files: {traceback.format_exc()}")
                 return
         else:

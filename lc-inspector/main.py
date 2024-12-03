@@ -1,4 +1,6 @@
-import os, logging.config, yaml, json
+import os
+import logging.config
+import yaml
 with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r") as f:
     config = yaml.safe_load(f)
     logging.config.dictConfig(config)
