@@ -7,3 +7,5 @@ __pycache__
 .vscode
 .venv
 app.log
+build
+dist
