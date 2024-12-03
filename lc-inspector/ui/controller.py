@@ -88,5 +88,6 @@ class Controller:
             logger.error("No files selected for calibration.")
         self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.update_choose_compound(self.model.compounds)
+        self.view.actionExport.setEnabled(True)
 
         

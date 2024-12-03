@@ -3,6 +3,7 @@ import sys, logging, traceback, re
 import numpy as np
 import concurrent.futures
 from scipy.stats import linregress
+import pandas as pd
 from pathlib import Path
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
 from evaluation.calc_conc import calculate_concentration
@@ -117,20 +118,20 @@ class Model:
                     ms_compound.concentration += ion_intensity
                 ms_compound.concentration = calculate_concentration(ms_compound.concentration, model_compound.calibration_parameters)
 
-    def save_results(self, lc_file):
-        # TODO: Implement
+    def export(self):
         results = []
-        for compound in lc_file.compounds:
-            for ion in compound.ions.keys():
-                results.append({
-                    'File': lc_file.filename,
-                    'Ion (m/z)': ion,
-                    'Compound': compound.name,
-                    'RT (min)': compound.ions[ion]['RT'],
-                    'MS Intensity (cps)': compound.ions[ion]['MS Intensity'],
-                    'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity']
-                })
+        for ms_measurement in self.ms_measurements.values():
+            for compound in ms_measurement.xics:
+                for i, ion in enumerate(compound.ions.keys()):
+                    results.append({
+                        'File': ms_measurement.filename,
+                        'Ion (m/z)': ion,
+                        'Ion name': compound.ion_info[i],
+                        'Compound': compound.name,
+                        'RT (min)': np.round(compound.ions[ion]['RT'],3),
+                        'MS Intensity (cps)': np.round(np.sum(compound.ions[ion]['MS Intensity']),0),
+                        'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity'],
+                        'Concentration': compound.concentration
+                    })
         df = pd.DataFrame(results)
-        df.to_csv('results.csv', index=False)
-        
-        return
+        return df

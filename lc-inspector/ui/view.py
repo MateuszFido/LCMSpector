@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve
-import sys, traceback, logging, json, __main__
+import os, sys, traceback, logging, json, __main__
 from utils.measurements import Compound
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
@@ -259,6 +259,19 @@ class View(QtWidgets.QMainWindow):
     def on_exit(self):
         sys.exit(0)
 
+    def on_export(self):
+        results = self.controller.model.export()
+        if not results.empty:
+            file_name, _ = QFileDialog.getSaveFileName(self, "Save Results", "", "CSV Files (*.csv);;All Files (*)")
+            if file_name:
+                f = open(file_name, 'w')
+                f.write(results.to_csv(index=False))
+                f.close()
+                output_folder = os.path.dirname(file_name)
+            self.statusbar.showMessage(f"Saved results to output folder {output_folder}", 5000)
+        else:
+            self.show_critical_error("Error: Nothing to export.")
+
     def update_lc_file_list(self):
         """
         Updates the model with the LC file paths currently in the listLC widget.
@@ -328,7 +341,6 @@ class View(QtWidgets.QMainWindow):
             checkbox.setCheckState(Qt.CheckState.Unchecked)
             self.tableWidget_files.setItem(row, 2, checkbox)
         self.tableWidget_files.setHorizontalHeaderLabels(["File", "Concentration", "Use for calibration?"])
-        self.tableWidget_files.resizeColumnsToContents()
 
     def get_calibration_files(self):
         selected_files = {}
@@ -398,7 +410,7 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations.setColumnCount(len(compound.ions.keys())+2)
         self.tableWidget_concentrations.setShowGrid(True)
         self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
-        labels = ['File', *(str(x) for x in compound.ions.keys()), 'Concentration']
+        labels = ['File', *(compound.ion_info), 'Concentration']
         self.tableWidget_concentrations.setHorizontalHeaderLabels(labels)
         for i in range(self.tableWidget_files.rowCount()):
             ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
@@ -407,7 +419,8 @@ class View(QtWidgets.QMainWindow):
             for ms_compound in ms_file.xics:
                 if ms_compound.name == compound.name:
                     for j, ion in enumerate(ms_compound.ions.keys()):
-                        self.tableWidget_concentrations.setItem(i, j+1, QtWidgets.QTableWidgetItem(str(np.round(np.sum(ms_compound.ions[ion]['MS Intensity']),0))+" a.u."))
+                        self.tableWidget_concentrations.setItem(i, j+1, 
+                        QtWidgets.QTableWidgetItem(f"{str(np.format_float_scientific(np.round(np.sum(ms_compound.ions[ion]['MS Intensity']),0), precision=2))} a.u."))
                     self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem(str(ms_compound.concentration)+" mM"))
 
     def highlight_peak(self, selected_curve, xics):
@@ -816,14 +829,20 @@ class View(QtWidgets.QMainWindow):
         self.actionReadme.setObjectName("actionReadme")
         self.actionFile = QtGui.QAction(parent=MainWindow)
         self.actionFile.setObjectName("actionFile")
+        self.actionExport = QtGui.QAction(parent=MainWindow)
+        self.actionExport.setObjectName("actionExport")
+        self.actionExport.setEnabled(False)
         self.actionOpen = QtGui.QAction(parent=MainWindow)
         self.actionOpen.setObjectName("actionOpen")
+        self.actionAbout = QtGui.QAction(parent=MainWindow)
+        self.actionAbout.setObjectName("actionAbout")
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
-        self.menuFile.addSeparator()
+        self.menuFile.addAction(self.actionExport)
         self.menuFile.addAction(self.actionExit)
         self.menuEdit.addAction(self.actionPreferences)
         self.menuHelp.addAction(self.actionReadme)
+        self.menuHelp.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
@@ -836,6 +855,7 @@ class View(QtWidgets.QMainWindow):
         #TODO: Implement the rest of the menu items
         #self.actionSave.triggered.connect(self.on_save)
         self.actionExit.triggered.connect(self.on_exit)
+        self.actionExport.triggered.connect(self.on_export)
         #self.actionPreferences.triggered.connect(self.on_preferences)
         #self.actionReadme.triggered.connect(self.on_readme)
         self.browseLC.clicked.connect(self.on_browseLC)
@@ -880,15 +900,19 @@ class View(QtWidgets.QMainWindow):
         self.calibrateButton.setText(_translate("MainWindow", "Calculate"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabQuantitation), _translate("MainWindow", "Quantitation"))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.actionFile.setText(_translate("MainWindow", "File"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.actionSave.setText(_translate("MainWindow", "Save"))
         self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
         self.actionExit.setText(_translate("MainWindow", "Exit"))
         self.actionExit.setShortcut(_translate("MainWindow", "Ctrl+W"))
+        self.actionExport.setText(_translate("MainWindow", "Export"))
+        self.actionExport.setShortcut(_translate("MainWindow", "Ctrl+E"))
+        self.actionAbout.setText(_translate("MainWindow", "About"))
+        self.actionAbout.setShortcut(_translate("MainWindow", "F1"))
         self.actionPreferences.setText(_translate("MainWindow", "Preferences"))
         self.actionReadme.setText(_translate("MainWindow", "Readme"))
         self.actionReadme.setShortcut(_translate("MainWindow", "F10"))
-        self.actionFile.setText(_translate("MainWindow", "File"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
