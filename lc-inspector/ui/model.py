@@ -4,7 +4,7 @@ import numpy as np
 from scipy.stats import linregress
 import pandas as pd
 from utils.measurements import LCMeasurement, MSMeasurement, Compound
-from evaluation.calc_conc import calculate_concentration
+from calculation.calc_conc import calculate_concentration
 
 logger = logging.getLogger(__name__)
 class Model:

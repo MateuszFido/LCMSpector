@@ -10,7 +10,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['torch', 'matplotlib', 'frozendict'],
+    excludes=['torch', 'matplotlib', 'frozendict', 'torchvision', 'torchgen', 'tqdm', 'torchaudio'],
     noarchive=False,
     optimize=0,
 )
