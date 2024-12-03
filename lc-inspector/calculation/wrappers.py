@@ -4,8 +4,6 @@ import static_frame as sf
 import hashlib, pickle, os
 from pathlib import Path
 from utils.sorting import get_path
-from frozendict import frozendict
-import functools
 
 def freezeargs(func):
     """Convert a mutable dictionary into immutable.

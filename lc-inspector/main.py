@@ -1,8 +1,9 @@
-import os
+import os, secrets
 import logging.config
 import yaml
-with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r") as f:
+with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r+") as f:
     config = yaml.safe_load(f)
+    config["handlers"]["file"]["filename"] = os.path.join(os.path.dirname(__file__), "app.log")
     logging.config.dictConfig(config)
 logger = logging.getLogger(__name__)
 logger.info(f"-------------------------------------\nStarting LC-Inspector at {os.getcwd()}...")
@@ -19,5 +20,5 @@ if __name__ == "__main__":
     controller = Controller(model, view)
 
     view.show()
-    os.sys.exit(app.exec())
+    app.exec()
     

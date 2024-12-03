@@ -36,4 +36,4 @@ handlers:
         encoding: utf-8
         formatter: simple
         filename: app.log
-        mode: 'w'
+        mode: 'w+'
