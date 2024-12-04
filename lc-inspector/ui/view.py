@@ -114,6 +114,7 @@ class DragDropListWidget(QtWidgets.QListWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(True)  # Enable accepting drops
+        self.setWordWrap(True)
 
     def dragEnterEvent(self, event):
         # Check if the dragged item is a file
@@ -441,7 +442,7 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
         labels = ['File', *(compound.ion_info), 'Concentration']
         self.tableWidget_concentrations.setHorizontalHeaderLabels(labels)
-        self.tableWidget.concentrations.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget_concentrations.horizontalHeader().setStretchLastSection(True)
         self.tableWidget_concentrations.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         for i in range(self.tableWidget_files.rowCount()):
             ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
@@ -674,16 +675,10 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists.addItem("Phenolic acids")
         self.comboBoxIonLists.addItem("Flavonoids")
         self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
-
-        self.gridLayout = QtWidgets.QGridLayout(parent=self.tabUpload)
-        self.gridLayout.setObjectName("gridLayout")
-        self.gridLayout_3 = QtWidgets.QGridLayout(parent=self.tabUpload)
-
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
         self.processButton.setDefault(True)
-        self.gridLayout_3.addLayout(self.gridLayout, 0, 0, 1, 1)
-        self.gridLayout_3.addWidget(self.processButton, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.processButton, 4, 2, 1, 2)
         self.tabWidget.addTab(self.tabUpload, "")
         self.tabResults = QtWidgets.QWidget()
         self.tabResults.setObjectName("tabResults")
@@ -753,6 +748,10 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant = QtWidgets.QGridLayout()
         self.gridLayout_quant.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
         self.gridLayout_quant.setObjectName("gridLayout_quant")
+        self.gridLayout_quant.setColumnStretch(0, 1)
+        self.gridLayout_quant.setColumnStretch(1, 1)
+        self.gridLayout_quant.setRowStretch(0, 1)
+        self.gridLayout_quant.setRowStretch(1, 1)
         self.gridLayout_top_left = QtWidgets.QGridLayout()
         self.gridLayout_top_left.setObjectName("gridLayout_top_left")
         self.label_calibrate = QtWidgets.QLabel(parent=self.tabQuantitation)
@@ -882,6 +881,11 @@ class View(QtWidgets.QMainWindow):
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
+        self.button_clear_LC.clicked.connect(self.listLC.clear)
+        self.button_clear_MS.clicked.connect(self.listMS.clear)
+        self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
+
+
 
     def retranslateUi(self, MainWindow):
         """
