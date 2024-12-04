@@ -22,6 +22,9 @@ class Controller:
 
     def process_data(self):
         self.model.compounds = self.view.ionTable.get_items()
+        if not self.model.compounds:
+            self.view.show_critical_error("Please define m/z values to trace or choose from the predefined lists before processing.")
+            return
         if (hasattr(self.model, 'ms_measurements') and hasattr(self.model, 'lc_measurements')) or (hasattr(self.model, 'lc_measurements') and hasattr(self.model, 'annotations')):
             if not self.model.lc_measurements:
                 self.view.show_critical_error("Please load LC files and either corresponding MS files or manual annotations before processing.")

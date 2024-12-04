@@ -17,11 +17,28 @@ class IonTable(QtWidgets.QTableWidget):
         super().__init__(50, 3, parent)
         self.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
         self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         self.setHorizontalHeaderLabels(["Compound", "Expected m/z", "Add. info"])
         self.setShowGrid(True)
         self.setGridStyle(QtCore.Qt.PenStyle.SolidLine)
         self.setObjectName("ionTable")
         self.setStyleSheet("gridline-color: #e0e0e0;")
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.contextMenuEvent)
+
+
+    def contextMenuEvent(self, event):
+        self.menu = QtWidgets.QMenu(self)
+        
+        copy_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-copy"), "(⌘+C) Copy", self)
+        copy_action.triggered.connect(self.copy)
+        self.menu.addAction(copy_action)
+
+        paste_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-paste"), "(⌘+V) Paste", self)
+        paste_action.triggered.connect(self.paste_from_clipboard)
+        self.menu.addAction(paste_action)
+
+        self.menu.popup(QtGui.QCursor.pos())
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key.Key_V and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
@@ -30,6 +47,8 @@ class IonTable(QtWidgets.QTableWidget):
             self.select_all()
         elif event.key() == QtCore.Qt.Key.Key_Backspace or event.key() == QtCore.Qt.Key.Key_Delete:
             self.clear_selection()
+        elif event.key() == Qt.Key.Key_C and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.copy()
         else:
             super().keyPressEvent(event)
 
@@ -40,6 +59,13 @@ class IonTable(QtWidgets.QTableWidget):
         for item in self.selectedItems():
             item.setText("")  # Clear the text of the selected item
 
+    def copy(self):
+        selection = self.selectedItems()
+        if selection:
+            text = "\t".join([item.text() for item in selection])
+            clipboard = QtWidgets.QApplication.clipboard()
+            clipboard.setText(text)
+        
     def paste_from_clipboard(self):
         clipboard = QtWidgets.QApplication.clipboard()
         text = clipboard.text()
@@ -47,13 +73,13 @@ class IonTable(QtWidgets.QTableWidget):
         # Split the text into lines and then into cells
         rows = text.splitlines()
         current_row = self.currentRow()
-
+        current_col = self.currentColumn()
         for row_data in rows:
             # Split the row data into columns (assuming tab-separated values)
             columns = row_data.split('\t')
             for col_index, value in enumerate(columns):
                 if current_row < self.rowCount():
-                    self.setItem(current_row, col_index, QtWidgets.QTableWidgetItem(value))
+                    self.setItem(current_row, current_col, QtWidgets.QTableWidgetItem(value))
                 else:
                     # If we exceed the current row count, add a new row
                     self.insertRow(current_row)
@@ -69,10 +95,11 @@ class IonTable(QtWidgets.QTableWidget):
                 name = self.item(row, 0).text()
                 ions = [float(x) for x in self.item(row, 1).text().split(",")]
                 ion_info = self.item(row, 2).text().split(",")
-            compound = Compound(name, ions, ion_info)
-            items.append(compound)
-        if len(items) == 0:
-            self.show_critical_error("No ions found in table.")
+            try:
+                compound = Compound(name, ions, ion_info)
+                items.append(compound)
+            except UnboundLocalError as e:
+                logger.error(f"Could not find any compounds in the table: {e}")        
         return items
 
 class PlotWindow(QDialog):
@@ -341,6 +368,8 @@ class View(QtWidgets.QMainWindow):
             checkbox.setCheckState(Qt.CheckState.Unchecked)
             self.tableWidget_files.setItem(row, 2, checkbox)
         self.tableWidget_files.setHorizontalHeaderLabels(["File", "Concentration", "Use for calibration?"])
+        self.tableWidget_files.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget_files.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
 
     def get_calibration_files(self):
         selected_files = {}
@@ -412,6 +441,8 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
         labels = ['File', *(compound.ion_info), 'Concentration']
         self.tableWidget_concentrations.setHorizontalHeaderLabels(labels)
+        self.tableWidget.concentrations.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget_concentrations.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         for i in range(self.tableWidget_files.rowCount()):
             ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
             self.tableWidget_concentrations.insertRow(i)
@@ -477,10 +508,6 @@ class View(QtWidgets.QMainWindow):
             text_item.setPos(mz, intensity)
             self.canvas_avgMS.addItem(text_item)
 
-    def update_resolution_label(self, resolution):
-        resolutions = [7500, 15000, 30000, 60000, 120000, 240000]
-        self.resolutionLabel.setText(f"Mass resolution:\n{resolutions[resolution]}")
-
     def update_crosshair(self, e):
         pos = e[0]
         if self.canvas_baseline.sceneBoundingRect().contains(pos):
@@ -493,24 +520,24 @@ class View(QtWidgets.QMainWindow):
     def change_MS_annotations(self):
         if self.comboBox.currentText() == "Use MS-based annotations":
             # Remove annotations widgets
-            self.gridLayout_3.removeWidget(self.listAnnotations)
+            self.gridLayout.removeWidget(self.listAnnotations)
             self.listAnnotations.deleteLater()
             self.labelAnnotations.setVisible(False)
             self.browseAnnotations.setVisible(False)
             # Replace with MS
             self.listMS = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout_3.addWidget(self.listMS, 2, 2, 1, 2)
+            self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
             self.labelMSdata.setVisible(True)
             self.browseMS.setVisible(True)
         else:
             # Remove MS widgets
-            self.gridLayout_3.removeWidget(self.listMS)
+            self.gridLayout.removeWidget(self.listMS)
             self.listMS.deleteLater()
             self.labelMSdata.setVisible(False)
             self.browseMS.setVisible(False)
             # Replace with annotations
             self.listAnnotations = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout_3.addWidget(self.listAnnotations, 2, 2, 1, 2)
+            self.gridLayout.addWidget(self.listAnnotations, 2, 2, 1, 2)
             self.labelAnnotations.setVisible(True)
             self.browseAnnotations.setVisible(True)
         # BUG: lists don't clear properly
@@ -589,49 +616,54 @@ class View(QtWidgets.QMainWindow):
         self.tabWidget.setObjectName("tabWidget")
         self.tabUpload = QtWidgets.QWidget()
         self.tabUpload.setObjectName("tabUpload")
-        self.gridLayout_3 = QtWidgets.QGridLayout(self.tabUpload)
-        self.gridLayout_3.setObjectName("gridLayout_3")
+        self.gridLayout = QtWidgets.QGridLayout(self.tabUpload)
+        self.gridLayout.setObjectName("gridLayout")
         self.ionTable = IonTable(parent=self.tabUpload)
-        self.gridLayout_3.addWidget(self.ionTable, 2, 4, 1, 2)
+        self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 2)
 
-        self.warning = QtWidgets.QLabel(parent=self.tabUpload)
-        self.warning.setWordWrap(True)
-        self.warning.setObjectName("warning")
-        self.gridLayout_3.addWidget(self.warning, 3, 4, 1, 2)
         self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
         self.browseLC.setObjectName("browseLC")
-        self.gridLayout_3.addWidget(self.browseLC, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.browseLC, 1, 1, 1, 1)
         self.comboBox = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
-        self.gridLayout_3.addWidget(self.comboBox, 0, 0, 1, 2)
+        self.gridLayout.addWidget(self.comboBox, 0, 0, 1, 2)
         self.browseMS = QtWidgets.QPushButton(parent=self.tabUpload)
         self.browseMS.setObjectName("browseMS")
         self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
         self.browseAnnotations.setObjectName("browseAnnotations")
-        self.gridLayout_3.addWidget(self.browseAnnotations, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
         self.browseAnnotations.setVisible(False)
-        self.gridLayout_3.addWidget(self.browseMS, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.browseMS, 1, 3, 1, 1)
         self.labelLCdata = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelLCdata.setObjectName("labelLCdata")
-        self.gridLayout_3.addWidget(self.labelLCdata, 1, 0, 1, 1)
+        self.gridLayout.addWidget(self.labelLCdata, 1, 0, 1, 1)
         self.labelMSdata = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelMSdata.setObjectName("labelMSdata")
         self.labelAnnotations = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelAnnotations.setObjectName("labelAnnotations")
-        self.gridLayout_3.addWidget(self.labelAnnotations, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
         self.labelAnnotations.setVisible(False)
-        self.gridLayout_3.addWidget(self.labelMSdata, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.labelMSdata, 1, 2, 1, 1)
         self.listLC = DragDropListWidget(parent=self.tabUpload)
         self.listLC.setObjectName("listLC")
-        self.gridLayout_3.addWidget(self.listLC, 2, 0, 2, 2)
+        self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
         self.listMS = DragDropListWidget(parent=self.tabUpload)
         self.listMS.setObjectName("listMS")
-        self.gridLayout_3.addWidget(self.listMS, 2, 2, 1, 2)
+        self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
         self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelIonList.setObjectName("labelIonList")
-        self.gridLayout_3.addWidget(self.labelIonList, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        self.button_clear_LC = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_LC.setObjectName("button_clear_LC")
+        self.gridLayout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
+        self.button_clear_MS = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_MS.setObjectName("button_clear_MS")
+        self.gridLayout.addWidget(self.button_clear_MS, 3, 2, 1, 1)
+        self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_ion_list.setObjectName("button_clear_ion_list")
+        self.gridLayout.addWidget(self.button_clear_ion_list, 3, 4, 1, 1)
         
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
@@ -641,32 +673,17 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists.addItem("Fatty acids")
         self.comboBoxIonLists.addItem("Phenolic acids")
         self.comboBoxIonLists.addItem("Flavonoids")
-        self.gridLayout_3.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
 
-        self.gridLayout = QtWidgets.QGridLayout()
+        self.gridLayout = QtWidgets.QGridLayout(parent=self.tabUpload)
         self.gridLayout.setObjectName("gridLayout")
-        self.resSlider = QtWidgets.QSlider(parent=self.tabUpload)
-        self.resSlider.setSizeIncrement(QtCore.QSize(0, 0))
-        self.resSlider.setMinimum(0)
-        self.resSlider.setMaximum(5)
-        self.resSlider.setSingleStep(1)
-        self.resSlider.setPageStep(1)
-        self.resSlider.setProperty("value", 4)
-        self.resSlider.setSliderPosition(4)
-        self.resSlider.setTracking(True)
-        self.resSlider.setOrientation(QtCore.Qt.Orientation.Horizontal)
-        self.resSlider.setTickPosition(QtWidgets.QSlider.TickPosition.TicksAbove)
-        self.resSlider.setTickInterval(1)
-        self.resSlider.setObjectName("resSlider")
-        self.gridLayout.addWidget(self.resSlider, 0, 1, 2, 1)
-        self.resolutionLabel = QtWidgets.QLabel(parent=self.tabUpload)
-        self.resolutionLabel.setObjectName("resolutionLabel")
-        self.resolutionLabel.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        self.gridLayout.addWidget(self.resolutionLabel, 0, 0, 1, 1, QtCore.Qt.AlignmentFlag.AlignHCenter|QtCore.Qt.AlignmentFlag.AlignVCenter)
-        self.gridLayout_3.addLayout(self.gridLayout, 3, 2, 1, 2)
+        self.gridLayout_3 = QtWidgets.QGridLayout(parent=self.tabUpload)
+
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
-        self.gridLayout_3.addWidget(self.processButton, 4, 2, 1, 2)
+        self.processButton.setDefault(True)
+        self.gridLayout_3.addLayout(self.gridLayout, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.processButton, 1, 0, 1, 1)
         self.tabWidget.addTab(self.tabUpload, "")
         self.tabResults = QtWidgets.QWidget()
         self.tabResults.setObjectName("tabResults")
@@ -849,7 +866,6 @@ class View(QtWidgets.QMainWindow):
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
-        self.resSlider.valueChanged.connect(self.update_resolution_label) 
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         # Connect signals
         #TODO: Implement the rest of the menu items
@@ -877,7 +893,6 @@ class View(QtWidgets.QMainWindow):
         """
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LC-Inspector"))
-        self.warning.setText(_translate("MainWindow", "Warning: Mass resolution above 60,000 is CPU-expensive and may take a long time to compute"))
         self.browseLC.setText(_translate("MainWindow", "Browse"))
         self.comboBox.setItemText(0, _translate("MainWindow", "Use MS-based annotations"))
         self.comboBox.setItemText(1, _translate("MainWindow", "Use pre-annotated chromatograms"))
@@ -887,10 +902,7 @@ class View(QtWidgets.QMainWindow):
         self.labelLCdata.setText(_translate("MainWindow", "LC data (.txt)"))
         self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
         self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
-        self.resSlider.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
-        self.resolutionLabel.setToolTip(_translate("MainWindow", "Set the resolution with which to interpolate a new m/z axis from the MS data. Default: 120,000"))
         self.comboBoxIonLists.setToolTip(_translate("MainWindow", "Choose an ion list from the list of ion lists provided with the software"))
-        self.resolutionLabel.setText(_translate("MainWindow", "Mass resolution:\n120,000"))
         self.processButton.setText(_translate("MainWindow", "Process"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload"))
         self.label_results_currentfile.setText(_translate("MainWindow", "Current file:"))
@@ -916,3 +928,7 @@ class View(QtWidgets.QMainWindow):
         self.actionReadme.setShortcut(_translate("MainWindow", "F10"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
+        self.button_clear_LC.setText(_translate("MainWindow", "Clear"))
+        self.button_clear_MS.setText(_translate("MainWindow", "Clear"))
+        self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
+
