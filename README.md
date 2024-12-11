@@ -6,6 +6,23 @@
 
 ## Preface
 
+### Installation
+
+As of Dec 2024, pre-release binaries for `LC-Inspector` are distributed for Windows (64-bit) and MacOS (arm64). These can be found under `Releases` on the GitHub page of `LC-Inspector`'s main branch, `gui-redesign`. 
+
+Since the binaries are currently NOT signed, it is possible for automatic antivirus/quarantine programs such as Microsoft Windows Defender to flag them as malware. 
+
+On Windows, if this happens, go into `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.  
+
+On MacOS, the following command can be executed to remove an app from quarantine: 
+`xattr -d com.apple.quarantine /path/to/app.app`
+
+so for example, if the app was copied to the Applications folder:
+
+`xattr -d com.apple.quarantine /Applications`
+
+If the command executes without any errors, the app should launch and work normally.
+
 ### Warning 
 
 The graphical user interface (UI) of `LC-Inspector` is currently in early development. A lot of features visible in the UI is not functional yet. Bugs are prevalent and to be expected.
@@ -18,7 +35,7 @@ Input can only be plain text (.txt) files for LC chromatograms and mzML files fo
 
 The script starts by parsing and preprocessing the given LC and MS files, interpolating intensity over a linearly-spaced m/z axis, reconstructing extracted ion chromatograms for a given set of peaks and plotting annotated LC spectra. 
 
-## Installation
+## Running from source
 1. Clone the repository or download the compressed version (Code -> Download ZIP) and unpack
 2. Install Python 3.12 or later
 3. Navigate to the folder containing ```main.py``` in the terminal (e.g., cmd on Windows or Terminal on MacOS)
