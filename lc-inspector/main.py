@@ -1,6 +1,12 @@
 import os, secrets
 import logging.config
 import yaml
+
+if sys.stdout is None:
+    sys.stdout = open(os.devnull, "w")
+if sys.stderr is None:
+    sys.stderr = open(os.devnull, "w")
+
 with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r+") as f:
     config = yaml.safe_load(f)
     config["handlers"]["file"]["filename"] = os.path.join(os.path.dirname(__file__), "app.log")
