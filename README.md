@@ -27,6 +27,9 @@ If the command executes without any errors, the app should launch and work norma
 
 The graphical user interface (UI) of `LC-Inspector` is currently in early development. A lot of features visible in the UI is not functional yet. Bugs are prevalent and to be expected.
 
+------
+
+## Description
 This package preprocesses, analyzes and annotates LC-MS data. 
 
 It was primarily designed to annotate LC-MS files of derivatized amino acids and polyamines but can be used with any targeted LC-MS workflow.
