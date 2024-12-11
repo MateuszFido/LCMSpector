@@ -23,14 +23,13 @@ The script starts by parsing and preprocessing the given LC and MS files, interp
 2. Install Python 3.12 or later
 3. Navigate to the folder containing ```main.py``` in the terminal (e.g., cmd on Windows or Terminal on MacOS)
 3. Install the dependencies listed out in requirements.txt (```$ pip3 install -r requirements.txt```):
-    - pandas
-    - numpy
-    - matplotlib
-    - scipy
-    - alive_bar
-    - pyteomics
-    - lxml
-    - pyqt6 
+    - pyyaml (≥ 6.0.2)
+    - pyqt6 (≥ 6.7.3)
+    - scipy (≥ 1.14.1)
+    - pyteomics (≥ 4.7.5)
+    - lxml (≥ 5.3.0)
+    - static_frame (≥ 2.15.1)
+    - pyqtgraph (≥ 0.13.7)
 4. Prepare the input data:
     - The script expects the LC input data to be in .txt format.
     - The script expects the MS input data to be in .mzml format.
