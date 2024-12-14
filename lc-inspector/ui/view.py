@@ -582,9 +582,8 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.canvas_avgMS.setMouseEnabled(x=True, y=False)
-        self.canvas_avgMS.getPlotItem().getViewBox().setAspectLocked(lock=False)            
+        self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y')
         self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=1.0)
-        self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y', enable=True)
         self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(self.update_labels_avgMS)
 
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)

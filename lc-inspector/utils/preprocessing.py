@@ -2,8 +2,7 @@ import numpy as np
 import pandas as pd
 from utils.loading import load_absorbance_data
 from utils.sorting import get_path
-import logging
-import copy
+import logging, copy
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
 import static_frame as sf
@@ -61,31 +60,31 @@ def baseline_correction(dataframe: sf.FrameHE) -> sf.FrameHE:
     return normalized
 
 # Currently unused 
-def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
+# def calculate_mz_axis(data: list, mass_accuracy: float) -> np.ndarray:
     
-    """
-    Calculate the m/z axis from a list of Scan objects.
+#     """
+#     Calculate the m/z axis from a list of Scan objects.
 
-    Parameters
-    ----------
-    data : List of Scan objects
-        The list of Scan objects containing the MS data.
+#     Parameters
+#     ----------
+#     data : List of Scan objects
+#         The list of Scan objects containing the MS data.
 
-    Returns
-    -------
-    mz_axis : np.ndarray
-        The m/z axis for the intensity values.
-    """
+#     Returns
+#     -------
+#     mz_axis : np.ndarray
+#         The m/z axis for the intensity values.
+#     """
     
-    # Look up the necessary fields from the first scan in the file for m/z axis determination
+#     # Look up the necessary fields from the first scan in the file for m/z axis determination
 
-    low_mass = auxiliary.cvquery(data[0], 'MS:1000501')-10 # +10 m/z for safety in case the MS recorded beyond limit
-    high_mass = auxiliary.cvquery(data[0], 'MS:1000500')+10
-    # Calculate the resolution of the m/z axis
-    resolution = int((high_mass - low_mass) / mass_accuracy) 
-    # Create the m/z axis, rounded appropriately
-    mz_axis = np.round(np.linspace(low_mass, high_mass, resolution, dtype=np.float64), decimals=len(str(mass_accuracy).split('.')[1]))
-    return mz_axis
+#     low_mass = auxiliary.cvquery(data[0], 'MS:1000501')-10 # +10 m/z for safety in case the MS recorded beyond limit
+#     high_mass = auxiliary.cvquery(data[0], 'MS:1000500')+10
+#     # Calculate the resolution of the m/z axis
+#     resolution = int((high_mass - low_mass) / mass_accuracy) 
+#     # Create the m/z axis, rounded appropriately
+#     mz_axis = np.round(np.linspace(low_mass, high_mass, resolution, dtype=np.float64), decimals=len(str(mass_accuracy).split('.')[1]))
+#     return mz_axis
 
 
 def construct_xics(data, ion_list, mass_accuracy):

@@ -1,7 +1,4 @@
-import os, secrets
-import logging.config
-import yaml
-
+import os, secrets, yaml, logging.config
 if os.sys.stdout is None:
     os.sys.stdout = open(os.devnull, "w")
 if os.sys.stderr is None:
