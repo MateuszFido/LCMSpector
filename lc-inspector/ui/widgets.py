@@ -123,6 +123,7 @@ class IonTable(GenericTable):
     def get_items(self):
         items = []
         for row in range(self.rowCount()):
+            if self.item(row, 0) is None: continue
             name = self.item(row, 0).text()
             if name == "": continue
             ions = [float(x) for x in self.item(row, 1).text().split(",")]
