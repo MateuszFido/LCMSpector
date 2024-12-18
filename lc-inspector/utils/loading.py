@@ -1,33 +1,82 @@
 import pandas as pd
 import numpy as np
-import csv, re
+import csv, re, os
 from pyteomics import mzml
 from calculation.wrappers import freezeargs
 from functools import lru_cache
 
-def load_absorbance_data(file_path) -> pd.DataFrame:
-    # Read the .txt file skipping initial rows until the 'Chromatogram Data' section
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
-        start_index = lines.index('Chromatogram Data:\n') + 2  # Find the start index of data
+# def load_absorbance_data(file_path) -> pd.DataFrame:
+#     # Read the .txt file skipping initial rows until the 'Chromatogram Data' section
+#     with open(file_path, 'r') as file:
+#         lines = file.readlines()
+#         start_index = lines.index('Chromatogram Data:\n') + 2  # Find the start index of data
 
-    # Convert lines into a Pandas DataFrame, skipping the first row as it contains headers
-    df = pd.read_csv(
-        file_path,
-        skiprows=start_index,
-        delimiter='\t',
-        thousands=",",
-        names=['Time (min)', 'Step (s)', 'Value (mAU)'],
-    )
+#     # Convert lines into a Pandas DataFrame, skipping the first row as it contains headers
+#     df = pd.read_csv(
+#         file_path,
+#         skiprows=start_index,
+#         delimiter='\t',
+#         thousands=",",
+#         names=['Time (min)', 'Step (s)', 'Value (mAU)'],
+#     )
 
-    # Look through all the values and replace any apostrophes (thousand's separator) with an empty string
-    # Convert to a string first if necessary
-    df['Value (mAU)'] = df['Value (mAU)'].apply(lambda x: str(x).replace("’", ""))
+#     # Look through all the values and replace any apostrophes (thousand's separator) with an empty string
+#     # Convert to a string first if necessary
+#     df['Value (mAU)'] = df['Value (mAU)'].apply(lambda x: str(x).replace("’", ""))
         
-    # Extract Time (min) and Value (mAU) columns
-    chromatogram_data = df[['Time (min)', 'Value (mAU)']][1:].astype(np.float64)
+#     # Extract Time (min) and Value (mAU) columns
+#     chromatogram_data = df[['Time (min)', 'Value (mAU)']][1:].astype(np.float64)
     
+#     return chromatogram_data
+
+def detect_delimiter(line):
+    """Detect the delimiter used in the line."""
+    if ',' in line:
+        return ','
+    elif '\t' in line:
+        return '\t'
+    elif ' ' in line:
+        return ' '
+    else:
+        return None  # No recognizable delimiter
+
+def load_absorbance_data(file_path):
+    time_values = []
+    intensity_values = []
+
+    # Check if the file exists
+    if not os.path.isfile(file_path):
+        raise FileNotFoundError(f"The file {file_path} does not exist.")
+
+    with open(file_path, 'r') as file:
+        # Read the first line to detect the delimiter
+        first_line = file.readline()
+        delimiter = detect_delimiter(first_line)
+
+        if delimiter is None:
+            raise ValueError("No recognizable delimiter found in the file.")
+
+        # Reset the file pointer to the beginning
+        file.seek(0)
+        reader = csv.reader(file, delimiter=delimiter)
+
+        for row in reader:
+            # Check if the row has at least two columns
+            if len(row) >= 2:
+                try:
+                    # Attempt to convert the first and last columns to float
+                    time = float(row[0])  # First column
+                    intensity = float(row[-1])  # Last column
+                    time_values.append(time)
+                    intensity_values.append(intensity)
+                except ValueError:
+                    # If conversion fails, skip this row
+                    continue
+    
+    chromatogram_data = pd.DataFrame({'Time (min)': time_values, 'Value (mAU)': intensity_values})
     return chromatogram_data
+
+
 
 def load_annotated_peaks(file_path):
     
