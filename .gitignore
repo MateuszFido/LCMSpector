@@ -10,3 +10,4 @@ app.log
 build
 dist
 LC-Inspector.spec
+LC-Inspector-installer-MacOS-arm64.dmg
