@@ -1,8 +1,11 @@
-import os, secrets, yaml, logging.config
+import os, secrets, yaml, logging.config, multiprocessing
+
+# Protective guards for binary building 
 if os.sys.stdout is None:
     os.sys.stdout = open(os.devnull, "w")
 if os.sys.stderr is None:
     os.sys.stderr = open(os.devnull, "w")
+multiprocessing.freeze_support()
 
 with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r+") as f:
     config = yaml.safe_load(f)
