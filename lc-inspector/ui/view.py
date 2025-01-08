@@ -2,9 +2,10 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
-from utils.plotting import plot_absorbance_data, plot_average_ms_data, plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve
+from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
+plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current
 import os, sys, traceback, logging, json, __main__
-from utils.measurements import Compound
+from utils.classes import Compound
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
 from scipy.signal import find_peaks
@@ -33,7 +34,7 @@ class View(QtWidgets.QMainWindow):
                 count_ok += 1
                 self.listLC.addItem(file_path)  # Add each file path to the listLC widget
             elif not error_shown:
-                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported.")
+                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .csv and .txt files are supported.")
                 error_shown = True
             else:
                 continue
@@ -184,8 +185,18 @@ class View(QtWidgets.QMainWindow):
         This method is called whenever the contents of the listLC widget change,
         such as when new LC files are added or existing ones are removed.
         """
-        lc_files = [self.listLC.item(i).text() for i in range(self.listLC.count())]
-        self.controller.model.lc_measurements = lc_files  # Assuming you have a reference to the controller
+        lc_files = []
+        try:
+            self.listLC
+        except AttributeError:
+            logger.error("listLC is not defined!")
+            return
+        try:
+            lc_files = [self.listLC.item(i).text() for i in range(self.listLC.count())]
+        except RuntimeError:
+            logger.error("listLC has been deleted!")
+        finally:
+            self.controller.model.lc_measurements = lc_files 
 
     def update_ms_file_list(self):
         # Update the model with the MS file paths
@@ -199,8 +210,18 @@ class View(QtWidgets.QMainWindow):
         This method is called whenever the contents of the listMS widget change,
         such as when new MS files are added or existing ones are removed.
         """
-        ms_files = [self.listMS.item(i).text() for i in range(self.listMS.count())]
-        self.controller.model.ms_measurements = ms_files  # Assuming you have a reference to the controller
+        ms_files = []
+        try:
+            self.listMS
+        except AttributeError:
+            logger.error("listMS is not defined!")
+            return
+        try:
+            ms_files = [self.listMS.item(i).text() for i in range(self.listMS.count())]
+        except RuntimeError:
+            logger.error("listMS has been deleted!")
+        finally:
+            self.controller.model.ms_measurements = ms_files  
 
     def update_annotation_file(self):
         # Update the model with the annotation file paths
@@ -214,8 +235,18 @@ class View(QtWidgets.QMainWindow):
         This method is called whenever the contents of the listAnnotations widget change,
         such as when new annotation files are added or existing ones are removed.
         """
-        annotation_files = [self.listAnnotations.item(i).text() for i in range(self.listAnnotations.count())]
-        self.controller.model.annotations = annotation_files  # Store all annotation files
+        annotation_files = []
+        try:
+            self.listAnnotations
+        except AttributeError:
+            logger.error("listAnnotations is not defined!")
+            return
+        try:
+            annotation_files = [self.listAnnotations.item(i).text() for i in range(self.listAnnotations.count())]
+        except RuntimeError:
+            logger.error("listAnnotations has been deleted!")
+        finally:
+            self.controller.model.annotations = annotation_files 
 
     def update_progress_bar(self, value):
         self.progressBar.setValue(value)
@@ -261,41 +292,59 @@ class View(QtWidgets.QMainWindow):
         for compound in compounds:
             self.comboBoxChooseCompound.addItem(compound.name)
 
-    def display_plots(self, file_lc, file_ms):
-        self.canvas_baseline.clear()
-        if file_lc:
-            try:
-                plot_absorbance_data(file_lc.path, file_lc.baseline_corrected, self.canvas_baseline)
-                self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
-                self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
-                self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
-                self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
-            except Exception as e: 
-                logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
-
-        self.canvas_avgMS.clear()
-        if file_ms:
-            try:
-                plot_average_ms_data(0, file_ms.data, self.canvas_avgMS)
-            except AttributeError as e: 
-                logger.error(f"No average MS found: {traceback.format_exc()}")
-
-        self.canvas_XICs.clear()
-        if file_ms:
-            try:
-                plot_annotated_XICs(file_ms.path, file_ms.xics, self.canvas_XICs)
-            except AttributeError as e: 
-                logger.error(f"No XIC plot found: {traceback.format_exc()}")
-
-        self.canvas_annotatedLC.clear()
-        if file_lc and file_ms:
-            if file_lc.filename == file_ms.filename:
+    def display_plots(self, lc_file, ms_file):
+        if self.controller.mode == "LC-MS":
+            self.canvas_baseline.clear()
+            if lc_file:
                 try:
-                    self.curve_list = plot_annotated_LC(file_lc.path, file_lc.baseline_corrected, self.canvas_annotatedLC)
-                    for curve in self.curve_list.keys():
-                        curve.sigClicked.connect(lambda c: self.highlight_peak(c, file_ms.xics))
+                    plot_absorbance_data(lc_file.path, lc_file.baseline_corrected, self.canvas_baseline)
+                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
+                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
+                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
+                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
                 except Exception as e: 
-                    logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
+                    logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
+            self.canvas_avgMS.clear()
+            if ms_file:
+                try:
+                    plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
+                except AttributeError as e: 
+                    logger.error(f"No average MS found: {traceback.format_exc()}")
+            self.canvas_XICs.clear()
+            if ms_file:
+                try:
+                    plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
+                except AttributeError as e: 
+                    logger.error(f"No XIC plot found: {traceback.format_exc()}")
+            self.canvas_annotatedLC.clear()
+            if lc_file and ms_file:
+                if lc_file.filename == ms_file.filename:
+                    try:
+                        self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
+                        for curve in self.curve_list.keys():
+                            curve.sigClicked.connect(lambda c: self.highlight_peak(c, ms_file.xics))
+                    except Exception as e: 
+                        logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
+        elif self.controller.mode == "MS Only":
+            try:
+                self.canvas_baseline.clear()
+                self.canvas_avgMS.clear()
+                self.canvas_XICs.clear()
+                self.gridLayout_5.removeWidget(self.canvas_annotatedLC)
+                self.canvas_annotatedLC.deleteLater()
+            except RuntimeError as e:
+                logger.error(f"Widgets not found: {traceback.format_exc()}")
+            if ms_file:
+                try:
+                    plot_total_ion_current(self.canvas_baseline, ms_file.data, ms_file.filename)
+                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
+                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
+                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
+                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
+                    plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
+                    plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
+                except AttributeError as e:
+                    logger.error(f"No plot found: {traceback.format_exc()}") 
 
     def display_calibration_curve(self):
         self.canvas_calibration.clear()
@@ -383,6 +432,10 @@ class View(QtWidgets.QMainWindow):
             self.canvas_avgMS.addItem(text_item)
 
     def update_crosshair(self, e):
+        try:
+            self.crosshair_v_label
+        except AttributeError:
+            return
         pos = e[0]
         if self.canvas_baseline.sceneBoundingRect().contains(pos):
             mousePoint = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(pos)
@@ -392,18 +445,51 @@ class View(QtWidgets.QMainWindow):
             self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
 
     def change_MS_annotations(self):
-        if self.comboBox.currentText() == "Use MS-based annotations":
-            # Remove annotations widgets
-            self.gridLayout.removeWidget(self.listAnnotations)
-            self.listAnnotations.deleteLater()
+        """
+        Update the layout of the Upload tab based on the current selection in the combo box.
+
+        When the selection changes, this function will clear the layout of the Upload tab and
+        recreate the widgets appropriate for the new selection. The list of MS files is updated
+        and the model is updated with the new list of MS files.
+
+        This function does not return anything.
+
+        :param self: The View instance.
+        """
+        def clear_layout(layout):
+            if layout:
+                for i in reversed(range(layout.count())):
+                    widget = layout.itemAt(i).widget()
+                    if widget is not None and isinstance(widget, DragDropListWidget):
+                        widget.clear()
+                        widget.deleteLater()
+
+        if self.comboBox.currentText() == "LC-MS":
+            clear_layout(self.gridLayout)
             self.labelAnnotations.setVisible(False)
             self.browseAnnotations.setVisible(False)
-            # Replace with MS
+            # Replace with LC-MS widgets 
+            self.listLC = DragDropListWidget(parent=self.tabUpload)
+            self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
+            self.labelLCdata.setVisible(True)
+            self.browseLC.setVisible(True)
             self.listMS = DragDropListWidget(parent=self.tabUpload)
             self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
             self.labelMSdata.setVisible(True)
             self.browseMS.setVisible(True)
+            self.controller.mode = "LC-MS"
+
+        elif self.comboBox.currentText() == "MS Only":
+            clear_layout(self.gridLayout)
+            self.labelLCdata.setVisible(False)
+            self.browseLC.setVisible(False)
+            self.listMS = DragDropListWidget(parent=self.tabUpload)
+            self.gridLayout.addWidget(self.listMS, 2, 0, 1, 4)
+            self.button_clear_LC.setVisible(False)
+            self.controller.mode = "MS Only"
         else:
+            clear_layout(self.gridLayout)
+            pass
             # Remove MS widgets
             self.gridLayout.removeWidget(self.listMS)
             self.listMS.deleteLater()
@@ -414,10 +500,15 @@ class View(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(self.listAnnotations, 2, 2, 1, 2)
             self.labelAnnotations.setVisible(True)
             self.browseAnnotations.setVisible(True)
-        # BUG: lists don't clear properly
-        self.listMS.clear()
-        self.listAnnotations.clear()
+            # Recreate the LC widgets
+            self.listLC = DragDropListWidget(parent=self.tabUpload)
+            self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
+            self.labelLCdata.setVisible(True)
+            self.browseLC.setVisible(True)
+            self.controller.mode = "LC Only"
+
         # Make updates to the model
+        self.update_lc_file_list()
         self.update_ms_file_list()
         self.update_annotation_file()
 
@@ -500,6 +591,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.browseLC, 1, 1, 1, 1)
         self.comboBox = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBox.setObjectName("comboBox")
+        self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.gridLayout.addWidget(self.comboBox, 0, 0, 1, 2)
@@ -770,8 +862,9 @@ class View(QtWidgets.QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LC-Inspector"))
         self.browseLC.setText(_translate("MainWindow", "Browse"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "Use MS-based annotations"))
-        self.comboBox.setItemText(1, _translate("MainWindow", "Use pre-annotated chromatograms"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "LC-MS"))
+        self.comboBox.setItemText(1, _translate("MainWindow", "MS Only"))
+        self.comboBox.setItemText(2, _translate("MainWindow", "LC Only"))
         self.browseMS.setText(_translate("MainWindow", "Browse"))
         self.browseAnnotations.setText(_translate("MainWindow", "Browse"))
         self.labelAnnotations.setText(_translate("MainWindow", "Annotations (.txt)"))

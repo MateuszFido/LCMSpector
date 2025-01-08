@@ -1,7 +1,7 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
-from utils.measurements import Compound
+from utils.classes import Compound
 
 class PlotWindow(QDialog):
     #FIXME: seems to be unused

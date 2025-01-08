@@ -94,7 +94,7 @@ class MSMeasurement(Measurement):
     """
     def __init__(self, path, ion_list, mass_accuracy=0.0001):
         super().__init__(path)
-        self.data = load_ms1_data(path)  # Initialize as None
+        self.data = load_ms1_data(path)  
         self.mass_accuracy = mass_accuracy
         self.xics = construct_xics(self.data, ion_list, self.mass_accuracy)
         logger.info(f"Loaded MS file {self.filename}.")

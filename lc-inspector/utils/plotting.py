@@ -68,7 +68,7 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     -------
     None
     """
-    time.time()
+    
     scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
     index = np.argmin(scan_time_diff)
     widget.clear()
@@ -195,3 +195,16 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
     text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
     widget.addItem(text_item)
     widget.getPlotItem().vb.setAutoVisible(x=True, y=True)
+
+def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str):
+    widget.setBackground("w")
+    widget.setTitle(f'Total ion chromatogram of {filename}')
+    tic = []
+    times = []
+    for scan in ms_data:
+        tic.append(scan['total ion current'])
+        times.append(cvquery(scan, 'MS:1000016'))
+    widget.plot(times, tic, pen=mkPen('b', width=1))
+    widget.setLabel('left', 'Intensity (cps)')
+    widget.setLabel('bottom', 'Time (min)')
+    widget.addLegend()
