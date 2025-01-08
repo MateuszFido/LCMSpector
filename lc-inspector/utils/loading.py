@@ -5,30 +5,6 @@ from pyteomics import mzml
 from calculation.wrappers import freezeargs
 from functools import lru_cache
 
-# def load_absorbance_data(file_path) -> pd.DataFrame:
-#     # Read the .txt file skipping initial rows until the 'Chromatogram Data' section
-#     with open(file_path, 'r') as file:
-#         lines = file.readlines()
-#         start_index = lines.index('Chromatogram Data:\n') + 2  # Find the start index of data
-
-#     # Convert lines into a Pandas DataFrame, skipping the first row as it contains headers
-#     df = pd.read_csv(
-#         file_path,
-#         skiprows=start_index,
-#         delimiter='\t',
-#         thousands=",",
-#         names=['Time (min)', 'Step (s)', 'Value (mAU)'],
-#     )
-
-#     # Look through all the values and replace any apostrophes (thousand's separator) with an empty string
-#     # Convert to a string first if necessary
-#     df['Value (mAU)'] = df['Value (mAU)'].apply(lambda x: str(x).replace("’", ""))
-        
-#     # Extract Time (min) and Value (mAU) columns
-#     chromatogram_data = df[['Time (min)', 'Value (mAU)']][1:].astype(np.float64)
-    
-#     return chromatogram_data
-
 def detect_delimiter(line):
     """Detect the delimiter used in the line."""
     if ',' in line:
@@ -75,8 +51,6 @@ def load_absorbance_data(file_path):
     
     chromatogram_data = pd.DataFrame({'Time (min)': time_values, 'Value (mAU)': intensity_values})
     return chromatogram_data
-
-
 
 def load_annotated_peaks(file_path):
     

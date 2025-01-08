@@ -4,7 +4,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
-from utils.measurements import LCMeasurement, MSMeasurement, Compound
+from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 
 logger = logging.getLogger(__name__)
@@ -45,29 +45,50 @@ class Model:
         self.annotations = []
         self.compounds = []
         
-    def process_data(self): 
+    def process_data(self, mode): 
         st = time.time()
         lc_results = {}
         ms_results = {}
         total_files = len(self.lc_measurements) + len(self.ms_measurements)
         progress = 0
 
-    
-        for lc_file in self.lc_measurements:
-            lc_result = LCMeasurement(lc_file)
-            progress += 1
-            self.controller.view.update_progress_bar(int(progress / total_files * 100))
-            lc_results[lc_result.filename] = lc_result
-
-        with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
-            ms_futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
-            for future in as_completed(ms_futures):
+        if mode == "LC-MS":
+            for lc_file in self.lc_measurements:
+                lc_result = LCMeasurement(lc_file)
                 progress += 1
                 self.controller.view.update_progress_bar(int(progress / total_files * 100))
-                result = future.result()
-                ms_results[result.filename] = result
-        print("Processed in ", time.time() - st)
-        return lc_results, ms_results
+                lc_results[lc_result.filename] = lc_result
+
+            with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
+                ms_futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
+                for future in as_completed(ms_futures):
+                    progress += 1
+                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
+                    result = future.result()
+                    ms_results[result.filename] = result
+            print("Processed in ", time.time() - st)
+            return lc_results, ms_results
+        elif mode == "LC Only":
+            for lc_file in self.lc_measurements:
+                lc_result = LCMeasurement(lc_file)
+                progress += 1
+                self.controller.view.update_progress_bar(int(progress / total_files * 100))
+                lc_results[lc_result.filename] = lc_result
+            print("Processed in ", time.time() - st)
+            return lc_results, ms_results
+        elif mode == "MS Only":
+            with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor:
+                ms_futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
+                for future in as_completed(ms_futures):
+                    progress += 1
+                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
+                    result = future.result()
+                    ms_results[result.filename] = result
+            print("Processed in ", time.time() - st)
+            return lc_results, ms_results
+        else: 
+            logger.error("ERROR: Invalid argument for process_data(mode): ", mode)
+            return
 
         # for lc_file in self.lc_measurements:
         #     lc_result = LCMeasurement(lc_file)

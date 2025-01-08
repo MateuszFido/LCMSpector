@@ -13,6 +13,7 @@ class Controller:
         self.view.calibrateButton.clicked.connect(self.calibrate)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
+        self.mode = "LC-MS"
 
     def load_lc_data(self):
         pass
@@ -21,13 +22,20 @@ class Controller:
         pass
 
     def process_data(self):
+        self.view.statusbar.showMessage(f"Processing data in mode {self.mode}...")
         self.model.compounds = self.view.ionTable.get_items()
         if not self.model.compounds:
             self.view.show_critical_error("No compounds found!\n\nPlease define m/z values to trace or choose from the predefined lists before processing.")
             return
         if (hasattr(self.model, 'ms_measurements') and hasattr(self.model, 'lc_measurements')) or (hasattr(self.model, 'lc_measurements') and hasattr(self.model, 'annotations')):
-            if not self.model.lc_measurements:
+            if self.mode == "LC-MS" and not self.model.lc_measurements:
                 self.view.show_critical_error("No files to process!\n\nPlease load LC files and either corresponding MS files or manual annotations before processing.")
+                return
+            elif self.mode == "LC" and not self.model.lc_measurements:
+                self.view.show_critical_error("No files to process!\n\nPlease load LC files before processing.")
+                return
+            elif self.mode == "MS" and not self.model.ms_measurements:
+                self.view.show_critical_error("No files to process!\n\nPlease load MS files before processing.")
                 return
             if not self.model.compounds or not self.model.compounds[0].ions:
                 self.view.show_critical_error("Please define m/z values to trace or choose from the predefined lists before processing.")
@@ -36,13 +44,12 @@ class Controller:
             logger.info("Starting the processing...")
             # Handle pre-processing UI events
             self.view.processButton.setEnabled(False)
-            self.view.statusbar.showMessage("Loading data into memory... [Step 1/3]")
             self.view.progressBar.setVisible(True)
             self.view.progressLabel.setVisible(True)
             self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)
             # Start processing
-            self.model.lc_measurements, self.model.ms_measurements = self.model.process_data()
+            self.model.lc_measurements, self.model.ms_measurements = self.model.process_data(mode=self.mode)
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
         
@@ -60,24 +67,28 @@ class Controller:
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)
 
         # Resize view to fit the screen
-        self.view.showMaximized()
+        if self.mode == "LC-MS":
+            self.view.showMaximized()
         self.update_filenames()
     
     def update_filenames(self):
-        filenames = list(self.model.lc_measurements.keys())
-        self.view.update_combo_box(filenames)
-        # Grab the return values of extract_concentration() for every file in lc_measurements
-        concentrations = [[file, self.model.lc_measurements[file].extract_concentration()] for file in filenames]
-        self.view.update_table_quantitation(concentrations)
-
+        if self.mode == "LC-MS" or self.mode == "LC":
+            filenames = list(self.model.lc_measurements.keys())
+            # Grab the return values of extract_concentration() for every file in lc_measurements
+            concentrations = [[file, self.model.lc_measurements[file].extract_concentration()] for file in filenames]
+            self.view.update_table_quantitation(concentrations)
+        else:
+            filenames = list(self.model.ms_measurements.keys())
+            self.view.update_combo_box(filenames)
+            
     def display_selected_plots(self):
         selected_file = self.view.comboBox_currentfile.currentText()
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
         except Exception:
-            logger.error(f"Error displaying plots for file {selected_file}: {traceback.format_exc()}")
+            logger.error(f"Error getting plots for file {selected_file}: {traceback.format_exc()}")
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
-
+        
     def calibrate(self):
         selected_files = self.view.get_calibration_files()
         if selected_files:
