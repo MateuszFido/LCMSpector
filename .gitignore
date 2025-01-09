@@ -9,5 +9,6 @@ __pycache__
 app.log
 build
 dist
-LC-Inspector.spec
-LC-Inspector-installer-MacOS-arm64.dmg
+*.spec
+*.dmg
+*.sparsebundle

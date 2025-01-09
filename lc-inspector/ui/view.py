@@ -578,7 +578,7 @@ class View(QtWidgets.QMainWindow):
         """
         
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1600, 900)
+        MainWindow.resize(QtWidgets.QApplication.instance().primaryScreen().size().width(), QtWidgets.QApplication.instance().primaryScreen().size().height()-150)
         MainWindow.setToolTip("")
         MainWindow.setToolTipDuration(-1)
         MainWindow.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
@@ -588,7 +588,7 @@ class View(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtCore.QSize(1600, 900))
+        self.centralwidget.setMinimumSize(QtWidgets.QApplication.instance().primaryScreen().size().width(), QtWidgets.QApplication.instance().primaryScreen().size().height()-150)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName("gridLayout_4")
