@@ -792,7 +792,7 @@ class View(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.logo.sizePolicy().hasHeightForWidth())
         self.logo.setSizePolicy(sizePolicy)
-        self.logo.setMaximumSize(QtCore.QSize(860, 70))
+        self.logo.setMaximumSize(QtCore.QSize(1600, 100))
         self.logo.setText("")
         self.logo.setPixmap(QtGui.QPixmap(os.path.join(os.path.dirname(__file__), "logo.png")))
         self.logo.setScaledContents(True)
