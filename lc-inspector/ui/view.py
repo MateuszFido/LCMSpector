@@ -478,15 +478,21 @@ class View(QtWidgets.QMainWindow):
             self.labelMSdata.setVisible(True)
             self.browseMS.setVisible(True)
             self.controller.mode = "LC-MS"
+            self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
+            self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
 
         elif self.comboBox.currentText() == "MS Only":
             clear_layout(self.gridLayout)
             self.labelLCdata.setVisible(False)
+            self.labelAnnotations.setVisible(False)
+            self.labelMSdata.setVisible(True)
             self.browseLC.setVisible(False)
             self.listMS = DragDropListWidget(parent=self.tabUpload)
             self.gridLayout.addWidget(self.listMS, 2, 0, 1, 4)
             self.button_clear_LC.setVisible(False)
             self.controller.mode = "MS Only"
+            self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
+
         else:
             clear_layout(self.gridLayout)
             pass
@@ -506,6 +512,8 @@ class View(QtWidgets.QMainWindow):
             self.labelLCdata.setVisible(True)
             self.browseLC.setVisible(True)
             self.controller.mode = "LC Only"
+            self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
+            self.listAnnotations.filesDropped.connect(self.handle_files_dropped_annotations)
 
         # Make updates to the model
         self.update_lc_file_list()
