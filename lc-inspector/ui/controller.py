@@ -67,8 +67,7 @@ class Controller:
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)
 
         # Resize view to fit the screen
-        if self.mode == "LC-MS":
-            self.view.showMaximized()
+        self.view.showMaximized()
         self.update_filenames()
     
     def update_filenames(self):
