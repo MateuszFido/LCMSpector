@@ -316,15 +316,21 @@ class View(QtWidgets.QMainWindow):
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError as e: 
                     logger.error(f"No XIC plot found: {traceback.format_exc()}")
-            self.canvas_annotatedLC.clear()
             if lc_file and ms_file:
                 if lc_file.filename == ms_file.filename:
                     try:
+                        self.canvas_annotatedLC.clear()
                         self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
-                        for curve in self.curve_list.keys():
-                            curve.sigClicked.connect(lambda c: self.highlight_peak(c, ms_file.xics))
-                    except Exception as e: 
-                        logger.error(f"No annotated LC plot found: {traceback.format_exc()}")
+                    except RuntimeError:
+                        logger.error(f"Canvas was deleted, reacreating canvas_annotatedLC.")
+                        self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
+                        self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+                        self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
+                        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+                        self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
+                    for curve in self.curve_list.keys():
+                        curve.sigClicked.connect(lambda c: self.highlight_peak(c, ms_file.xics))
+                    
         elif self.controller.mode == "MS Only":
             try:
                 self.canvas_baseline.clear()
@@ -470,10 +476,12 @@ class View(QtWidgets.QMainWindow):
             self.browseAnnotations.setVisible(False)
             # Replace with LC-MS widgets 
             self.listLC = DragDropListWidget(parent=self.tabUpload)
+            self.listLC.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
             self.labelLCdata.setVisible(True)
             self.browseLC.setVisible(True)
             self.listMS = DragDropListWidget(parent=self.tabUpload)
+            self.listMS.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
             self.labelMSdata.setVisible(True)
             self.browseMS.setVisible(True)
@@ -488,6 +496,7 @@ class View(QtWidgets.QMainWindow):
             self.labelMSdata.setVisible(True)
             self.browseLC.setVisible(False)
             self.listMS = DragDropListWidget(parent=self.tabUpload)
+            self.listMS.setMinimumWidth(1000)
             self.gridLayout.addWidget(self.listMS, 2, 0, 1, 4)
             self.button_clear_LC.setVisible(False)
             self.controller.mode = "MS Only"
@@ -503,11 +512,13 @@ class View(QtWidgets.QMainWindow):
             self.browseMS.setVisible(False)
             # Replace with annotations
             self.listAnnotations = DragDropListWidget(parent=self.tabUpload)
+            self.listAnnotations.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listAnnotations, 2, 2, 1, 2)
             self.labelAnnotations.setVisible(True)
             self.browseAnnotations.setVisible(True)
             # Recreate the LC widgets
             self.listLC = DragDropListWidget(parent=self.tabUpload)
+            self.listLC.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
             self.labelLCdata.setVisible(True)
             self.browseLC.setVisible(True)
@@ -567,7 +578,7 @@ class View(QtWidgets.QMainWindow):
         """
         
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(860, 700)
+        MainWindow.resize(1600, 900)
         MainWindow.setToolTip("")
         MainWindow.setToolTipDuration(-1)
         MainWindow.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
@@ -577,7 +588,7 @@ class View(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtCore.QSize(850, 640))
+        self.centralwidget.setMinimumSize(QtCore.QSize(1600, 900))
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName("gridLayout_4")
@@ -622,9 +633,11 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.labelMSdata, 1, 2, 1, 1)
         self.listLC = DragDropListWidget(parent=self.tabUpload)
         self.listLC.setObjectName("listLC")
+        self.listLC.setMinimumWidth(500)
         self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
         self.listMS = DragDropListWidget(parent=self.tabUpload)
         self.listMS.setObjectName("listMS")
+        self.listMS.setMinimumWidth(500)
         self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
         self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelIonList.setObjectName("labelIonList")

@@ -45,7 +45,7 @@ class Model:
         self.annotations = []
         self.compounds = []
         
-    def process_data(self, mode): 
+    def process_data(self, mode):
         st = time.time()
         lc_results = {}
         ms_results = {}
@@ -153,7 +153,12 @@ class Model:
                 for ion in ms_compound.ions.keys():
                     ion_intensity = np.round(np.sum(ms_compound.ions[ion]['MS Intensity'][1]), 0)
                     ms_compound.concentration += ion_intensity
-                ms_compound.concentration = calculate_concentration(ms_compound.concentration, model_compound.calibration_parameters)
+                try:
+                    ms_compound.concentration = calculate_concentration(ms_compound.concentration, model_compound.calibration_parameters)
+                    ms_compound.calibration_parameters = model_compound.calibration_parameters
+                except Exception:
+                    logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
+                    continue
 
     def export(self):
         results = []
@@ -168,7 +173,9 @@ class Model:
                         'RT (min)': np.round(compound.ions[ion]['RT'],3),
                         'MS Intensity (cps)': np.round(np.sum(compound.ions[ion]['MS Intensity']),0),
                         'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity'],
-                        'Concentration': compound.concentration
+                        'Concentration (mM)': compound.concentration,
+                        'Slope': compound.calibration_parameters['slope'],
+                        'Intercept': compound.calibration_parameters['intercept'],
                     })
         df = pd.DataFrame(results)
         return df
