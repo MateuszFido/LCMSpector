@@ -22,7 +22,10 @@ class Controller:
         pass
 
     def process_data(self):
-        self.view.statusbar.showMessage(f"Processing data in mode {self.mode}...")
+        self.view.update_lc_file_list()
+        self.view.update_ms_file_list()
+        self.view.update_annotation_file()
+        self.view.statusbar.showMessage(f"Processing data in {self.mode} mode ...")
         self.model.compounds = self.view.ionTable.get_items()
         if not self.model.compounds:
             self.view.show_critical_error("No compounds found!\n\nPlease define m/z values to trace or choose from the predefined lists before processing.")
@@ -49,6 +52,7 @@ class Controller:
             self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)
             # Start processing
+
             self.model.lc_measurements, self.model.ms_measurements = self.model.process_data(mode=self.mode)
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
@@ -67,7 +71,7 @@ class Controller:
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)
 
         # Resize view to fit the screen
-        self.view.showMaximized()
+        self.view.resize(1600, 900)
         self.update_filenames()
     
     def update_filenames(self):
@@ -75,6 +79,7 @@ class Controller:
             filenames = list(self.model.lc_measurements.keys())
             # Grab the return values of extract_concentration() for every file in lc_measurements
             concentrations = [[file, self.model.lc_measurements[file].extract_concentration()] for file in filenames]
+            self.view.update_combo_box(filenames)
             self.view.update_table_quantitation(concentrations)
         else:
             filenames = list(self.model.ms_measurements.keys())
