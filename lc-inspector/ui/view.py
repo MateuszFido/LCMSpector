@@ -300,6 +300,8 @@ class View(QtWidgets.QMainWindow):
                     plot_absorbance_data(lc_file.path, lc_file.baseline_corrected, self.canvas_baseline)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
+                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
+                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
                 except Exception as e: 
                     logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
             self.canvas_avgMS.clear()
@@ -343,8 +345,8 @@ class View(QtWidgets.QMainWindow):
                     plot_total_ion_current(self.canvas_baseline, ms_file.data, ms_file.filename)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
-                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
-                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
+                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
+                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
                     plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError as e:
