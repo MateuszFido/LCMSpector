@@ -282,78 +282,122 @@
             "info":[] 
         } 
     }, 
+    "terpenoids": { 
+        "Farnesol": { 
+            "ions":[],
+            "info":[] 
+        }
+    },
  
     "phenolic_acids": { 
-        "2-cis,4-trans Abscisic acid": { 
-            "ions":[], 
-            "info":[] 
+        "Abscisic acid": { 
+            "ions":[265.14344, 263.12888], 
+            "info":["Abscisic acid-(+)", "Abscisic acid-(-)"] 
         }, 
-        "2-Hydroxycinnamic acid": { 
-            "ions":[], 
-            "info":[] 
-        }, 
-        "CaNeic acid": { 
-            "ions":[], 
-            "info":[] 
+        "Caffeic acid": { 
+            "ions":[181.04954, 179.03498], 
+            "info":["Caffeic acid-(+)", "Caffeic acid-(-)"] 
         }, 
         "Chlorogenic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[355.10236, 353.08781], 
+            "info":["Chlorogenic acid-(+)", "Chlorogenic acid-(-)"] 
         }, 
         "Cinnamic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[149.05971, 147.04515], 
+            "info":["Cinnamic acid-(+)", "Cinnamic acid-(-)"] 
         }, 
         "Ellagic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[303.01354, 300.99899], 
+            "info":["Ellagic acid-(+)", "Ellagic acid-(-)"] 
         }, 
         "Ferulic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[195.06519, 193.05063], 
+            "info":["Ferulic acid-(+)", "Ferulic acid-(-)"] 
         }, 
         "Gallic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[171.02880, 169.01425], 
+            "info":["Gallic acid-(+)", "Gallic acid-(-)"] 
         }, 
         "p-Coumaric acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[165.05462, 163.04007], 
+            "info":["p-Coumaric acid-(+)", "p-Coumaric acid-(-)"] 
         }, 
-        "p-Hydroxybenzoic acid": { 
-            "ions":[], 
-            "info":[] 
+        "Salicylic acid": { 
+            "ions":[139.03897, 137.02442], 
+            "info":["Salicylic acid-(+)", "Salicylic acid-(-)"] 
         }, 
         "Protocatechuic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[155.03389, 153.01933], 
+            "info":["Protocatechuic acid-(+)", "Protocatechuic acid-(-)"] 
         }, 
-        "Sinapic acid": { 
-            "ions":[], 
-            "info":[] 
+        "Sinapinic acid": { 
+            "ions":[225.07575, 223.06119], 
+            "info":["Synapinic acid-(+)", "Sinapinic acid-(-)"] 
         }, 
         "Syringic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[199.06010, 197.04555], 
+            "info":["Syringic acid-(+)", "Syringic acid-(-)"] 
         }, 
         "Vanillic acid": { 
-            "ions":[], 
-            "info":[] 
+            "ions":[169.04954, 167.03498], 
+            "info":["Vanillic acid-(+)", "Vanillic acid-(-)"] 
         } 
     }, 
     "fatty_acids": { 
         "Palmitic acid": { 
             "ions": [145.065, 143.0503], 
-            "info": ["Palmitic acid-I1", "Palmitic acid-I2"] 
+            "info": ["Palmitic acid-(+)", "Palmitic acid-(-)"] 
         }, 
         "Myristic acid": { 
             "ions": [183.087, 181.0723], 
-            "info": ["Myristic acid-I1", "Myristic acid-I2"] 
+            "info": ["Myristic acid-(+)", "Myristic acid-(-)"] 
         }, 
         "Ethylbutyrate": { 
             "ions": [137.0539, 136.0392], 
-            "info": ["Ethylbutyrate-I1", "Ethylbutyrate-I2"] 
-        } 
-    } 
+            "info": ["Ethylbutyrate-(+)", "Ethylbutyrate-(-)"] 
+        }
+    },
+    "gasoline_components": {
+        "p-xylene": {
+            "ions":[51.0, 77.0, 105.0, 106.0, 91.0],
+            "info":[]
+        },
+        "n-nonane": {
+            "ions":[57.0, 71.0, 85.0, 127.0, 128.0],
+            "info":[]
+        },
+        "1,2,4-trimethylbenzene": {
+            "ions":[39.0, 77.0, 105.0, 119.0, 120.0],
+            "info":[]
+        },
+        "n-decane": {
+            "ions":[141.0, 99.0, 86.0, 85.0, 84.0],
+            "info":[]
+        },
+        "n-hexane": {
+            "ions":[57.0, 56.0, 43.0, 42.0, 40.0],
+            "info":[]
+        },
+        "n-heptane": {
+            "ions":[71.0, 57.0, 43.0, 41.0, 29.0],
+            "info":[]
+        },
+        "n-octane": {
+            "ions":[85.0, 71.0, 57.0, 56.0, 43.0],
+            "info":[]
+        },
+        "1,2,4,5-tetramethylbenzene": {
+            "ions":[134.0, 133.0, 119.0, 120.0, 91.0],
+            "info":[]
+        },
+        "n-tridecane": {
+            "ions":[85.0, 71.0, 57.0, 43.0, 41.0],
+            "info":[]
+        },
+        "methylnaphtalene": {
+            "ions":[142.0, 141.0, 115.0, 70.0, 140.0],
+            "info":[]
+        }
+    }
 } 
  

@@ -87,7 +87,9 @@ class Controller:
             self.view.update_table_quantitation(concentrations)
         else:
             filenames = list(self.model.ms_measurements.keys())
+            concentrations = [[file, self.model.ms_measurements[file].extract_concentration()] for file in filenames]
             self.view.update_combo_box(filenames)
+            self.view.update_table_quantitation(concentrations)
             
     def display_selected_plots(self):
         selected_file = self.view.comboBox_currentfile.currentText()

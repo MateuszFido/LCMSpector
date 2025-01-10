@@ -75,11 +75,16 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     # Plotting the average MS data
     widget.setBackground("w")
     widget.showGrid(x=True, y=True, alpha=0.2)
-    curve = widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
+    if len(data_matrix[index]['m/z array']) < 500:
+        # Plot as a histogram
+        widget.addItem(pg.BarGraphItem(x=data_matrix[index]['m/z array'], height=data_matrix[index]['intensity array'], width=0.2, pen=mkPen('b', width=2), brush=mkBrush('b')))
+    else:
+        # Plot as a curve
+        widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
     widget.getPlotItem().setTitle(f'MS1 full-scan spectrum at {round(rt, 2)} minutes', color='#b8b8b8', size='12pt')
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
-
+    
     # Annotate the m/z of the 5 highest peaks
     mzs = data_matrix[index]['m/z array']
     intensities = data_matrix[index]['intensity array']
@@ -87,11 +92,13 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     sorted_indices = np.argsort(intensities[peaks])[::-1]
     sorted_mzs = mzs[peaks][sorted_indices][0:10]
     sorted_intensities = intensities[peaks][sorted_indices][0:10]
-    for i in range(0, 10):
+    i = 0 
+    while i < len(sorted_mzs) and sorted_mzs[i] in mzs[peaks][sorted_indices] and i < 10:
         text_item = pg.TextItem(text=f"{sorted_mzs[i]:.4f}", color='#232323', anchor=(0, 0))
         text_item.setPos(sorted_mzs[i], sorted_intensities[i])
         text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
         widget.addItem(text_item)
+        i += 1
 
 def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
     '''
@@ -161,17 +168,21 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
             if compound.ions[ion]["MS Intensity"] is None:
                 continue
             plotting_data = compound.ions[ion]["MS Intensity"]
-            plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion} ({compound.ion_info[j]})')
+            try:
+                plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion} ({compound.ion_info[j]})')
+                text_item = pg.TextItem(f"{compound.ion_info[j]}", color=color_list[j], anchor=(0, 0))
+            except IndexError:
+                plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion}')
+                text_item = pg.TextItem(f"{ion}", color=color_list[j], anchor=(0, 0))
             highest_intensity = np.argmax(plotting_data[1])
             scan_time = plotting_data[0][highest_intensity]
             plot_item.plot([scan_time], [plotting_data[1][highest_intensity]], pen=mkPen(color_list[j], width=1), symbol='o', symbolSize=5)
 
-            text_item = pg.TextItem(f"{compound.ion_info[j]}", color=color_list[j], anchor=(0, 0))
             text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(scan_time, plotting_data[1][highest_intensity])
             plot_item.addItem(text_item)
             plot_item.getViewBox().enableAutoRange(axis='y', enable=True)
-            plot_item.getViewBox().setAutoVisible(y=1.0)
+            plot_item.getViewBox().setAutoVisible(y=True)
 
     #HACK: Forces scrollArea to realize that the widget is bigger than it is
     widget.setMinimumSize(pg.QtCore.QSize(len(xics)*20,len(xics)*40))

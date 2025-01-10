@@ -30,7 +30,7 @@ class View(QtWidgets.QMainWindow):
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
-            if file_path.lower().endswith(".txt"):
+            if file_path.lower().endswith(".txt") or file_path.lower().endswith(".csv"):
                 count_ok += 1
                 self.listLC.addItem(file_path)  # Add each file path to the listLC widget
             elif not error_shown:
@@ -95,6 +95,10 @@ class View(QtWidgets.QMainWindow):
             ion_list = lists["flavonoids"]
         elif self.comboBoxIonLists.currentText() == "Fatty acids":
             ion_list = lists["fatty_acids"]
+        elif self.comboBoxIonLists.currentText() == "Terpenoids":
+            ion_list = lists["terpenoids"]
+        elif self.comboBoxIonLists.currentText() == "Gasoline components (EI)":
+            ion_list = lists["gasoline_components"]
         else:
             ion_list = None
 
@@ -117,7 +121,7 @@ class View(QtWidgets.QMainWindow):
         Slot for the browseLC button. Opens a file dialog for selecting LC files,
         which are then added to the listLC widget and the model is updated.
         """
-        lc_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select LC Files", "", "Text Files (*.txt);;All Files (*)")
+        lc_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select LC Files", "", "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)")
         if lc_file_paths:
             self.listLC.clear()
             for lc_file_path in lc_file_paths:
@@ -312,6 +316,8 @@ class View(QtWidgets.QMainWindow):
                     logger.error(f"No average MS found: {traceback.format_exc()}")
             self.canvas_XICs.clear()
             if ms_file:
+                self.gridLayout_2.removeWidget(self.scrollArea)
+                self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError as e: 
@@ -338,6 +344,9 @@ class View(QtWidgets.QMainWindow):
                 self.canvas_XICs.clear()
                 self.gridLayout_5.removeWidget(self.canvas_annotatedLC)
                 self.canvas_annotatedLC.deleteLater()
+                # Set canvas XIC to span two rows of the grid
+                self.gridLayout_2.removeWidget(self.scrollArea)
+                self.gridLayout_2.addWidget(self.scrollArea, 0, 1, 2, 1)
             except RuntimeError as e:
                 logger.error(f"Widgets not found: {traceback.format_exc()}")
             if ms_file:
@@ -660,6 +669,8 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists.addItem("Fatty acids")
         self.comboBoxIonLists.addItem("Phenolic acids")
         self.comboBoxIonLists.addItem("Flavonoids")
+        self.comboBoxIonLists.addItem("Terpenoids")
+        self.comboBoxIonLists.addItem("Gasoline components (EI)")
         self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
@@ -696,7 +707,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.canvas_avgMS.setMouseEnabled(x=True, y=False)
         self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y')
-        self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=1.0)
+        self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=True)
         self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(self.update_labels_avgMS)
 
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
