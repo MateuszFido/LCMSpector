@@ -300,8 +300,6 @@ class View(QtWidgets.QMainWindow):
                     plot_absorbance_data(lc_file.path, lc_file.baseline_corrected, self.canvas_baseline)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
-                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="0 s", color='#b8b8b8', rotateAxis=(1, 0))
-                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="0 a.u.", color='#b8b8b8', rotateAxis=(1, 0))
                 except Exception as e: 
                     logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
             self.canvas_avgMS.clear()
@@ -792,7 +790,7 @@ class View(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.logo.sizePolicy().hasHeightForWidth())
         self.logo.setSizePolicy(sizePolicy)
-        self.logo.setMaximumSize(QtCore.QSize(1600, 100))
+        self.logo.setMaximumSize(QtCore.QSize(1500, 100))
         self.logo.setText("")
         self.logo.setPixmap(QtGui.QPixmap(os.path.join(os.path.dirname(__file__), "logo.png")))
         self.logo.setScaledContents(True)
