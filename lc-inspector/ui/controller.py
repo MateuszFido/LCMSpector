@@ -52,8 +52,12 @@ class Controller:
             self.view.progressLabel.setText("0%")
             self.view.progressBar.setValue(0)
             # Start processing
-
-            self.model.lc_measurements, self.model.ms_measurements = self.model.process_data(mode=self.mode)
+            try:
+                self.model.lc_measurements, self.model.ms_measurements = self.model.process_data(mode=self.mode)
+            except Exception:
+                logger.error(f"Error processing data: {traceback.format_exc()}")
+                self.view.show_critical_error(f"Error processing data: {traceback.format_exc()}")
+                return
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
         
