@@ -83,23 +83,19 @@ class View(QtWidgets.QMainWindow):
             self.statusbar.showMessage(f"Files added, {count_ok} annotation files loaded successfully.", 3000)
         self.update_annotation_file()  # Update the model with the new LC files
 
+    def update_combo_box_ion_list(self):
+        lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
+        self.comboBoxIonLists.clear()
+        self.comboBoxIonLists.addItem("Create new ion list...")
+        self.comboBoxIonLists.addItems(lists.keys())
+
     def update_ion_list(self):
         lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
-        if self.comboBoxIonLists.currentText() == "Amino acids and polyamines (DEEMM)":
-            ion_list = lists["aminoacids_and_polyamines"]
-        elif self.comboBoxIonLists.currentText() == "Short-chain fatty acids":
-            ion_list = lists["scfas"]
-        elif self.comboBoxIonLists.currentText() == "Phenolic acids":
-            ion_list = lists["phenolic_acids"]
-        elif self.comboBoxIonLists.currentText() == "Flavonoids":
-            ion_list = lists["flavonoids"]
-        elif self.comboBoxIonLists.currentText() == "Fatty acids":
-            ion_list = lists["fatty_acids"]
-        elif self.comboBoxIonLists.currentText() == "Terpenoids":
-            ion_list = lists["terpenoids"]
-        elif self.comboBoxIonLists.currentText() == "Gasoline components (EI)":
-            ion_list = lists["gasoline_components"]
-        else:
+        try:
+            ion_list = lists[self.comboBoxIonLists.currentText()]
+        except:
+            logger.error(f"Could not find ion list: {self.comboBoxIonLists.currentText()}")
+            self.statusbar.showMessage(f"Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
             ion_list = None
 
         self.ionTable.clearContents()
@@ -560,7 +556,7 @@ class View(QtWidgets.QMainWindow):
             csv.writer(stream, delimiter='\t').writerows(table)
             QtWidgets.qApp.clipboard().setText(stream.getvalue())
         return
-    
+
     def show_scan_at_time_x(self, event):
         mouse_pos = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(event._scenePos)
         time_x = float(mouse_pos.x())
@@ -613,7 +609,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout = QtWidgets.QGridLayout(self.tabUpload)
         self.gridLayout.setObjectName("gridLayout")
         self.ionTable = IonTable(parent=self.tabUpload)
-        self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 2)
+        self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 3)
 
         self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
         self.browseLC.setObjectName("browseLC")
@@ -661,17 +657,23 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_clear_ion_list.setObjectName("button_clear_ion_list")
         self.gridLayout.addWidget(self.button_clear_ion_list, 3, 4, 1, 1)
+        self.button_save_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_save_ion_list.setObjectName("button_save_ion_list")
+        self.gridLayout.addWidget(self.button_save_ion_list, 3, 5, 1, 1)
+        self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_delete_ion_list.setObjectName("button_delete_ion_list")
+        self.gridLayout.addWidget(self.button_delete_ion_list, 3, 6, 1, 1)
         
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
-        self.comboBoxIonLists.addItem("")
-        self.comboBoxIonLists.addItem("Amino acids and polyamines (DEEMM)")
-        self.comboBoxIonLists.addItem("Short-chain fatty acids")
-        self.comboBoxIonLists.addItem("Fatty acids")
-        self.comboBoxIonLists.addItem("Phenolic acids")
-        self.comboBoxIonLists.addItem("Flavonoids")
-        self.comboBoxIonLists.addItem("Terpenoids")
-        self.comboBoxIonLists.addItem("Gasoline components (EI)")
+        self.comboBoxIonLists.addItem("Create new ion list...")
+        try: 
+            lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
+            for ionlist in lists:
+                self.comboBoxIonLists.addItem(ionlist)
+        except Exception as e:
+            self.statusbar.showMessage(f"Error loading ion lists: {e}", 5000)
+
         self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
@@ -881,8 +883,10 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_LC.clicked.connect(self.listLC.clear)
         self.button_clear_MS.clicked.connect(self.listMS.clear)
         self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
-
-
+        self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
+        self.button_save_ion_list.clicked.connect(self.update_combo_box_ion_list)
+        self.button_delete_ion_list.clicked.connect(lambda: self.ionTable.delete_ion_list(self.comboBoxIonLists.currentText()))
+        self.button_delete_ion_list.clicked.connect(self.update_combo_box_ion_list)
 
     def retranslateUi(self, MainWindow):
         """
@@ -933,4 +937,6 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_LC.setText(_translate("MainWindow", "Clear"))
         self.button_clear_MS.setText(_translate("MainWindow", "Clear"))
         self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
+        self.button_save_ion_list.setText(_translate("MainWindow", "Save"))
+        self.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
 
