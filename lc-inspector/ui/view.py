@@ -347,6 +347,7 @@ class View(QtWidgets.QMainWindow):
                 # Set canvas XIC to span two rows of the grid
                 self.gridLayout_2.removeWidget(self.scrollArea)
                 self.gridLayout_2.addWidget(self.scrollArea, 0, 1, 2, 1)
+                self.browseAnnotations.deleteLater()
             except RuntimeError as e:
                 logger.error(f"Widgets not found: {traceback.format_exc()}")
             if ms_file:
