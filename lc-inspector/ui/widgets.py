@@ -165,7 +165,7 @@ class IonTable(GenericTable):
         try:
             config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
             config[ion_list_name] = ions
-            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"))
+            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"), indent=4)
         except Exception as e:
             print(f"Could not save ions to config.json: {e}")
 
@@ -179,7 +179,7 @@ class IonTable(GenericTable):
         if msgBox.exec() == QtWidgets.QMessageBox.StandardButton.Yes:
             config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
             config.pop(ion_list_name)
-            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"))
+            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"), indent=4)
 
 class ClearSelectionCommand(QtGui.QUndoCommand):
     def __init__(self, table):
