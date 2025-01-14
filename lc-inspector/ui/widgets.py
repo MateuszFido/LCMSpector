@@ -1,7 +1,8 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
+from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
 from utils.classes import Compound
+import json, __main__
 
 class PlotWindow(QDialog):
     #FIXME: seems to be unused
@@ -132,7 +133,10 @@ class IonTable(GenericTable):
             if self.item(row, 0) is None: continue
             name = self.item(row, 0).text()
             if name == "": continue
-            ions = [float(x) for x in self.item(row, 1).text().split(",")]
+            try: 
+                ions = [float(x) for x in self.item(row, 1).text().split(",")]
+            except ValueError:
+                ions = []
             ion_info = self.item(row, 2).text().split(",")
             try:
                 compound = Compound(name, ions, ion_info)
@@ -140,6 +144,42 @@ class IonTable(GenericTable):
             except UnboundLocalError as e:
                 logger.error(f"Could not find any compounds in the table: {e}")        
         return items
+
+    def save_ion_list(self):
+        # Prompt the user how they want to name the list
+        ion_list_name, okPressed = QtWidgets.QInputDialog.getText(self, "New ion list", "Name the new ion list:")
+        if not okPressed: return
+        ions = {}
+        for row in range(self.rowCount()):
+            if self.item(row, 0) is None: continue
+            name = self.item(row, 0).text()
+            if name == "": continue
+            else:
+                ions[name] = {}
+            try: 
+                ions[name]['ions'] = [float(x) for x in self.item(row, 1).text().split(",")]
+            except ValueError:
+                continue
+            ions[name]['ion_info'] = self.item(row, 2).text().split(",")
+        # Save locally in config.json
+        try:
+            config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
+            config[ion_list_name] = ions
+            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"))
+        except Exception as e:
+            print(f"Could not save ions to config.json: {e}")
+
+    def delete_ion_list(self, ion_list_name):
+        # Slot for the delete button, prompt the user and if they confirm, delete the currently selected ion list
+        msgBox = QtWidgets.QMessageBox()
+        msgBox.setIcon(QtWidgets.QMessageBox.Icon.Warning)
+        msgBox.setText(f"Are you sure you want to delete the ion list \"{ion_list_name}\"? This cannot be undone.")
+        msgBox.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No)
+        msgBox.setDefaultButton(QtWidgets.QMessageBox.StandardButton.No)
+        if msgBox.exec() == QtWidgets.QMessageBox.StandardButton.Yes:
+            config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
+            config.pop(ion_list_name)
+            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"))
 
 class ClearSelectionCommand(QtGui.QUndoCommand):
     def __init__(self, table):
