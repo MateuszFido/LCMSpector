@@ -107,12 +107,12 @@ class View(QtWidgets.QMainWindow):
             i=0
             self.ionTable.setRowCount(len(ion_list))
             for compound, keywords in ion_list.items():
-                self.ionTable.setItem(i, 0, QtWidgets.QTableWidgetItem(str(compound)))
+                self.ionTable.set_item(i, 0, QtWidgets.QTableWidgetItem(str(compound)))
                 for key, value in keywords.items():
                     if key == "ions":
-                        self.ionTable.setItem(i, 1, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                        self.ionTable.set_item(i, 1, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
                     elif key == "info":
-                        self.ionTable.setItem(i, 2, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                        self.ionTable.set_item(i, 2, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
                 i+=1
 
 

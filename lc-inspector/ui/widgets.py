@@ -52,6 +52,8 @@ class GenericTable(QtWidgets.QTableWidget):
         self.setGridStyle(QtCore.Qt.PenStyle.SolidLine)
         self.setStyleSheet("gridline-color: #e0e0e0;")
         self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.undoStack = QtGui.QUndoStack(self)
+        self.undoStack.setUndoLimit(100)
         self.customContextMenuRequested.connect(self.contextMenuEvent)
 
     def contextMenuEvent(self, event):
@@ -65,6 +67,14 @@ class GenericTable(QtWidgets.QTableWidget):
         paste_action.triggered.connect(self.paste_from_clipboard)
         self.menu.addAction(paste_action)
 
+        undo_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-undo"), "(⌘+Z) Undo", self)
+        undo_action.triggered.connect(self.undoStack.undo)
+        self.menu.addAction(undo_action)
+
+        redo_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-redo"), "(⌘+U) Redo", self)
+        redo_action.triggered.connect(self.undoStack.redo)
+        self.menu.addAction(redo_action)
+
         self.menu.popup(QtGui.QCursor.pos())
 
     def keyPressEvent(self, event):
@@ -76,6 +86,10 @@ class GenericTable(QtWidgets.QTableWidget):
             self.clear_selection()
         elif event.key() == Qt.Key.Key_C and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
             self.copy()
+        elif event.key() == Qt.Key.Key_Z and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.undoStack.undo()
+        elif event.key() == Qt.Key.Key_U and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.undoStack.redo()
         else:
             super().keyPressEvent(event)
 
@@ -83,35 +97,27 @@ class GenericTable(QtWidgets.QTableWidget):
         self.selectAll()
 
     def clear_selection(self):
-        for item in self.selectedItems():
-            item.setText("")  # Clear the text of the selected item
+        command = ClearSelectionCommand(self)
+        self.undoStack.push(command)
+
+    def paste_from_clipboard(self):
+        command = PasteFromClipboardCommand(self)
+        self.undoStack.push(command)
 
     def copy(self):
-        selection = self.selectedItems()
-        if selection:
-            text = "\t".join([item.text() for item in selection])
-            clipboard = QtWidgets.QApplication.clipboard()
-            clipboard.setText(text)
-        
-    def paste_from_clipboard(self):
-        clipboard = QtWidgets.QApplication.clipboard()
-        text = clipboard.text()
+        command = CopyCommand(self)
+        self.undoStack.push(command)
 
-        # Split the text into lines and then into cells
-        rows = text.splitlines()
-        current_row = self.currentRow()
-        current_col = self.currentColumn()
-        for row_data in rows:
-            # Split the row data into columns (assuming tab-separated values)
-            columns = row_data.split('\t')
-            for col_index, value in enumerate(columns):
-                if current_row < self.rowCount():
-                    self.setItem(current_row, current_col, QtWidgets.QTableWidgetItem(value))
-                else:
-                    # If we exceed the current row count, add a new row
-                    self.insertRow(current_row)
-                    self.setItem(current_row, col_index, QtWidgets.QTableWidgetItem(value))
-            current_row += 1
+    def insert_row(self, row):
+        command = InsertRowCommand(self, row)
+        self.undoStack.push(command)
+        super().insertRow(row)
+
+    def set_item(self, row, col, item):
+        if self.item(row, col) is None or self.item(row, col).text() != item.text():
+            command = SetItemCommand(self, row, col, item.text())
+            self.undoStack.push(command)
+        super().setItem(row, col, item)
 
 class IonTable(GenericTable):
     def __init__(self, parent=None):
@@ -134,3 +140,114 @@ class IonTable(GenericTable):
             except UnboundLocalError as e:
                 logger.error(f"Could not find any compounds in the table: {e}")        
         return items
+
+class ClearSelectionCommand(QtGui.QUndoCommand):
+    def __init__(self, table):
+        super().__init__()
+        self.table = table
+        self.items = table.selectedItems()
+        self.texts = [item.text() for item in self.items]
+
+    def redo(self):
+        for item in self.items:
+            item.setText("")
+
+    def undo(self):
+        for item, text in zip(self.items, self.texts):
+            item.setText(text)
+
+
+class PasteFromClipboardCommand(QtGui.QUndoCommand):
+    def __init__(self, table):
+        super().__init__()
+        self.table = table
+        self.clipboard_text = QtWidgets.QApplication.clipboard().text()
+        self.current_row = table.currentRow()
+        self.current_col = table.currentColumn()
+        self.items = []
+
+    def redo(self):
+        rows = self.clipboard_text.splitlines()
+        for row_data in rows:
+            columns = row_data.split('\t')
+            for col_index, value in enumerate(columns):
+                if self.current_row < self.table.rowCount():
+                    item = self.table.item(self.current_row, self.current_col)
+                    try:
+                        item
+                    except:
+                        item = None
+                    if item is None:
+                        item = QtWidgets.QTableWidgetItem(value)
+                        self.table.setItem(self.current_row, self.current_col, item)
+                    else:
+                        item.setText(value)
+                else:
+                    self.table.insertRow(self.current_row)
+                    item = QtWidgets.QTableWidgetItem(value)
+                    self.table.setItem(self.current_row, col_index, item)
+                self.items.append(item)
+            self.current_row += 1
+
+    def undo(self):
+        for item in self.items:
+            self.table.takeItem(self.table.row(item), self.table.column(item))
+        self.table.removeRow(self.current_row - len(rows))
+
+
+class CopyCommand(QtGui.QUndoCommand):
+    def __init__(self, table):
+        super().__init__()
+        self.table = table
+        self.clipboard_text = ""
+        self.items = table.selectedItems()
+
+    def redo(self):
+        self.clipboard_text = "\t".join([item.text() for item in self.items])
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText(self.clipboard_text)
+
+    def undo(self):
+        clipboard = QtWidgets.QApplication.clipboard()
+        clipboard.setText("")
+
+
+class InsertRowCommand(QtGui.QUndoCommand):
+    def __init__(self, table, row):
+        super().__init__()
+        self.table = table
+        self.row = row
+
+    def redo(self):
+        self.table.insertRow(self.row)
+
+    def undo(self):
+        self.table.removeRow(self.row)
+
+
+class SetItemCommand(QtGui.QUndoCommand):
+    def __init__(self, table, row, col, value):
+        super().__init__()
+        self.table = table
+        self.row = row
+        self.col = col
+        self.value = value
+        self.old_value = table.item(row, col).text() if table.item(row, col) else ""
+
+    def redo(self):
+        try:
+            item
+        except:
+            item = None
+        if item is None:
+            item = QtWidgets.QTableWidgetItem(self.value)
+            self.table.setItem(self.row, self.col, item)
+        else:
+            item.setText(self.value)
+
+    def undo(self):
+        item = self.table.item(self.row, self.col)
+        if item is None:
+            self.table.takeItem(self.row, self.col)
+        else:
+            item.setText(self.old_value)
