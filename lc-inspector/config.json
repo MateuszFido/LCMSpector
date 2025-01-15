@@ -1004,68 +1004,72 @@
                 315.1965
             ],
             "info": [
-                "8-hydroxyserrulat-14-en-19-oic acid-(+)",
-                "8-hydroxyserrulat-14-en-19-oic acid-(-)"
+                "Hydroxyserrulatenoate acid-(+)",
+                "Hydroxyserrulatenoate acid-(-)"
             ]
         },
         "Eremogosane A": {
             "ions": [
+                249.1122,
                 247.0971
             ],
             "info": [
+                "Eremogosane A-(+)",
                 "Eremogosane A-(-)"
             ]
         },
         "Eremogosane B": {
             "ions": [
+                279.1591,
                 277.1446
             ],
             "info": [
+                "Eremogosane B-(+)",
                 "Eremogosane B-(-)"
             ]
         },
         "Eremogosane C": {
             "ions": [
+                335.2217,
                 333.2073
             ],
             "info": [
+                "Eremogosane C-(+)",
                 "Eremogosane C-(-)"
             ]
         },
         "Eremogosane D1/D2": {
             "ions": [
+                349.201,
                 347.187
             ],
             "info": [
-                "Eremogosane D-(-)"
+                "Eremogosane D1/D2-(+)",
+                "Eremogosane D1/D2-(-)"
             ]
         },
-        "Eremogosane E": {
+        "Eremogosane E/F": {
             "ions": [
-                341.1378
+                327.1591,
+                325.1446
             ],
             "info": [
                 "Eremogosane E-(-)"
             ]
         },
-        "Eremogosane F": {
-            "ions": [
-                341.1385
-            ],
-            "info": [
-                "Eremogosane F-(-)"
-            ]
-        },
         "Eremogosane G": {
             "ions": [
-                347.1857
+                349.201,
+                347.1863
             ],
             "info": [
+                "Eremogosane G-(+)",
                 "Eremogosane G-(-)"
             ]
         },
         "Eremogosane H": {
             "ions": [
+                317.1758,
                 315.1617
             ],
             "info": [
@@ -1074,25 +1078,33 @@
         },
         "Eremogosane I": {
             "ions": [
-                289.1442
+                291.1591,
+                289.1445
             ],
             "info": [
+                "Eremogosane I-(+)",
                 "Eremogosane I-(-)"
             ]
         },
         "Eremogosane J": {
             "ions": [
-                345.2415
+                323.2581,
+                321.2436,
+                345.2401
             ],
             "info": [
+                "Eremogosane J-(+)",
+                "Eremogosane J-(-)",
                 "Eremogosane J-(+)+Na+"
             ]
         },
         "Eremogosane K": {
             "ions": [
-                317.2109
+                319.2268,
+                317.2122
             ],
             "info": [
+                "Eremogosane K-(+)",
                 "Eremogosane K-(-)"
             ]
         },
@@ -1114,10 +1126,100 @@
         },
         "Eremogosane N": {
             "ions": [
-                345.2415
+                313.1799
             ],
             "info": [
                 "Eremogosane N-(-)"
+            ]
+        },
+        "Eremogosane O": {
+            "ions": [
+                315.1951
+            ],
+            "info": [
+                "Eremogosane O-(-)"
+            ]
+        },
+        "Eremogosane P": {
+            "ions": [
+                315.1953
+            ],
+            "info": [
+                "Eremogosane P-(-)"
+            ]
+        },
+        "Eremogosane Q": {
+            "ions": [
+                315.1954
+            ],
+            "info": [
+                "Eremogosane Q-(+)"
+            ]
+        },
+        "Eremogosane R": {
+            "ions": [
+                523.2341
+            ],
+            "info": [
+                "Eremogosane R-(-)"
+            ]
+        },
+        "Eremogosane S": {
+            "ions": [
+                329.2443
+            ],
+            "info": [
+                "Eremogosane S-(+)+Na"
+            ]
+        },
+        "Eremogosane T": {
+            "ions": [
+                301.2159
+            ],
+            "info": [
+                "Eremogosane T-(-)"
+            ]
+        },
+        "Eremogosane U": {
+            "ions": [
+                327.2281
+            ],
+            "info": [
+                "Eremogosane U-(+)+Na"
+            ]
+        },
+        "Eremogosane V1/V2": {
+            "ions": [
+                507.2396,
+                507.2385
+            ],
+            "info": [
+                "Eremogosane V1-(-)",
+                "Eremogosane V2-(-)"
+            ]
+        },
+        "Eremogosane X": {
+            "ions": [
+                507.239
+            ],
+            "info": [
+                "Eremogosane X-(-)"
+            ]
+        },
+        "Eremogosane Y": {
+            "ions": [
+                507.2383
+            ],
+            "info": [
+                "Eremogosane Y-(-)"
+            ]
+        },
+        "Eremogosane Z": {
+            "ions": [
+                509.2535
+            ],
+            "info": [
+                "Eremogosane Z-(-)"
             ]
         }
     },

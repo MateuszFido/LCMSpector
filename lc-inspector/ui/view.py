@@ -83,33 +83,31 @@ class View(QtWidgets.QMainWindow):
             self.statusbar.showMessage(f"Files added, {count_ok} annotation files loaded successfully.", 3000)
         self.update_annotation_file()  # Update the model with the new LC files
 
-    def update_combo_box_ion_list(self):
-        lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
-        self.comboBoxIonLists.clear()
-        self.comboBoxIonLists.addItem("Create new ion list...")
-        self.comboBoxIonLists.addItems(lists.keys())
-
     def update_ion_list(self):
         lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
-        try:
-            ion_list = lists[self.comboBoxIonLists.currentText()]
-        except:
-            logger.error(f"Could not find ion list: {self.comboBoxIonLists.currentText()}")
-            self.statusbar.showMessage(f"Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
-            ion_list = None
+        if self.comboBoxIonLists.currentText() == "Create new ion list..." or self.comboBoxIonLists.currentText() == "":
+            self.ionTable.clearContents()
+            return
+        else:
+            try:
+                ion_list = lists[self.comboBoxIonLists.currentText()]
+            except:
+                logger.error(f"Could not find ion list: {self.comboBoxIonLists.currentText()}")
+                self.statusbar.showMessage(f"Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
+                ion_list = None
 
-        self.ionTable.clearContents()
-        if ion_list:
-            i=0
-            self.ionTable.setRowCount(len(ion_list))
-            for compound, keywords in ion_list.items():
-                self.ionTable.set_item(i, 0, QtWidgets.QTableWidgetItem(str(compound)))
-                for key, value in keywords.items():
-                    if key == "ions":
-                        self.ionTable.set_item(i, 1, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
-                    elif key == "info":
-                        self.ionTable.set_item(i, 2, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
-                i+=1
+            self.ionTable.clearContents()
+            if ion_list:
+                i=0
+                self.ionTable.setRowCount(len(ion_list))
+                for compound, keywords in ion_list.items():
+                    self.ionTable.set_item(i, 0, QtWidgets.QTableWidgetItem(str(compound)))
+                    for key, value in keywords.items():
+                        if key == "ions":
+                            self.ionTable.set_item(i, 1, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                        elif key == "info":
+                            self.ionTable.set_item(i, 2, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                    i+=1
 
 
     def on_browseLC(self):
@@ -608,7 +606,17 @@ class View(QtWidgets.QMainWindow):
         self.tabUpload.setObjectName("tabUpload")
         self.gridLayout = QtWidgets.QGridLayout(self.tabUpload)
         self.gridLayout.setObjectName("gridLayout")
-        self.ionTable = IonTable(parent=self.tabUpload)
+        self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
+        self.comboBoxIonLists.setObjectName("comboBoxIonLists")
+        self.comboBoxIonLists.addItem("Create new ion list...")
+        try: 
+            lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
+            for ionlist in lists:
+                self.comboBoxIonLists.addItem(ionlist)
+        except Exception as e:
+            self.statusbar.showMessage(f"Error loading ion lists: {e}", 5000)
+        self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self.ionTable = IonTable(view=self, parent=self.tabUpload)
         self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 3)
 
         self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
@@ -664,17 +672,6 @@ class View(QtWidgets.QMainWindow):
         self.button_delete_ion_list.setObjectName("button_delete_ion_list")
         self.gridLayout.addWidget(self.button_delete_ion_list, 3, 6, 1, 1)
         
-        self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
-        self.comboBoxIonLists.setObjectName("comboBoxIonLists")
-        self.comboBoxIonLists.addItem("Create new ion list...")
-        try: 
-            lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
-            for ionlist in lists:
-                self.comboBoxIonLists.addItem(ionlist)
-        except Exception as e:
-            self.statusbar.showMessage(f"Error loading ion lists: {e}", 5000)
-
-        self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
         self.processButton.setDefault(True)
@@ -884,9 +881,7 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_MS.clicked.connect(self.listMS.clear)
         self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
-        self.button_save_ion_list.clicked.connect(self.update_combo_box_ion_list)
-        self.button_delete_ion_list.clicked.connect(lambda: self.ionTable.delete_ion_list(self.comboBoxIonLists.currentText()))
-        self.button_delete_ion_list.clicked.connect(self.update_combo_box_ion_list)
+        self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
 
     def retranslateUi(self, MainWindow):
         """

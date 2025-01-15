@@ -2,6 +2,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
 from utils.classes import Compound
+from datetime import datetime
 import json, __main__
 
 class PlotWindow(QDialog):
@@ -121,11 +122,12 @@ class GenericTable(QtWidgets.QTableWidget):
         super().setItem(row, col, item)
 
 class IonTable(GenericTable):
-    def __init__(self, parent=None):
+    def __init__(self, view, parent=None):
         super().__init__(50, 3, parent)
         self.setHorizontalHeaderLabels(["Compound", "Expected m/z", "Add. info"])
         self.setObjectName("ionTable")
         self.setStyleSheet("gridline-color: #e0e0e0;")
+        self.view = view
     
     def get_items(self):
         items = []
@@ -160,17 +162,23 @@ class IonTable(GenericTable):
                 ions[name]['ions'] = [float(x) for x in self.item(row, 1).text().split(",")]
             except ValueError:
                 continue
+            if self.item(row, 2) is None: continue
             ions[name]['ion_info'] = self.item(row, 2).text().split(",")
         # Save locally in config.json
         try:
             config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
             config[ion_list_name] = ions
             json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"), indent=4)
+            self.view.comboBoxIonLists.clear()
+            self.view.comboBoxIonLists.addItem("Create new ion list...")
+            self.view.comboBoxIonLists.addItems(config.keys())
+            self.view.statusbar.showMessage(f"{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} -- Saved new ion list: \"{ion_list_name}\".", 5000)
         except Exception as e:
             print(f"Could not save ions to config.json: {e}")
 
-    def delete_ion_list(self, ion_list_name):
+    def delete_ion_list(self):
         # Slot for the delete button, prompt the user and if they confirm, delete the currently selected ion list
+        ion_list_name = self.view.comboBoxIonLists.currentText()
         msgBox = QtWidgets.QMessageBox()
         msgBox.setIcon(QtWidgets.QMessageBox.Icon.Warning)
         msgBox.setText(f"Are you sure you want to delete the ion list \"{ion_list_name}\"? This cannot be undone.")
@@ -180,6 +188,10 @@ class IonTable(GenericTable):
             config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
             config.pop(ion_list_name)
             json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"), indent=4)
+            self.view.comboBoxIonLists.clear()
+            self.view.comboBoxIonLists.addItem("Create new ion list...")
+            self.view.comboBoxIonLists.addItems(config.keys())
+            self.view.statusbar.showMessage(f"{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} -- Deleted ion list: \"{ion_list_name}\".", 5000)
 
 class ClearSelectionCommand(QtGui.QUndoCommand):
     def __init__(self, table):
