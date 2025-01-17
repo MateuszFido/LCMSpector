@@ -901,6 +901,16 @@
                 "Propionate-(+)",
                 "Propionate-(-)"
             ]
+        },
+        "(Iso)-Valerate": {
+            "ions": [
+                103.0754,
+                101.0608
+            ],
+            "info": [
+                "Valerate-(+)",
+                "Valerate-(-)"
+            ]
         }
     },
     "Flavonoids": {
@@ -958,6 +968,18 @@
         }
     },
     "Terpenoids": {
+        "Isoprenyl pyrophosphate": {
+            "ions": [247.01310, 244.9985],
+            "info": ["DMAPP-(+)", "DMAPP-(-)"]
+        },
+        "Citral": {
+            "ions": [153.12739, 151.11284],
+            "info": ["Citral-(+)", "Citral-(-)"]
+        },
+        "Geraniol": {
+            "ions": [155.14304, 153.12849],
+            "info": ["Geraniol-(+)", "Geraniol-(-)"]
+        },
         "Isoprene": {
             "ions": [
                 69.0699,
@@ -1008,6 +1030,50 @@
                 "Hydroxyserrulatenoate acid-(-)"
             ]
         },
+        "Eucalyptol (cineol)": {
+            "ions": [155.14304, 153.1285],
+            "info": ["Eucalyptol-(+)", "Eucalyptol-(-)"]
+        },
+        "Amyrin": {
+            "ions": [
+                427.39344,
+                425.37888
+            ],
+            "info": [
+                "Amyrin-(+)",
+                "Amyrin-(-)"
+            ]
+        },
+        "Steviol": {
+            "ions": [
+                319.2268,
+                317.2112
+            ],
+            "info": [
+                "Steviol-(+)",
+                "Steviol-(-)"
+            ]
+        },
+        "Thymol (carvacrol)": {
+            "ions": [
+                151.11174,
+                149.09719
+            ],
+            "info": [
+                "Thymol-(+)",
+                "Thymol-(-)"
+            ]
+        },
+        "Abietic acid": {
+            "ions": [
+                303.2319,
+                301.2173
+            ],
+            "info": [
+                "Abietic acid-(+)",
+                "Abietic acid-(-)"
+            ]
+        },
         "Eremogosane A": {
             "ions": [
                 249.1122,
@@ -1054,7 +1120,8 @@
                 325.1446
             ],
             "info": [
-                "Eremogosane E-(-)"
+                "Eremogosane E/F-(+)",
+                "Eremogosane E/F-(-)"
             ]
         },
         "Eremogosane G": {

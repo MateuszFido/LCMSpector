@@ -38,19 +38,18 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
 
     # Plotting chromatogram before background correction
     widget.setBackground("w")
+    widget.addLegend()
     widget.setTitle(f'LC chromatogram of {filename}')
     widget.plot(dataframe['Time (min)'], dataframe['Uncorrected'], pen=pg.mkPen('b', width=2), name='Before correction')
     widget.plot(dataframe['Time (min)'], dataframe['Baseline'], pen=pg.mkPen('r', width=2, style=Qt.PenStyle.DashLine), name='Baseline')
     widget.setLabel('left', 'Absorbance (mAU)')
     widget.setLabel('bottom', 'Time (min)')
-    widget.addLegend()
 
     # Plotting chromatogram after background correction
     widget.plot(title='Chromatogram After Background Correction')
     widget.plot(dataframe['Time (min)'], dataframe['Value (mAU)'], pen=pg.mkPen('g', width=2), name='After correction')
     widget.setLabel('left', 'Absorbance (mAU)')
     widget.setLabel('bottom', 'Time (min)')
-    widget.addLegend()
 
 
 def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
