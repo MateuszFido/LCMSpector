@@ -5,6 +5,7 @@ import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current
 import os, sys, traceback, logging, json, __main__
+from datetime import datetime
 from utils.classes import Compound
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
@@ -35,11 +36,12 @@ class View(QtWidgets.QMainWindow):
                 self.listLC.addItem(file_path)  # Add each file path to the listLC widget
             elif not error_shown:
                 self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .csv and .txt files are supported.")
+                logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
                 error_shown = True
             else:
                 continue
         if count_ok > 0:
-            self.statusbar.showMessage(f"Files added, {count_ok} LC files loaded successfully.", 3000)
+            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} LC files loaded successfully.", 3000)
         self.update_lc_file_list()  # Update the model with the new LC files
 
 
@@ -56,11 +58,12 @@ class View(QtWidgets.QMainWindow):
                 self.listMS.addItem(file_path)  # Add each file path to the listLC widget
             elif not error_shown:
                 self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .mzML files are supported.")
+                logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
                 error_shown = True
             else:
                 continue
         if count_ok > 0:
-            self.statusbar.showMessage(f"Files added, {count_ok} MS files loaded successfully.", 3000)
+            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} MS files loaded successfully.", 3000)
         self.update_ms_file_list()  # Update the model with the new LC files
 
     def handle_files_dropped_annotations(self, file_paths):
@@ -74,13 +77,15 @@ class View(QtWidgets.QMainWindow):
             if file_path.lower().endswith(".txt"):
                 count_ok += 1
                 self.listAnnotations.addItem(file_path)  # Add each file path to the listLC widget
+                logger.logger(f"Added annotation file: {file_path}")
             elif not error_shown:
                 self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported.")
+                logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
                 error_shown = True
             else:
                 continue
         if count_ok > 0:
-            self.statusbar.showMessage(f"Files added, {count_ok} annotation files loaded successfully.", 3000)
+            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} annotation files loaded successfully.", 3000)
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
@@ -93,7 +98,7 @@ class View(QtWidgets.QMainWindow):
                 ion_list = lists[self.comboBoxIonLists.currentText()]
             except:
                 logger.error(f"Could not find ion list: {self.comboBoxIonLists.currentText()}")
-                self.statusbar.showMessage(f"Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
+                self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
                 ion_list = None
 
             self.ionTable.clearContents()
@@ -121,7 +126,7 @@ class View(QtWidgets.QMainWindow):
             for lc_file_path in lc_file_paths:
                 self.listLC.addItem(lc_file_path)  # Add each LC file path to the listLC widget
             self.update_lc_file_list()  # Update the model with the new LC files
-            self.statusbar.showMessage(f"Files added, {len(lc_file_paths)} LC files loaded successfully.", 3000)
+            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {len(lc_file_paths)} LC files loaded successfully.", 3000)
 
     def on_browseMS(self):
         """
@@ -134,7 +139,7 @@ class View(QtWidgets.QMainWindow):
             for ms_file_path in ms_file_paths:
                 self.listMS.addItem(ms_file_path)  # Add each MS file path to the listMS widget
             self.update_ms_file_list()  # Update the model with the new MS files
-            self.statusbar.showMessage(f"Files added, {len(ms_file_paths)} MS files loaded successfully.", 3000)
+            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {len(ms_file_paths)} MS files loaded successfully.", 3000)
 
     def on_browseAnnotations(self):
         """
@@ -168,9 +173,10 @@ class View(QtWidgets.QMainWindow):
                 f.write(results.to_csv(index=False))
                 f.close()
                 output_folder = os.path.dirname(file_name)
-            self.statusbar.showMessage(f"Saved results to output folder {output_folder}", 5000)
+            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Saved results to output folder {output_folder}", 5000)
         else:
             self.show_critical_error("Error: Nothing to export.")
+            logger.error("Error: Nothing to export.")
 
     def update_lc_file_list(self):
         """
@@ -811,6 +817,7 @@ class View(QtWidgets.QMainWindow):
         self.logo.setObjectName("logo")
         self.gridLayout_4.addWidget(self.logo, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
+        
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)

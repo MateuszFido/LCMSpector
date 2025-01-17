@@ -1,6 +1,7 @@
 from calculation.workers import Worker, WorkerSignals
 import logging, traceback
 logger = logging.getLogger(__name__)
+from datetime import datetime
 
 class Controller:
     def __init__(self, model, view):
@@ -60,7 +61,7 @@ class Controller:
                 return
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
-        
+            logger.error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
         self.on_processing_finished()
 
 
@@ -68,7 +69,7 @@ class Controller:
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
         self.view.processButton.setEnabled(True)
-        self.view.statusbar.showMessage("Finished.", 5000)
+        self.view.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished processing, displaying results.", 5000)
 
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabResults), True)
         self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
