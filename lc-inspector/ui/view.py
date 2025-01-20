@@ -344,7 +344,7 @@ class View(QtWidgets.QMainWindow):
                 self.canvas_XICs.clear()
                 self.gridLayout_5.removeWidget(self.canvas_annotatedLC)
                 self.canvas_annotatedLC.deleteLater()
-                # Set canvas XIC to span two rows of the grid
+                # Set scrollArea (holds canvasXIC) to span two rows of the grid
                 self.gridLayout_2.removeWidget(self.scrollArea)
                 self.gridLayout_2.addWidget(self.scrollArea, 0, 1, 2, 1)
                 self.browseAnnotations.deleteLater()
