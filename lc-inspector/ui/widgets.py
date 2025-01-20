@@ -19,6 +19,17 @@ class DragDropListWidget(QtWidgets.QListWidget):
         super().__init__(parent)
         self.setAcceptDrops(True)  # Enable accepting drops
         self.setWordWrap(True)
+        self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.customContextMenuRequested.connect(self.contextMenuEvent)
+
+    def contextMenuEvent(self, pos):
+        item = self.itemAt(pos)
+        if item is not None:
+            menu = QtWidgets.QMenu()
+            deleteAction = menu.addAction("Delete")
+            action = menu.exec(self.mapToGlobal(pos))
+            if action == deleteAction:
+                self.takeItem(self.row(item))
 
     def dragEnterEvent(self, event):
         # Check if the dragged item is a file
