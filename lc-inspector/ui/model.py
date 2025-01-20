@@ -51,58 +51,43 @@ class Model:
         ms_results = {}
         total_files = len(self.lc_measurements) + len(self.ms_measurements)
         progress = 0
-
         if mode == "LC-MS":
-            for lc_file in self.lc_measurements:
-                lc_result = LCMeasurement(lc_file)
-                progress += 1
-                self.controller.view.update_progress_bar(int(progress / total_files * 100))
-                lc_results[lc_result.filename] = lc_result
-
             with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
-                ms_futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
-                for future in as_completed(ms_futures):
+                futures = [executor.submit(LCMeasurement, lc_file) for lc_file in self.lc_measurements] + \
+                          [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
+                for future in as_completed(futures):
+                    result = future.result()
+                    if isinstance(result, LCMeasurement):
+                        lc_results[result.filename] = result
+                    else:
+                        ms_results[result.filename] = result
                     progress += 1
                     self.controller.view.update_progress_bar(int(progress / total_files * 100))
-                    result = future.result()
-                    ms_results[result.filename] = result
-            print("Processed in ", time.time() - st)
+            logger.info(f"Processed in {time.time() - st}")
             return lc_results, ms_results
         elif mode == "LC Only":
-            for lc_file in self.lc_measurements:
-                lc_result = LCMeasurement(lc_file)
-                progress += 1
-                self.controller.view.update_progress_bar(int(progress / total_files * 100))
-                lc_results[lc_result.filename] = lc_result
-            print("Processed in ", time.time() - st)
+            with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
+                futures = [executor.submit(LCMeasurement, lc_file) for lc_file in self.lc_measurements]
+                for future in as_completed(futures):
+                    result = future.result()
+                    lc_results[result.filename] = result
+                    progress += 1
+                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
+            logger.info(f"Processed in {time.time() - st}")
             return lc_results, ms_results
         elif mode == "MS Only":
             with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor:
-                ms_futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
-                for future in as_completed(ms_futures):
-                    progress += 1
-                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
+                futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
+                for future in as_completed(futures):
                     result = future.result()
                     ms_results[result.filename] = result
-            print("Processed in ", time.time() - st)
+                    progress += 1
+                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
+            logger.info(f"Processed in {time.time() - st}")
             return lc_results, ms_results
         else: 
             logger.error("ERROR: Invalid argument for process_data(mode): ", mode)
             return
-
-        # for lc_file in self.lc_measurements:
-        #     lc_result = LCMeasurement(lc_file)
-        #     progress += 1
-        #     self.controller.view.update_progress_bar(int(progress / total_files * 100))
-        #     lc_results[lc_result.filename] = lc_result
-
-        # for ms_file in self.ms_measurements:
-        #     ms_result = MSMeasurement(ms_file, self.compounds, 0.0001)
-        #     progress += 1
-        #     self.controller.view.update_progress_bar(int(progress / total_files * 100))
-        #     ms_results[ms_result.filename] = ms_result
-        # print("Processed in ", time.time() - st)
-        # return lc_results, ms_results
 
     def get_plots(self, filename):
         # Find the corresponding MS and LC files
