@@ -150,7 +150,10 @@ class IonTable(GenericTable):
                 ions = [float(x) for x in self.item(row, 1).text().split(",")]
             except ValueError:
                 ions = []
-            ion_info = self.item(row, 2).text().split(",")
+            try:
+                ion_info = self.item(row, 2).text().split(",")
+            except AttributeError:
+                ion_info = []
             try:
                 compound = Compound(name, ions, ion_info)
                 items.append(compound)
