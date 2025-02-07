@@ -53,6 +53,14 @@ class View(QtWidgets.QMainWindow):
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
+            # Check if the dropped file is a folder; if yes, check if it contains .mzML files
+            if os.path.isdir(file_path):
+                mzml_files = [f for f in os.listdir(file_path) if f.lower().endswith(".mzml")]
+                if len(mzml_files) > 0:
+                    count_ok += len(mzml_files)
+                    for mzml_file in mzml_files:
+                        self.listMS.addItem(os.path.join(file_path, mzml_file))  # Add each file path to the listLC widget
+                    continue
             if file_path.lower().endswith(".mzml"):
                 count_ok += 1
                 self.listMS.addItem(file_path)  # Add each file path to the listLC widget
