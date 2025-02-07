@@ -498,6 +498,8 @@ class View(QtWidgets.QMainWindow):
             self.controller.mode = "LC-MS"
             self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
             self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
+            self.button_clear_LC.clicked.connect(self.listLC.clear)
+            self.button_clear_MS.clicked.connect(self.listMS.clear)
 
         elif self.comboBox.currentText() == "MS Only":
             clear_layout(self.gridLayout)
@@ -511,6 +513,7 @@ class View(QtWidgets.QMainWindow):
             self.button_clear_LC.setVisible(False)
             self.controller.mode = "MS Only"
             self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
+            self.button_clear_MS.clicked.connect(self.listMS.clear)
 
         else:
             clear_layout(self.gridLayout)
