@@ -31,6 +31,15 @@ class View(QtWidgets.QMainWindow):
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
+            # Check if the dropped file is a folder; if yes, check if it contains .txt files
+            if os.path.isdir(file_path):
+                txt_files = [f for f in os.listdir(file_path) if f.lower().endswith(".txt") or f.lower().endswith(".csv")]
+                if len(txt_files) > 0:
+                    for txt_file in txt_files:
+                        count_ok += 1
+                        self.listLC.addItem(os.path.join(file_path, txt_file))  # Add each file path to the listLC widget
+                else:
+                    continue
             if file_path.lower().endswith(".txt") or file_path.lower().endswith(".csv"):
                 count_ok += 1
                 self.listLC.addItem(file_path)  # Add each file path to the listLC widget
