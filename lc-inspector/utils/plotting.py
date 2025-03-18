@@ -218,3 +218,9 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     widget.setLabel('left', 'Intensity (cps)')
     widget.setLabel('bottom', 'Time (min)')
     widget.addLegend()
+
+def plot_heatmap(widget: pg.PlotWidget):
+    widget.setBackground("w")
+    widget.setTitle('Heatmap')
+    widget.setLabel('left', 'Intensity (a.u.)')
+    widget.setLabel('bottom', 'Time (min)')

@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
-plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current
+plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current, plot_heatmap
 import os, sys, traceback, logging, json, __main__
 from datetime import datetime
 from utils.classes import Compound
@@ -352,7 +352,7 @@ class View(QtWidgets.QMainWindow):
                         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
                         self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
                     for curve in self.curve_list.keys():
-                        curve.sigClicked.connect(lambda c: self.highlight_peak(c, ms_file.xics))
+                        curve.sigClicked.connect(lambda c: self.highlight_peak(c, ms_file.xics))                
                     
         elif self.controller.mode == "MS Only":
             try:
@@ -608,7 +608,7 @@ class View(QtWidgets.QMainWindow):
         """
         
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(QtWidgets.QApplication.instance().primaryScreen().size().width(), QtWidgets.QApplication.instance().primaryScreen().size().height()-150)
+        MainWindow.resize(1300, 900)
         MainWindow.setToolTip("")
         MainWindow.setToolTipDuration(-1)
         MainWindow.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
@@ -618,7 +618,7 @@ class View(QtWidgets.QMainWindow):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtWidgets.QApplication.instance().primaryScreen().size().width(), QtWidgets.QApplication.instance().primaryScreen().size().height()-150)
+        self.centralwidget.setMinimumSize(QtCore.QSize(0, 0))
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName("gridLayout_4")
@@ -815,7 +815,7 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations = GenericTable(parent=self.tabQuantitation)
         self.tableWidget_concentrations.setObjectName("tableWidget_concentrations")
         self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 1, 1)
-        self.heatmap = QtWidgets.QGraphicsView(parent=self.tabQuantitation)
+        self.heatmap = pg.PlotWidget(parent=self.tabQuantitation)
         self.heatmap.setObjectName("heatmap")
         self.gridLayout_quant.addWidget(self.heatmap, 1, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
