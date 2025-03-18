@@ -154,14 +154,14 @@
                 "Cadaverine-I-neg"
             ]
         },
-        "CaNeine": {
+        "Caffeine": {
             "ions": [
                 365.1456,
                 195.0877
             ],
             "info": [
-                "CaNeine-D",
-                "CaNeine-I-pos"
+                "Caffeine-D",
+                "Caffeine-I-pos"
             ]
         },
         "Choline": {
@@ -911,6 +911,16 @@
                 "Valerate-(+)",
                 "Valerate-(-)"
             ]
+        },
+        "Caproate": {
+            "ions": [
+                117.09101,
+                115.07645
+            ],
+            "info": [
+                "Caproate-(+)",
+                "Caproate-(-)"
+            ]
         }
     },
     "Flavonoids": {
@@ -969,16 +979,34 @@
     },
     "Terpenoids": {
         "Isoprenyl pyrophosphate": {
-            "ions": [247.01310, 244.9985],
-            "info": ["DMAPP-(+)", "DMAPP-(-)"]
+            "ions": [
+                247.0131,
+                244.9985
+            ],
+            "info": [
+                "DMAPP-(+)",
+                "DMAPP-(-)"
+            ]
         },
         "Citral": {
-            "ions": [153.12739, 151.11284],
-            "info": ["Citral-(+)", "Citral-(-)"]
+            "ions": [
+                153.12739,
+                151.11284
+            ],
+            "info": [
+                "Citral-(+)",
+                "Citral-(-)"
+            ]
         },
         "Geraniol": {
-            "ions": [155.14304, 153.12849],
-            "info": ["Geraniol-(+)", "Geraniol-(-)"]
+            "ions": [
+                155.14304,
+                153.12849
+            ],
+            "info": [
+                "Geraniol-(+)",
+                "Geraniol-(-)"
+            ]
         },
         "Isoprene": {
             "ions": [
@@ -1031,8 +1059,14 @@
             ]
         },
         "Eucalyptol (cineol)": {
-            "ions": [155.14304, 153.1285],
-            "info": ["Eucalyptol-(+)", "Eucalyptol-(-)"]
+            "ions": [
+                155.14304,
+                153.1285
+            ],
+            "info": [
+                "Eucalyptol-(+)",
+                "Eucalyptol-(-)"
+            ]
         },
         "Amyrin": {
             "ions": [
@@ -1554,6 +1588,54 @@
                 140
             ],
             "info": []
+        }
+    },
+    "SESI-tests": {
+        "Indole": {
+            "ions": [
+                118.0651
+            ],
+            "ion_info": [
+                "indole-(+)"
+            ]
+        },
+        "Octyl octanoate": {
+            "ions": [
+                257.2475,
+                145.1223,
+                513.4877
+            ],
+            "ion_info": [
+                "[M+H]+",
+                "[M/2+H]+",
+                "[2M+H]+"
+            ]
+        },
+        "Isopropanol": {
+            "ions": [
+                61.0648,
+                121.12231
+            ],
+            "ion_info": [
+                "[M+H]+",
+                " [2M+H]+"
+            ]
+        },
+        "Leucine": {
+            "ions": [
+                132.1019
+            ],
+            "ion_info": [
+                "leucine-(+)"
+            ]
+        },
+        "Acetic acid": {
+            "ions": [
+                61.0284
+            ],
+            "ion_info": [
+                "acetic acid-(+)"
+            ]
         }
     }
 }

@@ -314,7 +314,7 @@ class View(QtWidgets.QMainWindow):
             self.comboBoxChooseCompound.addItem(compound.name)
 
     def display_plots(self, lc_file, ms_file):
-        if self.controller.mode == "LC-MS":
+        if self.controller.mode == "LC/GC-MS":
             self.canvas_baseline.clear()
             if lc_file:
                 try:
@@ -427,7 +427,7 @@ class View(QtWidgets.QMainWindow):
             for j, ion in enumerate(compound.ions.keys()):
                 if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], atol=0.1)): # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
                     logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
-                    text_item = pg.TextItem(text=f"{compound.ion_info[j]} ({ion})", color='#232323', anchor=(0, 0))
+                    text_item = pg.TextItem(text=f"{compound.name} ({ion})", color='#232323', anchor=(0, 0))
                     text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
                     text_items.append(text_item)
                     self.canvas_annotatedLC.addItem(text_item)
@@ -497,11 +497,11 @@ class View(QtWidgets.QMainWindow):
                         widget.clear()
                         widget.deleteLater()
 
-        if self.comboBox.currentText() == "LC-MS":
+        if self.comboBox.currentText() == "LC/GC-MS":
             clear_layout(self.gridLayout)
             self.labelAnnotations.setVisible(False)
             self.browseAnnotations.setVisible(False)
-            # Replace with LC-MS widgets 
+            # Replace with LC/GC-MS widgets 
             self.listLC = DragDropListWidget(parent=self.tabUpload)
             self.listLC.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
@@ -512,7 +512,7 @@ class View(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
             self.labelMSdata.setVisible(True)
             self.browseMS.setVisible(True)
-            self.controller.mode = "LC-MS"
+            self.controller.mode = "LC/GC-MS"
             self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
             self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
             self.button_clear_LC.clicked.connect(self.listLC.clear)
@@ -552,7 +552,7 @@ class View(QtWidgets.QMainWindow):
             self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
             self.labelLCdata.setVisible(True)
             self.browseLC.setVisible(True)
-            self.controller.mode = "LC Only"
+            self.controller.mode = "LC/GC Only"
             self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
             self.listAnnotations.filesDropped.connect(self.handle_files_dropped_annotations)
 
@@ -921,13 +921,13 @@ class View(QtWidgets.QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LC-Inspector"))
         self.browseLC.setText(_translate("MainWindow", "Browse"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "LC-MS"))
+        self.comboBox.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
         self.comboBox.setItemText(1, _translate("MainWindow", "MS Only"))
-        self.comboBox.setItemText(2, _translate("MainWindow", "LC Only"))
+        self.comboBox.setItemText(2, _translate("MainWindow", "LC/GC Only"))
         self.browseMS.setText(_translate("MainWindow", "Browse"))
         self.browseAnnotations.setText(_translate("MainWindow", "Browse"))
         self.labelAnnotations.setText(_translate("MainWindow", "Annotations (.txt)"))
-        self.labelLCdata.setText(_translate("MainWindow", "LC data (.txt)"))
+        self.labelLCdata.setText(_translate("MainWindow", "Chromatography data (.txt)"))
         self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
         self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
         self.comboBoxIonLists.setToolTip(_translate("MainWindow", "Choose an ion list from the list of ion lists provided with the software"))

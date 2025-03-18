@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
-import csv, re, os
+import csv, re, os, logging
 from pyteomics import mzml
 from calculation.wrappers import freezeargs
 from functools import lru_cache
 
+logger = logging.getLogger(__name__)
 def detect_delimiter(line):
     """Detect the delimiter used in the line."""
     if ',' in line:
@@ -25,12 +26,14 @@ def load_absorbance_data(file_path):
         raise FileNotFoundError(f"The file {file_path} does not exist.")
 
     with open(file_path, 'r') as file:
-        # Read the first line to detect the delimiter
-        first_line = file.readline()
-        delimiter = detect_delimiter(first_line)
-
-        if delimiter is None:
-            raise ValueError("No recognizable delimiter found in the file.")
+        # Check the delimiter by looking at the first few lines
+        delimiter = None
+        for i in range(5):
+            line = file.readline()
+            delimiter = detect_delimiter(line)
+            if delimiter is not None and detect_delimiter(line) != delimiter:
+                logger.error("Detected more than 1 different delimiters in the file. Double check for possible parsing errors.")
+                    
 
         # Reset the file pointer to the beginning
         file.seek(0)

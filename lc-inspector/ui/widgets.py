@@ -26,10 +26,15 @@ class DragDropListWidget(QtWidgets.QListWidget):
         item = self.itemAt(pos)
         if item is not None:
             menu = QtWidgets.QMenu()
-            deleteAction = menu.addAction("Delete")
+            deleteAction = menu.addAction("(⌫/Del) Delete")
             action = menu.exec(self.mapToGlobal(pos))
             if action == deleteAction:
                 self.takeItem(self.row(item))
+    
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key.Key_Backspace or event.key() == QtCore.Qt.Key.Key_Delete:
+            item = self.currentItem()
+            self.takeItem(self.row(item))
 
     def dragEnterEvent(self, event):
         # Check if the dragged item is a file
@@ -71,6 +76,18 @@ class GenericTable(QtWidgets.QTableWidget):
 
     def contextMenuEvent(self, event):
         self.menu = QtWidgets.QMenu(self)
+
+        add_row_action = QtGui.QAction(QtGui.QIcon.fromTheme("document-new"), "(⌘+N) Add Row", self)
+        add_row_action.triggered.connect(self.append_row)
+        self.menu.addAction(add_row_action)
+
+        remove_row_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-delete"), "(⌫) Remove Row", self)
+        remove_row_action.triggered.connect(self.clear_selection)
+        self.menu.addAction(remove_row_action)
+
+        select_all_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-select-all"), "(⌘+A) Select All", self)
+        select_all_action.triggered.connect(self.select_all)
+        self.menu.addAction(select_all_action)
         
         copy_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-copy"), "(⌘+C) Copy", self)
         copy_action.triggered.connect(self.copy)
@@ -125,6 +142,11 @@ class GenericTable(QtWidgets.QTableWidget):
         command = InsertRowCommand(self, row)
         self.undoStack.push(command)
         super().insertRow(row)
+
+    def append_row(self, row):
+        # Append row to the end of the table
+        self.insert_row(self.rowCount())
+
 
     def set_item(self, row, col, item):
         if self.item(row, col) is None or self.item(row, col).text() != item.text():
