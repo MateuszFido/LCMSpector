@@ -51,7 +51,7 @@ class Model:
         ms_results = {}
         total_files = len(self.lc_measurements) + len(self.ms_measurements)
         progress = 0
-        if mode == "LC-MS":
+        if mode == "LC/GC-MS":
             with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
                 futures = [executor.submit(LCMeasurement, lc_file) for lc_file in self.lc_measurements] + \
                           [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
@@ -65,7 +65,7 @@ class Model:
                     self.controller.view.update_progress_bar(int(progress / total_files * 100))
             logger.info(f"Processed in {time.time() - st}")
             return lc_results, ms_results
-        elif mode == "LC Only":
+        elif mode == "LC/GC Only":
             with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
                 futures = [executor.submit(LCMeasurement, lc_file) for lc_file in self.lc_measurements]
                 for future in as_completed(futures):
