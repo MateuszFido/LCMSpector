@@ -80,7 +80,7 @@ class Controller:
         self.update_filenames()
     
     def update_filenames(self):
-        if self.mode == "LC/GC-MS" or self.mode == "LC":
+        if self.mode == "LC/GC-MS" or self.mode == "LC/GC Only":
             filenames = list(self.model.lc_measurements.keys())
             # Grab the return values of extract_concentration() for every file in lc_measurements
             concentrations = [[file, self.model.lc_measurements[file].extract_concentration()] for file in filenames]
