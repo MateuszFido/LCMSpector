@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
-plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current, plot_heatmap
+plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current, plot_ms2
 import os, sys, traceback, logging, json, __main__
 from datetime import datetime
 from utils.classes import Compound
@@ -410,6 +410,15 @@ class View(QtWidgets.QMainWindow):
                         QtWidgets.QTableWidgetItem(f"{str(np.format_float_scientific(np.round(np.sum(ms_compound.ions[ion]['MS Intensity']),0), precision=2))} a.u."))
                     self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem(str(ms_compound.concentration)+" mM"))
 
+    def display_ms2(self):
+        self.canvas_ms2.clear()
+        for compound in self.controller.model.compounds:
+            if compound.name == self.comboBoxChooseCompound.currentText():
+                try:
+                    plot_ms2(compound, self.canvas_ms2)
+                except TypeError as e: 
+                    logger.error(f"No ms2 found for {compound.name}: {traceback.format_exc()}")
+
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
         for curve in self.curve_list:
@@ -815,9 +824,9 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations = GenericTable(parent=self.tabQuantitation)
         self.tableWidget_concentrations.setObjectName("tableWidget_concentrations")
         self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 1, 1)
-        self.heatmap = pg.PlotWidget(parent=self.tabQuantitation)
-        self.heatmap.setObjectName("heatmap")
-        self.gridLayout_quant.addWidget(self.heatmap, 1, 1, 1, 1)
+        self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
+        self.canvas_ms2.setObjectName("canvas_ms2")
+        self.gridLayout_quant.addWidget(self.canvas_ms2, 1, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the second tab

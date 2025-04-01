@@ -219,8 +219,9 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     widget.setLabel('bottom', 'Time (min)')
     widget.addLegend()
 
-def plot_heatmap(widget: pg.PlotWidget):
+def plot_ms2(compound, widget: pg.PlotWidget):
     widget.setBackground("w")
-    widget.setTitle('Heatmap')
+    widget.setTitle(f'MS2 spectrum of {compound.name}')
+    widget.plot(compound.ms2_data[0], compound.ms2_data[1], pen=mkPen('b', width=1))
     widget.setLabel('left', 'Intensity (a.u.)')
-    widget.setLabel('bottom', 'Time (min)')
+    widget.setLabel('bottom', 'm/z')
