@@ -14,6 +14,7 @@ class Controller:
         self.view.calibrateButton.clicked.connect(self.calibrate)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_ms2)
         self.mode = "LC/GC-MS"
 
     def load_lc_data(self):
