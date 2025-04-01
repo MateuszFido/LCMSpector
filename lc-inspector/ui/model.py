@@ -15,7 +15,7 @@ class Model:
     Attributes
     ----------
     ms_measurements : list
-        A list to store MSMeasurement objects.
+        A list to store MSMeasurement objects.  
     lc_measurements : list
         A list to store LCMeasurement objects.
     annotations : list
