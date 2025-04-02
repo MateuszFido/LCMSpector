@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current, plot_ms2
+from utils.ms2 import feature_ms2
 import os, sys, traceback, logging, json, __main__
 from datetime import datetime
 from utils.classes import Compound
@@ -415,7 +416,8 @@ class View(QtWidgets.QMainWindow):
         for compound in self.controller.model.compounds:
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
-                    plot_ms2(compound, self.canvas_ms2)
+                    library_entry = feature_ms2(compound)
+                    plot_ms2(library_entry, compound, self.canvas_ms2)
                 except TypeError as e: 
                     logger.error(f"No ms2 found for {compound.name}: {traceback.format_exc()}")
 

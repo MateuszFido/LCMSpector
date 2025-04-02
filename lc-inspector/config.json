@@ -860,66 +860,66 @@
         }
     },
     "Short-chain fatty acids": {
-        "Formate": {
+        "Formic acid": {
             "ions": [
                 47.0128,
                 44.9982,
                 91.0026
             ],
-            "info": [
+            "ion_info": [
                 "Formate-(+)",
-                "Formate-(-)",
-                "Formate dimer (+)"
+                " Formate-(-)",
+                " Formate dimer (+)"
             ]
         },
-        "Acetate": {
+        "Acetic acid": {
             "ions": [
                 61.0284,
                 59.0139
             ],
-            "info": [
+            "ion_info": [
                 "Acetate-(+)",
-                "Acetate-(-)"
+                " Acetate-(-)"
             ]
         },
-        "Butyrate": {
+        "Butyric acid": {
             "ions": [
                 89.0597,
                 87.04515
             ],
-            "info": [
+            "ion_info": [
                 "Butyrate-(+)",
-                "Butyrate-(-)"
+                " Butyrate-(-)"
             ]
         },
-        "Propionate": {
+        "Propionic acid": {
             "ions": [
                 75.0441,
                 73.0295
             ],
-            "info": [
+            "ion_info": [
                 "Propionate-(+)",
-                "Propionate-(-)"
+                " Propionate-(-)"
             ]
         },
-        "(Iso)-Valerate": {
+        "Valeric acid": {
             "ions": [
                 103.0754,
                 101.0608
             ],
-            "info": [
+            "ion_info": [
                 "Valerate-(+)",
-                "Valerate-(-)"
+                " Valerate-(-)"
             ]
         },
-        "Caproate": {
+        "Caproic acid": {
             "ions": [
                 117.09101,
                 115.07645
             ],
-            "info": [
+            "ion_info": [
                 "Caproate-(+)",
-                "Caproate-(-)"
+                " Caproate-(-)"
             ]
         }
     },
