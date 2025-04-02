@@ -6,6 +6,7 @@ from scipy.stats import linregress
 import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
+from utils.loading import load_ms2_library
 
 logger = logging.getLogger(__name__)
 class Model:
@@ -37,13 +38,14 @@ class Model:
         Preprocesses and annotates LC and MS files concurrently.
     """
     
-    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds']
+    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library']
 
     def __init__(self):
         self.lc_measurements = {}
         self.ms_measurements = {}
         self.annotations = []
         self.compounds = []
+        self.library = load_ms2_library()
         
     def process_data(self, mode):
         st = time.time()

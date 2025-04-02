@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import csv, re, os, logging
+import __main__
 from pyteomics import mzml
 from calculation.wrappers import freezeargs
 from functools import lru_cache
@@ -102,3 +103,27 @@ def load_ms1_data(path: str) -> tuple:
     # Take only the scans where ms level is 1
     data = [scan for scan in file if scan['ms level'] == 1]
     return tuple(data)
+
+@lru_cache
+def load_ms2_library() -> dict:
+    """
+    Loads the MS2 library from the MoNA-export-All_LC-MS-MS_Orbitrap.msp file.
+    
+    Returns
+    -------
+    library : dict
+        The MS2 library as a dictionary where the keys are the feature names and the values are lists of lines from the file.
+    """
+    library = {}
+    with open(os.path.join(os.path.dirname(__main__.__file__), os.pardir, os.path.join("resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp")), "r") as src:
+        for line in src:
+            if line.startswith("Name: "):
+                # The key is the feature name, the value is all the following lines until an empty line
+                feature_name = line.split("Name: ")[1].strip()
+                library[feature_name] = []
+                while True:
+                    line = next(src)
+                    if line.strip() == "":
+                        break
+                    library[feature_name].append(line)
+    return library
