@@ -3,8 +3,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
-plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve, plot_total_ion_current, plot_ms2
-from utils.ms2 import feature_ms2
+plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
+plot_total_ion_current, plot_ms2, plot_no_ms2_found
 import os, sys, traceback, logging, json, __main__
 from datetime import datetime
 from utils.classes import Compound
@@ -403,7 +403,11 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations.horizontalHeader().setStretchLastSection(True)
         self.tableWidget_concentrations.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
         for i in range(self.tableWidget_files.rowCount()):
-            ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
+            try:
+                ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
+            except KeyError:
+                logger.error(f"File {self.tableWidget_files.item(i, 0).text()} not found in ms_measurements.")
+                continue
             self.tableWidget_concentrations.insertRow(i)
             self.tableWidget_concentrations.setItem(i, 0, QtWidgets.QTableWidgetItem(self.tableWidget_files.item(i, 0).text()))
             for ms_compound in ms_file.xics:
@@ -418,10 +422,12 @@ class View(QtWidgets.QMainWindow):
         for compound in self.controller.model.compounds:
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
-                    library_entry = feature_ms2(compound)
+                    library_entry = self.controller.model.library[compound.name]
                     plot_ms2(library_entry, compound, self.canvas_ms2)
-                except TypeError as e: 
-                    logger.error(f"No ms2 found for {compound.name}: {traceback.format_exc()}")
+
+                except KeyError as e: 
+                    logger.error(f"No MS2 found for {compound.name}: {traceback.format_exc()}")
+                    plot_no_ms2_found(self.canvas_ms2)
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
