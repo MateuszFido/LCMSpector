@@ -3,6 +3,7 @@ import numpy as np
 import csv, re, os, logging
 import __main__
 from pyteomics import mzml
+from pyteomics.auxiliary import cvquery
 from calculation.wrappers import freezeargs
 from functools import lru_cache
 
@@ -83,7 +84,7 @@ def load_annotated_peaks(file_path):
     return df
 
 @lru_cache
-def load_ms1_data(path: str) -> tuple:
+def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
     """
     Using the pyteomics library, load the data from the .mzML file into a pandas DataFrame.
     
@@ -101,8 +102,20 @@ def load_ms1_data(path: str) -> tuple:
     file = mzml.MzML(str(path))
 
     # Take only the scans where ms level is 1
-    data = [scan for scan in file if scan['ms level'] == 1]
-    return tuple(data)
+    ms1_data = []
+    ms2_data = []
+    for scan in file:
+        if scan['ms level'] == 1:
+            ms1_data.append(scan)
+        elif scan['ms level'] == 2:
+            for precursor in precursors:
+                for ion in precursor.ions.keys():
+                    if np.abs(cvquery(scan, 'MS:1000827') - ion) <= (mass_accuracy * 3):
+                        ms2_data.append(scan)
+        else:
+            # Skip the scan, MSn higher than 2 not supported
+            continue 
+    return tuple(ms1_data), tuple(ms2_data)
 
 @lru_cache
 def load_ms2_library() -> dict:

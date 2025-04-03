@@ -1,6 +1,6 @@
-from utils.loading import load_absorbance_data, load_ms1_data
+from utils.loading import load_absorbance_data, load_ms_data
 from utils.preprocessing import baseline_correction, construct_xics
-from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs, plot_ms2
+from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from abc import abstractmethod
 import os, logging, re
 from pathlib import Path
@@ -81,23 +81,18 @@ class MSMeasurement(Measurement):
     ----------
     mass_accuracy : float
         The mass accuracy of the m/z axis. Default: 0.0001
-    data : List of Scan objects
+    data : tuple(Scan)
         The list of Scan objects containing the MS data.
-    mz_axis : np.ndarray
-        The m/z axis for the intensity values.
-    average : pd.DataFrame
-        A DataFrame containing the m/z and intensity values.
-    peaks : pd.DataFrame
-        A DataFrame containing the m/z and intensity values of the peaks.
     xics : pd.DataFrame
         A DataFrame containing the m/z and intensity values of the XICs.
+    ms2_data : pd.DataFrame
+        A DataFrame containing the m/z and intensity values of the MS2 spectra.
     """
     def __init__(self, path, ion_list, mass_accuracy=0.0001):
         super().__init__(path)
-        self.data = load_ms1_data(path)  
         self.mass_accuracy = mass_accuracy
+        self.data, self.ms2_data = load_ms_data(path, tuple(ion_list), self.mass_accuracy)
         self.xics = construct_xics(self.data, ion_list, self.mass_accuracy)
-        logger.info(f"Loaded MS file {self.filename}.")
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)

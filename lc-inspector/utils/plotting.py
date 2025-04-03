@@ -211,10 +211,13 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
     x=list(compound.calibration_curve.keys())
     y=list(compound.calibration_curve.values())
     try:
-        m=int(round(compound.calibration_parameters['slope']))
-        b=int(round(compound.calibration_parameters['intercept']))
-    except ValueError as e:
+        compound.calibration_parameters['slope']
+        compound.calibration_parameters['intercept']
+    except Exception as e:
         logger.error(f"---Error when trying to plot calibration curve for {compound.name} {e} ---")
+        return
+    m=int(round(compound.calibration_parameters['slope']))
+    b=int(round(compound.calibration_parameters['intercept']))
     curve=np.array([m*x+b for x in x])
     widget.plot(x, y, name=compound.name, pen=None, symbol='o', symbolSize=5)
     widget.plot(x, curve, pen=mkPen('r', width=1))
@@ -242,9 +245,31 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     widget.addLegend()
 
 def plot_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
-    print(library_entry)
+    # Reset the plot
+    widget.clear()
+    widget.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
+    widget.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+    widget.getPlotItem().vb.setAutoVisible(x=True, y=True)
     widget.setBackground("w")
     widget.setTitle(f'MS2 spectrum of {compound.name}')
-    #widget.plot(compound.ms2_data[0], compound.ms2_data[1], pen=mkPen('b', width=1))
-    widget.setLabel('left', 'Intensity (a.u.)')
+    mzs = []
+    intensities = []
+    for line in library_entry:
+        try:
+            mz = float(line.split(' ')[0])
+            intensity = float(line.split(' ')[1])
+        except ValueError:
+            continue   
+        mzs.append(mz)
+        intensities.append(intensity)
+    widget.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('r', width=1), brush=mkBrush('r')))
+    # Draw a flat black line at 0 intensity
+    widget.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=1))
+    widget.setLabel('left', 'Intensity (%)')
+    widget.setLabel('bottom', 'm/z')
+
+def plot_no_ms2_found(widget: pg.PlotWidget):
+    widget.setBackground("w")
+    widget.setTitle('No MS2 spectrum found')
+    widget.setLabel('left', 'Intensity (%)')
     widget.setLabel('bottom', 'm/z')

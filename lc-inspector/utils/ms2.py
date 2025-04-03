@@ -4,35 +4,11 @@ import os
 import __main__
 import time
 
-def feature_ms2(feature):
-    library_entry = {}
-    info = []
-    mzs = []
-    intensities = []
-    # Open the MoNa library file by going into the parent folder and then into resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
-    with open(os.path.join(os.path.dirname(__main__.__file__), os.pardir, os.path.join("resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp")), "r") as library:
-        for line in library:
-            if line.startswith("Name: " + feature.name):
-                library_entry["Name"] = feature.name
-                while not line.startswith("Num Peaks:"):
-                    info.append(line)
-                    line = next(library)
-                info.append(line)
-                while not line.split() == []:
-                    try: 
-                        line = next(library)
-                        try:
-                            mzs.append(float(line.split()[0]))
-                            intensities.append(float(line.split()[1]))
-                        except IndexError:
-                            break
-                    except StopIteration:
-                        break
-                library_entry["Info"] = info
-                library_entry["m/z"] = np.array(mzs)
-                library_entry["Intensity"] = np.array(intensities)
-                break
-    return library_entry
+def find_feature(library, feature_name):
+    if feature_name in library:
+        return library[feature_name]
+    else:
+        return None
 
 def parse_feature_name(feature_name: str):
     compound_name = feature_name.split()[0]

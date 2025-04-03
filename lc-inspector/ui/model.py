@@ -1,5 +1,5 @@
 # model.py
-import logging, traceback, multiprocessing, time
+import logging, traceback, multiprocessing, time, sys
 from concurrent.futures import ProcessPoolExecutor, as_completed
 import numpy as np
 from scipy.stats import linregress
@@ -66,6 +66,8 @@ class Model:
                     progress += 1
                     self.controller.view.update_progress_bar(int(progress / total_files * 100))
             logger.info(f"Processed in {time.time() - st}")
+            logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB,\
+            MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
             return lc_results, ms_results
         elif mode == "LC/GC Only":
             with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
@@ -76,6 +78,8 @@ class Model:
                     progress += 1
                     self.controller.view.update_progress_bar(int(progress / total_files * 100))
             logger.info(f"Processed in {time.time() - st}")
+            logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB,\
+            MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
             return lc_results, ms_results
         elif mode == "MS Only":
             with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor:
@@ -85,11 +89,13 @@ class Model:
                     ms_results[result.filename] = result
                     progress += 1
                     self.controller.view.update_progress_bar(int(progress / total_files * 100))
-            logger.info(f"Processed in {time.time() - st}")
+            logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB,\
+            MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
             return lc_results, ms_results
         else: 
             logger.error("ERROR: Invalid argument for process_data(mode): ", mode)
             return
+
 
     def get_plots(self, filename):
         # Find the corresponding MS and LC files

@@ -865,61 +865,36 @@
                 47.0128,
                 44.9982,
                 91.0026
-            ],
-            "ion_info": [
-                "Formate-(+)",
-                " Formate-(-)",
-                " Formate dimer (+)"
             ]
         },
         "Acetic acid": {
             "ions": [
                 61.0284,
                 59.0139
-            ],
-            "ion_info": [
-                "Acetate-(+)",
-                " Acetate-(-)"
             ]
         },
-        "Butyric acid": {
+        "Butanoic acid": {
             "ions": [
                 89.0597,
                 87.04515
-            ],
-            "ion_info": [
-                "Butyrate-(+)",
-                " Butyrate-(-)"
             ]
         },
         "Propionic acid": {
             "ions": [
                 75.0441,
                 73.0295
-            ],
-            "ion_info": [
-                "Propionate-(+)",
-                " Propionate-(-)"
             ]
         },
-        "Valeric acid": {
+        "Pentanoic acid": {
             "ions": [
                 103.0754,
                 101.0608
-            ],
-            "ion_info": [
-                "Valerate-(+)",
-                " Valerate-(-)"
             ]
         },
-        "Caproic acid": {
+        "Hexanoic acid": {
             "ions": [
                 117.09101,
                 115.07645
-            ],
-            "ion_info": [
-                "Caproate-(+)",
-                " Caproate-(-)"
             ]
         }
     },
