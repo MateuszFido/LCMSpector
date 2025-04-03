@@ -79,6 +79,8 @@ class Controller:
         # Resize view to fit the screen
         self.view.resize(1600, 900)
         self.update_filenames()
+        self.view.actionExport.setEnabled(True)
+
     
     def update_filenames(self):
         if self.mode == "LC/GC-MS" or self.mode == "LC/GC Only":
@@ -113,6 +115,5 @@ class Controller:
             logger.error("No files selected for calibration.")
         self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.update_choose_compound(self.model.compounds)
-        self.view.actionExport.setEnabled(True)
 
         

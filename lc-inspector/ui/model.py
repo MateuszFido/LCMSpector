@@ -152,17 +152,32 @@ class Model:
         for ms_measurement in self.ms_measurements.values():
             for compound in ms_measurement.xics:
                 for i, ion in enumerate(compound.ions.keys()):
-                    results.append({
+                    results_dict = {
                         'File': ms_measurement.filename,
                         'Ion (m/z)': ion,
-                        'Ion name': compound.ion_info[i],
                         'Compound': compound.name,
                         'RT (min)': np.round(compound.ions[ion]['RT'],3),
                         'MS Intensity (cps)': np.round(np.sum(compound.ions[ion]['MS Intensity']),0),
-                        'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity'],
-                        'Concentration (mM)': compound.concentration,
-                        'Slope': compound.calibration_parameters['slope'],
-                        'Intercept': compound.calibration_parameters['intercept'],
-                    })
+                        'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity']
+                        }
+                    try:
+                        compound.ion_info[i]
+                    except IndexError:
+                        compound.ion_info = [ion for ion in compound.ions.keys()]
+                    finally:
+                        results_dict['Ion name'] = compound.ion_info[i]
+                    try:
+                        compound.concentration
+                        compound.calibration_parameters['slope']
+                        compound.calibration_parameters['intercept']
+                    except Exception as e:
+                        logger.error(f"Error exporting concentration information for {ms_measurement.filename}: {e}")
+                        compound.concentration = 0
+                        compound.calibration_parameters = {'slope': 0, 'intercept': 0}
+                    finally:
+                        results_dict['Concentration (mM)'] = compound.concentration
+                        results_dict['Calibration slope'] = compound.calibration_parameters['slope']
+                        results_dict['Calibration intercept'] = compound.calibration_parameters['intercept']
+                    results.append(results_dict)
         df = pd.DataFrame(results)
         return df

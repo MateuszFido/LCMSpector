@@ -188,11 +188,33 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
     logger.info(f"---Plotting annotated XICs of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
 
 def plot_calibration_curve(compound, widget: pg.PlotWidget):
+    """
+    Plots the calibration curve of a compound.
+
+    Parameters
+    ----------
+    compound : utils.classes.Compound
+        The compound to plot the calibration curve for.
+
+    widget : pyqtgraph.PlotWidget
+        The widget to plot the calibration curve in.
+
+    Notes
+    -----
+    The calibration curve is calculated using the calibration equation saved in the
+    compound object. The function will fail if the compound object is missing this
+    information.
+
+    """
+    
     widget.setBackground("w")
     x=list(compound.calibration_curve.keys())
     y=list(compound.calibration_curve.values())
-    m=int(round(compound.calibration_parameters['slope']))
-    b=int(round(compound.calibration_parameters['intercept']))
+    try:
+        m=int(round(compound.calibration_parameters['slope']))
+        b=int(round(compound.calibration_parameters['intercept']))
+    except ValueError as e:
+        logger.error(f"---Error when trying to plot calibration curve for {compound.name} {e} ---")
     curve=np.array([m*x+b for x in x])
     widget.plot(x, y, name=compound.name, pen=None, symbol='o', symbolSize=5)
     widget.plot(x, curve, pen=mkPen('r', width=1))
