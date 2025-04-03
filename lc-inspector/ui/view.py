@@ -11,7 +11,7 @@ from utils.classes import Compound
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
 from scipy.signal import find_peaks
-from ui.widgets import DragDropListWidget, IonTable, GenericTable
+from ui.widgets import DragDropListWidget, IonTable, GenericTable, ChromatogramPlotWidget
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -322,6 +322,7 @@ class View(QtWidgets.QMainWindow):
                     plot_absorbance_data(lc_file.path, lc_file.baseline_corrected, self.canvas_baseline)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
+                    self.canvas_baseline.getPlotItem().addItem(self.line_marker, ignoreBounds=True)
                     self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
                     self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
                 except Exception as e: 
@@ -373,6 +374,7 @@ class View(QtWidgets.QMainWindow):
                     plot_total_ion_current(self.canvas_baseline, ms_file.data, ms_file.filename)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
                     self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
+                    self.canvas_baseline.getPlotItem().addItem(self.line_marker, ignoreBounds=True)
                     self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
                     self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
                     plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
@@ -487,6 +489,21 @@ class View(QtWidgets.QMainWindow):
             self.crosshair_h.setPos(mousePoint.y())
             self.crosshair_v_label.setText(f"{mousePoint.x():.2f} min")
             self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
+            
+    def update_line_marker(self, event):
+        # Update the position of the vertical line marker every time the user clicks on the canvas
+        mouse_pos = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(event._scenePos)
+        self.line_marker.setVisible(True)
+        self.line_marker.setPos(mouse_pos.x())
+
+    def update_line_marker_with_key(self, event):
+        # Update the position of the vertical line marker every time the user presses either the left or right arrow keys
+        self.line_marker.setVisible(True)
+        # Change the position by one scan to the left or right
+        if event.key() == QtCore.Qt.Key.Key_Left:
+            self.line_marker.setPos(self.line_marker.pos() - 1)
+        elif event.key() == QtCore.Qt.Key.Key_Right:
+            self.line_marker.setPos(self.line_marker.pos() + 1)
 
     def change_MS_annotations(self):
         """
@@ -593,8 +610,7 @@ class View(QtWidgets.QMainWindow):
         return
 
     def show_scan_at_time_x(self, event):
-        mouse_pos = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(event._scenePos)
-        time_x = float(mouse_pos.x())
+        time_x = float(self.line_marker.pos().x())
         logger.info(f'Clicked the chromatogram at position: {time_x}')
         self.canvas_avgMS.clear()
         file = self.comboBox_currentfile.currentText()
@@ -730,11 +746,17 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
         self.gridLayout_2 = QtWidgets.QGridLayout()
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.canvas_baseline = pg.PlotWidget(parent=self.tabResults)
+        self.canvas_baseline = ChromatogramPlotWidget(parent=self.tabResults)
         self.canvas_baseline.setObjectName("canvas_baseline")
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.update_labels_avgMS)
+        self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
+        self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
+        self.canvas_baseline.sigKeyPressed.connect(self.update_labels_avgMS)
         self.crosshair_v = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine), movable=False)
         self.crosshair_h = pg.InfiniteLine(angle=0, pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1), movable=False)
+        self.line_marker = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1), movable=True)
 
         self.proxy = pg.SignalProxy(self.canvas_baseline.scene().sigMouseMoved, rateLimit=60, slot=self.update_crosshair)
         self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
