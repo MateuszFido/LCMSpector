@@ -501,9 +501,9 @@ class View(QtWidgets.QMainWindow):
         self.line_marker.setVisible(True)
         # Change the position by one scan to the left or right
         if event.key() == QtCore.Qt.Key.Key_Left:
-            self.line_marker.setPos(self.line_marker.pos() - 1)
+            self.line_marker.setPos(self.line_marker.pos() - 0.01)
         elif event.key() == QtCore.Qt.Key.Key_Right:
-            self.line_marker.setPos(self.line_marker.pos() + 1)
+            self.line_marker.setPos(self.line_marker.pos() + 0.01)
 
     def change_MS_annotations(self):
         """
