@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
 from utils.classes import Compound
 from datetime import datetime
 import json, __main__
+import pyqtgraph as pg 
 
 class PlotWindow(QDialog):
     #FIXME: seems to be unused
@@ -339,3 +340,13 @@ class SetItemCommand(QtGui.QUndoCommand):
             self.table.takeItem(self.row, self.col)
         else:
             item.setText(self.old_value)
+
+class ChromatogramPlotWidget(pg.PlotWidget):
+    sigKeyPressed = QtCore.pyqtSignal(object)
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def keyPressEvent(self, ev):
+        self.scene().keyPressEvent(ev)
+        self.sigKeyPressed.emit(ev)

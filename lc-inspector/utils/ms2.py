@@ -51,10 +51,7 @@ def test_library_reading():
                     if line.strip() == "":
                         break
                     library[feature_name].append(line)
-
-
     time.sleep(30)
-
     print("Loading took", time.time() - st, "seconds.")
     st = time.time()
     print(library["Propionic acid"])
