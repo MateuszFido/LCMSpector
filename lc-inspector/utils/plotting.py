@@ -233,6 +233,7 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
 
 def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str):
     widget.setBackground("w")
+    widget.addLegend()
     widget.setTitle(f'Total ion chromatogram of {filename}')
     tic = []
     times = []
@@ -242,15 +243,10 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     widget.plot(times, tic, pen=mkPen('b', width=1))
     widget.setLabel('left', 'Intensity (cps)')
     widget.setLabel('bottom', 'Time (min)')
-    widget.addLegend()
 
-def plot_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
+def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     # Reset the plot
     widget.clear()
-    widget.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
-    widget.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
-    widget.getPlotItem().vb.setAutoVisible(x=True, y=True)
-    widget.setBackground("w")
     widget.setTitle(f'MS2 spectrum of {compound.name}')
     mzs = []
     intensities = []
@@ -261,15 +257,32 @@ def plot_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
         except ValueError:
             continue   
         mzs.append(mz)
-        intensities.append(intensity)
-    widget.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('r', width=1), brush=mkBrush('r')))
+        intensities.append(-intensity)
+    widget.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('r', width=1), brush=mkBrush('r')), name="Library spectrum")
     # Draw a flat black line at 0 intensity
-    widget.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=1))
+    widget.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
+    # Label the peaks with their m/z above the peak
+    for mz, intensity in zip(mzs, intensities):
+        text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
+        text_item.setFont(pg.QtGui.QFont('Arial', 12, weight=pg.QtGui.QFont.Weight.Light))
+        text_item.setPos(mz-0.1, intensity+5)
+        widget.addItem(text_item)
     widget.setLabel('left', 'Intensity (%)')
     widget.setLabel('bottom', 'm/z')
 
+def plot_ms2_from_file(ms_file, ms_compound, canvas: pg.PlotWidget):
+    for scan in ms_file.ms2_data:
+        for ion in ms_compound.ions.keys():
+            if ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016") < 0.05:
+                # Normalize the intensity array to 0-100
+                scan['intensity array'] = scan['intensity array']/np.max(scan['intensity array'])*100
+                canvas.addItem(pg.BarGraphItem(x=scan['m/z array'], height=scan['intensity array'], width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
+    # Draw a flat black line at 0 intensity
+    canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
+
+
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")
-    widget.setTitle('No MS2 spectrum found')
+    widget.setTitle('No library MS2 spectrum found')
     widget.setLabel('left', 'Intensity (%)')
     widget.setLabel('bottom', 'm/z')

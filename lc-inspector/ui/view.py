@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
-plot_total_ion_current, plot_ms2, plot_no_ms2_found
+plot_total_ion_current, plot_library_ms2, plot_no_ms2_found, plot_ms2_from_file
 import os, sys, traceback, logging, json, __main__
 from datetime import datetime
 from utils.classes import Compound
@@ -419,15 +419,28 @@ class View(QtWidgets.QMainWindow):
 
     def display_ms2(self):
         self.canvas_ms2.clear()
+        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
+        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+        self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
+        self.canvas_ms2.setBackground("w")
         for compound in self.controller.model.compounds:
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
                     library_entry = self.controller.model.library[compound.name]
-                    plot_ms2(library_entry, compound, self.canvas_ms2)
-
+                    plot_library_ms2(library_entry, compound, self.canvas_ms2)
                 except KeyError as e: 
                     logger.error(f"No MS2 found for {compound.name}: {traceback.format_exc()}")
                     plot_no_ms2_found(self.canvas_ms2)
+        if len(self.tableWidget_files.selectedIndexes()) == 0:
+            ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(0,0).text()]
+        else:
+            ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(self.tableWidget_files.currentRow(), 0).text()]
+        for ms_compound in ms_file.xics:
+            if ms_compound.name == self.comboBoxChooseCompound.currentText():
+                try:
+                    plot_ms2_from_file(ms_file, ms_compound, self.canvas_ms2)
+                except KeyError as e:
+                    logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {traceback.format_exc()}")
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -478,8 +491,8 @@ class View(QtWidgets.QMainWindow):
         mzs = mz_range[peaks][sorted_indices][0:10]
         intensities = intensity_range[peaks][sorted_indices][0:10]
         for mz, intensity in zip(mzs, intensities):
-            text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
-            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+            text_item = pg.TextItem(text=f"{mz:.4f}", color='#B2BEB5', anchor=(0, 0))
+            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight, color='#B2BEB5'))
             text_item.setPos(mz, intensity)
             self.canvas_avgMS.addItem(text_item)
 
