@@ -1612,5 +1612,212 @@
                 "acetic acid-(+)"
             ]
         }
+    },
+    "KDO-repeats": {
+        "b3D-KDO,p/#bcleavage--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                133.0495352
+            ]
+        },
+        "b3D-KDO,p/#ccleavage--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                151.0600999
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                221.0655792
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                239.0761439
+            ]
+        },
+        "b3D-Rib,f/#bcleavage--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                353.1078379
+            ]
+        },
+        "b3D-Rib,f/#ccleavage--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                371.1184026
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                441.1238819
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                459.1344466
+            ]
+        },
+        "b3D-KDO,p/#bcleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                485.1500967
+            ]
+        },
+        "b3D-KDO,p/#ccleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                503.1606613
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                661.1821846
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                679.1927493
+            ]
+        },
+        "b3D-Rib,f/#bcleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                705.2083994
+            ]
+        },
+        "b3D-Rib,f/#ccleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                723.2189641
+            ]
+        },
+        "b3D-KDO,p/#bcleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                837.2506581
+            ]
+        },
+        "b3D-KDO,p/#ccleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                855.2612228
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                881.2404874
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                899.2510521
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1013.282746
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1031.293311
+            ]
+        },
+        "b3D-Rib,f/#bcleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1057.308961
+            ]
+        },
+        "b3D-Rib,f/#ccleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1075.319526
+            ]
+        },
+        "b3D-KDO,p/#bcleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1189.35122
+            ]
+        },
+        "b3D-KDO,p/#ccleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1207.361784
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1233.341049
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1251.351614
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1365.383308
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1383.393872
+            ]
+        },
+        "?2D-KDO,p/#bcleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1409.409522
+            ]
+        },
+        "?2D-KDO,p/#ccleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1427.420087
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1585.44161
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1603.452175
+            ]
+        },
+        "?2D-KDO,p/#bcleavage--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1629.467825
+            ]
+        },
+        "?2D-KDO,p/#ccleavage--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1647.47839
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1717.483869
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1735.494434
+            ]
+        },
+        "?2D-KDO,p/#bcleavage--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1849.526128
+            ]
+        },
+        "?2D-KDO,p/#ccleavage--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1867.536693
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1937.542172
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                1955.552737
+            ]
+        },
+        "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
+            "ions": [
+                2087.594995
+            ]
+        }
     }
 }

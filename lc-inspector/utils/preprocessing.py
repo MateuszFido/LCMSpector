@@ -103,5 +103,9 @@ def construct_xics(data, ion_list, mass_accuracy):
             xic = np.array((scan_id, xic))
             compound.ions[ion]['MS Intensity'] = xic
             # Get the scan time of the index with the highest intensity
-            compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016') 
+            try:
+                compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016') 
+            except Exception as e:
+                compound.ions[ion]['RT'] = 0
+                logger.error(f"Error: {e}")
     return tuple(compounds)
