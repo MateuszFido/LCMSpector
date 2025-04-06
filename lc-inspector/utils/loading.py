@@ -115,6 +115,12 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
         else:
             # Skip the scan, MSn higher than 2 not supported
             continue 
+    # Wrong format safeguard: if there are no MS1 scans, restart the iteration with only MS2 scans
+    if len(ms1_data) == 0:
+        logger.warning("No MS1 scans found, rerunning with higher MSn order scans.")
+        file = mzml.MzML(str(path))
+        for scan in file:
+            ms1_data.append(scan)
     return tuple(ms1_data), tuple(ms2_data)
 
 @lru_cache

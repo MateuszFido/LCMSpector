@@ -69,11 +69,19 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     """
     
     scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
-    index = np.argmin(scan_time_diff)
+    try:
+        index = np.argmin(scan_time_diff)
+    except:
+        index = 0
     widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
     widget.showGrid(x=True, y=True, alpha=0.2)
+    try:
+        data_matrix[index]
+    except IndexError:
+        print("Big error")
+        return
     if len(data_matrix[index]['m/z array']) < 500:
         # Plot as a histogram
         widget.addItem(pg.BarGraphItem(x=data_matrix[index]['m/z array'], height=data_matrix[index]['intensity array'], width=0.2, pen=mkPen('b', width=2), brush=mkBrush('b')))
@@ -278,7 +286,7 @@ def plot_ms2_from_file(ms_file, ms_compound, canvas: pg.PlotWidget):
                 scan['intensity array'] = scan['intensity array']/np.max(scan['intensity array'])*100
                 canvas.addItem(pg.BarGraphItem(x=scan['m/z array'], height=scan['intensity array'], width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
     # Draw a flat black line at 0 intensity
-    canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
+    canvas.plot([min(scan['m/z array']), max(scan['m/z array'])], [0, 0], pen=mkPen('k', width=0.5))
 
 
 def plot_no_ms2_found(widget: pg.PlotWidget):

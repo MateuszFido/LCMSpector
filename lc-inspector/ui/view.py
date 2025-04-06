@@ -492,11 +492,15 @@ class View(QtWidgets.QMainWindow):
         intensities = intensity_range[peaks][sorted_indices][0:10]
         for mz, intensity in zip(mzs, intensities):
             text_item = pg.TextItem(text=f"{mz:.4f}", color='#B2BEB5', anchor=(0, 0))
-            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight, color='#B2BEB5'))
+            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(mz, intensity)
             self.canvas_avgMS.addItem(text_item)
 
     def update_crosshair(self, e):
+        """
+        Event handler for when the user moves the mouse over the canvas_baseline widget.
+        Updates the position of the vertical and horizontal crosshairs and their labels with the current time (in minutes) and intensity (in a.u.), respectively.
+        """
         try:
             self.crosshair_v_label
         except AttributeError:
