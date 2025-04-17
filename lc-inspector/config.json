@@ -1616,207 +1616,237 @@
     "KDO-repeats": {
         "b3D-KDO,p/#bcleavage--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                133.0495352
+                133.05
             ]
         },
         "b3D-KDO,p/#ccleavage--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                151.0600999
+                151.06
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                221.0655792
+                221.07
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                239.0761439
+                239.08
             ]
         },
         "b3D-Rib,f/#bcleavage--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                353.1078379
+                353.11
             ]
         },
         "b3D-Rib,f/#ccleavage--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                371.1184026
+                371.12
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                441.1238819
+                441.12
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                459.1344466
+                459.13
             ]
         },
         "b3D-KDO,p/#bcleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                485.1500967
+                485.15
             ]
         },
         "b3D-KDO,p/#ccleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                503.1606613
+                503.16
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                661.1821846
+                661.18
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                679.1927493
+                679.19
             ]
         },
         "b3D-Rib,f/#bcleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                705.2083994
+                705.21
             ]
         },
         "b3D-Rib,f/#ccleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                723.2189641
+                723.22
             ]
         },
         "b3D-KDO,p/#bcleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                837.2506581
+                837.25
             ]
         },
         "b3D-KDO,p/#ccleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                855.2612228
+                855.26
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                881.2404874
+                881.24
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                899.2510521
+                899.25
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1013.282746
+                1013.28
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1031.293311
+                1031.29
             ]
         },
         "b3D-Rib,f/#bcleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1057.308961
+                1057.31
             ]
         },
         "b3D-Rib,f/#ccleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1075.319526
+                1075.32
             ]
         },
         "b3D-KDO,p/#bcleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1189.35122
+                1189.35
             ]
         },
         "b3D-KDO,p/#ccleavage--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1207.361784
+                1207.36
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1233.341049
+                1233.34
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1251.351614
+                1251.35
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1365.383308
+                1365.38
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1383.393872
+                1383.39
             ]
         },
         "?2D-KDO,p/#bcleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1409.409522
+                1409.41
             ]
         },
         "?2D-KDO,p/#ccleavage--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1427.420087
+                1427.42
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1585.44161
+                1585.44
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1603.452175
+                1603.45
             ]
         },
         "?2D-KDO,p/#bcleavage--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1629.467825
+                1629.47
             ]
         },
         "?2D-KDO,p/#ccleavage--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1647.47839
+                1647.48
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1717.483869
+                1717.48
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1735.494434
+                1735.49
             ]
         },
         "?2D-KDO,p/#bcleavage--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1849.526128
+                1849.53
             ]
         },
         "?2D-KDO,p/#ccleavage--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1867.536693
+                1867.54
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#zcleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1937.542172
+                1937.54
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f/#ycleavage$MONO,Und,H,0,freeEnd": {
             "ions": [
-                1955.552737
+                1955.55
             ]
         },
         "freeEnd--??2D-KDO,p--??2D-KDO,p--??2D-KDO,p--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f--?b3D-KDO,p--7b3D-Rib,f$MONO,Und,H,0,freeEnd": {
             "ions": [
-                2087.594995
+                2087.6
+            ]
+        }
+    },
+    "TDP-43 LCD": {
+        "TDP-43 LCD 5+": {
+            "ions": [
+                1685.8063
+            ],
+            "ion_info": [
+                ""
+            ]
+        },
+        "TDP-43 LCD 6+": {
+            "ions": [
+                1896.2802
+            ]
+        },
+        "TDP-43 LCD 7+": {
+            "ions": [
+                2167.0271
+            ]
+        },
+        "TDP-43 LCD 8+": {
+            "ions": [
+                2528.0339
+            ]
+        },
+        "TDP-43 LCD 9+": {
+            "ions": [
+                3033.4443
             ]
         }
     }

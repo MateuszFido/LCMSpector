@@ -14,3 +14,5 @@ dist
 *.sparsebundle
 *.zip
 *.msp
+*.sh
+*.ps1
