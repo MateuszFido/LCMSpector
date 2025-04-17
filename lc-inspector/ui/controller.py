@@ -77,7 +77,6 @@ class Controller:
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)
 
         # Resize view to fit the screen
-        self.view.resize(1600, 900)
         self.update_filenames()
         self.view.actionExport.setEnabled(True)
 

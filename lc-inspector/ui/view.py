@@ -415,7 +415,11 @@ class View(QtWidgets.QMainWindow):
                     for j, ion in enumerate(ms_compound.ions.keys()):
                         self.tableWidget_concentrations.setItem(i, j+1, 
                         QtWidgets.QTableWidgetItem(f"{str(np.format_float_scientific(np.round(np.sum(ms_compound.ions[ion]['MS Intensity']),0), precision=2))} a.u."))
-                    self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem(str(ms_compound.concentration)+" mM"))
+                    try:
+                        self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem(str(ms_compound.concentration)+" mM"))
+                    except AttributeError:
+                        self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem("N/A"))
+        self.tableWidget_concentrations.resizeColumnsToContents()
 
     def display_ms2(self):
         self.canvas_ms2.clear()
@@ -485,6 +489,8 @@ class View(QtWidgets.QMainWindow):
         indices = [i for i, x in enumerate(data[0]) if x in mz_range]
         intensity_range = data[1][indices]
         peaks, _ = find_peaks(intensity_range, prominence=10)
+        if len(peaks) < 5: 
+            peaks, _ = find_peaks(intensity_range)
         # Get the 10 highest peaks within the current view range
         sorted_indices= np.argsort(intensity_range[peaks])[::-1]
         # Get their mz values
@@ -658,17 +664,16 @@ class View(QtWidgets.QMainWindow):
         """
         
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1300, 900)
         MainWindow.setToolTip("")
         MainWindow.setToolTipDuration(-1)
         MainWindow.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(1)
         sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
         self.centralwidget.setSizePolicy(sizePolicy)
-        self.centralwidget.setMinimumSize(QtCore.QSize(0, 0))
+        self.centralwidget.setMinimumSize(QtCore.QSize(1500, 720))
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_4 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_4.setObjectName("gridLayout_4")
@@ -966,6 +971,7 @@ class View(QtWidgets.QMainWindow):
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
 
+
     def retranslateUi(self, MainWindow):
         """
         Set the text of the UI elements according to the current locale.
@@ -1017,4 +1023,10 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
         self.button_save_ion_list.setText(_translate("MainWindow", "Save"))
         self.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
+        
+        self.resize(1500, 900)
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
