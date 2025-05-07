@@ -199,8 +199,10 @@ class IonTable(GenericTable):
                 ions[name]['ions'] = [float(x) for x in self.item(row, 1).text().split(",")]
             except ValueError:
                 continue
-            if self.item(row, 2) is None: continue
-            ions[name]['ion_info'] = self.item(row, 2).text().split(",")
+            try:
+                ions[name]['info'] = self.item(row, 2).text().split(",")
+            except AttributeError:
+                continue
         # Save locally in config.json
         try:
             config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
