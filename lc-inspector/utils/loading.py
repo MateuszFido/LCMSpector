@@ -135,7 +135,7 @@ def load_ms2_library() -> dict:
         The MS2 library as a dictionary where the keys are the feature names and the values are lists of lines from the file.
     """
     library = {}
-    with open(os.path.join(os.path.dirname(__main__.__file__), "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"), "r") as src:
+    with open(os.path.join(os.path.dirname(__main__.__file__), "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"), mode="r", encoding="utf-8") as src:
         for line in src:
             if line.startswith("Name: "):
                 # The key is the feature name, the value is all the following lines until an empty line
