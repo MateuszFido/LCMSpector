@@ -80,6 +80,8 @@ https://github.com/cremerlab/hplc-py
 
 This project is distributed under the permissive MIT license. Details can be found in `LICENSE.txt`.
 
+LC-Inspector makes use of the MoNA database libraries for MS/MS spectra comparison, which are distributed under the CC BY 4.0 License https://creativecommons.org/licenses/by/4.0/. No changes are made to the content of the libraries.
+
 Created on 2024-02-29
 Copyright (c) Mateusz Fido, ETH Zürich, 2024
 mateusz.fido@org.chem.ethz.ch
