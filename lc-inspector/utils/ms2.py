@@ -16,7 +16,7 @@ def parse_feature_name(feature_name: str):
 def test_library_reading():
     st = time.time()
     library = {}
-    with open("/Users/mateuszfido/Library/CloudStorage/OneDrive-ETHZurich/LC-Inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp", "r") as src:
+    with open(os.path.join(os.path.dirname(__main__.__file__), "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp", "r")) as src:
         for line in src:
             if line.startswith("Name: "):
                 # The key is the feature name, the value is all the following lines until an empty line
