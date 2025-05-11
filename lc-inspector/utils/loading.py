@@ -108,11 +108,9 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
         if scan['ms level'] == 1:
             ms1_data.append(scan)
         elif scan['ms level'] == 2:
-            for precursor in precursors:
-                for ion in precursor.ions.keys():
-                    if cvquery(scan, 'MS:1000827') is not None:
-                        if np.abs(cvquery(scan, 'MS:1000827') - ion) <= (mass_accuracy * 3):
-                            ms2_data.append(scan)
+            precursor_mzs = [ion for precursor in precursors for ion in precursor.ions.keys()]
+            if cvquery(scan, 'MS:1000827') in precursor_mzs:
+                ms2_data.append(scan)
         else:
             # Skip the scan, MSn higher than 2 not supported
             continue 
