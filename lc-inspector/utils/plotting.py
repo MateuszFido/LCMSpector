@@ -216,24 +216,34 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
     """
     
     widget.setBackground("w")
-    x=list(compound.calibration_curve.keys())
-    y=list(compound.calibration_curve.values())
-    try:
-        compound.calibration_parameters['slope']
-        compound.calibration_parameters['intercept']
-    except Exception as e:
-        logger.error(f"---Error when trying to plot calibration curve for {compound.name} {e} ---")
+    x = np.array(list(compound.calibration_curve.keys()))
+    y = np.array(list(compound.calibration_curve.values()))
+    try: 
+        compound.calibration_parameters
+    except AttributeError as e:
+        logger.error(f"---Error when trying to plot calibration curve for {compound.name}: {e} ---")
         return
-    m=int(round(compound.calibration_parameters['slope']))
-    b=int(round(compound.calibration_parameters['intercept']))
-    curve=np.array([m*x+b for x in x])
+    if not all(k in compound.calibration_parameters for k in ('slope', 'intercept')):
+        logger.error(f"---Error when trying to plot calibration curve for {compound.name} ---")
+        return
+    try: 
+        m = int(round(compound.calibration_parameters['slope']))
+        b = int(round(compound.calibration_parameters['intercept']))
+    except Exception as e:
+        logger.error(f"---Error when trying to plot calibration curve for {compound.name}: {e} ---")
+        return
+    
+    curve = m * x + b
     widget.plot(x, y, name=compound.name, pen=None, symbol='o', symbolSize=5)
     widget.plot(x, curve, pen=mkPen('r', width=1))
-    widget.plotItem.setTitle(f'Calibration curve for {compound.name}')
+    widget.setTitle(f'Calibration curve for {compound.name}')
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'Concentration (mM)')
-    text_item = pg.TextItem(text=f"Curve equation:\ny = {m}\u22c5x+{b}\nR\u00b2 = {np.round(compound.calibration_parameters['r_value']**2, 4)}",
-    color='#232323', border=pg.mkPen('#232323', width=1), anchor=(0, 0))
+    
+    text_item = pg.TextItem(
+        text=f"Curve equation:\ny = {m}\u22c5x+{b}\nR\u00b2 = {np.round(compound.calibration_parameters['r_value']**2, 4)}",
+        color='#232323', border=pg.mkPen('#232323', width=1), anchor=(0, 0)
+    )
     text_item.setPos(np.min(x), np.max(y))
     text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
     widget.addItem(text_item)
@@ -281,14 +291,17 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
 def plot_ms2_from_file(ms_file, ms_compound, canvas: pg.PlotWidget):
     try: ms_file.ms2_data
     except: return
+    scan_list = []
     for scan in ms_file.ms2_data:
         for ion in ms_compound.ions.keys():
             if ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016") < 0.05:
                 # Normalize the intensity array to 0-100
                 scan['intensity array'] = scan['intensity array']/np.max(scan['intensity array'])*100
-                canvas.addItem(pg.BarGraphItem(x=scan['m/z array'], height=scan['intensity array'], width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
-    # Draw a flat black line at 0 intensity
-    canvas.plot([min(scan['m/z array']), max(scan['m/z array'])], [0, 0], pen=mkPen('k', width=0.5))
+                scan_list.append(scan)
+    if scan_list:
+        mzs = np.concatenate([scan['m/z array'] for scan in scan_list])
+        intensities = np.concatenate([scan['intensity array'] for scan in scan_list])
+        canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")
