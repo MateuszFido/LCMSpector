@@ -53,48 +53,38 @@ class Model:
         ms_results = {}
         total_files = len(self.lc_measurements) + len(self.ms_measurements)
         progress = 0
-        if mode == "LC/GC-MS":
-            with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
-                futures = [executor.submit(LCMeasurement, lc_file) for lc_file in self.lc_measurements] + \
-                          [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
-                for future in as_completed(futures):
-                    result = future.result()
-                    if isinstance(result, LCMeasurement):
-                        lc_results[result.filename] = result
-                    else:
-                        ms_results[result.filename] = result
-                    progress += 1
-                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
-            logger.info(f"Processed in {time.time() - st}")
-            logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB,\
-            MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
-            return lc_results, ms_results
-        elif mode == "LC/GC Only":
-            with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor: 
-                futures = [executor.submit(LCMeasurement, lc_file) for lc_file in self.lc_measurements]
-                for future in as_completed(futures):
-                    result = future.result()
-                    lc_results[result.filename] = result
-                    progress += 1
-                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
-            logger.info(f"Processed in {time.time() - st}")
-            logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB,\
-            MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
-            return lc_results, ms_results
-        elif mode == "MS Only":
-            with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count()-3) as executor:
-                futures = [executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001) for ms_file in self.ms_measurements]
-                for future in as_completed(futures):
-                    result = future.result()
-                    ms_results[result.filename] = result
-                    progress += 1
-                    self.controller.view.update_progress_bar(int(progress / total_files * 100))
-            logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB,\
-            MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
-            return lc_results, ms_results
-        else: 
+
+        def update_progress():
+            nonlocal progress
+            progress += 1
+            self.controller.view.update_progress_bar(int(progress / total_files * 100))
+
+        if mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
             logger.error("ERROR: Invalid argument for process_data(mode): ", mode)
             return
+
+        with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() - 3) as executor:
+            if mode in {"LC/GC-MS", "LC/GC Only"}:
+                lc_futures = {executor.submit(LCMeasurement, lc_file): lc_file for lc_file in self.lc_measurements}
+            else:
+                lc_futures = {}
+
+            if mode in {"LC/GC-MS", "MS Only"}:
+                ms_futures = {executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001): ms_file for ms_file in self.ms_measurements}
+            else:
+                ms_futures = {}
+
+            for future in as_completed(list(lc_futures) + list(ms_futures)):
+                result = future.result()
+                if future in lc_futures:
+                    lc_results[result.filename] = result
+                else:
+                    ms_results[result.filename] = result
+                update_progress()
+
+        logger.info(f"Processed in {time.time() - st}")
+        logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB, MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
+        return lc_results, ms_results
 
 
     def get_plots(self, filename):
@@ -104,86 +94,74 @@ class Model:
         return lc_file, ms_file
 
     def calibrate(self, selected_files):
-        j=0
-        for file, concentration in selected_files.items(): 
-            concentration = concentration.split(" ")
-            try:
-                suffix = concentration[1].lower()
-            except IndexError:
-                suffix = None
-            if suffix == "m":
-                concentration = float(concentration[0])*1e3
-            elif suffix == "mm":
-                concentration = float(concentration[0]) # Default to mmol/L
-            elif suffix == "um":
-                concentration = float(concentration[0])*1e-3
-            elif suffix == "nm":
-                concentration = float(concentration[0])*1e-6
-            elif suffix == "pm":
-                concentration = float(concentration[0])*1e-9
-            else:
-                concentration = float(concentration[0])
-            try: 
-                ms_file = self.ms_measurements.get(file)
-                if ms_file.xics:
-                    for i, compound in enumerate(self.compounds):
-                        compound_intensity = 0
-                        for ion in compound.ions.keys():
-                            compound_intensity += np.round(np.sum(ms_file.xics[i].ions[ion]['MS Intensity'][1]), 0)
-                        compound.calibration_curve[concentration] = compound_intensity
-                        if j == len(selected_files)-1:
-                            slope, intercept, r_value, p_value, std_err = linregress(list(compound.calibration_curve.keys()), list(compound.calibration_curve.values()))
-                            compound.calibration_parameters = {'slope': slope, 'intercept': intercept, 'r_value': r_value, 'p_value': p_value, 'std_err': std_err}
-                else:
-                    logger.error(f"No xics found for file {file}.")
-                    continue
-            except Exception:
-                    logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
-            j += 1
+        for j, (file, concentration) in enumerate(selected_files.items()):
+            concentration_value, suffix = (concentration.split(" ") + [None])[:2]
+            conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-6, 'pm': 1e-9}
+            concentration = float(concentration_value) * conversion_factors.get(suffix.lower(), 1)
+            
+            ms_file = self.ms_measurements.get(file)
+            if not ms_file or not ms_file.xics:
+                logger.error(f"No xics found for file {file}.")
+                continue
+
+            for i, compound in enumerate(self.compounds):
+                compound_intensity = sum(
+                    np.round(np.sum(ms_file.xics[i].ions[ion]['MS Intensity'][1]), 0)
+                    for ion in compound.ions.keys()
+                )
+                compound.calibration_curve[concentration] = compound_intensity
+                
+                if j == len(selected_files) - 1:
+                    slope, intercept, r_value, p_value, std_err = linregress(
+                        list(compound.calibration_curve.keys()),
+                        list(compound.calibration_curve.values())
+                    )
+                    compound.calibration_parameters = {
+                        'slope': slope, 'intercept': intercept, 'r_value': r_value,
+                        'p_value': p_value, 'std_err': std_err
+                    }
+
         for ms_file in self.ms_measurements.values():
             for ms_compound, model_compound in zip(ms_file.xics, self.compounds):
-                ms_compound.concentration = 0
-                for ion in ms_compound.ions.keys():
-                    ion_intensity = np.round(np.sum(ms_compound.ions[ion]['MS Intensity'][1]), 0)
-                    ms_compound.concentration += ion_intensity
+                ms_compound.concentration = sum(
+                    np.round(np.sum(ms_compound.ions[ion]['MS Intensity'][1]), 0)
+                    for ion in ms_compound.ions.keys()
+                )
                 try:
-                    ms_compound.concentration = calculate_concentration(ms_compound.concentration, model_compound.calibration_parameters)
+                    ms_compound.concentration = calculate_concentration(
+                        ms_compound.concentration, model_compound.calibration_parameters
+                    )
                     ms_compound.calibration_parameters = model_compound.calibration_parameters
                 except Exception:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
-                    continue
 
     def export(self):
         results = []
         for ms_measurement in self.ms_measurements.values():
             for compound in ms_measurement.xics:
-                for i, ion in enumerate(compound.ions.keys()):
+                ion_data = zip(compound.ions.keys(), compound.ions.values())
+                for ion, data in ion_data:
                     results_dict = {
                         'File': ms_measurement.filename,
                         'Ion (m/z)': ion,
                         'Compound': compound.name,
-                        'RT (min)': np.round(compound.ions[ion]['RT'],3),
-                        'MS Intensity (cps)': np.round(np.sum(compound.ions[ion]['MS Intensity']),0),
-                        'LC Intensity (a.u.)': compound.ions[ion]['LC Intensity']
+                        'RT (min)': np.round(data['RT'],3),
+                        'MS Intensity (cps)': np.round(np.sum(data['MS Intensity']),0),
+                        'LC Intensity (a.u.)': data['LC Intensity']
                         }
                     try:
-                        compound.ion_info[i]
+                        results_dict['Ion name'] = compound.ion_info[ion_data.index((ion, data))]
                     except IndexError:
-                        compound.ion_info = [ion for ion in compound.ions.keys()]
-                    finally:
-                        results_dict['Ion name'] = compound.ion_info[i]
+                        results_dict['Ion name'] = ion
                     try:
-                        compound.concentration
-                        compound.calibration_parameters['slope']
-                        compound.calibration_parameters['intercept']
-                    except Exception as e:
-                        logger.error(f"Error exporting concentration information for {ms_measurement.filename}: {e}")
-                        compound.concentration = 0
-                        compound.calibration_parameters = {'slope': 0, 'intercept': 0}
-                    finally:
                         results_dict['Concentration (mM)'] = compound.concentration
                         results_dict['Calibration slope'] = compound.calibration_parameters['slope']
                         results_dict['Calibration intercept'] = compound.calibration_parameters['intercept']
+                    except Exception as e:
+                        logger.error(f"Error exporting concentration information for {ms_measurement.filename}: {e}")
+                        results_dict['Concentration (mM)'] = 0
+                        results_dict['Calibration slope'] = 0
+                        results_dict['Calibration intercept'] = 0
                     results.append(results_dict)
         df = pd.DataFrame(results)
         return df

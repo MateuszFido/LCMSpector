@@ -438,7 +438,11 @@ class View(QtWidgets.QMainWindow):
         if len(self.tableWidget_files.selectedIndexes()) == 0:
             ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(0,0).text()]
         else:
-            ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(self.tableWidget_files.currentRow(), 0).text()]
+            try:
+                ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(self.tableWidget_files.currentRow(), 0).text()]
+            except KeyError:
+                logger.error(f"File {self.tableWidget_files.itemAt(self.tableWidget_files.currentRow(), 0).text()} not found in ms_measurements.")
+                return
         for ms_compound in ms_file.xics:
             if ms_compound.name == self.comboBoxChooseCompound.currentText():
                 try:

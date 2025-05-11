@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import csv, re, os, logging
+import csv, re, os, logging, itertools
 import __main__
 from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
@@ -99,27 +99,14 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
         The list of Scan objects containing the MS data.
     """
     # Load the data
-    file = mzml.MzML(str(path))
-
-    # Take only the scans where ms level is 1
-    ms1_data = []
-    ms2_data = []
-    for scan in file:
-        if scan['ms level'] == 1:
-            ms1_data.append(scan)
-        elif scan['ms level'] == 2:
-            precursor_mzs = [ion for precursor in precursors for ion in precursor.ions.keys()]
-            if cvquery(scan, 'MS:1000827') in precursor_mzs:
-                ms2_data.append(scan)
-        else:
-            # Skip the scan, MSn higher than 2 not supported
-            continue 
+    with mzml.MzML(str(path)) as file:
+        ms1_data = [scan for scan in file if scan['ms level'] == 1]
+        ms2_data = [scan for scan in file if scan['ms level'] == 2 and cvquery(scan, 'MS:1000827') in [ion for precursor in precursors for ion in precursor.ions.keys()]]
     # Wrong format safeguard: if there are no MS1 scans, restart the iteration with only MS2 scans
-    if len(ms1_data) == 0:
+    if not ms1_data:
         logger.warning("No MS1 scans found, rerunning with higher MSn order scans.")
-        file = mzml.MzML(str(path))
-        for scan in file:
-            ms1_data.append(scan)
+        with mzml.MzML(str(path)) as file:
+            ms1_data = list(file)
     return tuple(ms1_data), tuple(ms2_data)
 
 @lru_cache
@@ -134,14 +121,5 @@ def load_ms2_library() -> dict:
     """
     library = {}
     with open(os.path.join(os.path.dirname(__main__.__file__), "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"), mode="r", encoding="utf-8") as src:
-        for line in src:
-            if line.startswith("Name: "):
-                # The key is the feature name, the value is all the following lines until an empty line
-                feature_name = line.split("Name: ")[1].strip()
-                library[feature_name] = []
-                while True:
-                    line = next(src)
-                    if line.strip() == "":
-                        break
-                    library[feature_name].append(line)
+        library = {line.split("Name: ")[1].strip(): [line] + list(itertools.takewhile(lambda x: x.strip() != "", src)) for line in src if line.startswith("Name: ")}
     return library
