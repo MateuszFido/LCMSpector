@@ -97,7 +97,7 @@ class Model:
         for j, (file, concentration) in enumerate(selected_files.items()):
             concentration_value, suffix = (concentration.split(" ") + [None])[:2]
             conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-6, 'pm': 1e-9}
-            concentration = float(concentration_value) * conversion_factors.get(suffix.lower(), 1)
+            concentration = float(concentration_value) * conversion_factors.get(suffix and suffix.lower(), 1)
             
             ms_file = self.ms_measurements.get(file)
             if not ms_file or not ms_file.xics:
