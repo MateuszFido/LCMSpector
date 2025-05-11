@@ -279,6 +279,8 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     widget.setLabel('bottom', 'm/z')
 
 def plot_ms2_from_file(ms_file, ms_compound, canvas: pg.PlotWidget):
+    try: ms_file.ms2_data
+    except: return
     for scan in ms_file.ms2_data:
         for ion in ms_compound.ions.keys():
             if ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016") < 0.05:
@@ -287,7 +289,6 @@ def plot_ms2_from_file(ms_file, ms_compound, canvas: pg.PlotWidget):
                 canvas.addItem(pg.BarGraphItem(x=scan['m/z array'], height=scan['intensity array'], width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
     # Draw a flat black line at 0 intensity
     canvas.plot([min(scan['m/z array']), max(scan['m/z array'])], [0, 0], pen=mkPen('k', width=0.5))
-
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")
