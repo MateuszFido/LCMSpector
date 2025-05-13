@@ -1,12 +1,12 @@
 # model.py
 import logging, traceback, multiprocessing, time, sys
-from concurrent.futures import ProcessPoolExecutor, as_completed
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library
+from calculation.workers import Worker
 
 logger = logging.getLogger(__name__)
 class Model:
@@ -38,7 +38,7 @@ class Model:
         Preprocesses and annotates LC and MS files concurrently.
     """
     
-    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library']
+    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker']
 
     def __init__(self):
         self.lc_measurements = {}
@@ -46,46 +46,13 @@ class Model:
         self.annotations = []
         self.compounds = []
         self.library = load_ms2_library()
+        self.worker = None
         
     def process_data(self, mode):
-        st = time.time()
-        lc_results = {}
-        ms_results = {}
-        total_files = len(self.lc_measurements) + len(self.ms_measurements)
-        progress = 0
-
-        def update_progress():
-            nonlocal progress
-            progress += 1
-            self.controller.view.update_progress_bar(int(progress / total_files * 100))
-
-        if mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error("ERROR: Invalid argument for process_data(mode): ", mode)
-            return
-
-        with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() - 3) as executor:
-            if mode in {"LC/GC-MS", "LC/GC Only"}:
-                lc_futures = {executor.submit(LCMeasurement, lc_file): lc_file for lc_file in self.lc_measurements}
-            else:
-                lc_futures = {}
-
-            if mode in {"LC/GC-MS", "MS Only"}:
-                ms_futures = {executor.submit(MSMeasurement, ms_file, self.compounds, 0.0001): ms_file for ms_file in self.ms_measurements}
-            else:
-                ms_futures = {}
-
-            for future in as_completed(list(lc_futures) + list(ms_futures)):
-                result = future.result()
-                if future in lc_futures:
-                    lc_results[result.filename] = result
-                else:
-                    ms_results[result.filename] = result
-                update_progress()
-
-        logger.info(f"Processed in {time.time() - st}")
-        logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB, MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
-        return lc_results, ms_results
-
+        self.worker = Worker(self, mode)
+        self.worker.progressUpdated.connect(self.controller.view.update_progress_bar)
+        self.worker.finished.connect(self.controller.on_processing_finished)
+        self.worker.start()
 
     def get_plots(self, filename):
         # Find the corresponding MS and LC files
