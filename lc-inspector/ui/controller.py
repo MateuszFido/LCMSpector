@@ -1,4 +1,6 @@
 from calculation.workers import Worker, WorkerSignals
+from utils.classes import LCMeasurement, MSMeasurement
+from PyQt6.QtCore import pyqtSlot
 import logging, traceback
 logger = logging.getLogger(__name__)
 from datetime import datetime
@@ -55,7 +57,7 @@ class Controller:
             self.view.progressBar.setValue(0)
             # Start processing
             try:
-                self.model.lc_measurements, self.model.ms_measurements = self.model.process_data(mode=self.mode)
+                self.model.process_data(mode=self.mode)
             except Exception:
                 logger.error(f"Error processing data: {traceback.format_exc()}")
                 self.view.show_critical_error(f"Error processing data: {traceback.format_exc()}")
@@ -65,8 +67,9 @@ class Controller:
             logger.error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
         self.on_processing_finished()
 
-
-    def on_processing_finished(self):
+    def on_processing_finished(self, lc_results, ms_results):
+        self.model.lc_measurements = lc_results
+        self.model.ms_measurements = ms_results
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
         self.view.processButton.setEnabled(True)
