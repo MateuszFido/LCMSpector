@@ -6,14 +6,6 @@ from datetime import datetime
 import json, __main__
 import pyqtgraph as pg 
 
-class PlotWindow(QDialog):
-    #FIXME: seems to be unused
-    def __init__(self):
-        super().__init__()
-        self.canvas = pg.GraphicsWidget()
-        self.layout = QtWidgets.QVBoxLayout()
-        self.setLayout(self.layout)
-
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
     def __init__(self, parent=None):
@@ -256,34 +248,25 @@ class PasteFromClipboardCommand(QtGui.QUndoCommand):
         self.current_row = table.currentRow()
         self.current_col = table.currentColumn()
         self.items = []
+        self.redo()
 
     def redo(self):
         rows = self.clipboard_text.splitlines()
+        row_index = self.current_row
+        col_index = self.current_col
         for row_data in rows:
             columns = row_data.split('\t')
-            for col_index, value in enumerate(columns):
-                if self.current_row < self.table.rowCount():
-                    item = self.table.item(self.current_row, self.current_col)
-                    try:
-                        item
-                    except:
-                        item = None
-                    if item is None:
-                        item = QtWidgets.QTableWidgetItem(value)
-                        self.table.setItem(self.current_row, self.current_col, item)
-                    else:
-                        item.setText(value)
-                else:
-                    self.table.insertRow(self.current_row)
-                    item = QtWidgets.QTableWidgetItem(value)
-                    self.table.setItem(self.current_row, col_index, item)
+            col_index = self.current_col
+            for value in columns:
+                item = QtWidgets.QTableWidgetItem(value)
+                self.table.setItem(row_index, col_index, item)
                 self.items.append(item)
-            self.current_row += 1
+                col_index += 1
+            row_index += 1
 
     def undo(self):
-        for item in self.items:
+        for item in reversed(self.items):
             self.table.takeItem(self.table.row(item), self.table.column(item))
-        self.table.removeRow(self.current_row - len(rows))
 
 
 class CopyCommand(QtGui.QUndoCommand):
@@ -291,10 +274,11 @@ class CopyCommand(QtGui.QUndoCommand):
         super().__init__()
         self.table = table
         self.clipboard_text = ""
-        self.items = table.selectedItems()
+        self.items = table.selectedIndexes()
+        self.redo()
 
     def redo(self):
-        self.clipboard_text = "\t".join([item.text() for item in self.items])
+        self.clipboard_text = "\t".join([item.data() for item in self.items])
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(self.clipboard_text)
 
