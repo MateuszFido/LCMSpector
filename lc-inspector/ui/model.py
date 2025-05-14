@@ -117,7 +117,7 @@ class Model:
                         'LC Intensity (a.u.)': data['LC Intensity']
                         }
                     try:
-                        results_dict['Ion name'] = compound.ion_info[ion_data.index((ion, data))]
+                        results_dict['Ion name'] = compound.ion_info[ion]
                     except IndexError:
                         results_dict['Ion name'] = ion
                     try:
