@@ -6,7 +6,6 @@ import logging, copy
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
 import static_frame as sf
-from calculation.wrappers import disk_cache 
 
 logger = logging.getLogger(__name__)
 def baseline_correction(dataframe: sf.FrameHE) -> sf.FrameHE:
