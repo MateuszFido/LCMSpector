@@ -191,7 +191,10 @@ class View(QtWidgets.QMainWindow):
                 f.write(results.to_csv(index=False))
                 f.close()
                 output_folder = os.path.dirname(file_name)
-            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Saved results to output folder {output_folder}", 5000)
+            try:
+                self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Saved results to output folder {output_folder}", 5000)
+            except UnboundLocalError:
+                return
         else:
             self.show_critical_error("Error: Nothing to export.")
             logger.error("Error: Nothing to export.")

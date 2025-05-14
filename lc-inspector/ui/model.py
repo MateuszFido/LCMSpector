@@ -106,20 +106,17 @@ class Model:
         results = []
         for ms_measurement in self.ms_measurements.values():
             for compound in ms_measurement.xics:
-                ion_data = zip(compound.ions.keys(), compound.ions.values())
-                for ion, data in ion_data:
+                ion_data = zip(compound.ions.keys(), compound.ions.values(), compound.ion_info)
+                for ion, data, ion_name in ion_data:
                     results_dict = {
                         'File': ms_measurement.filename,
                         'Ion (m/z)': ion,
                         'Compound': compound.name,
                         'RT (min)': np.round(data['RT'],3),
                         'MS Intensity (cps)': np.round(np.sum(data['MS Intensity']),0),
-                        'LC Intensity (a.u.)': data['LC Intensity']
+                        'LC Intensity (a.u.)': data['LC Intensity'],
+                        'Ion name': str(ion_name).strip() if ion_name else ion
                         }
-                    try:
-                        results_dict['Ion name'] = compound.ion_info[ion]
-                    except IndexError:
-                        results_dict['Ion name'] = ion
                     try:
                         results_dict['Concentration (mM)'] = compound.concentration
                         results_dict['Calibration slope'] = compound.calibration_parameters['slope']
