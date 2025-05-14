@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from utils.loading import load_absorbance_data
-from utils.sorting import get_path
 import logging, copy
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
