@@ -28,6 +28,7 @@ jobs:
         python-version: "3.12"
     - name: Install dependencies
       run: |
+          pip install pytest flake8
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           fi
@@ -36,6 +37,7 @@ jobs:
 
     - name: Install dependencies (Windows)
       run: |
+        pip install pytest flake8
         if exist requirements.txt (
           pip install -r requirements.txt
         )
