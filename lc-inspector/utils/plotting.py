@@ -7,7 +7,6 @@ from pyqtgraph import exporters, mkPen, mkBrush
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QDialog, QVBoxLayout
 from pyqtgraph.dockarea import DockArea
-from calculation.wrappers import freezeargs
 from pyteomics.auxiliary import cvquery
 from static_frame import FrameHE
 

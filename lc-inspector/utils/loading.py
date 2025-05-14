@@ -4,8 +4,6 @@ import csv, re, os, logging, itertools
 import __main__
 from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
-from calculation.wrappers import freezeargs
-from functools import lru_cache
 
 logger = logging.getLogger(__name__)
 def detect_delimiter(line):
@@ -83,7 +81,6 @@ def load_annotated_peaks(file_path):
     
     return df
 
-@lru_cache
 def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
     """
     Using the pyteomics library, load the data from the .mzML file into a pandas DataFrame.
@@ -109,7 +106,6 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
             ms1_data = list(file)
     return tuple(ms1_data), tuple(ms2_data)
 
-@lru_cache
 def load_ms2_library() -> dict:
     """
     Loads the MS2 library from the MoNA-export-All_LC-MS-MS_Orbitrap.msp file.
