@@ -173,7 +173,8 @@ class IonTable(GenericTable):
                 compound = Compound(name, ions, ion_info)
                 items.append(compound)
             except UnboundLocalError as e:
-                logger.error(f"Could not find any compounds in the table: {e}")        
+                #HACK: for now fails silently
+                continue        
         return items
 
     def save_ion_list(self):
@@ -311,7 +312,7 @@ class SetItemCommand(QtGui.QUndoCommand):
 
     def redo(self):
         try:
-            item
+            item = QtWidgets.QTableWidgetItem(self.value)
         except:
             item = None
         if item is None:
