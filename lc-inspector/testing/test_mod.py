@@ -1,6 +1,6 @@
 import pytest
 
-def simple_test():
+def test_simple():
     assert True
 
-simple_test()
+test_simple()
