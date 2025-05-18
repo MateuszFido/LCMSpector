@@ -41,7 +41,7 @@ jobs:
         if [ -f requirements.txt ]; then
           pip install -r requirements.txt
         fi
-        apt-get install libgl1
+        sudo apt install -y libgl1
       shell: bash
       if: matrix.os == 'ubuntu-latest'
 
