@@ -1,0 +1,4 @@
+pyteomics==4.7.2
+pytest==8.3.5
+static_frame==2.14.0
+traitlets==5.14.3
