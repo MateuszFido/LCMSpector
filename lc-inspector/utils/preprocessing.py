@@ -92,8 +92,12 @@ def construct_xics(data, ion_list, mass_accuracy):
         for ion in compound.ions.keys():
             xic = []
             scan_id = []
-            # Find a 5 ppm range around the ion (theoretical mass - observed mass)
+            # Find a range around the ion (theoretical mass - observed mass)
             mass_range = (ion-3*mass_accuracy, ion+3*mass_accuracy)
+            # Safeguard for if mass_range is less than 0
+            if mass_range[0] < 0:
+                mass_range = (0, mass_range[1])
+                logger.error(f"Mass range for ion {ion} starting at less than 0, setting to 0.")
             for scan in data:
                 indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
                 intensities = scan['intensity array'][indices]
