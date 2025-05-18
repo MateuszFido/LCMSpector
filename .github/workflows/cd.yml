@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Install pyinstaller
+        run: pip install pyinstaller
+
       - name: Build executable (macOS)
         run: pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "debug.yaml:."  --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --onedir --windowed main.py
         shell: bash
