@@ -7,23 +7,24 @@ from scipy.signal import find_peaks, peak_widths
 import static_frame as sf
 
 logger = logging.getLogger(__name__)
-def baseline_correction(dataframe: sf.FrameHE) -> sf.FrameHE:
+def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:    
     """
     Baseline corrects the chromatogram using the LLS algorithm.
-    
-    The algorithm iteratively applies the LLS operator to the data to remove the baseline.
-    
+
     Parameters
     ----------
-    dataframe : pd.DataFrame
-        The chromatogram data as a pandas DataFrame with columns 'Time (min)' and 'Value (mAU)'.
-    
+    dataframe : sf.FrameHE
+        The chromatogram data as a static-frame FrameHE object.
+
     Returns
     -------
-    pd.DataFrame
-        The chromatogram data after baseline correction as a pandas DataFrame with columns 'Time (min)' and 'Value (mAU)'.
-        
-    If the file_path parameter is specified, the function will also create and save plots of the chromatogram before and after background correction as PNG files.
+    sf.FrameHE
+        The baseline corrected chromatogram as a static-frame FrameHE object.
+
+    Notes
+    -----
+    Baseline correction is a preprocessing step that subtracts the baseline from the chromatogram.
+    The baseline is estimated using the LLS algorithm.
     """
     # Extract Time (min) and Value (mAU) columns
     retention_time = dataframe.copy()['Time (min)'].values
