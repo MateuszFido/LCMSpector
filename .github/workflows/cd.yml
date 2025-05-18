@@ -40,17 +40,18 @@ jobs:
       - name: Build executable (Windows)
         run:  |
          cd lc-inspector/
+         pip install pillow
          pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "debug.yaml:."  --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --noconsole --onedir main.py
         shell: cmd
         if: matrix.os == 'windows-latest'
 
       - name: Zip artifact for deployment (Windows)
-        run: tar.exe acvf LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist/*
+        run: tar.exe -acvf LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist
         shell: cmd
         if: matrix.os == 'windows-latest'
 
       - name: Zip artifact for deployment (macOS)
-        run: zip -r LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip lc-inspector/dist/*
+        run: zip -r LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip lc-inspector/dist
         shell: bash
         if: matrix.os == 'macos-latest'
 
@@ -58,7 +59,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LC-Inspector
-          path: dist/*
+          path: ./*.zip
 
   release:
     needs: build
