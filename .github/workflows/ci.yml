@@ -41,7 +41,7 @@ jobs:
         if [ -f requirements.txt ]; then
           pip install -r requirements.txt
         fi
-        sudo apt install ffmpeg libsm6 libxext6 libgl1 -y
+        sudo apt install libgl1 libegl1 -y
       shell: bash
       if: matrix.os == 'ubuntu-latest'
 
