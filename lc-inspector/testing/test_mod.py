@@ -7,6 +7,7 @@ test_simple()
 
 import numpy as np
 from ui.preprocessing import construct_xics
+from ui.classes import Compound
 
 @pytest.mark.parametrize("compound,expected_result", [
     (Compound("test", {"ion1": {"MS Intensity": np.array([[1, 2, 3], [4, 5, 6]])}}), {"ion1": {"RT": 2, "MS Intensity": np.array([[1, 2, 3], [4, 5, 6]])}})
