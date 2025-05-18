@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [windows-latest, macos-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -22,29 +22,35 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: "3.12"
 
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Build executable
-        run: pyinstaller --onefile app.py
-
-      - name: Rename executable
-        run: |
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            mv dist/app.exe dist/app-windows.exe
-          elif [[ "$RUNNER_OS" == "Linux" ]]; then
-            mv dist/app dist/app-linux
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            mv dist/app dist/app-macos
-          fi
+      - name: Build executable (macOS)
+        run: pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "debug.yaml:."  --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --onedir --windowed main.py
         shell: bash
+        if: matrix.os == 'macos-latest'
+
+      - name: Build executable (Windows)
+        run: pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "debug.yaml:."  --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --noconsole --onedir main.py
+        shell: cmd
+        if: matrix.os == 'windows-latest'
+
+      - name: Zip artifact for deployment (Windows)
+        run: tar.exe acvf LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip dist/*
+        shell: cmd
+        if: matrix.os == 'windows-latest'
+
+      - name: Zip artifact for deployment (macOS)
+        run: zip -r LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip dist/*
+        shell: bash
+        if: matrix.os == 'macos-latest'
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-${{ matrix.os }}
+          name: LC-Inspector
           path: dist/*
 
   release:
@@ -64,7 +70,7 @@ jobs:
         run: ls -R
 
       - name: Make files executable (Linux/Mac)
-        run: chmod +x app-* || true
+        run: chmod +x LC-Inspector || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -74,6 +80,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            app-linux
-            app-windows.exe
-            app-macos
+            LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip
+            LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+
