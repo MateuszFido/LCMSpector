@@ -26,14 +26,24 @@ jobs:
       uses: actions/setup-python@v3
       with:
         python-version: "3.12"
-    - name: Install dependencies
+    - name: Install dependencies (macOS)
       run: |
           pip install pytest flake8
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
           fi
       shell: bash
-      if: matrix.os != 'windows-latest'
+      if: matrix.os == 'macOS-latest'
+
+    - name: Install dependencies (Ubuntu)
+      run: |
+        pip install pytest flake8
+        if [ -f requirements.txt ]; then
+          pip install -r requirements.txt
+        fi
+        apt-get install libgl1
+      shell: bash
+      if: matrix.os == 'ubuntu-latest'
 
     - name: Install dependencies (Windows)
       run: |
