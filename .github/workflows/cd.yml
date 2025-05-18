@@ -55,11 +55,19 @@ jobs:
         shell: bash
         if: matrix.os == 'macos-latest'
 
-      - name: Upload artifact
+      - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4
         with:
-          name: LC-Inspector
+          name: LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip
           path: ./*.zip
+        if: matrix.os == 'macos-latest'
+        
+      - name: Upload arifact (Windows)
+        uses: actions/upload-artifact@v4
+        with:
+          name: LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+          path: ./*.zip 
+        if: matrix.os == 'windows-latest'
 
   release:
     needs: build
@@ -76,9 +84,6 @@ jobs:
 
       - name: List downloaded files (Debugging)
         run: ls -R
-
-      - name: Make files executable (Linux/Mac)
-        run: chmod +x LC-Inspector || true
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
