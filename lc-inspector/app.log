@@ -1,2 +1,152 @@
-INFO 2025-05-18 21:07:59 __main__ - -------------------------------------
+INFO 2025-05-21 22:19:11 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
+ERROR 2025-05-21 22:19:33 ui.view - listAnnotations is not defined!
+ERROR 2025-05-21 22:19:33 ui.view - listAnnotations is not defined!
+INFO 2025-05-21 22:19:33 ui.controller - Starting the processing...
+INFO 2025-05-21 22:19:33 ui.controller - Starting the processing...
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file BIG_MIX_neg.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_4_neg.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file STMIX5_02.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_3_neg.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file H2O_neg.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file STMIX5mM-pos.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_2_neg.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_1_neg.
+INFO 2025-05-21 22:19:45 calculation.workers - Processed in 12.371700286865234
+INFO 2025-05-21 22:19:45 calculation.workers - Size in memory is LC: 0.0002593994140625 MB, MS: 0.00017547607421875 MB.
+INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated XICs of BIG_MIX_neg took 0.0016600146293640136 miliseconds ---
+INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated XICs of BIG_MIX_neg took 0.0016600146293640136 miliseconds ---
+INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated LC of BIG_MIX_neg took 0.0001362624168395996 miliseconds ---
+INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated LC of BIG_MIX_neg took 0.0001362624168395996 miliseconds ---
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_4_neg.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_4_neg.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_3_neg.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_3_neg.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file STMIX5mM-pos.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file STMIX5mM-pos.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_2_neg.
+ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_2_neg.
+ERROR 2025-05-21 22:20:04 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:04 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:06 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:07 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:08 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:09 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:10 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:11 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:12 ui.view - No MS2 found for TMAO: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
+    library_entry = self.controller.model.library[compound.name]
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'TMAO'
+
+ERROR 2025-05-21 22:20:12 ui.view - No MS2 found for TMAO: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
+    library_entry = self.controller.model.library[compound.name]
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'TMAO'
+
+ERROR 2025-05-21 22:20:13 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:13 ui.view - No MS2 found for GABA: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
+    library_entry = self.controller.model.library[compound.name]
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'GABA'
+
+ERROR 2025-05-21 22:20:13 ui.view - No MS2 found for GABA: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
+    library_entry = self.controller.model.library[compound.name]
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'GABA'
+
+ERROR 2025-05-21 22:20:24 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File MIX_4_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File MIX_3_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File STMIX5mM-pos not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - File MIX_2_neg not found in ms_measurements.
+ERROR 2025-05-21 22:20:24 ui.view - No MS2 found for (Iso)Leucine: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
+    library_entry = self.controller.model.library[compound.name]
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: '(Iso)Leucine'
+
+ERROR 2025-05-21 22:20:24 ui.view - No MS2 found for (Iso)Leucine: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
+    library_entry = self.controller.model.library[compound.name]
+                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: '(Iso)Leucine'
+

@@ -387,6 +387,9 @@ class View(QtWidgets.QMainWindow):
 
     def display_calibration_curve(self):
         self.canvas_calibration.clear()
+        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
+        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+        self.canvas_calibration.getPlotItem().vb.setAutoVisible(x=True, y=True)
         for compound in self.controller.model.compounds:
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:

@@ -46,12 +46,12 @@ jobs:
         if: matrix.os == 'windows-latest'
 
       - name: Zip artifact for deployment (Windows)
-        run: tar.exe -acvf LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist
+        run: tar.exe -acvf LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist/LC-Inspector
         shell: cmd
         if: matrix.os == 'windows-latest'
 
       - name: Zip artifact for deployment (macOS)
-        run: zip -r LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip lc-inspector/dist
+        run: zip -r LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip lc-inspector/dist/LC-Inspector.app
         shell: bash
         if: matrix.os == 'macos-latest'
 
