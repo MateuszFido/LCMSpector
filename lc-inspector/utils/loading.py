@@ -106,7 +106,7 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
             if scan['ms level'] == 1:
                 ms1_data.append(scan)
             elif scan['ms level'] == 2:
-                precursor_mz = round(cvquery(scan, 'MS:1000827'), 4)
+                precursor_mz = round(cvquery(scan, 'MS:1000744'), 4)
                 if any(abs(precursor_mz - ion) < ms2_threshold for ion in precursors_set):
                     ms2_data.append(scan)
 

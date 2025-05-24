@@ -290,33 +290,22 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     widget.setLabel('bottom', 'm/z')
 
 def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):
-    try: ms_file.ms2_data
-    except: return
-    scan_list = []
+    try: 
+        ms_file.ms2_data
+    except: 
+        return
+
+    scan_set = set()
     for ion in ms_compound.ions.keys():
-        if np.abs(float(ion) - float(precursor)) > ms_file.mass_accuracy * 3: 
-            # Only consider the library precursor ion
-            continue
-        else:
-            print(f"Picking ion {ion} for precursor {precursor} because it is less than {ms_file.mass_accuracy * 5} away.")
-        for scan in ms_file.ms2_data:
-            # Only consider the scans which contain said precursor
-            # WARNING: This cvquery parameter is in the tag "selectedIons" and not the only one that contains the precursor
-            # This could potentially mean the precursor should be accessed from MS:1000827 in other manufacturer's mzML 
-            if np.abs(cvquery(scan, "MS:1000744") - precursor) > ms_file.mass_accuracy * 5: 
-                continue
-            else:
-                print(f"Precursor in this scan is {np.abs(cvquery(scan, "MS:1000744"))} vs {precursor}")
-            # Only look for scans near the right retention time
-            if np.abs(ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016")) < 0.05:
-                print(f"Choosing scan with time {cvquery(scan, "MS:1000016")}, sufficiently close to {ms_compound.ions[ion]['RT']}")
-                # Normalize the intensity array to 0-100
-                scan['intensity array'] = scan['intensity array']/np.max(scan['intensity array'])*100
-                print(cvquery(scan, "MS:1000016"))
-                scan_list.append(scan)
-    if scan_list:
-        mzs = np.concatenate([scan['m/z array'] for scan in scan_list])
-        intensities = np.concatenate([scan['intensity array'] for scan in scan_list])
+        if np.abs(float(ion) - float(precursor)) <= ms_file.mass_accuracy * 3:
+            for scan in ms_file.ms2_data:
+                if round(cvquery(scan, "MS:1000744"), 4) - float(ion) < ms_file.mass_accuracy * 5 and np.abs(ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016")) < 0.05:
+                    scan_set.add(scan)
+            break
+
+    if scan_set:
+        mzs = np.concatenate([scan['m/z array'] for scan in scan_set])
+        intensities = np.concatenate([scan['intensity array'] for scan in scan_set])
         canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
         canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
         canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))

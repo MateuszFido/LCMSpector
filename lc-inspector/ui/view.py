@@ -436,27 +436,24 @@ class View(QtWidgets.QMainWindow):
         compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
         try:
             library_entry = self.controller.model.library[compound.name]
-            # Check which exactly precursor is used by looking for the string 'PrecursorMZ:' in the library_entry
-            # and returning the following float
-            for line in library_entry:
-                if 'PrecursorMZ:' in line:
-                    precursor = float(line.split(' ')[1])
-                    logger.info(f"Precursor found for {compound.name} in the library is {precursor}")
-                else:
-                    logger.error(f"No precursor found for {compound.name} in the library: {traceback.format_exc()}")
+            precursor = float(next((line.split(' ')[1] for line in library_entry if 'PrecursorMZ:' in line), None))
+            if precursor:
+                logger.info(f"Precursor found for {compound.name} in the library, m/z {precursor}")
             plot_library_ms2(library_entry, compound, self.canvas_ms2)
-        except KeyError as e: 
-            logger.error(f"No MS2 found for {compound.name}: {traceback.format_exc()}")
+        except KeyError:
+            logger.error(f"No MS2 found for {compound.name}: {e}")
             plot_no_ms2_found(self.canvas_ms2)
         selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
-        ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(selected_indexes[0].row(), 0).text()]
-        print(f"Selecting {ms_file}")
+        ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
+        if ms_file is None:
+            logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}: {e}")
+            return
         ms_compound = next((c for c in ms_file.xics if c.name == compound.name), None)
         if ms_compound:
             try:
                 plot_ms2_from_file(ms_file, ms_compound, precursor, self.canvas_ms2)
             except Exception as e:
-                logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {traceback.format_exc()}")
+                logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {e}")
         else:
             plot_no_ms2_found(self.canvas_ms2)
 
