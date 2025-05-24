@@ -433,28 +433,32 @@ class View(QtWidgets.QMainWindow):
         self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
         self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
         self.canvas_ms2.setBackground("w")
-        for compound in self.controller.model.compounds:
-            if compound.name == self.comboBoxChooseCompound.currentText():
-                try:
-                    library_entry = self.controller.model.library[compound.name]
-                    plot_library_ms2(library_entry, compound, self.canvas_ms2)
-                except KeyError as e: 
-                    logger.error(f"No MS2 found for {compound.name}: {traceback.format_exc()}")
-                    plot_no_ms2_found(self.canvas_ms2)
-        if len(self.tableWidget_files.selectedIndexes()) == 0:
-            ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(0,0).text()]
-        else:
+        compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
+        try:
+            library_entry = self.controller.model.library[compound.name]
+            # Check which exactly precursor is used by looking for the string 'PrecursorMZ:' in the library_entry
+            # and returning the following float
+            for line in library_entry:
+                if 'PrecursorMZ:' in line:
+                    precursor = float(line.split(' ')[1])
+                    logger.info(f"Precursor found for {compound.name} in the library is {precursor}")
+                else:
+                    logger.error(f"No precursor found for {compound.name} in the library: {traceback.format_exc()}")
+            plot_library_ms2(library_entry, compound, self.canvas_ms2)
+        except KeyError as e: 
+            logger.error(f"No MS2 found for {compound.name}: {traceback.format_exc()}")
+            plot_no_ms2_found(self.canvas_ms2)
+        selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
+        ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(selected_indexes[0].row(), 0).text()]
+        print(f"Selecting {ms_file}")
+        ms_compound = next((c for c in ms_file.xics if c.name == compound.name), None)
+        if ms_compound:
             try:
-                ms_file = self.controller.model.ms_measurements[self.tableWidget_files.itemAt(self.tableWidget_files.currentRow(), 0).text()]
-            except KeyError:
-                logger.error(f"File {self.tableWidget_files.itemAt(self.tableWidget_files.currentRow(), 0).text()} not found in ms_measurements.")
-                return
-        for ms_compound in ms_file.xics:
-            if ms_compound.name == self.comboBoxChooseCompound.currentText():
-                try:
-                    plot_ms2_from_file(ms_file, ms_compound, self.canvas_ms2)
-                except KeyError as e:
-                    logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {traceback.format_exc()}")
+                plot_ms2_from_file(ms_file, ms_compound, precursor, self.canvas_ms2)
+            except Exception as e:
+                logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {traceback.format_exc()}")
+        else:
+            plot_no_ms2_found(self.canvas_ms2)
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -836,7 +840,8 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
         self.tableWidget_files = GenericTable(parent=self.tabQuantitation)
         self.tableWidget_files.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        self.tableWidget_files.horizontalHeader().setStretchLastSection(True)
+        self.tableWidget_files.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.tableWidget_files.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
         self.tableWidget_files.setObjectName("tableWidget_files")
         self.gridLayout_top_left.addWidget(self.tableWidget_files, 1, 0, 1, 2)
         self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 1, 1)

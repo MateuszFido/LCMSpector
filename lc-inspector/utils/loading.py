@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import csv, re, os, logging, itertools
+import csv, re, os, logging, itertools, time
 import __main__
 from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
@@ -95,15 +95,27 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
     data : List of Scan objects
         The list of Scan objects containing the MS data.
     """
-    # Load the data
+    start_time = time.time()
+    
+    ms1_data, ms2_data = [], []
+    precursors_set = {round(ion, 4) for precursor in precursors for ion in precursor.ions.keys()}
+    ms2_threshold = mass_accuracy * 5
+
     with mzml.MzML(str(path)) as file:
-        ms1_data = [scan for scan in file if scan['ms level'] == 1]
-        ms2_data = [scan for scan in file if scan['ms level'] == 2 and cvquery(scan, 'MS:1000827') in [ion for precursor in precursors for ion in precursor.ions.keys()]]
-    # Wrong format safeguard: if there are no MS1 scans, restart the iteration with only MS2 scans
+        for scan in file:
+            if scan['ms level'] == 1:
+                ms1_data.append(scan)
+            elif scan['ms level'] == 2:
+                precursor_mz = round(cvquery(scan, 'MS:1000827'), 4)
+                if any(abs(precursor_mz - ion) < ms2_threshold for ion in precursors_set):
+                    ms2_data.append(scan)
+
     if not ms1_data:
-        logger.warning("No MS1 scans found, rerunning with higher MSn order scans.")
+        logger.warning("No dedicated MS1 scans found, loading all scans.")
         with mzml.MzML(str(path)) as file:
             ms1_data = list(file)
+
+    logger.info(f"Loaded {len(ms1_data)} MS1 scans and {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
     return tuple(ms1_data), tuple(ms2_data)
 
 def load_ms2_library() -> dict:

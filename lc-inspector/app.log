@@ -1,152 +1,996 @@
-INFO 2025-05-21 22:19:11 __main__ - -------------------------------------
+INFO 2025-05-24 23:47:43 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-ERROR 2025-05-21 22:19:33 ui.view - listAnnotations is not defined!
-ERROR 2025-05-21 22:19:33 ui.view - listAnnotations is not defined!
-INFO 2025-05-21 22:19:33 ui.controller - Starting the processing...
-INFO 2025-05-21 22:19:33 ui.controller - Starting the processing...
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file BIG_MIX_neg.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_4_neg.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file STMIX5_02.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_3_neg.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file H2O_neg.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file STMIX5mM-pos.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_2_neg.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-21 22:19:33 utils.classes - Loaded LC file MIX_1_neg.
-INFO 2025-05-21 22:19:45 calculation.workers - Processed in 12.371700286865234
-INFO 2025-05-21 22:19:45 calculation.workers - Size in memory is LC: 0.0002593994140625 MB, MS: 0.00017547607421875 MB.
-INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated XICs of BIG_MIX_neg took 0.0016600146293640136 miliseconds ---
-INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated XICs of BIG_MIX_neg took 0.0016600146293640136 miliseconds ---
-INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated LC of BIG_MIX_neg took 0.0001362624168395996 miliseconds ---
-INFO 2025-05-21 22:19:47 utils.plotting - ---Plotting annotated LC of BIG_MIX_neg took 0.0001362624168395996 miliseconds ---
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_4_neg.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_4_neg.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_3_neg.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_3_neg.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file STMIX5mM-pos.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file STMIX5mM-pos.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_2_neg.
-ERROR 2025-05-21 22:20:04 ui.model - No xics found for file MIX_2_neg.
-ERROR 2025-05-21 22:20:04 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:04 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:06 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:07 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:08 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:09 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:10 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:11 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:12 ui.view - No MS2 found for TMAO: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
-    library_entry = self.controller.model.library[compound.name]
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-KeyError: 'TMAO'
+ERROR 2025-05-24 23:47:54 ui.view - listAnnotations is not defined!
+ERROR 2025-05-24 23:47:54 ui.view - listAnnotations is not defined!
+INFO 2025-05-24 23:47:54 ui.controller - Starting the processing...
+INFO 2025-05-24 23:47:54 ui.controller - Starting the processing...
+INFO 2025-05-24 23:47:54 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-24 23:47:54 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-24 23:47:54 utils.classes - Loaded LC file MIX_1_neg.
+INFO 2025-05-24 23:47:54 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-24 23:47:54 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-24 23:47:54 utils.classes - Loaded LC file H2O_neg.
+INFO 2025-05-24 23:47:59 utils.loading - Loaded 965 MS1 scans and 774 MS2 scans in 4.65 seconds.
+INFO 2025-05-24 23:47:59 utils.loading - Loaded 971 MS1 scans and 482 MS2 scans in 4.74 seconds.
+INFO 2025-05-24 23:48:02 calculation.workers - Processed in 8.3839750289917
+INFO 2025-05-24 23:48:02 calculation.workers - Size in memory is LC: 0.00017547607421875 MB, MS: 0.00017547607421875 MB.
+INFO 2025-05-24 23:48:04 utils.plotting - ---Plotting annotated XICs of MIX_1_neg took 0.0016795072555541991 miliseconds ---
+INFO 2025-05-24 23:48:04 utils.plotting - ---Plotting annotated XICs of MIX_1_neg took 0.0016795072555541991 miliseconds ---
+INFO 2025-05-24 23:48:04 utils.plotting - ---Plotting annotated LC of MIX_1_neg took 1.9321203231811524e-05 miliseconds ---
+INFO 2025-05-24 23:48:04 utils.plotting - ---Plotting annotated LC of MIX_1_neg took 1.9321203231811524e-05 miliseconds ---
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
 
-ERROR 2025-05-21 22:20:12 ui.view - No MS2 found for TMAO: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
-    library_entry = self.controller.model.library[compound.name]
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-KeyError: 'TMAO'
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
 
-ERROR 2025-05-21 22:20:13 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:13 ui.view - No MS2 found for GABA: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
-    library_entry = self.controller.model.library[compound.name]
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-KeyError: 'GABA'
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
 
-ERROR 2025-05-21 22:20:13 ui.view - No MS2 found for GABA: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
-    library_entry = self.controller.model.library[compound.name]
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-KeyError: 'GABA'
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
 
-ERROR 2025-05-21 22:20:24 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File MIX_4_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File MIX_3_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File STMIX5mM-pos not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - File MIX_2_neg not found in ms_measurements.
-ERROR 2025-05-21 22:20:24 ui.view - No MS2 found for (Iso)Leucine: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
-    library_entry = self.controller.model.library[compound.name]
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-KeyError: '(Iso)Leucine'
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
 
-ERROR 2025-05-21 22:20:24 ui.view - No MS2 found for (Iso)Leucine: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 439, in display_ms2
-    library_entry = self.controller.model.library[compound.name]
-                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
-KeyError: '(Iso)Leucine'
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+INFO 2025-05-24 23:48:10 ui.view - Precursor found for Adenine in the library is 136.0617
+INFO 2025-05-24 23:48:10 ui.view - Precursor found for Adenine in the library is 136.0617
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:10 ui.view - No precursor found for Adenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+INFO 2025-05-24 23:48:14 ui.view - Precursor found for Cysteine in the library is 122.0272
+INFO 2025-05-24 23:48:14 ui.view - Precursor found for Cysteine in the library is 122.0272
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:14 ui.view - No precursor found for Cysteine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+INFO 2025-05-24 23:48:16 ui.view - Precursor found for Histidine in the library is 156.0767
+INFO 2025-05-24 23:48:16 ui.view - Precursor found for Histidine in the library is 156.0767
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:16 ui.view - No precursor found for Histidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+INFO 2025-05-24 23:48:19 ui.view - Precursor found for Orotic acid in the library is 155.0089
+INFO 2025-05-24 23:48:19 ui.view - Precursor found for Orotic acid in the library is 155.0089
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:19 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+INFO 2025-05-24 23:48:43 ui.view - Precursor found for Kynurenine in the library is 209.0918
+INFO 2025-05-24 23:48:43 ui.view - Precursor found for Kynurenine in the library is 209.0918
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:43 ui.view - No precursor found for Kynurenine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+INFO 2025-05-24 23:48:46 ui.view - Precursor found for Orotic acid in the library is 155.0089
+INFO 2025-05-24 23:48:46 ui.view - Precursor found for Orotic acid in the library is 155.0089
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:46 ui.view - No precursor found for Orotic acid in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+INFO 2025-05-24 23:48:48 ui.view - Precursor found for Riboflavin in the library is 377.145
+INFO 2025-05-24 23:48:48 ui.view - Precursor found for Riboflavin in the library is 377.145
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:48 ui.view - No precursor found for Riboflavin in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+INFO 2025-05-24 23:48:49 ui.view - Precursor found for Spermidine in the library is 146.17
+INFO 2025-05-24 23:48:49 ui.view - Precursor found for Spermidine in the library is 146.17
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
+
+ERROR 2025-05-24 23:48:49 ui.view - No precursor found for Spermidine in the library: NoneType: None
 
