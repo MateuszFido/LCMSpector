@@ -131,7 +131,8 @@ def load_ms2_data(path: str, precursors: tuple, mass_accuracy: float) -> list:
         for scan in file:
             if scan['ms level'] == 2:
                 for ion in precursors_set:
-                    if np.any(np.abs(scan['m/z array'] - ion) < ms2_threshold):
+                    if np.any(np.abs(scan['m/z array'] - ion) < ms2_threshold) and cvquery(scan, "MS:1000744") :
+
                         ms2_data.append(scan)
 
     logger.info(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
