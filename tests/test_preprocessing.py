@@ -49,7 +49,7 @@ def test_find_ms2():
         Compound(name=compound_name, ions=compound["ions"], ion_info=compound["info"])
         for compound_name, compound in config["aminoacids_and_polyamines"].items()
     ]
-    file = MSMeasurement(pathlib.Path("tests/STMIX5_02.mzml"), ion_list, 0.0001)
+    file = MSMeasurement('tests/STMIX5_02.mzml', ion_list, 0.0001)
     model.compounds = ion_list
     model.ms_measurements["STMIX5_02.mzml"] = file
     model.find_ms2_precursors()
