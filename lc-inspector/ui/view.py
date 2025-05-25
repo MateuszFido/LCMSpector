@@ -446,7 +446,7 @@ class View(QtWidgets.QMainWindow):
         selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
         ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
         if ms_file is None:
-            logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}: {e}")
+            logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}")
             return
         ms_compound = next((c for c in ms_file.xics if c.name == compound.name), None)
         if ms_compound:

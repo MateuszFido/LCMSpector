@@ -271,7 +271,7 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     intensities = []
     for line in library_entry:
         try:
-            mz = float(line.split(' ')[0])
+            mz = float(line.split(' ')[0])  
             intensity = float(line.split(' ')[1])
         except ValueError:
             continue   
@@ -294,14 +294,17 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
         ms_file.ms2_data
     except: 
         return
-
+    precursors_in_scan = []
     scan_set = set()
     for ion in ms_compound.ions.keys():
         if np.abs(float(ion) - float(precursor)) <= ms_file.mass_accuracy * 3:
             for scan in ms_file.ms2_data:
+                if not np.any(np.abs(scan['m/z array'] - ion) < ms_file.mass_accuracy * 5):
+                    continue
                 if round(cvquery(scan, "MS:1000744"), 4) - float(ion) < ms_file.mass_accuracy * 5 and np.abs(ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016")) < 0.05:
                     scan_set.add(scan)
             break
+    print(precursors_in_scan)
 
     if scan_set:
         mzs = np.concatenate([scan['m/z array'] for scan in scan_set])

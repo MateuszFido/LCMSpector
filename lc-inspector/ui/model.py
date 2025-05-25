@@ -5,7 +5,7 @@ from scipy.stats import linregress
 import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
-from utils.loading import load_ms2_library
+from utils.loading import load_ms2_library, load_ms2_data
 from calculation.workers import Worker
 
 logger = logging.getLogger(__name__)
@@ -15,27 +15,27 @@ class Model:
 
     Attributes
     ----------
-    ms_measurements : list
-        A list to store MSMeasurement objects.  
-    lc_measurements : list
-        A list to store LCMeasurement objects.
+    ms_measurements : dict
+        -- A dictionary to store MSMeasurement objects.
+    lc_measurements : dict
+        -- A dictionary to store LCMeasurement objects.
     annotations : list
-        A list to store annotations for the measurements.
-    lc_results : list
-        A list to store results from processing LC files.
-    ms_results : list
-        A list to store results from processing MS files.
+        -- A list to store annotations for the measurements.
+    compounds : list
+        -- A list of Compound objects representing targeted results.
+    library : dict
+        -- A dictionary representing the MS2 library loaded from external resources.
+    worker : Worker or None
+        -- A worker instance for handling concurrent processing tasks.
 
     Methods
     -------
-    process_ms_file(ms_file)
-        Processes and plots an MS file.
-    process_lc_file(lc_file)
-        Processes and plots an LC file.
-    annotate_ms_file(ms_file)
-        Annotates and plots an MS file with compounds.
-    preprocess_data(ms_filelist, lc_filelist)
-        Preprocesses and annotates LC and MS files concurrently.
+    - process_data(mode):
+        Initiates the data processing workflow.
+    - get_plots(filename):
+        Retrieves the corresponding LC and MS files for a given filename.
+    - calibrate(selected_files):
+        Calibrates the concentrations for selected files.
     """
     
     __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker']
@@ -101,6 +101,10 @@ class Model:
                     ms_compound.calibration_parameters = model_compound.calibration_parameters
                 except Exception:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
+
+    def find_ms2_precursors(self):
+        for ms_file in self.ms_measurements.values():
+            ms_file.ms2_data = load_ms2_data(ms_file.path, self.compounds, ms_file.mass_accuracy)
 
     def export(self):
         results = []

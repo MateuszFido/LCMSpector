@@ -1,36 +1,16 @@
-INFO 2025-05-25 00:23:00 __main__ - -------------------------------------
+INFO 2025-05-25 14:07:20 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-ERROR 2025-05-25 00:23:14 ui.view - listAnnotations is not defined!
-ERROR 2025-05-25 00:23:14 ui.view - listAnnotations is not defined!
-INFO 2025-05-25 00:23:14 ui.controller - Starting the processing...
-INFO 2025-05-25 00:23:14 ui.controller - Starting the processing...
-INFO 2025-05-25 00:23:14 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-25 00:23:14 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-05-25 00:23:14 utils.classes - Loaded LC file BIG_MIX_neg.
-INFO 2025-05-25 00:23:19 utils.loading - Loaded 969 MS1 scans and 1461 MS2 scans in 4.86 seconds.
-INFO 2025-05-25 00:23:22 calculation.workers - Processed in 8.20041036605835
-INFO 2025-05-25 00:23:22 calculation.workers - Size in memory is LC: 0.00017547607421875 MB, MS: 0.00017547607421875 MB.
-INFO 2025-05-25 00:23:24 utils.plotting - ---Plotting annotated XICs of BIG_MIX_neg took 0.001705883264541626 miliseconds ---
-INFO 2025-05-25 00:23:24 utils.plotting - ---Plotting annotated XICs of BIG_MIX_neg took 0.001705883264541626 miliseconds ---
-INFO 2025-05-25 00:23:24 utils.plotting - ---Plotting annotated LC of BIG_MIX_neg took 5.056333541870117e-05 miliseconds ---
-INFO 2025-05-25 00:23:24 utils.plotting - ---Plotting annotated LC of BIG_MIX_neg took 5.056333541870117e-05 miliseconds ---
-ERROR 2025-05-25 00:23:28 utils.plotting - ---Error when trying to plot calibration curve for Adenine: cannot convert float NaN to integer ---
-ERROR 2025-05-25 00:23:28 utils.plotting - ---Error when trying to plot calibration curve for Adenine: cannot convert float NaN to integer ---
-INFO 2025-05-25 00:23:28 ui.view - Precursor found for Adenine in the library, m/z 136.0617
-INFO 2025-05-25 00:23:28 ui.view - Precursor found for Adenine in the library, m/z 136.0617
-ERROR 2025-05-25 00:23:38 utils.plotting - ---Error when trying to plot calibration curve for Citrulline: cannot convert float NaN to integer ---
-ERROR 2025-05-25 00:23:38 utils.plotting - ---Error when trying to plot calibration curve for Citrulline: cannot convert float NaN to integer ---
-INFO 2025-05-25 00:23:38 ui.view - Precursor found for Citrulline in the library, m/z 176.1031
-INFO 2025-05-25 00:23:38 ui.view - Precursor found for Citrulline in the library, m/z 176.1031
-ERROR 2025-05-25 00:25:44 utils.plotting - ---Error when trying to plot calibration curve for Glycine: cannot convert float NaN to integer ---
-ERROR 2025-05-25 00:25:44 utils.plotting - ---Error when trying to plot calibration curve for Glycine: cannot convert float NaN to integer ---
-INFO 2025-05-25 00:25:44 ui.view - Precursor found for Glycine in the library, m/z 74.023338317871
-INFO 2025-05-25 00:25:44 ui.view - Precursor found for Glycine in the library, m/z 74.023338317871
-ERROR 2025-05-25 00:25:48 utils.plotting - ---Error when trying to plot calibration curve for Putrescine: cannot convert float NaN to integer ---
-ERROR 2025-05-25 00:25:48 utils.plotting - ---Error when trying to plot calibration curve for Putrescine: cannot convert float NaN to integer ---
-INFO 2025-05-25 00:25:48 ui.view - Precursor found for Putrescine in the library, m/z 89.1078
-INFO 2025-05-25 00:25:48 ui.view - Precursor found for Putrescine in the library, m/z 89.1078
-ERROR 2025-05-25 00:25:50 utils.plotting - ---Error when trying to plot calibration curve for Tryptamine: cannot convert float NaN to integer ---
-ERROR 2025-05-25 00:25:50 utils.plotting - ---Error when trying to plot calibration curve for Tryptamine: cannot convert float NaN to integer ---
-INFO 2025-05-25 00:25:50 ui.view - Precursor found for Tryptamine in the library, m/z 161.1072
-INFO 2025-05-25 00:25:50 ui.view - Precursor found for Tryptamine in the library, m/z 161.1072
+ERROR 2025-05-25 14:07:32 ui.view - listAnnotations is not defined!
+ERROR 2025-05-25 14:07:32 ui.view - listAnnotations is not defined!
+INFO 2025-05-25 14:07:32 ui.controller - Starting the processing...
+INFO 2025-05-25 14:07:32 ui.controller - Starting the processing...
+INFO 2025-05-25 14:07:32 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-25 14:07:32 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-05-25 14:07:32 utils.classes - Loaded LC file MIX_1_neg.
+INFO 2025-05-25 14:07:36 utils.loading - Loaded 965 MS1 scans in 4.32 seconds.
+INFO 2025-05-25 14:07:39 calculation.workers - Processed in 7.276589632034302
+INFO 2025-05-25 14:07:39 calculation.workers - Size in memory is LC: 0.00017547607421875 MB, MS: 0.00017547607421875 MB.
+INFO 2025-05-25 14:07:41 utils.plotting - ---Plotting annotated XICs of MIX_1_neg took 0.0016596770286560058 miliseconds ---
+INFO 2025-05-25 14:07:41 utils.plotting - ---Plotting annotated XICs of MIX_1_neg took 0.0016596770286560058 miliseconds ---
+INFO 2025-05-25 14:07:41 utils.plotting - ---Plotting annotated LC of MIX_1_neg took 1.9827842712402344e-05 miliseconds ---
+INFO 2025-05-25 14:07:41 utils.plotting - ---Plotting annotated LC of MIX_1_neg took 1.9827842712402344e-05 miliseconds ---

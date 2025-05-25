@@ -1,4 +1,4 @@
-from utils.loading import load_absorbance_data, load_ms_data
+from utils.loading import load_absorbance_data, load_ms1_data
 from utils.preprocessing import baseline_correction, construct_xics
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from abc import abstractmethod
@@ -91,8 +91,9 @@ class MSMeasurement(Measurement):
     def __init__(self, path, ion_list, mass_accuracy=0.0001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
-        self.data, self.ms2_data = load_ms_data(path, tuple(ion_list), self.mass_accuracy)
+        self.data = load_ms1_data(path)
         self.xics = construct_xics(self.data, ion_list, self.mass_accuracy)
+        self.ms2_data = None
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)

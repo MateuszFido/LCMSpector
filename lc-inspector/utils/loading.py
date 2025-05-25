@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-import csv, re, os, logging, itertools, time
+import csv, re, os, logging, itertools, time, pathlib
 import __main__
 from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
@@ -81,9 +81,9 @@ def load_annotated_peaks(file_path):
     
     return df
 
-def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
+def load_ms1_data(path: str) -> list:
     """
-    Using the pyteomics library, load the data from the .mzML file into a pandas DataFrame.
+    Using the pyteomics library, load the data from the .mzML file.
     
     Parameters
     ----------
@@ -97,26 +97,45 @@ def load_ms_data(path: str, precursors: tuple, mass_accuracy: float) -> tuple:
     """
     start_time = time.time()
     
-    ms1_data, ms2_data = [], []
+    with mzml.MzML(str(path)) as file:
+        ms1_data = [scan for scan in file if scan['ms level'] == 1]
+        
+    logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
+    return ms1_data
+
+def load_ms2_data(path: str, precursors: tuple, mass_accuracy: float) -> list:
+    """
+    Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
+    
+    Parameters
+    ----------
+    path : str
+        The path to the .mzML file.
+    precursors : tuple
+        The precursors to filter the MS2 data for.
+    mass_accuracy : float
+        The mass accuracy to use for filtering the MS2 data.
+    
+    Returns
+    -------
+    data : List of Scan objects
+        The list of Scan objects containing the filtered MS2 data.
+    """
+    start_time = time.time()
+    ms2_data = []
     precursors_set = {round(ion, 4) for precursor in precursors for ion in precursor.ions.keys()}
     ms2_threshold = mass_accuracy * 5
 
     with mzml.MzML(str(path)) as file:
         for scan in file:
-            if scan['ms level'] == 1:
-                ms1_data.append(scan)
-            elif scan['ms level'] == 2:
-                precursor_mz = round(cvquery(scan, 'MS:1000744'), 4)
-                if any(abs(precursor_mz - ion) < ms2_threshold for ion in precursors_set):
-                    ms2_data.append(scan)
+            if scan['ms level'] == 2:
+                for ion in precursors_set:
+                    if np.any(np.abs(scan['m/z array'] - ion) < ms2_threshold):
+                        ms2_data.append(scan)
 
-    if not ms1_data:
-        logger.warning("No dedicated MS1 scans found, loading all scans.")
-        with mzml.MzML(str(path)) as file:
-            ms1_data = list(file)
-
-    logger.info(f"Loaded {len(ms1_data)} MS1 scans and {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
-    return tuple(ms1_data), tuple(ms2_data)
+    logger.info(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
+    print(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
+    return ms2_data
 
 def load_ms2_library() -> dict:
     """
@@ -128,6 +147,6 @@ def load_ms2_library() -> dict:
         The MS2 library as a dictionary where the keys are the feature names and the values are lists of lines from the file.
     """
     library = {}
-    with open(os.path.join(os.path.dirname(__main__.__file__), "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"), mode="r", encoding="utf-8") as src:
+    with open(os.path.join(pathlib.Path((__file__)).parent.parent, "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"), mode="r", encoding="utf-8") as src:
         library = {line.split("Name: ")[1].strip(): [line] + list(itertools.takewhile(lambda x: x.strip() != "", src)) for line in src if line.startswith("Name: ")}
     return library
