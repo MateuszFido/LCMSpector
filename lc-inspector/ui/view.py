@@ -440,7 +440,7 @@ class View(QtWidgets.QMainWindow):
             if precursor:
                 logger.info(f"Precursor found for {compound.name} in the library, m/z {precursor}")
             plot_library_ms2(library_entry, compound, self.canvas_ms2)
-        except KeyError:
+        except KeyError as e:
             logger.error(f"No MS2 found for {compound.name}: {e}")
             plot_no_ms2_found(self.canvas_ms2)
         selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
