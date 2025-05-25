@@ -104,7 +104,7 @@ class Model:
 
     def find_ms2_precursors(self):
         for ms_file in self.ms_measurements.values():
-            ms_file.ms2_data = load_ms2_data(ms_file.path, self.compounds, ms_file.mass_accuracy)
+            ms_file.ms2_data = load_ms2_data(ms_file.path, ms_file.xics, ms_file.mass_accuracy)
 
     def export(self):
         results = []

@@ -25,12 +25,11 @@ def load_absorbance_data(file_path):
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"The file {file_path} does not exist.")
 
-    with open(file_path, 'r') as file:
+    with open(file_path, 'r', newline=None) as file:
         # Check the delimiter by looking at the first few lines
         delimiter = None
         for i in range(5):
             line = file.readline()
-            print(line)
             delimiter = detect_delimiter(line)
             if delimiter is not None and detect_delimiter(line) != delimiter:
                 logger.error("Detected more than 1 different delimiters in the file. Double check for possible parsing errors.")
@@ -98,13 +97,16 @@ def load_ms1_data(path: str) -> list:
     """
     start_time = time.time()
     
-    with mzml.MzML(str(path)) as file:
+    with mzml.PreIndexedMzML(str(path), newline=None) as file:
         ms1_data = [scan for scan in file if scan['ms level'] == 1]
-        
+        if not ms1_data:
+            logger.error("No MS1 scans found in the .mzML file. Rerunning on higher order MSn.")
+            file.reset()
+            ms1_data = [scan for scan in file]
     logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
     return ms1_data
 
-def load_ms2_data(path: str, precursors: tuple, mass_accuracy: float) -> list:
+def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
     """
     Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
     
@@ -123,20 +125,27 @@ def load_ms2_data(path: str, precursors: tuple, mass_accuracy: float) -> list:
         The list of Scan objects containing the filtered MS2 data.
     """
     start_time = time.time()
+
     ms2_data = []
-    precursors_set = {round(ion, 4) for precursor in precursors for ion in precursor.ions.keys()}
     ms2_threshold = mass_accuracy * 5
 
-    with mzml.MzML(str(path)) as file:
+    # Use a set to store the unique RTs of the precursors
+    unique_rts = set()
+    for compound in compounds:
+        for ion in compound.ions.keys():
+            unique_rts.add(compound.ions[ion]['RT'])
+
+    with mzml.PreIndexedMzML(str(path)) as file:
         for scan in file:
             if scan['ms level'] == 2:
-                for ion in precursors_set:
-                    if np.any(np.abs(scan['m/z array'] - ion) < ms2_threshold) and cvquery(scan, "MS:1000744") :
-
-                        ms2_data.append(scan)
+                for rt in unique_rts:
+                    if np.any(np.isclose(rt, cvquery(scan, 'MS:1000016'), atol=0.05)):
+                        for compound in compounds:
+                            for ion in compound.ions.keys():
+                                if np.any(np.abs(scan['m/z array'] - ion) <= ms2_threshold):
+                                    ms2_data.append(scan)
 
     logger.info(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
-    print(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
     return ms2_data
 
 def load_ms2_library() -> dict:
