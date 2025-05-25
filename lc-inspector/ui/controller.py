@@ -14,6 +14,7 @@ class Controller:
         self.view.processButton.clicked.connect(self.process_data)
         self.view.comboBox_currentfile.currentIndexChanged.connect(self.display_selected_plots)
         self.view.calibrateButton.clicked.connect(self.calibrate)
+        self.view.calibrateButton.clicked.connect(self.find_ms2_precursors)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_ms2)
@@ -106,6 +107,15 @@ class Controller:
         self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
         
     def calibrate(self):
+        """
+        Calibrates the concentrations of the selected MS files using the selected files with annotated concentrations.
+        :return: None
+        """
+        try: 
+            self.model.find_ms2_precursors()
+        except Exception:
+            logger.error(f"Error finding MS2 precursors: {traceback.format_exc()}")
+            return
         selected_files = self.view.get_calibration_files()
         if selected_files:
             try:
@@ -119,3 +129,13 @@ class Controller:
         self.view.update_choose_compound(self.model.compounds)
 
         
+    def find_ms2_precursors(self):
+        """
+        Finds the MS2 precursors in the library for the currently selected files with annotated concentrations.
+        :return: None
+        """
+        try:
+            self.model.find_ms2_precursors()
+        except Exception:
+            logger.error(f"Error finding MS2 precursors: {traceback.format_exc()}")
+            return
