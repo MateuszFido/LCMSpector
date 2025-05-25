@@ -30,6 +30,7 @@ def load_absorbance_data(file_path):
         delimiter = None
         for i in range(5):
             line = file.readline()
+            print(line)
             delimiter = detect_delimiter(line)
             if delimiter is not None and detect_delimiter(line) != delimiter:
                 logger.error("Detected more than 1 different delimiters in the file. Double check for possible parsing errors.")
