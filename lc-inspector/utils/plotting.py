@@ -2,7 +2,6 @@ import os, time, logging
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
-import pprint
 from scipy.signal import find_peaks, peak_widths
 from pyqtgraph import exporters, mkPen, mkBrush
 from PyQt6.QtCore import Qt
@@ -80,7 +79,6 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     try:
         data_matrix[index]
     except IndexError:
-        print("Big error")
         return
     if len(data_matrix[index]['m/z array']) < 500:
         # Plot as a histogram
@@ -294,17 +292,13 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
         ms_file.ms2_data
     except: 
         return
-    precursors_in_scan = []
     scan_set = set()
     for ion in ms_compound.ions.keys():
-        if np.abs(float(ion) - float(precursor)) <= ms_file.mass_accuracy * 3:
+        if abs(ion - precursor) < ms_file.mass_accuracy * 5:
             for scan in ms_file.ms2_data:
-                if not np.any(np.abs(scan['m/z array'] - ion) < ms_file.mass_accuracy * 5):
-                    continue
-                if round(cvquery(scan, "MS:1000744"), 4) - float(ion) < ms_file.mass_accuracy * 5 and np.abs(ms_compound.ions[ion]["RT"] - cvquery(scan, "MS:1000016")) < 0.05:
+                if ion in scan['m/z array']:
                     scan_set.add(scan)
-            break
-    print(precursors_in_scan)
+        break
 
     if scan_set:
         mzs = np.concatenate([scan['m/z array'] for scan in scan_set])
