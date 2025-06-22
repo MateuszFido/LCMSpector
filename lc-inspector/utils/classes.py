@@ -83,10 +83,10 @@ class MSMeasurement(Measurement):
         The mass accuracy of the m/z axis. Default: 0.0001
     data : tuple(Scan)
         The list of Scan objects containing the MS data.
-    xics : pd.DataFrame
-        A DataFrame containing the m/z and intensity values of the XICs.
-    ms2_data : pd.DataFrame
-        A DataFrame containing the m/z and intensity values of the MS2 spectra.
+    xics : tuple(Compound)
+        A tuple containing the m/z and intensity values of the XICs.
+    ms2_data : set
+        A set containing the m/z and intensity values of the MS2 spectra.
     """
     def __init__(self, path, ion_list, mass_accuracy=0.0001):
         super().__init__(path)

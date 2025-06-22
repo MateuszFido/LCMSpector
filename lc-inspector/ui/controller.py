@@ -1,7 +1,7 @@
 from calculation.workers import Worker, WorkerSignals
 from utils.classes import LCMeasurement, MSMeasurement
 from PyQt6.QtCore import pyqtSlot
-import logging, traceback
+import logging, traceback, threading, os
 logger = logging.getLogger(__name__)
 from datetime import datetime
 
@@ -19,13 +19,16 @@ class Controller:
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_ms2)
         self.mode = "LC/GC-MS"
+        logger.info("Controller initialized.")
+        logger.info(f"Current thread: {threading.current_thread().name}")
+        logger.info(f"Current process: {os.getpid()}")
 
     def load_lc_data(self):
         pass
 
     def load_ms_data(self):
         pass
-
+    
     def process_data(self):
         self.view.update_lc_file_list()
         self.view.update_ms_file_list()
@@ -58,7 +61,7 @@ class Controller:
             self.view.progressBar.setValue(0)
             # Start processing
             try:
-                self.model.process_data(mode=self.mode)
+                self.model.process(mode=self.mode)
             except Exception:
                 logger.error(f"Error processing data: {traceback.format_exc()}")
                 self.view.show_critical_error(f"Error processing data: {traceback.format_exc()}")
@@ -66,7 +69,6 @@ class Controller:
         else:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
             logger.error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
-        self.on_processing_finished()
 
     def on_processing_finished(self, lc_results, ms_results):
         self.model.lc_measurements = lc_results
@@ -128,7 +130,6 @@ class Controller:
         self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.update_choose_compound(self.model.compounds)
 
-        
     def find_ms2_precursors(self):
         """
         Finds the MS2 precursors in the library for the currently selected files with annotated concentrations.

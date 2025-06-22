@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
-import csv, re, os, logging, itertools, time, pathlib
-import __main__
+import csv, re, os, logging, itertools, time, pathlib, pprint
 from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
 
@@ -97,7 +96,7 @@ def load_ms1_data(path: str) -> list:
     """
     start_time = time.time()
     
-    with mzml.PreIndexedMzML(str(path), newline=None) as file:
+    with mzml.MzML(str(path)) as file:
         ms1_data = [scan for scan in file if scan['ms level'] == 1]
         if not ms1_data:
             logger.error("No MS1 scans found in the .mzML file. Rerunning on higher order MSn.")
@@ -106,7 +105,7 @@ def load_ms1_data(path: str) -> list:
     logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
     return ms1_data
 
-def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
+def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> set:
     """
     Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
     
@@ -126,25 +125,31 @@ def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
     """
     start_time = time.time()
 
-    ms2_data = []
+    ms2_data = set()
     ms2_threshold = mass_accuracy * 5
+    
+    # iterate over compounds; store their m/z (precursors) in a set;
+    # do the same with their retention times; then iterate over the .mzML file,
+    # and for each scan, check if the precursor m/z matches any of the precursors in the set, and if the retention time matches any of the retention times in the set
+    # if so, add the scan to the ms2_data list
+    
+    unique_mzs = list()
+    unique_rts = list()
 
-    # Use a set to store the unique RTs of the precursors
-    unique_rts = set()
     for compound in compounds:
         for ion in compound.ions.keys():
-            unique_rts.add(compound.ions[ion]['RT'])
-
-    with mzml.PreIndexedMzML(str(path)) as file:
+            unique_mzs.append(ion)
+            unique_rts.append(compound.ions[ion]['RT'])
+    
+    with mzml.MzML(str(path)) as file:
+        file.reset()
         for scan in file:
-            if scan['ms level'] == 2:
-                for rt in unique_rts:
-                    if np.any(np.isclose(rt, cvquery(scan, 'MS:1000016'), atol=0.05)):
-                        for compound in compounds:
-                            for ion in compound.ions.keys():
-                                if np.any(np.abs(scan['m/z array'] - ion) <= ms2_threshold):
-                                    ms2_data.append(scan)
-
+            for mz, rt in zip(unique_mzs, unique_rts):
+                if scan['ms level'] == 2 \
+                and np.isclose(scan['scanList']['scan'][0]['scan start time'], rt, atol=0.1) \
+                and np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']\
+                    ['selectedIon'][0]['selected ion m/z'], mz, atol=ms2_threshold):
+                    ms2_data.add(scan)
     logger.info(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
     return ms2_data
 

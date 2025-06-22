@@ -3,7 +3,8 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
 from utils.classes import Compound
 from datetime import datetime
-import json, __main__
+import json
+from pathlib import Path
 import pyqtgraph as pg 
 
 class DragDropListWidget(QtWidgets.QListWidget):
@@ -198,9 +199,12 @@ class IonTable(GenericTable):
                 continue
         # Save locally in config.json
         try:
-            config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
+            config_path = Path(__file__).parent.parent / "config.json"
+            with open(config_path, "r") as f:
+                config = json.load(f)
             config[ion_list_name] = ions
-            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"), indent=4)
+            with open(config_path, "w") as f:
+                json.dump(config, f, indent=4)
             self.view.comboBoxIonLists.clear()
             self.view.comboBoxIonLists.addItem("Create new ion list...")
             self.view.comboBoxIonLists.addItems(config.keys())
@@ -217,9 +221,13 @@ class IonTable(GenericTable):
         msgBox.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No)
         msgBox.setDefaultButton(QtWidgets.QMessageBox.StandardButton.No)
         if msgBox.exec() == QtWidgets.QMessageBox.StandardButton.Yes:
-            config = json.load(open(__main__.__file__.replace("main.py","config.json"), "r+"))
-            config.pop(ion_list_name)
-            json.dump(config, open(__main__.__file__.replace("main.py","config.json"), "w"), indent=4)
+            config_path = Path(__file__).parent.parent / "config.json"
+            with open(config_path, "r+") as f:
+                config = json.load(f)
+                config.pop(ion_list_name)
+                f.seek(0)
+                json.dump(config, f, indent=4)
+                f.truncate()
             self.view.comboBoxIonLists.clear()
             self.view.comboBoxIonLists.addItem("Create new ion list...")
             self.view.comboBoxIonLists.addItems(config.keys())

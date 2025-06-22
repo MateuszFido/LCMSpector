@@ -5,7 +5,8 @@ import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
 plot_total_ion_current, plot_library_ms2, plot_no_ms2_found, plot_ms2_from_file
-import os, sys, traceback, logging, json, __main__
+import os, sys, traceback, logging, json
+from pathlib import Path
 from datetime import datetime
 from utils.classes import Compound
 from pyqtgraph.dockarea import Dock, DockArea
@@ -107,7 +108,9 @@ class View(QtWidgets.QMainWindow):
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
-        lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
+        config_path = Path(__file__).parent.parent / "config.json"
+        with open(config_path, "r") as f:
+            lists = json.load(f)
         if self.comboBoxIonLists.currentText() == "Create new ion list..." or self.comboBoxIonLists.currentText() == "":
             self.ionTable.clearContents()
             return
@@ -682,11 +685,13 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
         self.comboBoxIonLists.addItem("Create new ion list...")
         try: 
-            lists = json.load(open(__main__.__file__.replace("main.py","config.json"), "r"))
+            config_path = Path(__file__).parent.parent / "config.json"
+            with open(config_path, "r") as f:
+                lists = json.load(f)
             for ionlist in lists:
                 self.comboBoxIonLists.addItem(ionlist)
         except Exception as e:
-            self.statusbar.showMessage(f"Error loading ion lists: {e}", 5000)
+            logger.error(f"Error loading ion lists: {e}")
         self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self.ionTable = IonTable(view=self, parent=self.tabUpload)
         self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 3)
@@ -952,7 +957,7 @@ class View(QtWidgets.QMainWindow):
         self.browseLC.clicked.connect(self.on_browseLC)
         self.browseMS.clicked.connect(self.on_browseMS)
         self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
-        self.processButton.clicked.connect(self.on_process)
+        # self.processButton.clicked.connect(self.on_process)
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
