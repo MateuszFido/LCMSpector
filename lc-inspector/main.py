@@ -1,4 +1,4 @@
-import os, secrets, yaml, logging.config, multiprocessing
+import os, yaml, logging.config, multiprocessing, threading
 
 # Protective guards for binary building 
 if os.sys.stdout is None:
@@ -19,12 +19,18 @@ from ui.model import Model
 from ui.view import View
 from ui.controller import Controller
 
+
 if __name__ == "__main__":
     app = QApplication([])
     model = Model()
     view = View()
     controller = Controller(model, view)
-
     view.show()
-    app.exec()
-    
+
+    logger.info("Main executed, Qt application started.")
+    logger.info(f"Current thread: {threading.current_thread().name}")
+    logger.info(f"Current process: {os.getpid()}")
+    exit_code = app.exec()
+    logger.info(f"Exiting with exit code {exit_code}.")
+    os.sys.exit(exit_code)
+

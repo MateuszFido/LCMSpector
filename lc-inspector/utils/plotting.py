@@ -144,7 +144,7 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
         plot_item.setCurveClickable(True)
         curve_dict[plot_item.curve] = default_brush
 
-    logger.info(f"---Plotting annotated LC of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
+    logger.info(f"Plotting annotated LC of {filename} took {(time.time() - start_time)/1000} miliseconds")
     return curve_dict
 
 def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
@@ -191,7 +191,7 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
 
     #HACK: Forces scrollArea to realize that the widget is bigger than it is
     widget.setMinimumSize(pg.QtCore.QSize(len(xics)*20,len(xics)*40))
-    logger.info(f"---Plotting annotated XICs of {filename} took {(time.time() - start_time)/1000} miliseconds ---")
+    logger.info(f"Plotting annotated XICs of {filename} took {(time.time() - start_time)/1000} miliseconds ({tot} XICs)")
 
 def plot_calibration_curve(compound, widget: pg.PlotWidget):
     """

@@ -6,9 +6,6 @@ from utils.loading import load_absorbance_data, load_ms1_data
 from utils.classes import Compound, MSMeasurement
 from ui.model import Model
 
-def test_simple():
-    assert True
-
 def test_baseline_correction_agilent():
     assert True
 

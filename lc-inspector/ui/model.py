@@ -1,5 +1,5 @@
 # model.py
-import logging, traceback, multiprocessing, time, sys
+import logging, traceback, multiprocessing, time, threading, os
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
@@ -46,9 +46,18 @@ class Model:
         self.annotations = []
         self.compounds = []
         self.library = load_ms2_library()
+        self.controller = None
         self.worker = None
+        logger.info("Model initialized.")
+        logger.info(f"Current thread: {threading.current_thread().name}")
+        logger.info(f"Current process: {os.getpid()}")
         
-    def process_data(self, mode):
+    def process(self, mode):
+        # safety check 
+        if self.worker and self.worker.isRunning():
+            logger.warning("Worker thread is already running. Aborting.")
+            return
+
         self.worker = Worker(self, mode)
         self.worker.progressUpdated.connect(self.controller.view.update_progress_bar)
         self.worker.finished.connect(self.controller.on_processing_finished)
