@@ -267,7 +267,7 @@ class View(QtWidgets.QMainWindow):
         try:
             self.listAnnotations
         except AttributeError:
-            logger.error("listAnnotations is not defined!")
+            logger.warning("listAnnotations is not defined!")
             return
         try:
             annotation_files = [self.listAnnotations.item(i).text() for i in range(self.listAnnotations.count())]

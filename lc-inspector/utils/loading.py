@@ -105,7 +105,7 @@ def load_ms1_data(path: str) -> list:
     logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
     return ms1_data
 
-def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> set:
+def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
     """
     Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
     
@@ -125,9 +125,9 @@ def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> set:
     """
     start_time = time.time()
 
-    ms2_data = set()
+    ms2_data = list()
     ms2_threshold = mass_accuracy * 5
-    
+    # TODO: REFACTOR -- currently MS2 are collected for ALL examined ions -- split this by adding ms2 per XIC of a given file
     # iterate over compounds; store their m/z (precursors) in a set;
     # do the same with their retention times; then iterate over the .mzML file,
     # and for each scan, check if the precursor m/z matches any of the precursors in the set, and if the retention time matches any of the retention times in the set
@@ -149,7 +149,7 @@ def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> set:
                 and np.isclose(scan['scanList']['scan'][0]['scan start time'], rt, atol=0.1) \
                 and np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']\
                     ['selectedIon'][0]['selected ion m/z'], mz, atol=ms2_threshold):
-                    ms2_data.add(scan)
+                    ms2_data.append(scan)
     logger.info(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
     return ms2_data
 
