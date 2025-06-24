@@ -262,8 +262,8 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
 
 def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     # Reset the plot
-    widget.getPlotItem().addLegend().setPos(0,0)
     widget.clear()
+    widget.getPlotItem().addLegend().setPos(0,0)
     widget.setTitle(f'MS2 spectrum of {compound.name}')
     mzs = []
     intensities = []
@@ -292,22 +292,15 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
         ms_file.ms2_data
     except: 
         return
-    scan_set = set()
-    for ion in ms_compound.ions.keys():
-        if abs(ion - precursor) < ms_file.mass_accuracy * 5:
-            for scan in ms_file.ms2_data:
-                if ion in scan['m/z array']:
-                    scan_set.add(scan)
-        break
 
-    if scan_set:
-        mzs = np.concatenate([scan['m/z array'] for scan in scan_set])
-        intensities = np.concatenate([scan['intensity array'] for scan in scan_set])
-        canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
-        canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
-        canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
-        canvas.setLabel('left', 'Intensity (%)')
-        canvas.setLabel('bottom', 'm/z')
+    mzs = np.concatenate([scan['m/z array'] for scan in ms_file.ms2_data])
+    intensities = np.concatenate([scan['intensity array'] for scan in ms_file.ms2_data])
+    canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
+    canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities/np.max(intensities)*100, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
+    canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
+    canvas.setLabel('left', 'Intensity (%)')
+    canvas.setLabel('bottom', 'm/z')
+    logger.info(f"Plotting MS2 for {ms_compound.name} (m/z {precursor:.4f}) in {ms_file.filename}")
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")
