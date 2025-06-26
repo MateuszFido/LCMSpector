@@ -1,87 +1,76 @@
-.
+LC-Inspector
+================
+
 [![License: MIT](https://img.shields.io/badge/License-MIT_License-green)](https://mit-license.org/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13990448.svg)](https://doi.org/10.5281/zenodo.13990448)
 [![Tests](https://github.com/MateuszFido/LC-Inspector/actions/workflows/ci.yml/badge.svg)](https://github.com/MateuszFido/LC-Inspector/actions/workflows/ci.yml)
 
-![alt text](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
+![LC-Inspector Logo](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
 
-## Preface
+Introduction
+------------
+
+LC-Inspector is a free, local, and open-source software for preprocessing, analyzing, and annotating LC-MS data. It was primarily designed for annotating LC-MS files of derivatized amino acids and polyamines but can be used with any targeted LC-MS workflow.
+
+Getting Started
+---------------
 
 ### Installation
 
-As of Dec 2024, pre-release binaries for `LC-Inspector` are distributed for Windows (64-bit) and MacOS (arm64). These can be found under `Releases` on the GitHub page of `LC-Inspector`'s main branch, `gui-redesign`. 
+Pre-release binaries for LC-Inspector are available for Windows (64-bit) and MacOS (arm64) under the "Releases" section of the GitHub page. Please note that the binaries are not signed, which may cause antivirus software to flag them as malware.
 
-Since the binaries are currently NOT signed, it is possible for automatic antivirus/quarantine programs such as Microsoft Windows Defender to flag them as malware. 
+*   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
+*   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
 
-On Windows, if this happens, go into `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.  
+### Warning
 
-On MacOS, the following command can be executed to remove an app from quarantine: 
-`xattr -d com.apple.quarantine /path/to/app.app`
+The graphical user interface (UI) of LC-Inspector is currently in early development. Some features may not be functional, and bugs are expected.
 
-so for example, if the app was copied to the Applications folder:
+Usage
+-----
 
-`xattr -d com.apple.quarantine /Applications`
+### Input Requirements
 
-If the command executes without any errors, the app should launch and work normally.
+*   LC input data: plain text (.txt) files
+*   MS input data: open-format mass spectrometry files (.mzML)
+*   Alternatively, annotation files (.txt) can be used if exact retention times of targeted compounds are known
 
-### Warning 
+### Running from Source
 
-The graphical user interface (UI) of `LC-Inspector` is currently in early development. A lot of features visible in the UI is not functional yet. Bugs are prevalent and to be expected.
+1.  Clone the repository or download the compressed version and unpack
+2.  Install Python 3.12 or later
+3.  Navigate to the folder containing `main.py` in the terminal
+4.  Install dependencies listed in `requirements.txt` using `pip3 install -r requirements.txt`
+5.  Prepare the input data
+6.  Run the script via `main.py` using `python3 main.py`
 
-------
+### Graphical User Interface
 
-## Description
-This package preprocesses, analyzes and annotates LC-MS data. 
+The GUI version allows you to:
 
-It was primarily designed to annotate LC-MS files of derivatized amino acids and polyamines but can be used with any targeted LC-MS workflow.
+*   Browse and upload LC files (.txt format) and MS files (.mzML)
+*   Preprocess the data and display results in the "Results" tab
+*   Interact with plots, copy them to clipboard, or export them in .png, .tif, or .svg formats
 
-Input can only be plain text (.txt) files for LC chromatograms and mzML files for the MS data. Alternatively, annotation files (expected .txt) can be used if exact retention times of targeted compounds are known. 
+### Script Version
 
-The script starts by parsing and preprocessing the given LC and MS files, interpolating intensity over a linearly-spaced m/z axis, reconstructing extracted ion chromatograms for a given set of peaks and plotting annotated LC spectra. 
+The script version produces results in the form of .csv files in the 'data/results' folder, alongside plots of calibration curves, background-corrected chromatograms, and recognized peaks in the 'data/plots' folder.
 
-## Running from source
-1. Clone the repository or download the compressed version (Code -> Download ZIP) and unpack
-2. Install Python 3.12 or later
-3. Navigate to the folder containing ```main.py``` in the terminal (e.g., cmd on Windows or Terminal on MacOS)
-3. Install the dependencies listed out in requirements.txt (```$ pip3 install -r requirements.txt```):
-    - pyyaml (≥ 6.0.2)
-    - pyqt6 (≥ 6.7.3)
-    - scipy (≥ 1.14.1)
-    - pyteomics (≥ 4.7.5)
-    - lxml (≥ 5.3.0)
-    - static_frame (≥ 2.15.1)
-    - pyqtgraph (≥ 0.13.7)
-4. Prepare the input data:
-    - The script expects the LC input data to be in .txt format.
-    - The script expects the MS input data to be in .mzml format.
-5. (OPTIONAL) Instead of the MS data, pre-annotated .txt files can be supplied if retention times are known (Thermo Chromeleon format).
-6. Run the script via the main.py file (```$ python3 main.py```).
+References
+----------
 
-## Usage
-The graphical user interface version (on branches `main` and `gui-redesign`) allows the user to browse their machine and upload liquid chromatography files (.txt format) and open-format mass spectrometry files (.mzML ). 
+*   pyteomics library
+*   hplc-py package by Griffin Chure from the Cremer lab: <https://cremerlab.github.io/hplc-py/> and <https://github.com/cremerlab/hplc-py>
 
-The script preprocesses the data and lets the user display the results in the "Results" tab of the main view. The plots are interactive, allowing the user to inspect the data closely, copy the plots to clipboard or export them in .png, .tif or .svg formats. 
-
-An unnotated export of the plot data is also possible, although this feature is not well-implemented. 
-
-The script version (branches `cluster`, `ms-integration`) produces results in the form of .csv files in the 'data/results' folder, alongside plots of calibration curves, background corrected chromatograms and recognized peaks in the 'data/plots' folder. 
-
-
-## References
-
-pyteomics library 
-
-hplc-py package by Griffin Chure from the Cremer lab:
-
-https://cremerlab.github.io/hplc-py/
-
-https://github.com/cremerlab/hplc-py
-
-## License
+License
+-------
 
 This project is distributed under the permissive MIT license. Details can be found in `LICENSE.txt`.
 
-LC-Inspector makes use of the MoNA database libraries for MS/MS spectra comparison, which are distributed under the CC BY 4.0 License https://creativecommons.org/licenses/by/4.0/. No changes are made to the content of the libraries.
+LC-Inspector makes use of the MoNA database libraries for MS/MS spectra comparison, which are distributed under the CC BY 4.0 License <https://creativecommons.org/licenses/by/4.0/>. No changes are made to the content of the libraries.
+
+Copyright
+---------
 
 Created on 2024-02-29
 Copyright (c) Mateusz Fido, ETH Zürich, 2024
