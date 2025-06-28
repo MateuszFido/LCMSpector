@@ -288,16 +288,22 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     widget.setLabel('bottom', 'm/z')
 
 def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):
-    try: 
-        ms_file.ms2_data
-    except: 
-        return
-
-    mzs = np.concatenate([scan['m/z array'] for scan in ms_file.ms2_data])
-    intensities = np.concatenate([scan['intensity array'] for scan in ms_file.ms2_data])
+    try:
+        for xic in ms_file.xics:
+            if xic.name == ms_compound.name:
+                compound_to_plot = xic
+    except KeyError:
+        print("big problem")
+    mzs = np.concatenate([scan['m/z array'] for scan in compound_to_plot.ms2])
+    intensities = np.concatenate([scan['intensity array'] for scan in compound_to_plot.ms2])
     canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
     canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities/np.max(intensities)*100, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
     canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
+    for mz, intensity in zip(mzs, intensities):
+        text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
+        text_item.setFont(pg.QtGui.QFont('Arial', 12, weight=pg.QtGui.QFont.Weight.Light))
+        text_item.setPos(mz-0.1, intensity+5)
+        canvas.addItem(text_item)
     canvas.setLabel('left', 'Intensity (%)')
     canvas.setLabel('bottom', 'm/z')
     logger.info(f"Plotting MS2 for {ms_compound.name} (m/z {precursor:.4f}) in {ms_file.filename}")
