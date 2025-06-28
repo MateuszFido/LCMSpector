@@ -1,82 +1,68 @@
-INFO 2025-06-24 10:06:28 __main__ - -------------------------------------
+INFO 2025-06-28 21:07:14 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-INFO 2025-06-24 10:06:31 ui.model - Model initialized.
-INFO 2025-06-24 10:06:31 ui.model - Model initialized.
-INFO 2025-06-24 10:06:31 ui.model - Current thread: MainThread
-INFO 2025-06-24 10:06:31 ui.model - Current thread: MainThread
-INFO 2025-06-24 10:06:31 ui.model - Current process: 2598
-INFO 2025-06-24 10:06:31 ui.model - Current process: 2598
-INFO 2025-06-24 10:06:31 ui.controller - Controller initialized.
-INFO 2025-06-24 10:06:31 ui.controller - Controller initialized.
-INFO 2025-06-24 10:06:31 ui.controller - Current thread: MainThread
-INFO 2025-06-24 10:06:31 ui.controller - Current thread: MainThread
-INFO 2025-06-24 10:06:31 ui.controller - Current process: 2598
-INFO 2025-06-24 10:06:31 ui.controller - Current process: 2598
-INFO 2025-06-24 10:06:31 __main__ - Main executed, Qt application started.
-INFO 2025-06-24 10:06:31 __main__ - Current thread: MainThread
-INFO 2025-06-24 10:06:31 __main__ - Current process: 2598
-WARNING 2025-06-24 10:06:39 ui.view - listAnnotations is not defined!
-WARNING 2025-06-24 10:06:39 ui.view - listAnnotations is not defined!
-INFO 2025-06-24 10:06:39 ui.controller - Starting the processing...
-INFO 2025-06-24 10:06:39 ui.controller - Starting the processing...
-INFO 2025-06-24 10:06:39 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-06-24 10:06:39 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-06-24 10:06:39 utils.classes - Loaded LC file MIX_1_neg.
-INFO 2025-06-24 10:06:43 utils.loading - Loaded 965 MS1 scans in 4.26 seconds.
-INFO 2025-06-24 10:06:44 calculation.workers - Processed in 4.7857654094696045
-INFO 2025-06-24 10:06:44 calculation.workers - Size in memory is LC: 0.00017547607421875 MB, MS: 0.00017547607421875 MB.
-INFO 2025-06-24 10:06:44 utils.plotting - Plotting annotated XICs of MIX_1_neg took 8.278989791870117e-05 miliseconds (6 XICs)
-INFO 2025-06-24 10:06:44 utils.plotting - Plotting annotated XICs of MIX_1_neg took 8.278989791870117e-05 miliseconds (6 XICs)
-INFO 2025-06-24 10:06:44 utils.plotting - Plotting annotated LC of MIX_1_neg took 1.9949436187744142e-05 miliseconds
-INFO 2025-06-24 10:06:44 utils.plotting - Plotting annotated LC of MIX_1_neg took 1.9949436187744142e-05 miliseconds
-INFO 2025-06-24 10:06:51 utils.loading - Loaded 2 MS2 scans in 4.80 seconds.
-ERROR 2025-06-24 10:06:51 utils.plotting - ---Error when trying to plot calibration curve for Formic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:06:51 utils.plotting - ---Error when trying to plot calibration curve for Formic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:06:51 ui.view - No MS2 found for Formic acid: 'Formic acid'
-ERROR 2025-06-24 10:06:51 ui.view - No MS2 found for Formic acid: 'Formic acid'
-ERROR 2025-06-24 10:06:51 ui.view - No MS2 found for Formic acid in MIX_1_neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-06-24 10:06:51 ui.view - No MS2 found for Formic acid in MIX_1_neg: cannot access local variable 'precursor' where it is not associated with a value
-INFO 2025-06-24 10:06:56 utils.loading - Loaded 2 MS2 scans in 4.86 seconds.
-ERROR 2025-06-24 10:06:59 utils.plotting - ---Error when trying to plot calibration curve for Acetic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:06:59 utils.plotting - ---Error when trying to plot calibration curve for Acetic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:06:59 ui.view - No MS2 found for Acetic acid: 'Acetic acid'
-ERROR 2025-06-24 10:06:59 ui.view - No MS2 found for Acetic acid: 'Acetic acid'
-ERROR 2025-06-24 10:06:59 ui.view - No MS2 found for Acetic acid in MIX_1_neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-06-24 10:06:59 ui.view - No MS2 found for Acetic acid in MIX_1_neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-06-24 10:06:59 utils.plotting - ---Error when trying to plot calibration curve for Butanoic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:06:59 utils.plotting - ---Error when trying to plot calibration curve for Butanoic acid: cannot convert float NaN to integer ---
-INFO 2025-06-24 10:06:59 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
-INFO 2025-06-24 10:06:59 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
-INFO 2025-06-24 10:06:59 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in MIX_1_neg
-INFO 2025-06-24 10:06:59 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in MIX_1_neg
-ERROR 2025-06-24 10:07:09 utils.plotting - ---Error when trying to plot calibration curve for Propionic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:07:09 utils.plotting - ---Error when trying to plot calibration curve for Propionic acid: cannot convert float NaN to integer ---
-INFO 2025-06-24 10:07:09 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
-INFO 2025-06-24 10:07:09 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
-INFO 2025-06-24 10:07:09 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in MIX_1_neg
-INFO 2025-06-24 10:07:09 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in MIX_1_neg
-ERROR 2025-06-24 10:07:11 utils.plotting - ---Error when trying to plot calibration curve for Pentanoic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:07:11 utils.plotting - ---Error when trying to plot calibration curve for Pentanoic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:07:11 ui.view - No MS2 found for Pentanoic acid: 'Pentanoic acid'
-ERROR 2025-06-24 10:07:11 ui.view - No MS2 found for Pentanoic acid: 'Pentanoic acid'
-ERROR 2025-06-24 10:07:11 ui.view - No MS2 found for Pentanoic acid in MIX_1_neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-06-24 10:07:11 ui.view - No MS2 found for Pentanoic acid in MIX_1_neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-06-24 10:07:12 utils.plotting - ---Error when trying to plot calibration curve for Hexanoic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:07:12 utils.plotting - ---Error when trying to plot calibration curve for Hexanoic acid: cannot convert float NaN to integer ---
-INFO 2025-06-24 10:07:12 ui.view - Precursor found for Hexanoic acid in the library, m/z 117.0852
-INFO 2025-06-24 10:07:12 ui.view - Precursor found for Hexanoic acid in the library, m/z 117.0852
-INFO 2025-06-24 10:07:12 utils.plotting - Plotting MS2 for Hexanoic acid (m/z 117.0852) in MIX_1_neg
-INFO 2025-06-24 10:07:12 utils.plotting - Plotting MS2 for Hexanoic acid (m/z 117.0852) in MIX_1_neg
-ERROR 2025-06-24 10:07:15 utils.plotting - ---Error when trying to plot calibration curve for Butanoic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:07:15 utils.plotting - ---Error when trying to plot calibration curve for Butanoic acid: cannot convert float NaN to integer ---
-INFO 2025-06-24 10:07:15 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
-INFO 2025-06-24 10:07:15 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
-INFO 2025-06-24 10:07:15 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in MIX_1_neg
-INFO 2025-06-24 10:07:15 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in MIX_1_neg
-ERROR 2025-06-24 10:07:17 utils.plotting - ---Error when trying to plot calibration curve for Propionic acid: cannot convert float NaN to integer ---
-ERROR 2025-06-24 10:07:17 utils.plotting - ---Error when trying to plot calibration curve for Propionic acid: cannot convert float NaN to integer ---
-INFO 2025-06-24 10:07:17 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
-INFO 2025-06-24 10:07:17 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
-INFO 2025-06-24 10:07:17 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in MIX_1_neg
-INFO 2025-06-24 10:07:17 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in MIX_1_neg
-INFO 2025-06-24 10:07:19 __main__ - Exiting with exit code 0.
+INFO 2025-06-28 21:07:16 ui.model - Model initialized.
+INFO 2025-06-28 21:07:16 ui.model - Model initialized.
+INFO 2025-06-28 21:07:16 ui.model - Current thread: MainThread
+INFO 2025-06-28 21:07:16 ui.model - Current thread: MainThread
+INFO 2025-06-28 21:07:16 ui.model - Current process: 7395
+INFO 2025-06-28 21:07:16 ui.model - Current process: 7395
+INFO 2025-06-28 21:07:16 ui.controller - Controller initialized.
+INFO 2025-06-28 21:07:16 ui.controller - Controller initialized.
+INFO 2025-06-28 21:07:16 ui.controller - Current thread: MainThread
+INFO 2025-06-28 21:07:16 ui.controller - Current thread: MainThread
+INFO 2025-06-28 21:07:16 ui.controller - Current process: 7395
+INFO 2025-06-28 21:07:16 ui.controller - Current process: 7395
+INFO 2025-06-28 21:07:16 __main__ - Main executed, Qt application started.
+INFO 2025-06-28 21:07:16 __main__ - Current thread: MainThread
+INFO 2025-06-28 21:07:16 __main__ - Current process: 7395
+WARNING 2025-06-28 21:07:58 ui.view - listAnnotations is not defined!
+WARNING 2025-06-28 21:07:58 ui.view - listAnnotations is not defined!
+INFO 2025-06-28 21:07:58 ui.controller - Starting the processing...
+INFO 2025-06-28 21:07:58 ui.controller - Starting the processing...
+INFO 2025-06-28 21:07:58 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-06-28 21:07:58 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-06-28 21:07:58 utils.classes - Loaded LC file MIX_1_neg.
+INFO 2025-06-28 21:07:58 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-06-28 21:07:58 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-06-28 21:07:58 utils.classes - Loaded LC file STMIX5_02.
+INFO 2025-06-28 21:07:58 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-06-28 21:07:58 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-06-28 21:07:58 utils.classes - Loaded LC file H2O_neg.
+INFO 2025-06-28 21:08:03 utils.loading - Loaded 965 MS1 scans in 4.44 seconds.
+INFO 2025-06-28 21:08:03 utils.loading - Loaded 971 MS1 scans in 4.56 seconds.
+INFO 2025-06-28 21:08:04 utils.loading - Loaded 1065 MS1 scans in 6.21 seconds.
+INFO 2025-06-28 21:08:05 calculation.workers - Processed in 7.333068132400513
+INFO 2025-06-28 21:08:05 calculation.workers - Size in memory is LC: 0.00017547607421875 MB, MS: 0.00017547607421875 MB.
+INFO 2025-06-28 21:08:06 utils.plotting - Plotting annotated XICs of MIX_1_neg took 8.347797393798828e-05 miliseconds (6 XICs)
+INFO 2025-06-28 21:08:06 utils.plotting - Plotting annotated XICs of MIX_1_neg took 8.347797393798828e-05 miliseconds (6 XICs)
+INFO 2025-06-28 21:08:06 utils.plotting - Plotting annotated LC of MIX_1_neg took 1.911616325378418e-05 miliseconds
+INFO 2025-06-28 21:08:06 utils.plotting - Plotting annotated LC of MIX_1_neg took 1.911616325378418e-05 miliseconds
+ERROR 2025-06-28 21:08:29 ui.view - No MS2 found for Formic acid: 'Formic acid'
+ERROR 2025-06-28 21:08:29 ui.view - No MS2 found for Formic acid: 'Formic acid'
+ERROR 2025-06-28 21:08:29 ui.view - No MS2 found for Formic acid in H2O_neg: cannot access local variable 'precursor' where it is not associated with a value
+ERROR 2025-06-28 21:08:29 ui.view - No MS2 found for Formic acid in H2O_neg: cannot access local variable 'precursor' where it is not associated with a value
+INFO 2025-06-28 21:08:51 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
+INFO 2025-06-28 21:08:51 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
+INFO 2025-06-28 21:08:51 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in H2O_neg
+INFO 2025-06-28 21:08:51 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in H2O_neg
+INFO 2025-06-28 21:08:55 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
+INFO 2025-06-28 21:08:55 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
+INFO 2025-06-28 21:08:56 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in STMIX5_02
+INFO 2025-06-28 21:08:56 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in STMIX5_02
+INFO 2025-06-28 21:09:08 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
+INFO 2025-06-28 21:09:08 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
+INFO 2025-06-28 21:09:08 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in H2O_neg
+INFO 2025-06-28 21:09:08 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in H2O_neg
+INFO 2025-06-28 21:09:12 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
+INFO 2025-06-28 21:09:12 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
+INFO 2025-06-28 21:09:12 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in H2O_neg
+INFO 2025-06-28 21:09:12 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in H2O_neg
+INFO 2025-06-28 21:09:32 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
+INFO 2025-06-28 21:09:32 ui.view - Precursor found for Butanoic acid in the library, m/z 89.06003
+INFO 2025-06-28 21:09:33 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in MIX_1_neg
+INFO 2025-06-28 21:09:33 utils.plotting - Plotting MS2 for Butanoic acid (m/z 89.0600) in MIX_1_neg
+INFO 2025-06-28 21:09:38 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
+INFO 2025-06-28 21:09:38 ui.view - Precursor found for Propionic acid in the library, m/z 73.02819
+INFO 2025-06-28 21:09:39 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in STMIX5_02
+INFO 2025-06-28 21:09:39 utils.plotting - Plotting MS2 for Propionic acid (m/z 73.0282) in STMIX5_02
+INFO 2025-06-28 21:10:48 __main__ - Exiting with exit code 0.

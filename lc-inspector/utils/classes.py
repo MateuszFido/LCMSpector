@@ -120,6 +120,7 @@ class Compound():
     def __init__(self, name: str, ions: list, ion_info: list):
         self.name = str(name)
         self.ions = {ion: {"RT": None, "MS Intensity": None, "LC Intensity": None} for ion in ions}
+        self.ms2 = list()
         self.ion_info = ion_info
         self.calibration_curve = {}
 

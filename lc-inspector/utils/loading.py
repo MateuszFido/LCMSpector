@@ -6,7 +6,14 @@ from pyteomics.auxiliary import cvquery
 
 logger = logging.getLogger(__name__)
 def detect_delimiter(line):
-    """Detect the delimiter used in the line."""
+    """Detect the delimiter used in the text file.
+
+    Args:
+    line (str): The line of text to check for delimiters.
+
+    Returns:
+    str: The detected delimiter, or None if no delimiter is found.
+    """
     if ',' in line:
         return ','
     elif '\t' in line:
@@ -55,7 +62,25 @@ def load_absorbance_data(file_path):
     return chromatogram_data
 
 def load_annotated_peaks(file_path):
-    
+    """
+    Load annotated peaks from a .txt file.
+
+    This function loads the annotated peaks from the given .txt file, which is expected to have a header row and a variable number of header lines. The header lines are skipped and the annotated peaks are loaded into a pandas DataFrame.
+
+    Parameters
+    ----------
+    file_path : str
+        The path to the .txt file containing the annotated peaks.
+
+    Returns
+    -------
+    pd.DataFrame
+        A pandas DataFrame containing the annotated peaks.
+
+    Notes
+    -----
+    The function assumes that the .txt file has a header row with column names and a variable number of header lines. The header lines are skipped and the annotated peaks are loaded into a pandas DataFrame. The columns are matched by a regular expression, which looks for the following column names: "Peakname", "Name", "Ret.Time", "RetentionTime", "Area", "Height", "Peak Start", "Start", "Peak Stop", "Stop". The function returns a pandas DataFrame containing the annotated peaks.
+    """
     with open(file_path, 'r', newline='\n') as file:
         lines = csv.reader(file, delimiter='\t')
         start_index = 0
@@ -107,7 +132,7 @@ def load_ms1_data(path: str) -> list:
 
 def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
     """
-    Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
+    Using the pyteomics library and asyncio, load the MS2 data from the .mzML file, filtering based on the given precursors.
     
     Parameters
     ----------
@@ -123,35 +148,21 @@ def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
     data : List of Scan objects
         The list of Scan objects containing the filtered MS2 data.
     """
-    start_time = time.time()
-
-    ms2_data = list()
     ms2_threshold = mass_accuracy * 5
-    # TODO: REFACTOR -- currently MS2 are collected for ALL examined ions -- split this by adding ms2 per XIC of a given file
-    # iterate over compounds; store their m/z (precursors) in a set;
-    # do the same with their retention times; then iterate over the .mzML file,
-    # and for each scan, check if the precursor m/z matches any of the precursors in the set, and if the retention time matches any of the retention times in the set
-    # if so, add the scan to the ms2_data list
-    
-    unique_mzs = list()
-    unique_rts = list()
-
-    for compound in compounds:
-        for ion in compound.ions.keys():
-            unique_mzs.append(ion)
-            unique_rts.append(compound.ions[ion]['RT'])
     
     with mzml.MzML(str(path)) as file:
         file.reset()
         for scan in file:
-            for mz, rt in zip(unique_mzs, unique_rts):
-                if scan['ms level'] == 2 \
-                and np.isclose(scan['scanList']['scan'][0]['scan start time'], rt, atol=0.1) \
-                and np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']\
-                    ['selectedIon'][0]['selected ion m/z'], mz, atol=ms2_threshold):
-                    ms2_data.append(scan)
-    logger.info(f"Loaded {len(ms2_data)} MS2 scans in {time.time() - start_time:.2f} seconds.")
-    return ms2_data
+            if scan['ms level'] != 2:
+                continue
+            for compound in compounds:
+                for ion in compound.ions.keys():
+                    if not np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], ion, atol=ms2_threshold):
+                        continue
+                    elif not np.isclose(scan['scanList']['scan'][0]['scan start time'], compound.ions[ion]['RT'], atol=0.1):
+                        continue
+                    else:
+                        compound.ms2.append(scan)
 
 def load_ms2_library() -> dict:
     """
