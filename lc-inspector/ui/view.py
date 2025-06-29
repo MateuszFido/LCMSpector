@@ -8,7 +8,6 @@ plot_total_ion_current, plot_library_ms2, plot_no_ms2_found, plot_ms2_from_file
 import os, sys, traceback, logging, json
 from pathlib import Path
 from datetime import datetime
-from utils.classes import Compound
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
 from scipy.signal import find_peaks
