@@ -6,19 +6,20 @@
 
 
 ##### Table of Contents  
-[1. Features](#headers)   
-[2. Usage](#headers)  
-- [User-interface](#headers)  
-- [Running from source](#headers)  
-[3. Installation](#headers)  
-[4. Contributing](#headers)  
-[5. Licensing](#headers)
+[1. Description](#headers)  
+[2. Features](#headers)   
+[3. Usage](#headers)  
+[User-interface](#headers)  
+[Running from source](#headers)  
+[4. Installation](#headers)  
+[5. Contributing](#headers)  
+[6. Licensing](#headers)
 
 <a name="headers"/>
 
 ***
 
-## Description  🔍
+## 🔍 Description  
 LC-Inspector is an open-source application for analyzing targeted mass spectrometry data. 
 
 It allows you to process raw mass spectrometry and/or chromatography files and look for a set of compounds or peaks, trace their intensities, graph and export them (also the raw data), check with databases via MS/MS, and quantify using calibration standards.
