@@ -8,10 +8,11 @@
 ##### Table of Contents  
 [1. Description](#description)  
 [2. Features](#features)   
-[3. Usage](#usage)  
-    * [User-interface](#user-interface)  
+[3. Installation](#installation)  
+    * [Desktop app](#desktop-app)  
     * [Running from source](#running-from-source)  
-[4. Installation](#installation)  
+    * [Docker](#docker)  
+[4. Usage](#usage)  
 [5. Contributing](#contributing)  
 [6. Licensing](#licensing)
 
@@ -41,11 +42,44 @@ It allows you to process raw mass spectrometry and/or chromatography files and l
 
 ![LC-Inspector-demo](https://github.com/user-attachments/assets/c17d30d3-6bea-4692-ad7d-6d9d82322201)
 
+<a name="installation"/>
+
+## 💽 Installation 
+
+### Desktop app
+
+Executables for Windows and macOS are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases).
+
+*   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
+*   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
+
+If the app has not been quarantined but isn't running, go to `System settings -> Privacy and security -> scroll down -> Open anyway`
+
+If running from source, you only need to execute `python3 main.py`.
+
+### Running from source 
+
+1.  Clone the repository or download the compressed version and unpack
+2.  Install Python 3.12 or later
+3.  Navigate to the folder containing `main.py` in the terminal
+4.  Install dependencies listed in `requirements.txt` using `pip3 install -r requirements.txt`
+5.  Prepare the input data
+6.  Run the script via `main.py` using `python3 main.py`
+
+### Docker
+
+A Docker image is available from Dockerhub: #### TODO 
+
+You can pull the image and run it with the following commands: 
+
+```bash
+docker pull MateuszFido/LC-Inspector
+docker run -it --rm -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY MateuszFido/LC-Inspector
+```
+
 <a name="usage"/>
 
 ## ⛯ Usage
-
-### User-interface
 
 LC-Inspector simplifies the MS analysis process to only a few steps: 
 
@@ -63,28 +97,6 @@ LC-Inspector simplifies the MS analysis process to only a few steps:
 6. Quantify based on MS and/or chromatography data
 
 The user can upload and process the data entirely locally on their machine. No need to register an account anywhere or upload to external websites or web servers.
-
-### Running from source 
-
-1.  Clone the repository or download the compressed version and unpack
-2.  Install Python 3.12 or later
-3.  Navigate to the folder containing `main.py` in the terminal
-4.  Install dependencies listed in `requirements.txt` using `pip3 install -r requirements.txt`
-5.  Prepare the input data
-6.  Run the script via `main.py` using `python3 main.py`
-
-<a name="installation"/>
-
-## 💽 Installation 
-
-Executables for Windows and macOS are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases).
-
-*   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
-*   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
-
-If the app has not been quarantined but isn't running, go to `System settings -> Privacy and security -> scroll down -> Open anyway`
-
-If running from source, you only need to execute `python3 main.py`.
 
 <a name="contributing"/>
 
