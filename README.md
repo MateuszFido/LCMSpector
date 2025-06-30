@@ -77,10 +77,14 @@ The user can upload and process the data entirely locally on their machine. No n
 
 ## 💽 Installation 
 
-Binaries are distributed for Windows and macOS, published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases).
+Executables for Windows and macOS are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases).
 
 *   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
 *   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
+
+If the app has not been quarantined but isn't running, go to `System settings -> Privacy and security -> scroll down -> Open anyway`
+
+If running from source, you only need to execute `python3 main.py`.
 
 <a name="contributing"/>
 
