@@ -41,7 +41,7 @@ It allows you to process raw mass spectrometry and/or chromatography files and l
 
 ![LC-Inspector-demo](https://github.com/user-attachments/assets/c17d30d3-6bea-4692-ad7d-6d9d82322201)
 
-
+<a name="usage"/>
 
 ## ⛯ Usage
 
@@ -73,12 +73,16 @@ The user can upload and process the data entirely locally on their machine. No n
 5.  Prepare the input data
 6.  Run the script via `main.py` using `python3 main.py`
 
+<a name="installation"/>
+
 ## 💽 Installation 
 
 Binaries are distributed for Windows and macOS, published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases).
 
 *   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
 *   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
+
+<a name="contributing"/>
 
 ## 🙋 Contributing
 
@@ -87,6 +91,8 @@ If you have an idea to improve LC-Inspector, don't hesitate to let me know -- an
 There are two main ways to contribute: 
 * opening an issue: describe feature(s) you would like to see or any bugs or problems you encountered: please enclose your exact system configuration and attach the log file (app.log) 
 * opening a pull request with your suggested code changes 
+
+<a name="licensing"/>
 
 ## 📋 Licensing 
 
