@@ -42,7 +42,9 @@ For more information, visit the [LC-Inspector wiki](https://github.com/MateuszFi
 * Easy UI, works on Windows and macOS > 
 ***
 
-![LC-Inspector-demo](https://github.com/user-attachments/assets/c17d30d3-6bea-4692-ad7d-6d9d82322201)
+<p align="center">
+<img src="https://github.com/user-attachments/assets/cdbf9488-a75f-431d-b619-f07b3a8dbe47" width="800" height="525" />
+</p>
 
 <a name="installation"/>
 
