@@ -46,6 +46,10 @@ class Model:
         self.annotations = []
         self.compounds = []
         self.library = load_ms2_library()
+        if self.library:
+            logger.info("MS2 library loaded.")
+        else:
+            logger.error("No MS2 library found. Please make sure a corresponding library in .msp format is in the 'resources' folder.")
         self.controller = None
         self.worker = None
         logger.info("Model initialized.")
