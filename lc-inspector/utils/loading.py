@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
-import csv, re, os, logging, itertools, time, pathlib, pprint
+import csv, re, os, logging, itertools, time
+from pathlib import Path
 from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
 
@@ -174,6 +175,7 @@ def load_ms2_library() -> dict:
         The MS2 library as a dictionary where the keys are the feature names and the values are lists of lines from the file.
     """
     library = {}
-    with open(os.path.join(pathlib.Path((__file__)).parent.parent, "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"), mode="r", encoding="utf-8") as src:
+    library_path = Path(__file__).parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"
+    with open(library_path, mode="r", encoding="utf-8") as src:
         library = {line.split("Name: ")[1].strip(): [line] + list(itertools.takewhile(lambda x: x.strip() != "", src)) for line in src if line.startswith("Name: ")}
     return library
