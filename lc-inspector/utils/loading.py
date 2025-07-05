@@ -131,7 +131,7 @@ def load_ms1_data(path: str) -> list:
     logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
     return ms1_data
 
-def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
+def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float):
     """
     Using the pyteomics library and asyncio, load the MS2 data from the .mzML file, filtering based on the given precursors.
     
@@ -160,7 +160,7 @@ def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float) -> list:
                 for ion in compound.ions.keys():
                     if not np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], ion, atol=ms2_threshold):
                         continue
-                    elif not np.isclose(scan['scanList']['scan'][0]['scan start time'], compound.ions[ion]['RT'], atol=0.1):
+                    elif not np.isclose(scan['scanList']['scan'][0]['scan start time'], compound.ions[ion]['RT'], atol=0.5):
                         continue
                     else:
                         compound.ms2.append(scan)

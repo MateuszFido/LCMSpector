@@ -40,7 +40,15 @@ class Worker(QThread):
         st = time.time()
         lc_results = {}
         ms_results = {}
-        total_files = len(self.model.lc_measurements) + len(self.model.ms_measurements)
+        try:
+            total_files = len(self.model.lc_measurements) + len(self.model.ms_measurements)
+            if total_files == 0:
+                logger.warning("No files to process.")
+                return
+        except AttributeError:
+            logger.error("Model attributes are not properly initialized.")
+            return
+        
         progress = 0
 
         def update_progress():
@@ -49,28 +57,34 @@ class Worker(QThread):
             self.progressUpdated.emit(int(progress / total_files * 100))
 
         if self.mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error("ERROR: Invalid argument for process_data(mode): ", self.mode)
+            logger.error(f"ERROR: Invalid argument for process_data(mode): {self.mode}")
             return
 
-        with ProcessPoolExecutor(max_workers=multiprocessing.cpu_count() - 3) as executor:
-            if self.mode in {"LC/GC-MS", "LC/GC Only"}:
-                lc_futures = {executor.submit(LCMeasurement, lc_file): lc_file for lc_file in self.model.lc_measurements}
-            else:
-                lc_futures = {}
-
-            if self.mode in {"LC/GC-MS", "MS Only"}:
-                ms_futures = {executor.submit(MSMeasurement, ms_file, self.model.compounds, 0.0001): ms_file for ms_file in self.model.ms_measurements}
-            else:
-                ms_futures = {}
-
-            for future in as_completed(list(lc_futures) + list(ms_futures)):
-                result = future.result()
-                if future in lc_futures:
-                    lc_results[result.filename] = result
+        try:
+            with ProcessPoolExecutor(max_workers=max(1, multiprocessing.cpu_count() - 3)) as executor:
+                if self.mode in {"LC/GC-MS", "LC/GC Only"}:
+                    lc_futures = {executor.submit(LCMeasurement, lc_file): lc_file for lc_file in self.model.lc_measurements}
                 else:
-                    ms_results[result.filename] = result
-                update_progress()
+                    lc_futures = {}
 
-        logger.info(f"Processed in {time.time() - st}")
-        logger.info(f"Size in memory is LC: {sys.getsizeof(lc_results) / (1024 * 1024)} MB, MS: {sys.getsizeof(ms_results) / (1024 * 1024)} MB.")
+                if self.mode in {"LC/GC-MS", "MS Only"}:
+                    ms_futures = {executor.submit(MSMeasurement, ms_file, self.model.compounds, 0.0001): ms_file for ms_file in self.model.ms_measurements}
+                else:
+                    ms_futures = {}
+
+                for future in as_completed(list(lc_futures) + list(ms_futures)):
+                    try:
+                        result = future.result()
+                        if future in lc_futures:
+                            lc_results[result.filename] = result
+                        else:
+                            ms_results[result.filename] = result
+                    except Exception as e:
+                        logger.error(f"Error processing file: {e}")
+                    update_progress()
+        except Exception as e:
+            logger.error(f"Error in processing pool: {e}")
+            return
+
+        logger.info(f"Processed in {time.time() - st} seconds.")
         self.finished.emit(lc_results, ms_results)
