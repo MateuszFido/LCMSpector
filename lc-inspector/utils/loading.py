@@ -133,37 +133,36 @@ def load_ms1_data(path: str) -> list:
 
 def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float):
     """
-    Using the pyteomics library and asyncio, load the MS2 data from the .mzML file, filtering based on the given precursors.
-    
+    Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
+
     Parameters
     ----------
     path : str
         The path to the .mzML file.
-    precursors : tuple
-        The precursors to filter the MS2 data for.
+    compounds : tuple
+        The compounds to filter the MS2 data for.
     mass_accuracy : float
         The mass accuracy to use for filtering the MS2 data.
-    
+
     Returns
     -------
-    data : List of Scan objects
-        The list of Scan objects containing the filtered MS2 data.
+    None
     """
+    start_time = time.time()
     ms2_threshold = mass_accuracy * 5
-    
+    #TODO: Parallelize 
     with mzml.MzML(str(path)) as file:
         file.reset()
-        for scan in file:
-            if scan['ms level'] != 2:
-                continue
-            for compound in compounds:
-                for ion in compound.ions.keys():
-                    if not np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], ion, atol=ms2_threshold):
-                        continue
-                    elif not np.isclose(scan['scanList']['scan'][0]['scan start time'], compound.ions[ion]['RT'], atol=0.5):
-                        continue
-                    else:
+        for compound in compounds: 
+            for ion in compound.ions.keys():
+                data_range = file.time[(compound.ions[ion]['RT'] - 0.15) : (compound.ions[ion]['RT'] + 0.15)]
+                for scan in data_range:
+                    if scan['ms level'] == 2 and np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], ion, atol=ms2_threshold):
                         compound.ms2.append(scan)
+                        break
+
+    print(f"Loaded MS2 scans in {time.time() - start_time:.2f} seconds.")
+    logger.info(f"Loaded MS2 scans in {time.time() - start_time:.2f} seconds.")
 
 def load_ms2_library() -> dict:
     """

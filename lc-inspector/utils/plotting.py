@@ -286,7 +286,7 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     widget.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
 
     # Add labels to top 5 peaks 
-    top_5 = sorted(zip(mzs, intensities), key=lambda x: x[1], reverse=True)[:5]
+    top_5 = sorted(zip(mzs, intensities), key=lambda x: x[1])[:5]
     for i, (mz, intensity) in enumerate(top_5):
         text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
         text_item.setPos(mz, intensity)
@@ -308,40 +308,60 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
         return
 
     try:
-        for xic in ms_file.xics:
-            if xic.name == ms_compound.name:
-                compound_to_plot = xic
-                break
+        xics = ms_file.xics
     except AttributeError:
         logger.error(f"plot_ms2_from_file: ms_file.xics is None")
         return
+
+    compound_to_plot = next((xic for xic in xics if xic.name == ms_compound.name), None)
 
     if not compound_to_plot:
         logger.error(f"plot_ms2_from_file: compound_to_plot is None")
         return
 
-    try:
-        for scan in compound_to_plot.ms2:
+    mzs = []
+    intensities = [] 
+
+    ms2_scans = compound_to_plot.ms2
+    if not ms2_scans:
+        logger.error(f"plot_ms2_from_file: ms2_scans is None for {ms_compound.name} in {ms_file.filename}")
+        return
+
+    for scan in ms2_scans:
+        try:
             if np.isclose(cvquery(scan, 'MS:1000744'), precursor, atol=0.0005):
                 mzs = scan['m/z array']
                 intensities = scan['intensity array']
                 break
-    except AttributeError:
-        logger.error(f"plot_ms2_from_file: compound_to_plot.ms2 is None")
+        except TypeError as e:
+            logger.error(f"plot_ms2_from_file: TypeError {e} for scan {scan} in {ms_file.filename}")
+            continue
+        except KeyError as e:
+            logger.error(f"plot_ms2_from_file: KeyError {e} for scan {scan} in {ms_file.filename}")
+            continue
+        else:
+            mzs.append(scan['m/z array'])
+            intensities.append(scan['intensity array'])
+
+    if not mzs or not intensities:
+        logger.error(f"plot_ms2_from_file: mzs or intensities is None")
         return
-    else:
-        if not mzs:
-            logger.error(f"plot_ms2_from_file: no MS2 data found for {ms_compound.name} (m/z {precursor:.4f}) in {ms_file.filename}")
-            return
+    # TODO: Think how this can be improved and test on greater number of data 
+    mzs = np.concatenate(mzs)
+    intensities = np.concatenate(intensities)
 
     canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
     canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities/np.max(intensities)*100, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
     canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
-    
+
     top_5 = sorted(zip(mzs, intensities), key=lambda x: x[1], reverse=True)[:5]
     for i, (mz, intensity) in enumerate(top_5):
-        text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
-        text_item.setPos(mz, intensity)
+        try:
+            text_item = pg.TextItem(text=f"{mz:.4f}", color='#232323', anchor=(0, 0))
+        except TypeError as e:
+            logger.error(f"plot_ms2_from_file: TypeError {e} when creating text item for peak {mz} in {ms_file.filename}")
+            continue
+        text_item.setPos(mz, intensity/np.max(intensities)*100)
         text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
         canvas.addItem(text_item)
 
