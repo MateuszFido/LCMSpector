@@ -311,7 +311,7 @@ class View(QtWidgets.QMainWindow):
                 selected_files[self.tableWidget_files.item(i, 0).text()] = self.tableWidget_files.item(i, 1).text()
         if not selected_files:
             logger.error("No files selected for calibration.")
-            self.show_critical_error("No files selected for calibration.")
+            self.statusbar.showMessage("No files selected for calibration. Showing MS2 only")
         return selected_files
 
     def update_choose_compound(self, compounds):
@@ -446,7 +446,10 @@ class View(QtWidgets.QMainWindow):
             logger.error(f"No MS2 found for {compound.name}: {e}")
             plot_no_ms2_found(self.canvas_ms2)
         selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
-        ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
+        try:
+            ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
+        except IndexError:
+            ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(0, 0).text())
         if ms_file is None:
             logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}")
             return
@@ -458,6 +461,9 @@ class View(QtWidgets.QMainWindow):
                 logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {e}")
         else:
             plot_no_ms2_found(self.canvas_ms2)
+        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
+        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+        self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -511,7 +517,7 @@ class View(QtWidgets.QMainWindow):
         intensities = intensity_range[peaks][sorted_indices][0:10]
         for mz, intensity in zip(mzs, intensities):
             text_item = pg.TextItem(text=f"{mz:.4f}", color='#B2BEB5', anchor=(0, 0))
-            text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+            text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(mz, intensity)
             self.canvas_avgMS.addItem(text_item)
 

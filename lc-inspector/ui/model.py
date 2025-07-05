@@ -75,8 +75,10 @@ class Model:
 
     def calibrate(self, selected_files):
         for j, (file, concentration) in enumerate(selected_files.items()):
+            if not concentration.strip():
+                continue
             concentration_value, suffix = (concentration.split(" ") + [None])[:2]
-            conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-6, 'pm': 1e-9}
+            conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-9, 'pm': 1e-12}
             concentration = float(concentration_value) * conversion_factors.get(suffix and suffix.lower(), 1)
             
             ms_file = self.ms_measurements.get(file)
@@ -85,6 +87,9 @@ class Model:
                 continue
 
             for i, compound in enumerate(self.compounds):
+                if not compound.ions:
+                    logger.error(f"No ions found for compound {compound.name}.")
+                    continue
                 compound_intensity = sum(
                     np.round(np.sum(ms_file.xics[i].ions[ion]['MS Intensity'][1]), 0)
                     for ion in compound.ions.keys()
@@ -103,16 +108,16 @@ class Model:
 
         for ms_file in self.ms_measurements.values():
             for ms_compound, model_compound in zip(ms_file.xics, self.compounds):
-                ms_compound.concentration = sum(
-                    np.round(np.sum(ms_compound.ions[ion]['MS Intensity'][1]), 0)
-                    for ion in ms_compound.ions.keys()
-                )
                 try:
+                    ms_compound.concentration = sum(
+                        np.round(np.sum(ms_compound.ions[ion]['MS Intensity'][1]), 0)
+                        for ion in ms_compound.ions.keys()
+                    )
                     ms_compound.concentration = calculate_concentration(
                         ms_compound.concentration, model_compound.calibration_parameters
                     )
                     ms_compound.calibration_parameters = model_compound.calibration_parameters
-                except Exception:
+                except Exception as e:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
 
     def find_ms2_precursors(self):

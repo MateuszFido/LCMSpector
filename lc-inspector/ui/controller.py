@@ -113,11 +113,6 @@ class Controller:
         Calibrates the concentrations of the selected MS files using the selected files with annotated concentrations.
         :return: None
         """
-        try: 
-            self.model.find_ms2_precursors()
-        except Exception:
-            logger.error(f"Error finding MS2 precursors: {traceback.format_exc()}")
-            return
         selected_files = self.view.get_calibration_files()
         if selected_files:
             try:
@@ -136,6 +131,7 @@ class Controller:
         :return: None
         """
         try:
+            self.view.statusbar.showMessage(f"Looking for MS2 precursors...", 5000)
             self.model.find_ms2_precursors()
         except Exception:
             logger.error(f"Error finding MS2 precursors: {traceback.format_exc()}")
