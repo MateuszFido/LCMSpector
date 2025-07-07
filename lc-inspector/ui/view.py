@@ -492,17 +492,17 @@ class View(QtWidgets.QMainWindow):
         for i, text_item in enumerate(text_items):
             text_item.setPos(float(np.median(selected_curve.getData()[0]+i//20)), float(positions[i%len(positions)]))
 
-    def update_labels_avgMS(self):
+    def update_labels_avgMS(self, canvas):
         # Remove all the previous labels
-        for item in self.canvas_avgMS.items():
+        for item in canvas.items():
             if isinstance(item, pg.TextItem):
-                self.canvas_avgMS.removeItem(item)
+                canvas.removeItem(item)
         try:
-            data = self.canvas_avgMS.getPlotItem().listDataItems()[0].getData()
+            data = canvas.getPlotItem().listDataItems()[0].getData()
         except IndexError as e:
             logger.error(f"Error getting data items for MS viewing. {traceback.format_exc()}")
             return
-        current_view_range = self.canvas_avgMS.getViewBox().viewRange()
+        current_view_range = canvas.getViewBox().viewRange()
         # Get the intensity range within the current view range
         mz_range = data[0][np.logical_and(data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1])]
         indices = [i for i, x in enumerate(data[0]) if x in mz_range]
@@ -519,7 +519,7 @@ class View(QtWidgets.QMainWindow):
             text_item = pg.TextItem(text=f"{mz:.4f}", color='#B2BEB5', anchor=(0, 0))
             text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
             text_item.setPos(mz, intensity)
-            self.canvas_avgMS.addItem(text_item)
+            canvas.addItem(text_item)
 
     def update_crosshair(self, e):
         """
@@ -779,10 +779,10 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.setObjectName("canvas_baseline")
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
         self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
-        self.canvas_baseline.scene().sigMouseClicked.connect(self.update_labels_avgMS)
+        self.canvas_baseline.scene().sigMouseClicked.connect(lambda ev: self.update_labels_avgMS(self.canvas_avgMS))
         self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
         self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
-        self.canvas_baseline.sigKeyPressed.connect(self.update_labels_avgMS)
+        self.canvas_baseline.sigKeyPressed.connect(lambda ev: self.update_labels_avgMS(self.canvas_avgMS))
         self.crosshair_v = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine), movable=False)
         self.crosshair_h = pg.InfiniteLine(angle=0, pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1), movable=False)
         self.line_marker = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1), movable=True)
@@ -796,7 +796,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.setMouseEnabled(x=True, y=False)
         self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y')
         self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(self.update_labels_avgMS)
+        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(lambda ev: self.update_labels_avgMS(self.canvas_avgMS))
 
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)

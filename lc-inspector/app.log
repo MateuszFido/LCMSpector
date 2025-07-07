@@ -1,255 +1,39 @@
-INFO 2025-07-06 00:01:28 __main__ - -------------------------------------
+INFO 2025-07-07 10:25:18 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-INFO 2025-07-06 00:01:31 ui.model - MS2 library loaded.
-INFO 2025-07-06 00:01:31 ui.model - MS2 library loaded.
-INFO 2025-07-06 00:01:31 ui.model - Model initialized.
-INFO 2025-07-06 00:01:31 ui.model - Model initialized.
-INFO 2025-07-06 00:01:31 ui.model - Current thread: MainThread
-INFO 2025-07-06 00:01:31 ui.model - Current thread: MainThread
-INFO 2025-07-06 00:01:31 ui.model - Current process: 10448
-INFO 2025-07-06 00:01:31 ui.model - Current process: 10448
-INFO 2025-07-06 00:01:31 ui.controller - Controller initialized.
-INFO 2025-07-06 00:01:31 ui.controller - Controller initialized.
-INFO 2025-07-06 00:01:31 ui.controller - Current thread: MainThread
-INFO 2025-07-06 00:01:31 ui.controller - Current thread: MainThread
-INFO 2025-07-06 00:01:31 ui.controller - Current process: 10448
-INFO 2025-07-06 00:01:31 ui.controller - Current process: 10448
-INFO 2025-07-06 00:01:31 __main__ - Main executed, Qt application started.
-INFO 2025-07-06 00:01:31 __main__ - Current thread: MainThread
-INFO 2025-07-06 00:01:31 __main__ - Current process: 10448
-WARNING 2025-07-06 00:01:33 ui.view - listAnnotations is not defined!
-WARNING 2025-07-06 00:01:33 ui.view - listAnnotations is not defined!
-ERROR 2025-07-06 00:01:37 ui.view - listLC has been deleted!
-ERROR 2025-07-06 00:01:37 ui.view - listLC has been deleted!
-WARNING 2025-07-06 00:01:37 ui.view - listAnnotations is not defined!
-WARNING 2025-07-06 00:01:37 ui.view - listAnnotations is not defined!
-INFO 2025-07-06 00:01:37 ui.controller - Starting the processing...
-INFO 2025-07-06 00:01:37 ui.controller - Starting the processing...
-INFO 2025-07-06 00:01:42 utils.loading - Loaded 987 MS1 scans in 4.16 seconds.
-INFO 2025-07-06 00:01:42 utils.loading - Loaded 965 MS1 scans in 4.43 seconds.
-INFO 2025-07-06 00:01:42 utils.loading - Loaded 971 MS1 scans in 4.51 seconds.
-INFO 2025-07-06 00:01:42 utils.loading - Loaded 969 MS1 scans in 4.58 seconds.
-INFO 2025-07-06 00:01:44 utils.loading - Loaded 1065 MS1 scans in 6.19 seconds.
-INFO 2025-07-06 00:01:50 calculation.workers - Processed in 12.393074750900269 seconds.
-INFO 2025-07-06 00:01:52 utils.plotting - Plotting annotated XICs of STMIX5mM-neg took 0.0017343745231628417 miliseconds (52 XICs)
-INFO 2025-07-06 00:01:52 utils.plotting - Plotting annotated XICs of STMIX5mM-neg took 0.0017343745231628417 miliseconds (52 XICs)
-ERROR 2025-07-06 00:01:54 ui.view - No files selected for calibration.
-ERROR 2025-07-06 00:01:54 ui.view - No files selected for calibration.
-ERROR 2025-07-06 00:01:54 ui.controller - No files selected for calibration.
-ERROR 2025-07-06 00:01:54 ui.controller - No files selected for calibration.
-ERROR 2025-07-06 00:01:54 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:01:54 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:01:54 ui.view - Precursor found for Adenine in the library, m/z 136.0617
-INFO 2025-07-06 00:01:54 ui.view - Precursor found for Adenine in the library, m/z 136.0617
-ERROR 2025-07-06 00:01:54 utils.plotting - plot_ms2_from_file: ms2_scans is None for Adenine in STMIX5mM-neg
-ERROR 2025-07-06 00:01:54 utils.plotting - plot_ms2_from_file: ms2_scans is None for Adenine in STMIX5mM-neg
-INFO 2025-07-06 00:02:02 utils.loading - Loaded MS2 scans in 8.49 seconds.
-INFO 2025-07-06 00:02:12 utils.loading - Loaded MS2 scans in 9.93 seconds.
-INFO 2025-07-06 00:02:22 utils.loading - Loaded MS2 scans in 9.99 seconds.
-INFO 2025-07-06 00:02:33 utils.loading - Loaded MS2 scans in 10.62 seconds.
-INFO 2025-07-06 00:02:46 utils.loading - Loaded MS2 scans in 13.48 seconds.
-ERROR 2025-07-06 00:02:49 utils.plotting - ---Error when trying to plot calibration curve for Adenosine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:02:49 utils.plotting - ---Error when trying to plot calibration curve for Adenosine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:02:49 ui.view - Precursor found for Adenosine in the library, m/z 268.10404
-INFO 2025-07-06 00:02:49 ui.view - Precursor found for Adenosine in the library, m/z 268.10404
-ERROR 2025-07-06 00:02:49 utils.plotting - plot_ms2_from_file: ms2_scans is None for Adenosine in STMIX5mM-neg
-ERROR 2025-07-06 00:02:49 utils.plotting - plot_ms2_from_file: ms2_scans is None for Adenosine in STMIX5mM-neg
-ERROR 2025-07-06 00:02:50 utils.plotting - ---Error when trying to plot calibration curve for Agmatine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:02:50 utils.plotting - ---Error when trying to plot calibration curve for Agmatine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:02:50 ui.view - Precursor found for Agmatine in the library, m/z 131.129
-INFO 2025-07-06 00:02:50 ui.view - Precursor found for Agmatine in the library, m/z 131.129
-INFO 2025-07-06 00:02:50 utils.plotting - Plotting MS2 for Agmatine (m/z 131.1290) in STMIX5mM-neg
-INFO 2025-07-06 00:02:50 utils.plotting - Plotting MS2 for Agmatine (m/z 131.1290) in STMIX5mM-neg
-ERROR 2025-07-06 00:02:52 utils.plotting - ---Error when trying to plot calibration curve for Alanine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:02:52 utils.plotting - ---Error when trying to plot calibration curve for Alanine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:02:52 ui.view - Precursor found for Alanine in the library, m/z 90.05543
-INFO 2025-07-06 00:02:52 ui.view - Precursor found for Alanine in the library, m/z 90.05543
-INFO 2025-07-06 00:02:52 utils.plotting - Plotting MS2 for Alanine (m/z 90.0554) in STMIX5mM-neg
-INFO 2025-07-06 00:02:52 utils.plotting - Plotting MS2 for Alanine (m/z 90.0554) in STMIX5mM-neg
-ERROR 2025-07-06 00:02:53 utils.plotting - ---Error when trying to plot calibration curve for Arginine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:02:53 utils.plotting - ---Error when trying to plot calibration curve for Arginine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:02:53 ui.view - Precursor found for Arginine in the library, m/z 175.11896
-INFO 2025-07-06 00:02:53 ui.view - Precursor found for Arginine in the library, m/z 175.11896
-INFO 2025-07-06 00:02:53 utils.plotting - Plotting MS2 for Arginine (m/z 175.1190) in STMIX5mM-neg
-INFO 2025-07-06 00:02:53 utils.plotting - Plotting MS2 for Arginine (m/z 175.1190) in STMIX5mM-neg
-ERROR 2025-07-06 00:02:55 utils.plotting - ---Error when trying to plot calibration curve for Asparagine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:02:55 utils.plotting - ---Error when trying to plot calibration curve for Asparagine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:02:55 ui.view - Precursor found for Asparagine in the library, m/z 133.0609
-INFO 2025-07-06 00:02:55 ui.view - Precursor found for Asparagine in the library, m/z 133.0609
-INFO 2025-07-06 00:02:55 utils.plotting - Plotting MS2 for Asparagine (m/z 133.0609) in STMIX5mM-neg
-INFO 2025-07-06 00:02:55 utils.plotting - Plotting MS2 for Asparagine (m/z 133.0609) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:02 utils.plotting - ---Error when trying to plot calibration curve for Aspartic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:02 utils.plotting - ---Error when trying to plot calibration curve for Aspartic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:02 ui.view - Precursor found for Aspartic acid in the library, m/z 134.0449
-INFO 2025-07-06 00:03:02 ui.view - Precursor found for Aspartic acid in the library, m/z 134.0449
-ERROR 2025-07-06 00:03:02 ui.view - No MS2 found for Aspartic acid in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:02 ui.view - No MS2 found for Aspartic acid in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:02 utils.plotting - ---Error when trying to plot calibration curve for Betaine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:02 utils.plotting - ---Error when trying to plot calibration curve for Betaine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:02 ui.view - Precursor found for Betaine in the library, m/z 118.0864
-INFO 2025-07-06 00:03:02 ui.view - Precursor found for Betaine in the library, m/z 118.0864
-ERROR 2025-07-06 00:03:02 utils.plotting - plot_ms2_from_file: ms2_scans is None for Betaine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:02 utils.plotting - plot_ms2_from_file: ms2_scans is None for Betaine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:06 utils.plotting - ---Error when trying to plot calibration curve for Cadaverine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:06 utils.plotting - ---Error when trying to plot calibration curve for Cadaverine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:06 ui.view - Precursor found for Cadaverine in the library, m/z 103.1234
-INFO 2025-07-06 00:03:06 ui.view - Precursor found for Cadaverine in the library, m/z 103.1234
-ERROR 2025-07-06 00:03:06 utils.plotting - plot_ms2_from_file: ms2_scans is None for Cadaverine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:06 utils.plotting - plot_ms2_from_file: ms2_scans is None for Cadaverine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:08 utils.plotting - ---Error when trying to plot calibration curve for Caffeine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:08 utils.plotting - ---Error when trying to plot calibration curve for Caffeine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:08 ui.view - Precursor found for Caffeine in the library, m/z 195.0877
-INFO 2025-07-06 00:03:08 ui.view - Precursor found for Caffeine in the library, m/z 195.0877
-ERROR 2025-07-06 00:03:08 utils.plotting - plot_ms2_from_file: ms2_scans is None for Caffeine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:08 utils.plotting - plot_ms2_from_file: ms2_scans is None for Caffeine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:09 utils.plotting - ---Error when trying to plot calibration curve for Choline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:09 utils.plotting - ---Error when trying to plot calibration curve for Choline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:09 ui.view - No MS2 found for Choline: 'Choline'
-ERROR 2025-07-06 00:03:09 ui.view - No MS2 found for Choline: 'Choline'
-ERROR 2025-07-06 00:03:09 ui.view - No MS2 found for Choline in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:09 ui.view - No MS2 found for Choline in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:10 utils.plotting - ---Error when trying to plot calibration curve for Citrulline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:10 utils.plotting - ---Error when trying to plot calibration curve for Citrulline: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:10 ui.view - Precursor found for Citrulline in the library, m/z 176.1031
-INFO 2025-07-06 00:03:10 ui.view - Precursor found for Citrulline in the library, m/z 176.1031
-INFO 2025-07-06 00:03:10 utils.plotting - Plotting MS2 for Citrulline (m/z 176.1031) in STMIX5mM-neg
-INFO 2025-07-06 00:03:10 utils.plotting - Plotting MS2 for Citrulline (m/z 176.1031) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:12 utils.plotting - ---Error when trying to plot calibration curve for Cysteine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:12 utils.plotting - ---Error when trying to plot calibration curve for Cysteine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:12 ui.view - Precursor found for Cysteine in the library, m/z 122.0272
-INFO 2025-07-06 00:03:12 ui.view - Precursor found for Cysteine in the library, m/z 122.0272
-INFO 2025-07-06 00:03:12 utils.plotting - Plotting MS2 for Cysteine (m/z 122.0272) in STMIX5mM-neg
-INFO 2025-07-06 00:03:12 utils.plotting - Plotting MS2 for Cysteine (m/z 122.0272) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:15 utils.plotting - ---Error when trying to plot calibration curve for DOPA: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:15 utils.plotting - ---Error when trying to plot calibration curve for DOPA: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:15 ui.view - Precursor found for DOPA in the library, m/z 393.13
-INFO 2025-07-06 00:03:15 ui.view - Precursor found for DOPA in the library, m/z 393.13
-INFO 2025-07-06 00:03:15 utils.plotting - Plotting MS2 for DOPA (m/z 393.1300) in STMIX5mM-neg
-INFO 2025-07-06 00:03:15 utils.plotting - Plotting MS2 for DOPA (m/z 393.1300) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:17 utils.plotting - ---Error when trying to plot calibration curve for Dopamine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:17 utils.plotting - ---Error when trying to plot calibration curve for Dopamine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:17 ui.view - Precursor found for Dopamine in the library, m/z 154.0863
-INFO 2025-07-06 00:03:17 ui.view - Precursor found for Dopamine in the library, m/z 154.0863
-INFO 2025-07-06 00:03:17 utils.plotting - Plotting MS2 for Dopamine (m/z 154.0863) in STMIX5mM-neg
-INFO 2025-07-06 00:03:17 utils.plotting - Plotting MS2 for Dopamine (m/z 154.0863) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:33 utils.plotting - ---Error when trying to plot calibration curve for GABA: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:33 utils.plotting - ---Error when trying to plot calibration curve for GABA: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:33 ui.view - No MS2 found for GABA: 'GABA'
-ERROR 2025-07-06 00:03:33 ui.view - No MS2 found for GABA: 'GABA'
-ERROR 2025-07-06 00:03:33 ui.view - No MS2 found for GABA in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:33 ui.view - No MS2 found for GABA in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:33 utils.plotting - ---Error when trying to plot calibration curve for Glutamic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:33 utils.plotting - ---Error when trying to plot calibration curve for Glutamic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:33 ui.view - Precursor found for Glutamic acid in the library, m/z 148.0603
-INFO 2025-07-06 00:03:33 ui.view - Precursor found for Glutamic acid in the library, m/z 148.0603
-INFO 2025-07-06 00:03:33 utils.plotting - Plotting MS2 for Glutamic acid (m/z 148.0603) in STMIX5mM-neg
-INFO 2025-07-06 00:03:33 utils.plotting - Plotting MS2 for Glutamic acid (m/z 148.0603) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:35 utils.plotting - ---Error when trying to plot calibration curve for Glutamine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:35 utils.plotting - ---Error when trying to plot calibration curve for Glutamine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:35 ui.view - Precursor found for Glutamine in the library, m/z 145.06186
-INFO 2025-07-06 00:03:35 ui.view - Precursor found for Glutamine in the library, m/z 145.06186
-INFO 2025-07-06 00:03:35 utils.plotting - Plotting MS2 for Glutamine (m/z 145.0619) in STMIX5mM-neg
-INFO 2025-07-06 00:03:35 utils.plotting - Plotting MS2 for Glutamine (m/z 145.0619) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Glycine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Glycine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:36 ui.view - Precursor found for Glycine in the library, m/z 74.023338317871
-INFO 2025-07-06 00:03:36 ui.view - Precursor found for Glycine in the library, m/z 74.023338317871
-INFO 2025-07-06 00:03:36 utils.plotting - Plotting MS2 for Glycine (m/z 74.0233) in STMIX5mM-neg
-INFO 2025-07-06 00:03:36 utils.plotting - Plotting MS2 for Glycine (m/z 74.0233) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Histamine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Histamine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:36 ui.view - Precursor found for Histamine in the library, m/z 112.087
-INFO 2025-07-06 00:03:36 ui.view - Precursor found for Histamine in the library, m/z 112.087
-INFO 2025-07-06 00:03:36 utils.plotting - Plotting MS2 for Histamine (m/z 112.0870) in STMIX5mM-neg
-INFO 2025-07-06 00:03:36 utils.plotting - Plotting MS2 for Histamine (m/z 112.0870) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Histidine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Histidine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:36 ui.view - Precursor found for Histidine in the library, m/z 156.0767
-INFO 2025-07-06 00:03:36 ui.view - Precursor found for Histidine in the library, m/z 156.0767
-INFO 2025-07-06 00:03:36 utils.plotting - Plotting MS2 for Histidine (m/z 156.0767) in STMIX5mM-neg
-INFO 2025-07-06 00:03:36 utils.plotting - Plotting MS2 for Histidine (m/z 156.0767) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Homocitrulline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:36 utils.plotting - ---Error when trying to plot calibration curve for Homocitrulline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:36 ui.view - No MS2 found for Homocitrulline: 'Homocitrulline'
-ERROR 2025-07-06 00:03:36 ui.view - No MS2 found for Homocitrulline: 'Homocitrulline'
-ERROR 2025-07-06 00:03:36 ui.view - No MS2 found for Homocitrulline in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:36 ui.view - No MS2 found for Homocitrulline in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Hypoxanthine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Hypoxanthine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Hypoxanthine in the library, m/z 137.0456
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Hypoxanthine in the library, m/z 137.0456
-ERROR 2025-07-06 00:03:37 utils.plotting - plot_ms2_from_file: ms2_scans is None for Hypoxanthine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:37 utils.plotting - plot_ms2_from_file: ms2_scans is None for Hypoxanthine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Kynurenine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Kynurenine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Kynurenine in the library, m/z 209.0918
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Kynurenine in the library, m/z 209.0918
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Kynurenine (m/z 209.0918) in STMIX5mM-neg
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Kynurenine (m/z 209.0918) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for (Iso)Leucine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for (Iso)Leucine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for (Iso)Leucine: '(Iso)Leucine'
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for (Iso)Leucine: '(Iso)Leucine'
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for (Iso)Leucine in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for (Iso)Leucine in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Lysine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Lysine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Lysine in the library, m/z 147.1127
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Lysine in the library, m/z 147.1127
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Lysine (m/z 147.1127) in STMIX5mM-neg
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Lysine (m/z 147.1127) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Methionine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Methionine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Methionine in the library, m/z 150.05833
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Methionine in the library, m/z 150.05833
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Methionine (m/z 150.0583) in STMIX5mM-neg
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Methionine (m/z 150.0583) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for NH3: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for NH3: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for NH3: 'NH3'
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for NH3: 'NH3'
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for NH3 in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for NH3 in STMIX5mM-neg: cannot access local variable 'precursor' where it is not associated with a value
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Niacinamide: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Niacinamide: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Niacinamide in the library, m/z 123.0553
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Niacinamide in the library, m/z 123.0553
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for Niacinamide in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:37 ui.view - No MS2 found for Niacinamide in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Ornithine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:37 utils.plotting - ---Error when trying to plot calibration curve for Ornithine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Ornithine in the library, m/z 133.0972
-INFO 2025-07-06 00:03:37 ui.view - Precursor found for Ornithine in the library, m/z 133.0972
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Ornithine (m/z 133.0972) in STMIX5mM-neg
-INFO 2025-07-06 00:03:37 utils.plotting - Plotting MS2 for Ornithine (m/z 133.0972) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Orotic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Orotic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Orotic acid in the library, m/z 155.0089
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Orotic acid in the library, m/z 155.0089
-ERROR 2025-07-06 00:03:46 utils.plotting - plot_ms2_from_file: ms2_scans is None for Orotic acid in STMIX5mM-neg
-ERROR 2025-07-06 00:03:46 utils.plotting - plot_ms2_from_file: ms2_scans is None for Orotic acid in STMIX5mM-neg
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Phenylalanine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Phenylalanine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Phenylalanine in the library, m/z 166.08626
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Phenylalanine in the library, m/z 166.08626
-INFO 2025-07-06 00:03:46 utils.plotting - Plotting MS2 for Phenylalanine (m/z 166.0863) in STMIX5mM-neg
-INFO 2025-07-06 00:03:46 utils.plotting - Plotting MS2 for Phenylalanine (m/z 166.0863) in STMIX5mM-neg
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Proline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Proline: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Proline in the library, m/z 116.07061
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Proline in the library, m/z 116.07061
-ERROR 2025-07-06 00:03:46 ui.view - No MS2 found for Proline in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:46 ui.view - No MS2 found for Proline in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Putrescine: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:46 utils.plotting - ---Error when trying to plot calibration curve for Putrescine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Putrescine in the library, m/z 89.1078
-INFO 2025-07-06 00:03:46 ui.view - Precursor found for Putrescine in the library, m/z 89.1078
-ERROR 2025-07-06 00:03:46 utils.plotting - plot_ms2_from_file: ms2_scans is None for Putrescine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:46 utils.plotting - plot_ms2_from_file: ms2_scans is None for Putrescine in STMIX5mM-neg
-ERROR 2025-07-06 00:03:47 utils.plotting - ---Error when trying to plot calibration curve for Proline: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-06 00:03:47 utils.plotting - ---Error when trying to plot calibration curve for Proline: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-06 00:03:47 ui.view - Precursor found for Proline in the library, m/z 116.07061
-INFO 2025-07-06 00:03:47 ui.view - Precursor found for Proline in the library, m/z 116.07061
-ERROR 2025-07-06 00:03:47 ui.view - No MS2 found for Proline in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-ERROR 2025-07-06 00:03:47 ui.view - No MS2 found for Proline in STMIX5mM-neg: The truth value of an array with more than one element is ambiguous. Use a.any() or a.all()
-INFO 2025-07-06 00:03:48 __main__ - Exiting with exit code 0.
+INFO 2025-07-07 10:25:21 ui.model - MS2 library loaded.
+INFO 2025-07-07 10:25:21 ui.model - MS2 library loaded.
+INFO 2025-07-07 10:25:21 ui.model - Model initialized.
+INFO 2025-07-07 10:25:21 ui.model - Model initialized.
+INFO 2025-07-07 10:25:21 ui.model - Current thread: MainThread
+INFO 2025-07-07 10:25:21 ui.model - Current thread: MainThread
+INFO 2025-07-07 10:25:21 ui.model - Current process: 1297
+INFO 2025-07-07 10:25:21 ui.model - Current process: 1297
+INFO 2025-07-07 10:25:21 ui.controller - Controller initialized.
+INFO 2025-07-07 10:25:21 ui.controller - Controller initialized.
+INFO 2025-07-07 10:25:21 ui.controller - Current thread: MainThread
+INFO 2025-07-07 10:25:21 ui.controller - Current thread: MainThread
+INFO 2025-07-07 10:25:21 ui.controller - Current process: 1297
+INFO 2025-07-07 10:25:21 ui.controller - Current process: 1297
+INFO 2025-07-07 10:25:21 __main__ - Main executed, Qt application started.
+INFO 2025-07-07 10:25:21 __main__ - Current thread: MainThread
+INFO 2025-07-07 10:25:21 __main__ - Current process: 1297
+WARNING 2025-07-07 10:25:30 ui.view - listAnnotations is not defined!
+WARNING 2025-07-07 10:25:30 ui.view - listAnnotations is not defined!
+INFO 2025-07-07 10:25:30 ui.controller - Starting the processing...
+INFO 2025-07-07 10:25:30 ui.controller - Starting the processing...
+INFO 2025-07-07 10:25:30 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-07-07 10:25:30 utils.preprocessing - Baseline corrected chromatogram calculated.
+INFO 2025-07-07 10:25:30 utils.classes - Loaded LC file STMIX5_02.
+INFO 2025-07-07 10:25:36 utils.loading - Loaded 1065 MS1 scans in 5.93 seconds.
+INFO 2025-07-07 10:25:41 calculation.workers - Processed in 11.442622423171997 seconds.
+INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated XICs of STMIX5_02 took 0.001645188570022583 miliseconds (52 XICs)
+INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated XICs of STMIX5_02 took 0.001645188570022583 miliseconds (52 XICs)
+INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated LC of STMIX5_02 took 4.7826528549194333e-05 miliseconds
+INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated LC of STMIX5_02 took 4.7826528549194333e-05 miliseconds
+INFO 2025-07-07 10:25:44 ui.view - Clicked the chromatogram at position: 0.0
+INFO 2025-07-07 10:25:44 ui.view - Clicked the chromatogram at position: 0.0
+INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 32.07024566587562
+INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 32.07024566587562
+INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 31.350403021277252
+INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 31.350403021277252
+INFO 2025-07-07 10:26:02 __main__ - Exiting with exit code 0.

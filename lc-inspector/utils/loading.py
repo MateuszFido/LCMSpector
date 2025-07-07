@@ -131,7 +131,7 @@ def load_ms1_data(path: str) -> list:
     logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
     return ms1_data
 
-def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float):
+def load_ms2_data(path: str, library: dict, compounds: tuple, mass_accuracy: float):
     """
     Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
 
@@ -150,12 +150,12 @@ def load_ms2_data(path: str, compounds: tuple, mass_accuracy: float):
     """
     start_time = time.time()
     ms2_threshold = mass_accuracy * 5
-    #TODO: Parallelize 
+
     with mzml.MzML(str(path)) as file:
         file.reset()
         for compound in compounds: 
             for ion in compound.ions.keys():
-                data_range = file.time[(compound.ions[ion]['RT'] - 0.15) : (compound.ions[ion]['RT'] + 0.15)]
+                data_range = file.time[(compound.ions[ion]['RT'] - 0.5) : (compound.ions[ion]['RT'] + 0.5)]
                 for scan in data_range:
                     if scan['ms level'] == 2 and np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], ion, atol=ms2_threshold):
                         compound.ms2.append(scan)
