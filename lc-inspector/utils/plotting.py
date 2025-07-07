@@ -277,7 +277,7 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
         except ValueError:
             continue
         mzs.append(mz)
-        intensities.append(-intensity)
+        intensities.append(intensity)
 
     if not mzs or not intensities:
         return
@@ -302,12 +302,16 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
     widget.setLabel('bottom', 'm/z')
 
 def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):
+    canvas.clear()
+    canvas.setBackground("w")
     if not ms_file:
         logger.error(f"plot_ms2_from_file: ms_file is None")
+        raise Exception
         return
 
     if not ms_compound:
         logger.error(f"plot_ms2_from_file: ms_compound is None")
+        raise Exception
         return
 
     try:
@@ -320,6 +324,7 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
     if not compound_to_plot:
         logger.error(f"plot_ms2_from_file: compound_to_plot is None")
+        raise Exception
         return
 
     mzs = []
@@ -327,6 +332,7 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
     ms2_scans = compound_to_plot.ms2
     if not ms2_scans:
+        raise Exception
         logger.error(f"plot_ms2_from_file: ms2_scans is None for {ms_compound.name} in {ms_file.filename}")
         return
 
@@ -352,7 +358,7 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
         mzs = np.concatenate(mzs)
         intensities = np.concatenate(intensities)
 
-    canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
+    canvas.setTitle(f'{ms_file.filename}: MS2 spectrum of {ms_compound.name}')
     canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities/np.max(intensities)*100, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
     canvas.plot([min(mzs), max(mzs)], [0, 0], pen=mkPen('k', width=0.5))
 
@@ -370,7 +376,6 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
     canvas.setLabel('left', 'Intensity (%)')
     canvas.setLabel('bottom', 'm/z')
     logger.info(f"Plotting MS2 for {ms_compound.name} (m/z {precursor:.4f}) in {ms_file.filename}")
-    canvas.getPlotItem().getViewBox().setYRange(-100, 100)
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")

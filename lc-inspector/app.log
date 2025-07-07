@@ -1,61 +1,83 @@
-INFO 2025-07-07 21:41:17 __main__ - -------------------------------------
+INFO 2025-07-07 22:15:32 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-INFO 2025-07-07 21:41:20 ui.model - MS2 library loaded.
-INFO 2025-07-07 21:41:20 ui.model - Model initialized.
-INFO 2025-07-07 21:41:20 ui.model - Current thread: MainThread
-INFO 2025-07-07 21:41:20 ui.model - Current process: 13755
-INFO 2025-07-07 21:41:20 ui.controller - Controller initialized.
-INFO 2025-07-07 21:41:20 ui.controller - Current thread: MainThread
-INFO 2025-07-07 21:41:20 ui.controller - Current process: 13755
-INFO 2025-07-07 21:41:20 __main__ - Main executed, Qt application started.
-INFO 2025-07-07 21:41:20 __main__ - Current thread: MainThread
-INFO 2025-07-07 21:41:20 __main__ - Current process: 13755
-WARNING 2025-07-07 21:41:21 ui.view - listAnnotations is not defined!
-ERROR 2025-07-07 21:41:24 ui.view - listLC has been deleted!
-WARNING 2025-07-07 21:41:24 ui.view - listAnnotations is not defined!
-INFO 2025-07-07 21:41:24 ui.controller - Starting the processing...
-INFO 2025-07-07 21:41:30 utils.loading - Loaded 1065 MS1 scans in 5.97 seconds.
-INFO 2025-07-07 21:41:36 calculation.workers - Processed in 11.740351438522339 seconds.
-INFO 2025-07-07 21:41:38 utils.plotting - Plotting annotated XICs of STMIX5_02 took 0.0016702888011932372 miliseconds (52 XICs)
-ERROR 2025-07-07 21:41:39 ui.view - No files selected for calibration.
-ERROR 2025-07-07 21:41:39 ui.controller - No files selected for calibration.
-ERROR 2025-07-07 21:41:39 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-07 21:41:40 utils.loading - Loaded MS2 scans in 0.94 seconds.
-ERROR 2025-07-07 21:41:40 ui.view - No MS2 found for  in STMIX5_02: Traceback (most recent call last):
-  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 464, in display_ms2
+INFO 2025-07-07 22:15:34 ui.model - MS2 library loaded.
+INFO 2025-07-07 22:15:34 ui.model - Model initialized.
+INFO 2025-07-07 22:15:34 ui.model - Current thread: MainThread
+INFO 2025-07-07 22:15:34 ui.model - Current process: 1960
+INFO 2025-07-07 22:15:34 ui.controller - Controller initialized.
+INFO 2025-07-07 22:15:34 ui.controller - Current thread: MainThread
+INFO 2025-07-07 22:15:34 ui.controller - Current process: 1960
+INFO 2025-07-07 22:15:34 __main__ - Main executed, Qt application started.
+INFO 2025-07-07 22:15:34 __main__ - Current thread: MainThread
+INFO 2025-07-07 22:15:34 __main__ - Current process: 1960
+WARNING 2025-07-07 22:15:36 ui.view - listAnnotations is not defined!
+ERROR 2025-07-07 22:15:41 ui.view - listLC has been deleted!
+WARNING 2025-07-07 22:15:41 ui.view - listAnnotations is not defined!
+INFO 2025-07-07 22:15:41 ui.controller - Starting the processing...
+INFO 2025-07-07 22:15:45 utils.loading - Loaded 987 MS1 scans in 4.12 seconds.
+INFO 2025-07-07 22:15:46 utils.loading - Loaded 965 MS1 scans in 4.44 seconds.
+INFO 2025-07-07 22:15:46 utils.loading - Loaded 971 MS1 scans in 4.47 seconds.
+INFO 2025-07-07 22:15:46 utils.loading - Loaded 969 MS1 scans in 4.53 seconds.
+INFO 2025-07-07 22:15:47 utils.loading - Loaded 1065 MS1 scans in 6.21 seconds.
+INFO 2025-07-07 22:15:54 calculation.workers - Processed in 12.40831446647644 seconds.
+INFO 2025-07-07 22:15:55 utils.plotting - Plotting annotated XICs of STMIX5mM-neg took 0.0017441232204437255 miliseconds (52 XICs)
+ERROR 2025-07-07 22:16:14 ui.view - No files selected for calibration.
+ERROR 2025-07-07 22:16:14 ui.controller - No files selected for calibration.
+ERROR 2025-07-07 22:16:14 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
+INFO 2025-07-07 22:16:15 utils.loading - Loaded MS2 scans in 0.75 seconds.
+ERROR 2025-07-07 22:16:15 ui.view - No MS2 found for  in STMIX5mM-neg: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 465, in display_ms2
     precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
 IndexError: list index out of range
 
-DEBUG 2025-07-07 21:41:40 ui.model - Library entry not found for Adenine: 306.1197
-DEBUG 2025-07-07 21:41:40 ui.model - Library entry not found for Adenine: 260.0779
-DEBUG 2025-07-07 21:41:41 ui.model - Library entry not found for Adenine: 476.1776
-DEBUG 2025-07-07 21:41:41 ui.model - Library entry not found for Adenine: 431.1436
-INFO 2025-07-07 21:41:41 ui.model - Precursor m/z 136.0618 found for Adenine in the library.
-INFO 2025-07-07 21:41:41 ui.model - Precursor m/z 134.0472 found for Adenine in the library.
-DEBUG 2025-07-07 21:41:41 ui.model - Library entry not found for Adenine: 306.1197
-DEBUG 2025-07-07 21:41:41 ui.model - Library entry not found for Adenine: 260.0779
-DEBUG 2025-07-07 21:41:41 ui.model - Library entry not found for Adenine: 476.1776
-DEBUG 2025-07-07 21:41:41 ui.model - Library entry not found for Adenine: 431.1436
-INFO 2025-07-07 21:41:41 ui.model - Precursor m/z 136.0618 found for Adenine in the library.
-INFO 2025-07-07 21:41:41 ui.model - Precursor m/z 134.0472 found for Adenine in the library.
-INFO 2025-07-07 21:41:44 ui.view - Clicked the chromatogram at position: 0.0
-INFO 2025-07-07 21:41:44 ui.view - Clicked the chromatogram at position: 24.276300971130947
-INFO 2025-07-07 21:41:46 ui.view - Clicked the chromatogram at position: 24.276300971130947
-INFO 2025-07-07 21:41:46 ui.view - Clicked the chromatogram at position: 28.278113210938624
-INFO 2025-07-07 21:41:47 ui.view - Clicked the chromatogram at position: 28.278113210938624
-INFO 2025-07-07 21:41:47 ui.view - Clicked the chromatogram at position: 40.37247909124626
-ERROR 2025-07-07 21:42:18 utils.plotting - ---Error when trying to plot calibration curve for Caffeine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-07 21:42:19 utils.loading - Loaded MS2 scans in 0.62 seconds.
-ERROR 2025-07-07 21:42:19 utils.plotting - plot_ms2_from_file: ms2_scans is None for Caffeine in STMIX5_02
-INFO 2025-07-07 21:42:19 ui.model - Precursor m/z 365.1456 found for Caffeine in the library.
-INFO 2025-07-07 21:42:19 ui.model - Precursor m/z 195.0877 found for Caffeine in the library.
-ERROR 2025-07-07 21:42:24 utils.plotting - ---Error when trying to plot calibration curve for Histamine: 'Compound' object has no attribute 'calibration_parameters' ---
-INFO 2025-07-07 21:42:25 utils.loading - Loaded MS2 scans in 1.02 seconds.
-INFO 2025-07-07 21:42:25 utils.plotting - Plotting MS2 for Histamine (m/z 365.1527) in STMIX5_02
-INFO 2025-07-07 21:42:25 ui.model - Precursor m/z 282.1449 found for Histamine in the library.
-DEBUG 2025-07-07 21:42:25 ui.model - Library entry not found for Histamine: 236.103
-INFO 2025-07-07 21:42:25 ui.model - Precursor m/z 280.1302 found for Histamine in the library.
-INFO 2025-07-07 21:42:25 ui.model - Precursor m/z 112.087 found for Histamine in the library.
-DEBUG 2025-07-07 21:42:25 ui.model - Library entry not found for Histamine: 110.0723
-INFO 2025-07-07 21:42:43 __main__ - Exiting with exit code 0.
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 306.1197
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 260.0779
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 476.1776
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 431.1436
+INFO 2025-07-07 22:16:15 ui.model - Precursor m/z 136.0618 found for Adenine in the library.
+INFO 2025-07-07 22:16:15 ui.model - Precursor m/z 134.0472 found for Adenine in the library.
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 306.1197
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 260.0779
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 476.1776
+DEBUG 2025-07-07 22:16:15 ui.model - Library entry not found for Adenine: 431.1436
+INFO 2025-07-07 22:16:15 ui.model - Precursor m/z 136.0618 found for Adenine in the library.
+INFO 2025-07-07 22:16:15 ui.model - Precursor m/z 134.0472 found for Adenine in the library.
+ERROR 2025-07-07 22:16:18 utils.plotting - ---Error when trying to plot calibration curve for Cadaverine: 'Compound' object has no attribute 'calibration_parameters' ---
+INFO 2025-07-07 22:16:19 utils.loading - Loaded MS2 scans in 0.80 seconds.
+ERROR 2025-07-07 22:16:19 ui.view - No MS2 found for ADENINEm/z (136.0615) in STMIX5mM-neg: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 466, in display_ms2
+    plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
+  File "/home/user/Documents/LC-Inspector/lc-inspector/utils/plotting.py", line 335, in plot_ms2_from_file
+    raise Exception
+Exception
+
+INFO 2025-07-07 22:16:19 ui.model - Precursor m/z 273.1809 found for Cadaverine in the library.
+DEBUG 2025-07-07 22:16:19 ui.model - Library entry not found for Cadaverine: 227.1391
+DEBUG 2025-07-07 22:16:19 ui.model - Library entry not found for Cadaverine: 443.2388
+DEBUG 2025-07-07 22:16:19 ui.model - Library entry not found for Cadaverine: 397.197
+INFO 2025-07-07 22:16:19 ui.model - Precursor m/z 271.1663 found for Cadaverine in the library.
+INFO 2025-07-07 22:16:19 ui.model - Precursor m/z 103.123 found for Cadaverine in the library.
+DEBUG 2025-07-07 22:16:19 ui.model - Library entry not found for Cadaverine: 101.1084
+ERROR 2025-07-07 22:16:34 utils.plotting - ---Error when trying to plot calibration curve for Glycine: 'Compound' object has no attribute 'calibration_parameters' ---
+INFO 2025-07-07 22:16:35 utils.loading - Loaded MS2 scans in 0.73 seconds.
+INFO 2025-07-07 22:16:35 utils.plotting - Plotting MS2 for Glycine (m/z 271.1703) in MIX_1_neg
+DEBUG 2025-07-07 22:16:35 ui.model - Library entry not found for Glycine: 246.0973
+INFO 2025-07-07 22:16:35 ui.model - Precursor m/z 200.0554 found for Glycine in the library.
+INFO 2025-07-07 22:16:35 ui.model - Precursor m/z 244.0826 found for Glycine in the library.
+INFO 2025-07-07 22:16:35 ui.model - Precursor m/z 76.0394 found for Glycine in the library.
+INFO 2025-07-07 22:16:35 ui.model - Precursor m/z 74.0247 found for Glycine in the library.
+ERROR 2025-07-07 22:16:38 utils.plotting - ---Error when trying to plot calibration curve for SAM: 'Compound' object has no attribute 'calibration_parameters' ---
+INFO 2025-07-07 22:16:39 utils.loading - Loaded MS2 scans in 0.56 seconds.
+ERROR 2025-07-07 22:16:39 ui.view - No MS2 found for 2-Methylnaphtho(1,2-d)thiazolem/z (200.0528) in MIX_1_neg: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 466, in display_ms2
+    plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
+  File "/home/user/Documents/LC-Inspector/lc-inspector/utils/plotting.py", line 335, in plot_ms2_from_file
+    raise Exception
+Exception
+
+DEBUG 2025-07-07 22:16:39 ui.model - Library entry not found for SAM: 569.2025
+DEBUG 2025-07-07 22:16:39 ui.model - Library entry not found for SAM: 739.2604
+INFO 2025-07-07 22:16:39 ui.model - Precursor m/z 399.1446 found for SAM in the library.
+DEBUG 2025-07-07 22:16:39 ui.model - Library entry not found for SAM: 398.1372
+INFO 2025-07-07 22:16:43 __main__ - Exiting with exit code 0.
