@@ -140,7 +140,6 @@ class Model:
                     logger.debug(f"Library entry not found for {compound.name}: {ion}")
             except StopIteration:
                 logger.debug(f"Library entry not found for {compound.name}: {ion}")
-                plot_no_ms2_found(self.canvas_library_ms2)
                 break
         #HACK: Terribly complex dict comprehension
         library_entries = {entry[0].split("Name: ", 1)[1].partition('\n')[0] \
