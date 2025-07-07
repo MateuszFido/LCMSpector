@@ -487,8 +487,8 @@ class View(QtWidgets.QMainWindow):
             for j, ion in enumerate(compound.ions.keys()):
                 if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], atol=0.1)): # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
                     logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
-                    text_item = pg.TextItem(text=f"{compound.name} ({ion})", color='#232323', anchor=(0, 0))
-                    text_item.setFont(pg.QtGui.QFont('Arial', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+                    text_item = pg.TextItem(text=f"{compound.name} ({ion})", color='#242526', anchor=(0, 0))
+                    text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
                     text_items.append(text_item)
                     self.canvas_annotatedLC.addItem(text_item)
         selected_curve.setBrush(pg.mkBrush('#ee6677'))
@@ -521,8 +521,8 @@ class View(QtWidgets.QMainWindow):
         mzs = mz_range[peaks][sorted_indices][0:10]
         intensities = intensity_range[peaks][sorted_indices][0:10]
         for mz, intensity in zip(mzs, intensities):
-            text_item = pg.TextItem(text=f"{mz:.4f}", color='#B2BEB5', anchor=(0, 0))
-            text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+            text_item = pg.TextItem(text=f"{mz:.4f}", color='#242526', anchor=(0, 0))
+            text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.Normal))
             text_item.setPos(mz, intensity)
             canvas.addItem(text_item)
 
