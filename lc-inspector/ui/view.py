@@ -457,6 +457,7 @@ class View(QtWidgets.QMainWindow):
             ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(0, 0).text())
         if ms_file is None:
             logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}")
+            plot_no_ms2_found(self.canvas_ms2)
             return
         try:
             self.controller.model.find_ms2_in_file(ms_file)
@@ -466,9 +467,7 @@ class View(QtWidgets.QMainWindow):
         except Exception as e:
             logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}")
             plot_no_ms2_found(self.canvas_ms2)
-        
-        self.canvas_ms2.getPlotItem().vb.setRange(xRange=self.canvas_library_ms2.getPlotItem().vb.viewRange()[0], yRange=(-self.canvas_library_ms2.getPlotItem().vb.viewRange()[1][1], self.canvas_library_ms2.getPlotItem().vb.viewRange()[1][0]), padding=0)
-
+    
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
