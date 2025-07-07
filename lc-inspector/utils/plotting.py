@@ -264,7 +264,7 @@ def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
     """Plot an MS2 spectrum from a library entry."""
     # Reset the plot
     widget.clear()
-    widget.setTitle(f'MS2 spectrum of {compound.name}')
+    widget.setTitle(f'Library MS2 spectrum of {compound.name}')
     if not library_entry:
         return
 
@@ -371,6 +371,6 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")
-    widget.setTitle('No library MS2 spectrum found')
+    widget.setTitle('No MS2 spectrum found')
     widget.setLabel('left', 'Intensity (%)')
     widget.setLabel('bottom', 'm/z')

@@ -429,22 +429,29 @@ class View(QtWidgets.QMainWindow):
                         self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem("N/A"))
         self.tableWidget_concentrations.resizeColumnsToContents()
 
-    def display_ms2(self):
-        self.canvas_ms2.clear()
-        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
-        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
-        self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
-        self.canvas_ms2.setBackground("w")
+    def display_library_ms2(self):
+        self.canvas_library_ms2.clear()
+        self.canvas_library_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
+        self.canvas_library_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+        self.canvas_library_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
+        self.canvas_library_ms2.setBackground("w")
         compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
         try:
             library_entry = self.controller.model.library[compound.name]
             precursor = float(next((line.split(' ')[1] for line in library_entry if 'PrecursorMZ:' in line), None))
             if precursor:
                 logger.info(f"Precursor found for {compound.name} in the library, m/z {precursor}")
-            plot_library_ms2(library_entry, compound, self.canvas_ms2)
+            plot_library_ms2(library_entry, compound, self.canvas_library_ms2)
         except KeyError as e:
             logger.error(f"No MS2 found for {compound.name}: {e}")
-            plot_no_ms2_found(self.canvas_ms2)
+            plot_no_ms2_found(self.canvas_library_ms2)
+
+    def display_ms2(self):
+        self.canvas_ms2.clear()
+        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
+        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+        self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
+        self.canvas_ms2.setBackground("w")
         selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
         try:
             ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
@@ -453,13 +460,16 @@ class View(QtWidgets.QMainWindow):
         if ms_file is None:
             logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}")
             return
-        ms_compound = next((c for c in ms_file.xics if c.name == compound.name), None)
+        ms_compound = next((c for c in ms_file.xics if c.name == self.comboBoxChooseCompound.currentText()), None)
         if ms_compound:
             try:
-                plot_ms2_from_file(ms_file, ms_compound, precursor, self.canvas_ms2)
+                plot_ms2_from_file(ms_file, ms_compound, precursor=None, canvas=self.canvas_ms2)
             except Exception as e:
                 logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {e}")
+            finally:
+                plot_no_ms2_found(self.canvas_ms2)
         else:
+            logger.error(f"No MS compound found for {self.comboBoxChooseCompound.currentText()} in {ms_file.filename}")
             plot_no_ms2_found(self.canvas_ms2)
         self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
         self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
@@ -836,6 +846,8 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.setColumnStretch(1, 1)
         self.gridLayout_quant.setRowStretch(0, 1)
         self.gridLayout_quant.setRowStretch(1, 1)
+        self.gridLayout_quant.setRowStretch(2, 1)
+        self.gridLayout_quant.setRowStretch(3, 1)
         self.gridLayout_top_left = QtWidgets.QGridLayout()
         self.gridLayout_top_left.setObjectName("gridLayout_top_left")
         self.label_calibrate = QtWidgets.QLabel(parent=self.tabQuantitation)
@@ -880,12 +892,13 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 3, 1)  # Span over three rows
         self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_ms2.setObjectName("canvas_ms2")
-        self.gridLayout_quant.addWidget(self.canvas_ms2, 1, 1, 1, 1)
-        self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation)  # New combobox
+        self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 1)
+        self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation) 
         self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
-        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 2, 1, 1, 1)  # Below canvas_ms2
+        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 1, 1, 1, 1)  # Above canvas_ms2
         self.canvas_library_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
+        self.canvas_library_ms2.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)  
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
