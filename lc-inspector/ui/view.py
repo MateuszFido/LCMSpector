@@ -863,9 +863,9 @@ class View(QtWidgets.QMainWindow):
         self.label_curr_compound.setObjectName("label_curr_compound")
         self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 1)
         self.label_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
-        self.label_curr_compound.setSizePolicy(sizePolicy)
-        self.label_curr_compound.setObjectName("label_curr_compound")
-        self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 1)
+        self.label_compound.setSizePolicy(sizePolicy)
+        self.label_compound.setObjectName("label_compound")
+        self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 1)
         self.comboBoxChooseCompound = QtWidgets.QComboBox(parent=self.tabQuantitation)
         self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
         self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
@@ -877,10 +877,16 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
         self.tableWidget_concentrations = GenericTable(parent=self.tabQuantitation)
         self.tableWidget_concentrations.setObjectName("tableWidget_concentrations")
-        self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 1, 1)
+        self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 3, 1)  # Span over three rows
         self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_ms2.setObjectName("canvas_ms2")
         self.gridLayout_quant.addWidget(self.canvas_ms2, 1, 1, 1, 1)
+        self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation)  # New combobox
+        self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
+        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 2, 1, 1, 1)  # Below canvas_ms2
+        self.canvas_library_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
+        self.canvas_library_ms2.setObjectName("canvas_library_ms2")
+        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)  
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the second tab

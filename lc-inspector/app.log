@@ -1,39 +1,32 @@
-INFO 2025-07-07 10:25:18 __main__ - -------------------------------------
+INFO 2025-07-07 11:00:42 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-INFO 2025-07-07 10:25:21 ui.model - MS2 library loaded.
-INFO 2025-07-07 10:25:21 ui.model - MS2 library loaded.
-INFO 2025-07-07 10:25:21 ui.model - Model initialized.
-INFO 2025-07-07 10:25:21 ui.model - Model initialized.
-INFO 2025-07-07 10:25:21 ui.model - Current thread: MainThread
-INFO 2025-07-07 10:25:21 ui.model - Current thread: MainThread
-INFO 2025-07-07 10:25:21 ui.model - Current process: 1297
-INFO 2025-07-07 10:25:21 ui.model - Current process: 1297
-INFO 2025-07-07 10:25:21 ui.controller - Controller initialized.
-INFO 2025-07-07 10:25:21 ui.controller - Controller initialized.
-INFO 2025-07-07 10:25:21 ui.controller - Current thread: MainThread
-INFO 2025-07-07 10:25:21 ui.controller - Current thread: MainThread
-INFO 2025-07-07 10:25:21 ui.controller - Current process: 1297
-INFO 2025-07-07 10:25:21 ui.controller - Current process: 1297
-INFO 2025-07-07 10:25:21 __main__ - Main executed, Qt application started.
-INFO 2025-07-07 10:25:21 __main__ - Current thread: MainThread
-INFO 2025-07-07 10:25:21 __main__ - Current process: 1297
-WARNING 2025-07-07 10:25:30 ui.view - listAnnotations is not defined!
-WARNING 2025-07-07 10:25:30 ui.view - listAnnotations is not defined!
-INFO 2025-07-07 10:25:30 ui.controller - Starting the processing...
-INFO 2025-07-07 10:25:30 ui.controller - Starting the processing...
-INFO 2025-07-07 10:25:30 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-07-07 10:25:30 utils.preprocessing - Baseline corrected chromatogram calculated.
-INFO 2025-07-07 10:25:30 utils.classes - Loaded LC file STMIX5_02.
-INFO 2025-07-07 10:25:36 utils.loading - Loaded 1065 MS1 scans in 5.93 seconds.
-INFO 2025-07-07 10:25:41 calculation.workers - Processed in 11.442622423171997 seconds.
-INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated XICs of STMIX5_02 took 0.001645188570022583 miliseconds (52 XICs)
-INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated XICs of STMIX5_02 took 0.001645188570022583 miliseconds (52 XICs)
-INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated LC of STMIX5_02 took 4.7826528549194333e-05 miliseconds
-INFO 2025-07-07 10:25:43 utils.plotting - Plotting annotated LC of STMIX5_02 took 4.7826528549194333e-05 miliseconds
-INFO 2025-07-07 10:25:44 ui.view - Clicked the chromatogram at position: 0.0
-INFO 2025-07-07 10:25:44 ui.view - Clicked the chromatogram at position: 0.0
-INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 32.07024566587562
-INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 32.07024566587562
-INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 31.350403021277252
-INFO 2025-07-07 10:25:45 ui.view - Clicked the chromatogram at position: 31.350403021277252
-INFO 2025-07-07 10:26:02 __main__ - Exiting with exit code 0.
+INFO 2025-07-07 11:00:44 ui.model - MS2 library loaded.
+INFO 2025-07-07 11:00:44 ui.model - MS2 library loaded.
+INFO 2025-07-07 11:00:44 ui.model - Model initialized.
+INFO 2025-07-07 11:00:44 ui.model - Model initialized.
+INFO 2025-07-07 11:00:44 ui.model - Current thread: MainThread
+INFO 2025-07-07 11:00:44 ui.model - Current thread: MainThread
+INFO 2025-07-07 11:00:44 ui.model - Current process: 2413
+INFO 2025-07-07 11:00:44 ui.model - Current process: 2413
+INFO 2025-07-07 11:00:45 ui.controller - Controller initialized.
+INFO 2025-07-07 11:00:45 ui.controller - Controller initialized.
+INFO 2025-07-07 11:00:45 ui.controller - Current thread: MainThread
+INFO 2025-07-07 11:00:45 ui.controller - Current thread: MainThread
+INFO 2025-07-07 11:00:45 ui.controller - Current process: 2413
+INFO 2025-07-07 11:00:45 ui.controller - Current process: 2413
+INFO 2025-07-07 11:00:45 __main__ - Main executed, Qt application started.
+INFO 2025-07-07 11:00:45 __main__ - Current thread: MainThread
+INFO 2025-07-07 11:00:45 __main__ - Current process: 2413
+WARNING 2025-07-07 11:00:48 ui.view - listAnnotations is not defined!
+WARNING 2025-07-07 11:00:48 ui.view - listAnnotations is not defined!
+ERROR 2025-07-07 11:00:53 ui.view - listLC has been deleted!
+ERROR 2025-07-07 11:00:53 ui.view - listLC has been deleted!
+WARNING 2025-07-07 11:00:53 ui.view - listAnnotations is not defined!
+WARNING 2025-07-07 11:00:53 ui.view - listAnnotations is not defined!
+INFO 2025-07-07 11:00:53 ui.controller - Starting the processing...
+INFO 2025-07-07 11:00:53 ui.controller - Starting the processing...
+INFO 2025-07-07 11:00:57 utils.loading - Loaded 969 MS1 scans in 4.40 seconds.
+INFO 2025-07-07 11:00:58 calculation.workers - Processed in 4.939307451248169 seconds.
+INFO 2025-07-07 11:00:58 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 8.48088264465332e-05 miliseconds (6 XICs)
+INFO 2025-07-07 11:00:58 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 8.48088264465332e-05 miliseconds (6 XICs)
+INFO 2025-07-07 11:01:18 __main__ - Exiting with exit code 0.
