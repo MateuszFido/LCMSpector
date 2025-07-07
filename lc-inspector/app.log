@@ -1,32 +1,82 @@
-INFO 2025-07-07 11:00:42 __main__ - -------------------------------------
+INFO 2025-07-07 11:25:56 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-INFO 2025-07-07 11:00:44 ui.model - MS2 library loaded.
-INFO 2025-07-07 11:00:44 ui.model - MS2 library loaded.
-INFO 2025-07-07 11:00:44 ui.model - Model initialized.
-INFO 2025-07-07 11:00:44 ui.model - Model initialized.
-INFO 2025-07-07 11:00:44 ui.model - Current thread: MainThread
-INFO 2025-07-07 11:00:44 ui.model - Current thread: MainThread
-INFO 2025-07-07 11:00:44 ui.model - Current process: 2413
-INFO 2025-07-07 11:00:44 ui.model - Current process: 2413
-INFO 2025-07-07 11:00:45 ui.controller - Controller initialized.
-INFO 2025-07-07 11:00:45 ui.controller - Controller initialized.
-INFO 2025-07-07 11:00:45 ui.controller - Current thread: MainThread
-INFO 2025-07-07 11:00:45 ui.controller - Current thread: MainThread
-INFO 2025-07-07 11:00:45 ui.controller - Current process: 2413
-INFO 2025-07-07 11:00:45 ui.controller - Current process: 2413
-INFO 2025-07-07 11:00:45 __main__ - Main executed, Qt application started.
-INFO 2025-07-07 11:00:45 __main__ - Current thread: MainThread
-INFO 2025-07-07 11:00:45 __main__ - Current process: 2413
-WARNING 2025-07-07 11:00:48 ui.view - listAnnotations is not defined!
-WARNING 2025-07-07 11:00:48 ui.view - listAnnotations is not defined!
-ERROR 2025-07-07 11:00:53 ui.view - listLC has been deleted!
-ERROR 2025-07-07 11:00:53 ui.view - listLC has been deleted!
-WARNING 2025-07-07 11:00:53 ui.view - listAnnotations is not defined!
-WARNING 2025-07-07 11:00:53 ui.view - listAnnotations is not defined!
-INFO 2025-07-07 11:00:53 ui.controller - Starting the processing...
-INFO 2025-07-07 11:00:53 ui.controller - Starting the processing...
-INFO 2025-07-07 11:00:57 utils.loading - Loaded 969 MS1 scans in 4.40 seconds.
-INFO 2025-07-07 11:00:58 calculation.workers - Processed in 4.939307451248169 seconds.
-INFO 2025-07-07 11:00:58 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 8.48088264465332e-05 miliseconds (6 XICs)
-INFO 2025-07-07 11:00:58 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 8.48088264465332e-05 miliseconds (6 XICs)
-INFO 2025-07-07 11:01:18 __main__ - Exiting with exit code 0.
+INFO 2025-07-07 11:25:59 ui.model - MS2 library loaded.
+INFO 2025-07-07 11:25:59 ui.model - MS2 library loaded.
+INFO 2025-07-07 11:25:59 ui.model - Model initialized.
+INFO 2025-07-07 11:25:59 ui.model - Model initialized.
+INFO 2025-07-07 11:25:59 ui.model - Current thread: MainThread
+INFO 2025-07-07 11:25:59 ui.model - Current thread: MainThread
+INFO 2025-07-07 11:25:59 ui.model - Current process: 4384
+INFO 2025-07-07 11:25:59 ui.model - Current process: 4384
+INFO 2025-07-07 11:25:59 ui.controller - Controller initialized.
+INFO 2025-07-07 11:25:59 ui.controller - Controller initialized.
+INFO 2025-07-07 11:25:59 ui.controller - Current thread: MainThread
+INFO 2025-07-07 11:25:59 ui.controller - Current thread: MainThread
+INFO 2025-07-07 11:25:59 ui.controller - Current process: 4384
+INFO 2025-07-07 11:25:59 ui.controller - Current process: 4384
+INFO 2025-07-07 11:25:59 __main__ - Main executed, Qt application started.
+INFO 2025-07-07 11:25:59 __main__ - Current thread: MainThread
+INFO 2025-07-07 11:25:59 __main__ - Current process: 4384
+WARNING 2025-07-07 11:26:00 ui.view - listAnnotations is not defined!
+WARNING 2025-07-07 11:26:00 ui.view - listAnnotations is not defined!
+ERROR 2025-07-07 11:26:04 ui.view - listLC has been deleted!
+ERROR 2025-07-07 11:26:04 ui.view - listLC has been deleted!
+WARNING 2025-07-07 11:26:04 ui.view - listAnnotations is not defined!
+WARNING 2025-07-07 11:26:04 ui.view - listAnnotations is not defined!
+INFO 2025-07-07 11:26:04 ui.controller - Starting the processing...
+INFO 2025-07-07 11:26:04 ui.controller - Starting the processing...
+INFO 2025-07-07 11:26:08 utils.loading - Loaded 969 MS1 scans in 4.41 seconds.
+INFO 2025-07-07 11:26:12 calculation.workers - Processed in 7.573223829269409 seconds.
+INFO 2025-07-07 11:26:13 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 0.0016639347076416015 miliseconds (52 XICs)
+INFO 2025-07-07 11:26:13 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 0.0016639347076416015 miliseconds (52 XICs)
+ERROR 2025-07-07 11:26:22 ui.view - No files selected for calibration.
+ERROR 2025-07-07 11:26:22 ui.view - No files selected for calibration.
+ERROR 2025-07-07 11:26:22 ui.controller - No files selected for calibration.
+ERROR 2025-07-07 11:26:22 ui.controller - No files selected for calibration.
+ERROR 2025-07-07 11:26:22 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:22 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:22 utils.plotting - plot_ms2_from_file: ms2_scans is None for Adenine in BIG_MIX_neg
+ERROR 2025-07-07 11:26:22 utils.plotting - plot_ms2_from_file: ms2_scans is None for Adenine in BIG_MIX_neg
+INFO 2025-07-07 11:26:22 ui.view - Precursor found for Adenine in the library, m/z 136.0617
+INFO 2025-07-07 11:26:22 ui.view - Precursor found for Adenine in the library, m/z 136.0617
+ERROR 2025-07-07 11:26:22 ui.controller - Error finding MS2 precursors: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/controller.py", line 136, in find_ms2_precursors
+    self.model.find_ms2_precursors()
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/model.py", line 125, in find_ms2_precursors
+    ms_file.ms2_data = load_ms2_data(ms_file.path, ms_file.xics, ms_file.mass_accuracy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: load_ms2_data() missing 1 required positional argument: 'mass_accuracy'
+
+ERROR 2025-07-07 11:26:22 ui.controller - Error finding MS2 precursors: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/controller.py", line 136, in find_ms2_precursors
+    self.model.find_ms2_precursors()
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/model.py", line 125, in find_ms2_precursors
+    ms_file.ms2_data = load_ms2_data(ms_file.path, ms_file.xics, ms_file.mass_accuracy)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: load_ms2_data() missing 1 required positional argument: 'mass_accuracy'
+
+ERROR 2025-07-07 11:26:25 utils.plotting - ---Error when trying to plot calibration curve for Cysteine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:25 utils.plotting - ---Error when trying to plot calibration curve for Cysteine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:25 utils.plotting - plot_ms2_from_file: ms2_scans is None for Cysteine in BIG_MIX_neg
+ERROR 2025-07-07 11:26:25 utils.plotting - plot_ms2_from_file: ms2_scans is None for Cysteine in BIG_MIX_neg
+INFO 2025-07-07 11:26:25 ui.view - Precursor found for Cysteine in the library, m/z 122.0272
+INFO 2025-07-07 11:26:25 ui.view - Precursor found for Cysteine in the library, m/z 122.0272
+ERROR 2025-07-07 11:26:26 utils.plotting - ---Error when trying to plot calibration curve for Lysine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:26 utils.plotting - ---Error when trying to plot calibration curve for Lysine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:26 utils.plotting - plot_ms2_from_file: ms2_scans is None for Lysine in BIG_MIX_neg
+ERROR 2025-07-07 11:26:26 utils.plotting - plot_ms2_from_file: ms2_scans is None for Lysine in BIG_MIX_neg
+INFO 2025-07-07 11:26:26 ui.view - Precursor found for Lysine in the library, m/z 147.1127
+INFO 2025-07-07 11:26:26 ui.view - Precursor found for Lysine in the library, m/z 147.1127
+ERROR 2025-07-07 11:26:28 utils.plotting - ---Error when trying to plot calibration curve for SAM: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:28 utils.plotting - ---Error when trying to plot calibration curve for SAM: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:28 utils.plotting - plot_ms2_from_file: ms2_scans is None for SAM in BIG_MIX_neg
+ERROR 2025-07-07 11:26:28 utils.plotting - plot_ms2_from_file: ms2_scans is None for SAM in BIG_MIX_neg
+ERROR 2025-07-07 11:26:28 ui.view - No MS2 found for SAM: 'SAM'
+ERROR 2025-07-07 11:26:28 ui.view - No MS2 found for SAM: 'SAM'
+ERROR 2025-07-07 11:26:30 utils.plotting - ---Error when trying to plot calibration curve for Serine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:30 utils.plotting - ---Error when trying to plot calibration curve for Serine: 'Compound' object has no attribute 'calibration_parameters' ---
+ERROR 2025-07-07 11:26:30 utils.plotting - plot_ms2_from_file: ms2_scans is None for Serine in BIG_MIX_neg
+ERROR 2025-07-07 11:26:30 utils.plotting - plot_ms2_from_file: ms2_scans is None for Serine in BIG_MIX_neg
+INFO 2025-07-07 11:26:30 ui.view - Precursor found for Serine in the library, m/z 106.04987
+INFO 2025-07-07 11:26:30 ui.view - Precursor found for Serine in the library, m/z 106.04987
+INFO 2025-07-07 11:26:34 __main__ - Exiting with exit code 0.

@@ -18,6 +18,7 @@ class Controller:
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_calibration_curve)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_ms2)
+        self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_library_ms2)
         self.mode = "LC/GC-MS"
         logger.info("Controller initialized.")
         logger.info(f"Current thread: {threading.current_thread().name}")
