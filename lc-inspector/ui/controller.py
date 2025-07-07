@@ -3,6 +3,7 @@ from utils.classes import LCMeasurement, MSMeasurement
 from PyQt6.QtCore import pyqtSlot
 import logging, traceback, threading, os
 logger = logging.getLogger(__name__)
+logger.propagate = False
 from datetime import datetime
 
 class Controller:

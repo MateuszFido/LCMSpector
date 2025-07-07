@@ -6,6 +6,7 @@ import os, logging, re
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
+logger.propagate = False
 
 class Measurement: 
     """

@@ -15,6 +15,7 @@ from ui.widgets import DragDropListWidget, IonTable, GenericTable, ChromatogramP
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
+logger.propagate = False
 
 class View(QtWidgets.QMainWindow):
     progress_update = QtCore.pyqtSignal(int)
@@ -95,7 +96,7 @@ class View(QtWidgets.QMainWindow):
             if file_path.lower().endswith(".txt"):
                 count_ok += 1
                 self.listAnnotations.addItem(file_path)  # Add each file path to the listLC widget
-                logger.logger(f"Added annotation file: {file_path}")
+                logger.info(f"Added annotation file: {file_path}")
             elif not error_shown:
                 self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported.")
                 logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
@@ -435,9 +436,6 @@ class View(QtWidgets.QMainWindow):
         except Exception as e:
             logger.error(f"Error finding MS2 precursors: {e}")
         self.canvas_library_ms2.clear()
-        self.canvas_library_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
-        self.canvas_library_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
-        self.canvas_library_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
         self.canvas_library_ms2.setBackground("w")
         # Plot the library entry which is currently selected in comboBoxChooseMS2File
         try:
@@ -450,14 +448,8 @@ class View(QtWidgets.QMainWindow):
         except KeyError:
             logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
 
-        
 
     def display_ms2(self):
-        self.canvas_ms2.clear()
-        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
-        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
-        self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
-        self.canvas_ms2.setBackground("w")
         selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
         try:
             ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
@@ -466,20 +458,17 @@ class View(QtWidgets.QMainWindow):
         if ms_file is None:
             logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}")
             return
-        ms_compound = next((c for c in ms_file.xics if c.name == self.comboBoxChooseCompound.currentText()), None)
-        if ms_compound:
-            try:
-                plot_ms2_from_file(ms_file, ms_compound, precursor=None, canvas=self.canvas_ms2)
-            except Exception as e:
-                logger.error(f"No MS2 found for {ms_compound.name} in {ms_file.filename}: {e}")
-            finally:
-                plot_no_ms2_found(self.canvas_ms2)
-        else:
-            logger.error(f"No MS compound found for {self.comboBoxChooseCompound.currentText()} in {ms_file.filename}")
+        try:
+            self.controller.model.find_ms2_in_file(ms_file)
+            compound = next((xic for xic in ms_file.xics if xic.name == self.comboBoxChooseCompound.currentText()), None)
+            precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
+            plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
+        except Exception as e:
+            logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}")
             plot_no_ms2_found(self.canvas_ms2)
-        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
-        self.canvas_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
-        self.canvas_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
+        
+        self.canvas_ms2.getPlotItem().vb.setRange(xRange=self.canvas_library_ms2.getPlotItem().vb.viewRange()[0], yRange=(-self.canvas_library_ms2.getPlotItem().vb.viewRange()[1][1], self.canvas_library_ms2.getPlotItem().vb.viewRange()[1][0]), padding=0)
+
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -898,6 +887,11 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 3, 1)  # Span over three rows
         self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_ms2.setObjectName("canvas_ms2")
+        self.canvas_ms2.setMouseEnabled(x=True, y=False)
+        self.canvas_ms2.getPlotItem().getViewBox().enableAutoRange(axis='y')
+        self.canvas_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
+        self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(lambda ev: self.update_labels_avgMS(self.canvas_ms2))
+
         self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 1)
         self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation) 
         self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
@@ -905,6 +899,10 @@ class View(QtWidgets.QMainWindow):
         self.canvas_library_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
         self.canvas_library_ms2.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
+        self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis='y')
+        self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
+        self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(lambda ev: self.update_labels_avgMS(self.canvas_library_ms2))
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)  
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")

@@ -1,88 +1,52 @@
-INFO 2025-07-07 13:02:05 __main__ - -------------------------------------
+INFO 2025-07-07 21:35:08 __main__ - -------------------------------------
 Starting LC-Inspector at /home/user/Documents/LC-Inspector...
-INFO 2025-07-07 13:02:08 ui.model - MS2 library loaded.
-INFO 2025-07-07 13:02:08 ui.model - MS2 library loaded.
-INFO 2025-07-07 13:02:08 ui.model - Model initialized.
-INFO 2025-07-07 13:02:08 ui.model - Model initialized.
-INFO 2025-07-07 13:02:08 ui.model - Current thread: MainThread
-INFO 2025-07-07 13:02:08 ui.model - Current thread: MainThread
-INFO 2025-07-07 13:02:08 ui.model - Current process: 9358
-INFO 2025-07-07 13:02:08 ui.model - Current process: 9358
-INFO 2025-07-07 13:02:08 ui.controller - Controller initialized.
-INFO 2025-07-07 13:02:08 ui.controller - Controller initialized.
-INFO 2025-07-07 13:02:08 ui.controller - Current thread: MainThread
-INFO 2025-07-07 13:02:08 ui.controller - Current thread: MainThread
-INFO 2025-07-07 13:02:08 ui.controller - Current process: 9358
-INFO 2025-07-07 13:02:08 ui.controller - Current process: 9358
-INFO 2025-07-07 13:02:08 __main__ - Main executed, Qt application started.
-INFO 2025-07-07 13:02:08 __main__ - Current thread: MainThread
-INFO 2025-07-07 13:02:08 __main__ - Current process: 9358
-WARNING 2025-07-07 13:02:09 ui.view - listAnnotations is not defined!
-WARNING 2025-07-07 13:02:09 ui.view - listAnnotations is not defined!
-ERROR 2025-07-07 13:02:14 ui.view - listLC has been deleted!
-ERROR 2025-07-07 13:02:14 ui.view - listLC has been deleted!
-WARNING 2025-07-07 13:02:14 ui.view - listAnnotations is not defined!
-WARNING 2025-07-07 13:02:14 ui.view - listAnnotations is not defined!
-INFO 2025-07-07 13:02:14 ui.controller - Starting the processing...
-INFO 2025-07-07 13:02:14 ui.controller - Starting the processing...
-INFO 2025-07-07 13:02:18 utils.loading - Loaded 969 MS1 scans in 4.46 seconds.
-INFO 2025-07-07 13:02:19 calculation.workers - Processed in 5.04348611831665 seconds.
-INFO 2025-07-07 13:02:19 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 8.646368980407714e-05 miliseconds (6 XICs)
-INFO 2025-07-07 13:02:19 utils.plotting - Plotting annotated XICs of BIG_MIX_neg took 8.646368980407714e-05 miliseconds (6 XICs)
-ERROR 2025-07-07 13:02:21 ui.view - No files selected for calibration.
-ERROR 2025-07-07 13:02:21 ui.view - No files selected for calibration.
-ERROR 2025-07-07 13:02:21 ui.controller - No files selected for calibration.
-ERROR 2025-07-07 13:02:21 ui.controller - No files selected for calibration.
-ERROR 2025-07-07 13:02:21 utils.plotting - ---Error when trying to plot calibration curve for Formic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:21 utils.plotting - ---Error when trying to plot calibration curve for Formic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:21 utils.plotting - plot_ms2_from_file: ms2_scans is None for Formic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:21 utils.plotting - plot_ms2_from_file: ms2_scans is None for Formic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 47.0128 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 47.0128 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 44.9982 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 44.9982 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 91.0026 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 91.0026 not found in the library
-ERROR 2025-07-07 13:02:21 ui.view - No MS2 found for 
-ERROR 2025-07-07 13:02:21 ui.view - No MS2 found for 
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 47.0128 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 47.0128 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 44.9982 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 44.9982 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 91.0026 not found in the library
-ERROR 2025-07-07 13:02:21 ui.model - No MS2 found for Formic acid: precursor ion 91.0026 not found in the library
-ERROR 2025-07-07 13:02:23 utils.plotting - ---Error when trying to plot calibration curve for Acetic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:23 utils.plotting - ---Error when trying to plot calibration curve for Acetic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:23 utils.plotting - plot_ms2_from_file: ms2_scans is None for Acetic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:23 utils.plotting - plot_ms2_from_file: ms2_scans is None for Acetic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:23 ui.model - No MS2 found for Acetic acid: precursor ion 61.0284 not found in the library
-ERROR 2025-07-07 13:02:23 ui.model - No MS2 found for Acetic acid: precursor ion 61.0284 not found in the library
-ERROR 2025-07-07 13:02:23 ui.model - No MS2 found for Acetic acid: precursor ion 59.0139 not found in the library
-ERROR 2025-07-07 13:02:23 ui.model - No MS2 found for Acetic acid: precursor ion 59.0139 not found in the library
-ERROR 2025-07-07 13:02:23 ui.view - No MS2 found for 
-ERROR 2025-07-07 13:02:23 ui.view - No MS2 found for 
-ERROR 2025-07-07 13:02:24 utils.plotting - ---Error when trying to plot calibration curve for Butanoic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:24 utils.plotting - ---Error when trying to plot calibration curve for Butanoic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:24 utils.plotting - plot_ms2_from_file: ms2_scans is None for Butanoic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:24 utils.plotting - plot_ms2_from_file: ms2_scans is None for Butanoic acid in BIG_MIX_neg
-INFO 2025-07-07 13:02:24 ui.model - Precursor found for Butanoic acid in the library, m/z 89.0597
-INFO 2025-07-07 13:02:24 ui.model - Precursor found for Butanoic acid in the library, m/z 89.0597
-INFO 2025-07-07 13:02:24 ui.model - Precursor found for Butanoic acid in the library, m/z 87.04515
-INFO 2025-07-07 13:02:24 ui.model - Precursor found for Butanoic acid in the library, m/z 87.04515
-ERROR 2025-07-07 13:02:40 utils.plotting - ---Error when trying to plot calibration curve for Pentanoic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:40 utils.plotting - ---Error when trying to plot calibration curve for Pentanoic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:40 utils.plotting - plot_ms2_from_file: ms2_scans is None for Pentanoic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:40 utils.plotting - plot_ms2_from_file: ms2_scans is None for Pentanoic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:40 ui.model - No MS2 found for Pentanoic acid: precursor ion 103.0754 not found in the library
-ERROR 2025-07-07 13:02:40 ui.model - No MS2 found for Pentanoic acid: precursor ion 103.0754 not found in the library
-INFO 2025-07-07 13:02:40 ui.model - Precursor found for Pentanoic acid in the library, m/z 101.0608
-INFO 2025-07-07 13:02:40 ui.model - Precursor found for Pentanoic acid in the library, m/z 101.0608
-ERROR 2025-07-07 13:02:58 utils.plotting - ---Error when trying to plot calibration curve for Hexanoic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:58 utils.plotting - ---Error when trying to plot calibration curve for Hexanoic acid: 'Compound' object has no attribute 'calibration_parameters' ---
-ERROR 2025-07-07 13:02:58 utils.plotting - plot_ms2_from_file: ms2_scans is None for Hexanoic acid in BIG_MIX_neg
-ERROR 2025-07-07 13:02:58 utils.plotting - plot_ms2_from_file: ms2_scans is None for Hexanoic acid in BIG_MIX_neg
-INFO 2025-07-07 13:02:58 ui.model - Precursor found for Hexanoic acid in the library, m/z 117.09101
-INFO 2025-07-07 13:02:58 ui.model - Precursor found for Hexanoic acid in the library, m/z 117.09101
-INFO 2025-07-07 13:02:58 ui.model - Precursor found for Hexanoic acid in the library, m/z 115.07645
-INFO 2025-07-07 13:02:58 ui.model - Precursor found for Hexanoic acid in the library, m/z 115.07645
-INFO 2025-07-07 13:03:03 __main__ - Exiting with exit code 0.
+INFO 2025-07-07 21:35:11 ui.model - MS2 library loaded.
+INFO 2025-07-07 21:35:11 ui.model - Model initialized.
+INFO 2025-07-07 21:35:11 ui.model - Current thread: MainThread
+INFO 2025-07-07 21:35:11 ui.model - Current process: 12750
+INFO 2025-07-07 21:35:11 ui.controller - Controller initialized.
+INFO 2025-07-07 21:35:11 ui.controller - Current thread: MainThread
+INFO 2025-07-07 21:35:11 ui.controller - Current process: 12750
+INFO 2025-07-07 21:35:11 __main__ - Main executed, Qt application started.
+INFO 2025-07-07 21:35:11 __main__ - Current thread: MainThread
+INFO 2025-07-07 21:35:11 __main__ - Current process: 12750
+WARNING 2025-07-07 21:35:12 ui.view - listAnnotations is not defined!
+ERROR 2025-07-07 21:35:17 ui.view - listLC has been deleted!
+WARNING 2025-07-07 21:35:17 ui.view - listAnnotations is not defined!
+INFO 2025-07-07 21:35:17 ui.controller - Starting the processing...
+INFO 2025-07-07 21:35:23 utils.loading - Loaded 1065 MS1 scans in 5.92 seconds.
+INFO 2025-07-07 21:35:29 calculation.workers - Processed in 11.689265727996826 seconds.
+INFO 2025-07-07 21:35:31 utils.plotting - Plotting annotated XICs of STMIX5_02 took 0.0016865484714508056 miliseconds (52 XICs)
+ERROR 2025-07-07 21:35:33 ui.view - No files selected for calibration.
+ERROR 2025-07-07 21:35:33 ui.controller - No files selected for calibration.
+ERROR 2025-07-07 21:35:33 utils.plotting - ---Error when trying to plot calibration curve for Adenine: 'Compound' object has no attribute 'calibration_parameters' ---
+INFO 2025-07-07 21:35:34 utils.loading - Loaded MS2 scans in 0.98 seconds.
+ERROR 2025-07-07 21:35:34 ui.view - No MS2 found for  in STMIX5_02: Traceback (most recent call last):
+  File "/home/user/Documents/LC-Inspector/lc-inspector/ui/view.py", line 464, in display_ms2
+    precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+DEBUG 2025-07-07 21:35:34 ui.model - Library entry not found for Adenine: 306.1197
+DEBUG 2025-07-07 21:35:34 ui.model - Library entry not found for Adenine: 260.0779
+DEBUG 2025-07-07 21:35:34 ui.model - Library entry not found for Adenine: 476.1776
+DEBUG 2025-07-07 21:35:34 ui.model - Library entry not found for Adenine: 431.1436
+INFO 2025-07-07 21:35:34 ui.model - Precursor m/z 136.0618 found for Adenine in the library.
+INFO 2025-07-07 21:35:34 ui.model - Precursor m/z 134.0472 found for Adenine in the library.
+DEBUG 2025-07-07 21:35:34 ui.model - Library entry not found for Adenine: 306.1197
+DEBUG 2025-07-07 21:35:35 ui.model - Library entry not found for Adenine: 260.0779
+DEBUG 2025-07-07 21:35:35 ui.model - Library entry not found for Adenine: 476.1776
+DEBUG 2025-07-07 21:35:35 ui.model - Library entry not found for Adenine: 431.1436
+INFO 2025-07-07 21:35:35 ui.model - Precursor m/z 136.0618 found for Adenine in the library.
+INFO 2025-07-07 21:35:35 ui.model - Precursor m/z 134.0472 found for Adenine in the library.
+ERROR 2025-07-07 21:35:45 utils.plotting - ---Error when trying to plot calibration curve for Cadaverine: 'Compound' object has no attribute 'calibration_parameters' ---
+INFO 2025-07-07 21:35:47 utils.loading - Loaded MS2 scans in 1.29 seconds.
+INFO 2025-07-07 21:35:47 utils.plotting - Plotting MS2 for Cadaverine (m/z 136.0615) in STMIX5_02
+INFO 2025-07-07 21:35:47 ui.model - Precursor m/z 273.1809 found for Cadaverine in the library.
+DEBUG 2025-07-07 21:35:47 ui.model - Library entry not found for Cadaverine: 227.1391
+DEBUG 2025-07-07 21:35:47 ui.model - Library entry not found for Cadaverine: 443.2388
+DEBUG 2025-07-07 21:35:47 ui.model - Library entry not found for Cadaverine: 397.197
+INFO 2025-07-07 21:35:47 ui.model - Precursor m/z 271.1663 found for Cadaverine in the library.
+INFO 2025-07-07 21:35:47 ui.model - Precursor m/z 103.123 found for Cadaverine in the library.
+DEBUG 2025-07-07 21:35:47 ui.model - Library entry not found for Cadaverine: 101.1084
+INFO 2025-07-07 21:35:53 __main__ - Exiting with exit code 0.
