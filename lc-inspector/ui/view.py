@@ -430,21 +430,27 @@ class View(QtWidgets.QMainWindow):
         self.tableWidget_concentrations.resizeColumnsToContents()
 
     def display_library_ms2(self):
+        try:
+            library_entries = self.controller.model.find_ms2_precursors()
+        except Exception as e:
+            logger.error(f"Error finding MS2 precursors: {e}")
         self.canvas_library_ms2.clear()
         self.canvas_library_ms2.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
         self.canvas_library_ms2.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
         self.canvas_library_ms2.getPlotItem().vb.setAutoVisible(x=True, y=True)
         self.canvas_library_ms2.setBackground("w")
-        compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
+        # Plot the library entry which is currently selected in comboBoxChooseMS2File
         try:
-            library_entry = self.controller.model.library[compound.name]
-            precursor = float(next((line.split(' ')[1] for line in library_entry if 'PrecursorMZ:' in line), None))
-            if precursor:
-                logger.info(f"Precursor found for {compound.name} in the library, m/z {precursor}")
-            plot_library_ms2(library_entry, compound, self.canvas_library_ms2)
-        except KeyError as e:
-            logger.error(f"No MS2 found for {compound.name}: {e}")
+            library_entry = library_entries[self.comboBoxChooseMS2File.currentText()]
+            plot_library_ms2(library_entry, self.canvas_library_ms2)
+            self.comboBoxChooseMS2File.currentIndexChanged.connect(lambda: plot_library_ms2(library_entries[self.comboBoxChooseMS2File.currentText()], self.canvas_library_ms2))
+        except IndexError:
+            logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
             plot_no_ms2_found(self.canvas_library_ms2)
+        except KeyError:
+            logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
+
+        
 
     def display_ms2(self):
         self.canvas_ms2.clear()

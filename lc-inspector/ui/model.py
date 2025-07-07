@@ -120,9 +120,37 @@ class Model:
                 except Exception as e:
                     logger.error(f"Error calibrating file {file}: {traceback.format_exc()}")
 
-    def find_ms2_precursors(self):
-        for ms_file in self.ms_measurements.values():
-            ms_file.ms2_data = load_ms2_data(ms_file.path, ms_file.xics, ms_file.mass_accuracy)
+    def find_ms2_precursors(self) -> dict:
+        compound = self.compounds[self.controller.view.comboBoxChooseCompound.currentIndex()]
+        library_entries = set()
+        # safety check
+        if not compound:
+            raise Exception("No compound selected.")
+            return
+        for ion in compound.ions.keys():
+            try:
+                library_entry = next((l for l in self.library.values() 
+                                    if (precursor_mz := next((line.split(' ')[1] for line in l if 'PrecursorMZ:' in line), None)) is not None 
+                                    and np.isclose(float(precursor_mz), float(ion), atol=0.005)), None)
+                if library_entry:
+                    logger.info(f"Precursor found for {compound.name} in the library, m/z {ion}")
+                    library_entries.add(tuple(library_entry))
+                else:
+                    logger.error(f"No MS2 found for {compound.name}: precursor ion {ion} not found in the library")
+            except StopIteration:
+                logger.error(f"No MS2 found for {compound.name}: precursor ion {ion} not found in the library")
+                plot_no_ms2_found(self.canvas_library_ms2)
+                break
+        #HACK: Terribly complex dict comprehension
+        library_entries = {entry[0].split("Name: ", 1)[1].partition('\n')[0] \
+            + (f"m/z ({round(float(next((line.split(' ')[1] for line in entry \
+                if 'PrecursorMZ:' in line), None)), 4)})" if \
+                    (precursor_mz := next((line.split(' ')[1] \
+                        for line in entry if 'PrecursorMZ:' in line), None)) else "").strip(): \
+                            entry for entry in library_entries}
+        self.controller.view.comboBoxChooseMS2File.clear()
+        self.controller.view.comboBoxChooseMS2File.addItems(library_entries.keys())
+        return library_entries
 
     def export(self):
         results = []
