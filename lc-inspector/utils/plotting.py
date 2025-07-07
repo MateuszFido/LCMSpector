@@ -260,11 +260,11 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     widget.setLabel('left', 'Intensity (cps)')
     widget.setLabel('bottom', 'Time (min)')
 
-def plot_library_ms2(library_entry: dict, compound, widget: pg.PlotWidget):
+def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
     """Plot an MS2 spectrum from a library entry."""
     # Reset the plot
     widget.clear()
-    widget.setTitle(f'Library MS2 spectrum of {compound.name}')
+    widget.setTitle(f'Library MS2 spectrum of {library_entry[0].split("Name: ", 1)[1].partition('\n')[0]}')
     if not library_entry:
         return
 
