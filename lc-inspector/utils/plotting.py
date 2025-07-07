@@ -11,6 +11,7 @@ from pyteomics.auxiliary import cvquery
 from static_frame import FrameHE
 
 logger = logging.getLogger(__name__)
+logger.propagate = False
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
     """
     Generates and saves plots of absorbance data before and after background correction.
@@ -75,7 +76,6 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
-    widget.showGrid(x=True, y=True, alpha=0.2)
     try:
         data_matrix[index]
     except IndexError:
@@ -264,6 +264,7 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
     """Plot an MS2 spectrum from a library entry."""
     # Reset the plot
     widget.clear()
+    widget.setBackground("w")
     widget.setTitle(f'Library MS2 spectrum of {library_entry[0].split("Name: ", 1)[1].partition('\n')[0]}')
     if not library_entry:
         return
@@ -280,6 +281,10 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
 
     if not mzs or not intensities:
         return
+    else:
+        # turn mzs and intensities into np arrays
+        mzs = np.array(mzs)
+        intensities = np.array(intensities)
 
     widget.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('r', width=1), brush=mkBrush('r')), name="Library spectrum")
     # Draw a flat black line at 0 intensity
@@ -295,8 +300,6 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
 
     widget.setLabel('left', 'Intensity (%)')
     widget.setLabel('bottom', 'm/z')
-
-
 
 def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):
     if not ms_file:
@@ -334,21 +337,20 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
                 intensities = scan['intensity array']
                 break
         except TypeError as e:
-            logger.error(f"plot_ms2_from_file: TypeError {e} for scan {scan} in {ms_file.filename}")
+            logger.error(f"plot_ms2_from_file: TypeError {e} in {ms_file.filename}")
             continue
         except KeyError as e:
-            logger.error(f"plot_ms2_from_file: KeyError {e} for scan {scan} in {ms_file.filename}")
+            logger.error(f"plot_ms2_from_file: KeyError {e} in {ms_file.filename}")
             continue
-        else:
-            mzs.append(scan['m/z array'])
-            intensities.append(scan['intensity array'])
+        mzs.append(scan['m/z array'])
+        intensities.append(scan['intensity array'])
 
     if not mzs or not intensities:
         logger.error(f"plot_ms2_from_file: mzs or intensities is None")
         return
-    # TODO: Think how this can be improved and test on greater number of data 
-    mzs = np.concatenate(mzs)
-    intensities = np.concatenate(intensities)
+    else:
+        mzs = np.concatenate(mzs)
+        intensities = np.concatenate(intensities)
 
     canvas.setTitle(f'MS2 spectrum of {ms_compound.name} (m/z {precursor:.4f})')
     canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities/np.max(intensities)*100, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
@@ -362,12 +364,13 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
             logger.error(f"plot_ms2_from_file: TypeError {e} when creating text item for peak {mz} in {ms_file.filename}")
             continue
         text_item.setPos(mz, intensity/np.max(intensities)*100)
-        text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+        text_item.setFont(pg.QtGui.QFont('Helvetica', 10))
         canvas.addItem(text_item)
 
     canvas.setLabel('left', 'Intensity (%)')
     canvas.setLabel('bottom', 'm/z')
     logger.info(f"Plotting MS2 for {ms_compound.name} (m/z {precursor:.4f}) in {ms_file.filename}")
+    canvas.getPlotItem().getViewBox().setYRange(-100, 100)
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setBackground("w")

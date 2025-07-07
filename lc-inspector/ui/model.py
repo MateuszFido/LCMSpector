@@ -6,9 +6,10 @@ import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library, load_ms2_data
-from calculation.workers import Worker
+from calculation.workers import Worker, MS2Loader
 
 logger = logging.getLogger(__name__)
+logger.propagate = False
 class Model:
     """
     The Model class handles the loading, processing, and annotation of LC and MS measurement files.
@@ -133,12 +134,12 @@ class Model:
                                     if (precursor_mz := next((line.split(' ')[1] for line in l if 'PrecursorMZ:' in line), None)) is not None 
                                     and np.isclose(float(precursor_mz), float(ion), atol=0.005)), None)
                 if library_entry:
-                    logger.info(f"Precursor found for {compound.name} in the library, m/z {ion}")
+                    logger.info(f"Precursor m/z {ion} found for {compound.name} in the library.")
                     library_entries.add(tuple(library_entry))
                 else:
-                    logger.error(f"No MS2 found for {compound.name}: precursor ion {ion} not found in the library")
+                    logger.debug(f"Library entry not found for {compound.name}: {ion}")
             except StopIteration:
-                logger.error(f"No MS2 found for {compound.name}: precursor ion {ion} not found in the library")
+                logger.debug(f"Library entry not found for {compound.name}: {ion}")
                 plot_no_ms2_found(self.canvas_library_ms2)
                 break
         #HACK: Terribly complex dict comprehension
@@ -151,6 +152,11 @@ class Model:
         self.controller.view.comboBoxChooseMS2File.clear()
         self.controller.view.comboBoxChooseMS2File.addItems(library_entries.keys())
         return library_entries
+
+    def find_ms2_in_file(self, ms_file):
+        current_compound = self.compounds[self.controller.view.comboBoxChooseCompound.currentIndex()]
+        current_compound_in_ms_file = next((c for c in ms_file.xics if c.name == current_compound.name), None)
+        load_ms2_data(ms_file.path, current_compound_in_ms_file, ms_file.mass_accuracy)
 
     def export(self):
         results = []
