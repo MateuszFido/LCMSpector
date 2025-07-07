@@ -88,25 +88,3 @@ class Worker(QThread):
 
         logger.info(f"Processed in {time.time() - st} seconds.")
         self.finished.emit(lc_results, ms_results)
-
-class MS2Loader(QThread):
-    finished = pyqtSignal()
-
-    def __init__(self, ms_measurements, library):
-        super().__init__()
-        self.ms_measurements = ms_measurements
-        self.library = library
-
-    def run(self):
-        with ProcessPoolExecutor() as executor:
-            futures = [
-                executor.submit(load_ms2_data, ms_measurement.path, self.library, ms_measurement.xics, ms_measurement.mass_accuracy)
-                for ms_measurement in self.ms_measurements.values()
-            ]
-            for future in as_completed(futures):
-                try:
-                    future.result()
-                except Exception as e:
-                    logger.error(f"Error loading MS2 data: {e}")
-
-        self.finished.emit()
