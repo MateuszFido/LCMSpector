@@ -6,7 +6,7 @@ import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library, load_ms2_data
-from calculation.workers import Worker, MS2Loader
+from calculation.workers import Worker
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
