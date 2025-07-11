@@ -2,7 +2,7 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.13990448.svg)](https://doi.org/10.5281/zenodo.13990448)
 [![Tests](https://github.com/MateuszFido/LC-Inspector/actions/workflows/ci.yml/badge.svg)](https://github.com/MateuszFido/LC-Inspector/actions/workflows/ci.yml)
 
-![LC-Inspector Logo](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
+![LCMSpector Logo](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
 
 
 ##### Table of Contents  
@@ -22,11 +22,11 @@
 <a name="description"/>
 
 ## 🔍 Description  
-LC-Inspector is an open-source application for analyzing targeted mass spectrometry data. 
+LCMSpector is an open-source application for analyzing targeted mass spectrometry data. 
 
 It allows you to process raw mass spectrometry and/or chromatography files and look for a set of compounds or peaks, trace their intensities, graph and export them (also the raw data), check with databases via MS/MS, and quantify using calibration standards.
 
-For more information, visit the [LC-Inspector wiki](https://github.com/MateuszFido/LC-Inspector/wiki)!
+For more information, visit the [LCMSpector wiki](https://github.com/MateuszFido/LCMSpector/wiki)!
 
 <a name="features"/>
 
