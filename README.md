@@ -11,10 +11,10 @@
 [3. Installation](#installation)  
     * [Desktop app](#desktop-app)  
     * [Running from source](#running-from-source)  
-    * [Docker](#docker)  
 [4. Usage](#usage)  
-[5. Contributing](#contributing)  
-[6. Licensing](#licensing)
+[5. Running with Docker](#-running-with-docker)  
+[6. Contributing](#contributing)  
+[7. Licensing](#licensing)
 
 
 ***
@@ -70,17 +70,6 @@ If running from source, you only need to execute `python3 main.py`.
 5.  Prepare the input data
 6.  Run the script via `main.py` using `python3 main.py`
 
-### Docker
-
-A Docker image is available from Dockerhub: #### TODO 
-
-You can pull the image and run it with the following commands: 
-
-```bash
-docker pull MateuszFido/LC-Inspector
-docker run -it --rm -v /tmp/.X11-unix:/tmp/.X11-unix -e DISPLAY=$DISPLAY MateuszFido/LC-Inspector
-```
-
 <a name="usage"/>
 
 ## ⛯ Usage
@@ -101,6 +90,65 @@ LC-Inspector simplifies the MS analysis process to only a few steps:
 6. Quantify based on MS and/or chromatography data
 
 The user can upload and process the data entirely locally on their machine. No need to register an account anywhere or upload to external websites or web servers.
+
+[Here is an overview](https://github.com/MateuszFido/LCMSpector/wiki) of what LCMSpector can do! 
+
+
+## 🐳 Running with Docker
+
+Docker is a fantastic alternative if you don't want to install the app directly on your system. 
+
+---
+
+### MacOS
+
+### 1. Install XQuartz (if you don't have it already)
+
+Download and install XQuartz from:  
+https://www.xquartz.org/
+
+- After installation, open XQuartz.
+- Go to **XQuartz > Preferences > Security** and check:  
+  **"Allow connections from network clients"**
+- Restart XQuartz if you changed the setting.
+
+---
+
+### 2. Allow Docker to Connect to XQuartz
+
+Open a terminal on your Mac and run:
+
+```bash
+xhost + 127.0.0.1
+```
+
+---
+
+### 3. Pull the Docker Image
+
+```bash
+docker pull mateuszfido/lcmspector:latest
+```
+
+---
+
+### 4. Run the Docker Container
+
+In **the same** terminal, run:
+
+```bash
+docker run -it \
+  -e DISPLAY=host.docker.internal:0 \
+  mateuszfido/lcmspector:latest
+```
+---
+
+If you have issues:
+- Make sure XQuartz is running and "Allow connections from network clients" is checked.
+- Make sure your Mac firewall allows incoming connections for XQuartz.
+- Try restarting XQuartz or your terminal session.
+
+---
 
 <a name="contributing"/>
 
