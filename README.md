@@ -13,6 +13,9 @@
     * [Running from source](#running-from-source)  
 [4. Usage](#usage)  
 [5. Running with Docker](#-running-with-docker)  
+   * [MacOS[(#macos)
+   * [Linux](#linux)
+   * [Windows](#windows)
 [6. Contributing](#contributing)  
 [7. Licensing](#licensing)
 
@@ -96,9 +99,9 @@ The user can upload and process the data entirely locally on their machine. No n
 
 ## 🐳 Running with Docker
 
-Docker is a fantastic alternative if you don't want to install the app directly on your system. 
-
 ---
+
+Docker is a fantastic alternative if you don't want to install the app directly on your system. 
 
 ### MacOS
 
@@ -149,6 +152,14 @@ If you have issues:
 - Try restarting XQuartz or your terminal session.
 
 ---
+
+### Linux
+
+TODO
+
+### Windows 
+
+TODO
 
 <a name="contributing"/>
 
