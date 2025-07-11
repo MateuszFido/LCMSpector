@@ -5,19 +5,20 @@
 ![LCMSpector Logo](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
 
 
-##### Table of Contents  
-[1. Description](#description)  
-[2. Features](#features)   
-[3. Installation](#installation)  
-    * [Desktop app](#desktop-app)  
-    * [Running from source](#running-from-source)  
-[4. Usage](#usage)  
-[5. Running with Docker](#-running-with-docker)  
-   * [MacOS](#macos)  
-   * [Linux](#linux)  
-   * [Windows](#windows)  
-[6. Contributing](#contributing)  
-[7. Licensing](#licensing)
+#### Table of Contents
+
+1. [Description](#description)
+2. [Features](#features)
+3. [Installation](#installation)
+   - [Desktop app](#desktop-app)
+   - [Running from source](#running-from-source)
+4. [Usage](#usage)
+5. [Running with Docker](#-running-with-docker)
+   - [MacOS](#macos)
+   - [Linux](#linux)
+   - [Windows](#windows)
+6. [Contributing](#contributing)
+7. [Licensing](#licensing)
 
 
 ***
