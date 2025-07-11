@@ -13,9 +13,9 @@
     * [Running from source](#running-from-source)  
 [4. Usage](#usage)  
 [5. Running with Docker](#-running-with-docker)  
-   * [MacOS[(#macos)
-   * [Linux](#linux)
-   * [Windows](#windows)
+   * [MacOS](#macos)  
+   * [Linux](#linux)  
+   * [Windows](#windows)  
 [6. Contributing](#contributing)  
 [7. Licensing](#licensing)
 
@@ -24,7 +24,7 @@
 
 <a name="description"/>
 
-## 🔍 Description  
+# 🔍 Description  
 LCMSpector is an open-source application for analyzing targeted mass spectrometry data. 
 
 It allows you to process raw mass spectrometry and/or chromatography files and look for a set of compounds or peaks, trace their intensities, graph and export them (also the raw data), check with databases via MS/MS, and quantify using calibration standards.
@@ -33,7 +33,7 @@ For more information, visit the [LCMSpector wiki](https://github.com/MateuszFido
 
 <a name="features"/>
 
-## ✨ Features
+# ✨ Features
 * Trace compounds in raw mass spec data
 * Analyze and process LC/GC spectra 
 * View the underlying MS spectra, scan by scan
@@ -51,11 +51,13 @@ For more information, visit the [LCMSpector wiki](https://github.com/MateuszFido
 
 <a name="installation"/>
 
-## 💽 Installation 
+# 💽 Installation 
 
-### Desktop app
+## Desktop app
 
-Executables for Windows and macOS are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases).
+Executables for Windows and macOS are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases). 
+
+Linux users can now also use the [Docker version of LCMSpector](#-running-with-docker).
 
 *   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
 *   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
@@ -64,7 +66,7 @@ If the app has not been quarantined but isn't running, go to `System settings ->
 
 If running from source, you only need to execute `python3 main.py`.
 
-### Running from source 
+## Running from source 
 
 1.  Clone the repository or download the compressed version and unpack
 2.  Install Python 3.12 or later
@@ -75,7 +77,7 @@ If running from source, you only need to execute `python3 main.py`.
 
 <a name="usage"/>
 
-## ⛯ Usage
+# ⛯ Usage
 
 LC-Inspector simplifies the MS analysis process to only a few steps: 
 
@@ -97,13 +99,11 @@ The user can upload and process the data entirely locally on their machine. No n
 [Here is an overview](https://github.com/MateuszFido/LCMSpector/wiki) of what LCMSpector can do! 
 
 
-## 🐳 Running with Docker
+# 🐳 Running with Docker
 
----
+Docker is a fantastic alternative if you don't want to install the app directly on your system. It's also currently the only way you can run LCMSpector on Linux.
 
-Docker is a fantastic alternative if you don't want to install the app directly on your system. 
-
-### MacOS
+## MacOS
 
 ### 1. Install XQuartz (if you don't have it already)
 
@@ -153,13 +153,101 @@ If you have issues:
 
 ---
 
-### Linux
+## Linux
 
-TODO
+### 1. Prerequisites
+
+Make sure you have Docker installed and an X11 server running (most Linux desktops do this by default).
+
+You may also need to allow clients to connect to your X server:
+
+```bash
+xhost +local:docker
+```
+
+---
+
+### 2. Pull the Docker Image
+
+```bash
+docker pull mateuszfido/lcmspector:latest
+```
+
+---
+
+### 3. Run the Docker Container
+
+Run the following command in your terminal:
+
+```bash
+docker run -it \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  mateuszfido/lcmspector:latest
+```
+
+- If your app needs files from your local machine, you can add `-v $(pwd):/app` to mount your current folder.
+
+---
+
+If you have issues:
+- Make sure you ran `xhost +local:docker` to allow Docker containers to use your X server.
+- Check that your DISPLAY variable is set (usually `:0` on most desktop Linux systems).
+- Make sure your system firewall is not blocking local X11 connections.
+
+---
 
 ### Windows 
 
-TODO
+### 1. Install an X11 Server (VcXsrv)
+
+- Download [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) and install it.
+- Launch **XLaunch** (installed with VcXsrv), and configure as follows:
+  - Select "Multiple windows"
+  - Start no client
+  - Extra settings: Check "Disable access control"
+  - Finish to start the server
+
+---
+
+### 2. Find Your Host IP Address
+
+Open Command Prompt or PowerShell and run:
+
+```bash
+ipconfig
+```
+
+Look for your IPv4 address (e.g., `192.168.1.100`).
+
+---
+
+### 3. Pull the Docker Image
+
+```powershell
+docker pull mateuszfido/lcmspector:latest
+```
+
+---
+
+### 4. Run the Docker Container
+
+In your terminal, run (replace `<YOUR-IP>` with your IPv4 address from step 2):
+
+```powershell
+docker run -it ^
+  -e DISPLAY=<YOUR-IP>:0.0 ^
+  mateuszfido/lcmspector:latest
+```
+---
+
+If you have issues:
+- Make sure VcXsrv is running and "Disable access control" is checked.
+- Ensure your firewall allows VcXsrv connections.
+- Double-check you used the correct IP address.
+- Try restarting VcXsrv or your terminal session.
+
+---
 
 <a name="contributing"/>
 
