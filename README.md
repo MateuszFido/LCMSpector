@@ -198,7 +198,7 @@ If you have issues:
 
 ---
 
-### Windows 
+## Windows 
 
 ### 1. Install an X11 Server (VcXsrv)
 
@@ -252,7 +252,7 @@ If you have issues:
 
 <a name="contributing"/>
 
-## 🙋 Contributing
+# 🙋 Contributing
 
 If you have an idea to improve LC-Inspector, don't hesitate to let me know -- any and all contributions are very welcome! 
 
@@ -262,7 +262,7 @@ There are two main ways to contribute:
 
 <a name="licensing"/>
 
-## 📋 Licensing 
+# 📋 Licensing 
 
 LC-Inspector is distributed under the MIT license and available free of charge. 
 
