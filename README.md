@@ -99,10 +99,12 @@ The user can upload and process the data entirely locally on their machine. No n
 
 [Here is an overview](https://github.com/MateuszFido/LCMSpector/wiki) of what LCMSpector can do! 
 
+<a name="-running-with-docker"/>
 
 # 🐳 Running with Docker
 
-Docker is a fantastic alternative if you don't want to install the app directly on your system. It's also currently the only way you can run LCMSpector on Linux.
+Docker is a fantastic alternative if you don't want to install the app directly on your system. 
+If using LCMSpector from source is not an option for you, it's also currently the only way you can run LCMSpector on Linux systems.
 
 ## MacOS
 
@@ -145,6 +147,8 @@ docker run -it \
   -e DISPLAY=host.docker.internal:0 \
   mateuszfido/lcmspector:latest
 ```
+>[!IMPORTANT]
+>To be able to analyze files on your local machine, add `-v /path/on/host:/path/in/container` to the Docker command to mount your data folder(s).
 ---
 
 If you have issues:
@@ -186,8 +190,8 @@ docker run -it \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   mateuszfido/lcmspector:latest
 ```
-
-- If your app needs files from your local machine, you can add `-v $(pwd):/app` to mount your current folder.
+>[!IMPORTANT]
+>To be able to analyze files on your local machine, add `-v /path/on/host:/path/in/container` to the Docker command to mount your data folder(s).
 
 ---
 
@@ -240,6 +244,9 @@ docker run -it ^
   -e DISPLAY=<YOUR-IP>:0.0 ^
   mateuszfido/lcmspector:latest
 ```
+
+>[!IMPORTANT]
+>To be able to analyze files on your local machine, add `-v /path/on/host:/path/in/container` to the Docker command to mount your data folder(s).
 ---
 
 If you have issues:
