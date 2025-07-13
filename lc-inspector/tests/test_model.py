@@ -13,7 +13,8 @@ import logging
 # Add the parent directory to the path so we can import the model
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from model import LCInspectorModel, EventEmitter
+from model.events import EventEmitter
+from model.lc_inspector_model import LCInspectorModel
 
 # Disable logging for tests
 logging.disable(logging.CRITICAL)

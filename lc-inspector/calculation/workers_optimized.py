@@ -11,7 +11,7 @@ import traceback
 import multiprocessing
 import logging
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
-from utils.classes import LCMeasurement, MSMeasurement
+from utils.classes_optimized import LCMeasurement, MSMeasurement
 import os
 import numpy as np
 import psutil

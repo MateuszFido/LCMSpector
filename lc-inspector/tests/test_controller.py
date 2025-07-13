@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 
 from ui.controller_refactored import Controller
 from model import LCInspectorModel
-from utils.classes import Compound
+from utils.classes_optimized import Compound
 
 # Disable logging for tests
 logging.disable(logging.CRITICAL)
@@ -136,12 +136,15 @@ class TestController(unittest.TestCase):
             Compound("compound2", [456.7], ["info2"])
         ]
         
+        # Set the model's compounds property to match what we're passing
+        self.model.compounds = compounds
+        
         # Call the method
         self.controller._on_calibration_finished(compounds)
         
         # Check that the view methods were called
         self.view.comboBoxChooseCompound.setEnabled.assert_called_once_with(True)
-        self.view.update_choose_compound.assert_called_once_with(compounds)
+        self.view.update_choose_compound.assert_called_once_with(self.model.compounds)
     
     def test_display_selected_plots(self):
         """Test that display_selected_plots calls the correct methods."""
