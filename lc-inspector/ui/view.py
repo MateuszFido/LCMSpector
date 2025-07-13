@@ -316,9 +316,12 @@ class View(QtWidgets.QMainWindow):
         return selected_files
 
     def update_choose_compound(self, compounds):
+        logger.info(f"Updating comboBoxChooseCompound with {len(compounds) if compounds else 'no'} compounds")
         self.comboBoxChooseCompound.clear()
         for compound in compounds:
+            logger.info(f"Adding compound: {compound.name} to comboBoxChooseCompound")
             self.comboBoxChooseCompound.addItem(compound.name)
+        logger.info(f"comboBoxChooseCompound now has {self.comboBoxChooseCompound.count()} items")
 
     def display_plots(self, lc_file, ms_file):
         if self.controller.mode == "LC/GC-MS":
@@ -432,7 +435,8 @@ class View(QtWidgets.QMainWindow):
 
     def display_library_ms2(self):
         try:
-            library_entries = self.controller.model.find_ms2_precursors()
+            compound_index = self.comboBoxChooseCompound.currentIndex()
+            library_entries = self.controller.model.find_ms2_precursors(compound_index)
         except Exception as e:
             logger.error(f"Error finding MS2 precursors: {e}")
         self.canvas_library_ms2.clear()
@@ -460,7 +464,8 @@ class View(QtWidgets.QMainWindow):
             plot_no_ms2_found(self.canvas_ms2)
             return
         try:
-            self.controller.model.find_ms2_in_file(ms_file)
+            compound_index = self.comboBoxChooseCompound.currentIndex()
+            self.controller.model.find_ms2_in_file(ms_file, compound_index)
             compound = next((xic for xic in ms_file.xics if xic.name == self.comboBoxChooseCompound.currentText()), None)
             precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
             plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
@@ -1053,4 +1058,3 @@ class View(QtWidgets.QMainWindow):
         cp = self.screen().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
