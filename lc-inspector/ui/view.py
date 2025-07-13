@@ -1006,7 +1006,7 @@ class View(QtWidgets.QMainWindow):
             MainWindow: The main window object for which the UI is being set up.
         """
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "LC-Inspector"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "LCMSpector"))
         self.browseLC.setText(_translate("MainWindow", "Browse"))
         self.comboBox.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
         self.comboBox.setItemText(1, _translate("MainWindow", "MS Only"))
