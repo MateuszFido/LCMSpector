@@ -6,6 +6,7 @@ from pyteomics import mzml
 from pyteomics.auxiliary import cvquery
 import h5py
 import joblib
+import tempfile
 import os.path
 from concurrent.futures import ThreadPoolExecutor
 
@@ -112,7 +113,7 @@ def load_annotated_peaks(file_path):
 
 def get_cache_path(path):
     """Generate a cache file path for an mzML file"""
-    cache_dir = os.path.join(os.path.dirname(path), ".cache")
+    cache_dir = Path(tempfile.gettempdir()) / "lc_inspector_cache"
     os.makedirs(cache_dir, exist_ok=True)
     basename = os.path.basename(path)
     return os.path.join(cache_dir, f"{basename}.h5")
@@ -184,13 +185,16 @@ def load_ms1_data(path: str) -> list:
         for i, meta in enumerate(ms1_metadata):
             scan = next(file)
             # Create a more efficient representation that only keeps what's needed
+            if scan['ms level'] != 1:
+                continue
             optimized_scan = {
                 'id': scan.get('id', ''),
                 'ms level': scan.get('ms level', 1),
                 'retention_time': cvquery(scan, 'MS:1000016'),
+                'total ion current': scan.get('total ion current', 0),
                 # Store arrays as np.float32 to save memory if appropriate
-                'm/z array': scan['m/z array'].astype(np.float32) if scan['m/z array'].dtype != np.float32 else scan['m/z array'],
-                'intensity array': scan['intensity array'].astype(np.float32) if scan['intensity array'].dtype != np.float32 else scan['intensity array']
+                'm/z array': scan['m/z array'].astype(np.float32),
+                'intensity array': [scan['intensity array'].astype(np.float32)]
             }
             ms1_data.append(optimized_scan)
 

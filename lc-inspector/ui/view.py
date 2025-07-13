@@ -207,8 +207,8 @@ class View(QtWidgets.QMainWindow):
         Updates the model with the LC file paths currently in the listLC widget.
 
         Iterates over the listLC widget, retrieves the text of each item, and stores
-        them in a list. This list is then assigned to the `lc_filelist` attribute of
-        the model, which is assumed to be accessed through the `controller` attribute.
+        them in a list. This list is then assigned to the `lc_measurements` attribute of
+        the model, which is accessed through the `controller` attribute.
 
         This method is called whenever the contents of the listLC widget change,
         such as when new LC files are added or existing ones are removed.
@@ -224,7 +224,7 @@ class View(QtWidgets.QMainWindow):
         except RuntimeError:
             logger.error("listLC has been deleted!")
         finally:
-            self.controller.model.lc_measurements = lc_files 
+            self.controller.model.lc_measurements = lc_files
 
     def update_ms_file_list(self):
         # Update the model with the MS file paths
@@ -232,8 +232,8 @@ class View(QtWidgets.QMainWindow):
         Updates the model with the MS file paths currently in the listMS widget.
 
         Iterates over the listMS widget, retrieves the text of each item, and stores
-        them in a list. This list is then assigned to the `ms_filelist` attribute of
-        the model, which is assumed to be accessed through the `controller` attribute.
+        them in a list. This list is then assigned to the `ms_measurements` attribute of
+        the model, which is accessed through the `controller` attribute.
 
         This method is called whenever the contents of the listMS widget change,
         such as when new MS files are added or existing ones are removed.
@@ -249,7 +249,7 @@ class View(QtWidgets.QMainWindow):
         except RuntimeError:
             logger.error("listMS has been deleted!")
         finally:
-            self.controller.model.ms_measurements = ms_files  
+            self.controller.model.ms_measurements = ms_files
 
     def update_annotation_file(self):
         # Update the model with the annotation file paths
@@ -336,20 +336,37 @@ class View(QtWidgets.QMainWindow):
                     self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
                 except Exception as e: 
                     logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
+            
             self.canvas_avgMS.clear()
             if ms_file:
+                logger.info(f"Displaying MS data for {ms_file.filename}")
                 try:
-                    plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
-                except AttributeError as e: 
-                    logger.error(f"No average MS found: {traceback.format_exc()}")
+                    # Make sure data is loaded
+                    ms_data = ms_file.data
+                    if ms_data is None:
+                        logger.error(f"MS data is None for {ms_file.filename}")
+                    else:
+                        logger.info(f"MS data loaded successfully: {len(ms_data)} scans")
+                        plot_average_ms_data(0, ms_data, self.canvas_avgMS)
+                except Exception as e: 
+                    logger.error(f"Error plotting average MS data: {e}")
+                    logger.error(traceback.format_exc())
+            
             self.canvas_XICs.clear()
             if ms_file:
                 self.gridLayout_2.removeWidget(self.scrollArea)
                 self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
-                    plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
-                except AttributeError as e: 
-                    logger.error(f"No XIC plot found: {traceback.format_exc()}")
+                    # Make sure XICs are loaded
+                    xics = ms_file.xics
+                    if xics is None:
+                        logger.error(f"XICs is None for {ms_file.filename}")
+                    else:
+                        logger.info(f"XICs loaded successfully: {len(xics)} compounds")
+                        plot_annotated_XICs(ms_file.path, xics, self.canvas_XICs)
+                except Exception as e: 
+                    logger.error(f"Error plotting XICs: {e}")
+                    logger.error(traceback.format_exc())
             if lc_file and ms_file:
                 if lc_file.filename == ms_file.filename:
                     try:
@@ -467,6 +484,7 @@ class View(QtWidgets.QMainWindow):
             compound_index = self.comboBoxChooseCompound.currentIndex()
             self.controller.model.find_ms2_in_file(ms_file, compound_index)
             compound = next((xic for xic in ms_file.xics if xic.name == self.comboBoxChooseCompound.currentText()), None)
+            print(self.comboBoxChooseMS2File.currentText())
             precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
             plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
         except Exception as e:

@@ -19,17 +19,19 @@ import gc
 import joblib
 import tempfile
 from pathlib import Path
+import sys
+import weakref
 
 from model.base import BaseModel
-from utils.classes_optimized import LCMeasurement, MSMeasurement, Compound
+from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
-from utils.loading_optimized import load_ms2_library, load_ms2_data
-from calculation.workers_optimized import OptimizedWorker
+from utils.loading import load_ms2_library, load_ms2_data
+from calculation.workers import OptimizedWorker
 from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
-class LCInspectorModelOptimized(BaseModel):
+class Model(BaseModel):
     """
     The optimized LCInspectorModel class handles the loading, processing, and annotation 
     of LC and MS measurement files with improved performance.
@@ -61,7 +63,7 @@ class LCInspectorModelOptimized(BaseModel):
     
     __slots__ = [
         'ms_measurements', 'lc_measurements', 'annotations', 'compounds', 
-        'library', 'worker', 'cache_dir', '_library_loaded'
+        'library', 'worker', 'cache_dir', '_library_loaded',
     ]
 
     def __init__(self):
@@ -76,6 +78,10 @@ class LCInspectorModelOptimized(BaseModel):
         self.worker = None
         self.cache_dir = Path(tempfile.gettempdir()) / "lc_inspector_cache"
         os.makedirs(self.cache_dir, exist_ok=True)
+        
+        # For debugging and monitoring MS data integrity
+        self._ms_data_refs = {}
+        self._data_verification_history = []
         
         logger.info(f"Initialized optimized model with cache directory: {self.cache_dir}")
         logger.info(f"Current thread: {threading.current_thread().name}")
@@ -131,11 +137,89 @@ class LCInspectorModelOptimized(BaseModel):
         ms_results : dict
             The MS measurement results.
         """
+        logger.info(f"Processing finished. Received {len(lc_results)} LC results and {len(ms_results)} MS results")
+        logger.info(f"Worker thread: {threading.current_thread().name}, Worker process: {os.getpid()}")
+        
+        # Track current memory usage
+        logger.info(f"Current memory usage: {int(self._get_memory_usage())} MB")
+        
+        # Critical section: Ensure all MS data is fully loaded and referenced before storing
+        logger.info("Ensuring MS data persistence before model storage...")
+        
+        # Create our own strong references to prevent garbage collection
+        strong_ms_refs = {}
+        
+        # Log and verify each MS file and its data
+        for filename, ms_file in ms_results.items():
+            logger.info(f"Processing MS file {filename} (ID: {id(ms_file)})")
+            
+            # Verify data is present and create strong references
+            if hasattr(ms_file, '_data') and ms_file._data is not None:
+                data_size = len(ms_file._data)
+                logger.info(f"MS file {filename} has data with {data_size} scans (ID: {id(ms_file._data)})")
+                
+                # Store strong reference to the data
+                strong_ms_refs[f"{filename}_data"] = ms_file._data
+                
+                # Strengthen the reference in the MS file itself
+                ms_file._data = ms_file._data
+            else:
+                logger.error(f"MS file {filename} is missing data!")
+                
+            # Verify XICs are present and create strong references
+            if hasattr(ms_file, '_xics') and ms_file._xics is not None:
+                xics_size = len(ms_file._xics)
+                logger.info(f"MS file {filename} has XICs with {xics_size} compounds (ID: {id(ms_file._xics)})")
+                
+                # Store strong reference to XICs
+                strong_ms_refs[f"{filename}_xics"] = ms_file._xics
+                
+                # Strengthen the reference in the MS file itself
+                ms_file._xics = ms_file._xics
+            else:
+                logger.error(f"MS file {filename} is missing XICs!")
+        
+        # Now store the results in model with the guarantee that strong references exist
+        logger.info("Storing results in model...")
         self.lc_measurements = lc_results
         self.ms_measurements = ms_results
         
-        # Force garbage collection to release memory from processing
-        gc.collect()
+        # Keep the strong references in the model to prevent garbage collection
+        self._ms_data_refs = strong_ms_refs
+        
+        # Log object IDs after assignment
+        logger.info(f"Model's ms_measurements object ID: {id(self.ms_measurements)}")
+        for filename, ms_file in self.ms_measurements.items():
+            logger.info(f"Model's MS file {filename} object ID: {id(ms_file)}")
+            if hasattr(ms_file, 'data') and ms_file.data is not None:
+                logger.info(f"Model's MS file {filename} data object ID: {id(ms_file.data)}")
+                # Log some scans to verify data integrity
+                scan_ids = [id(scan) for scan in ms_file.data[:3]] if len(ms_file.data) >= 3 else []
+                logger.info(f"First few scan IDs: {scan_ids}")
+            if hasattr(ms_file, 'xics') and ms_file.xics is not None:
+                logger.info(f"Model's MS file {filename} xics object ID: {id(ms_file.xics)}")
+        
+        # Verify MS data is available
+        for filename, ms_file in self.ms_measurements.items():
+            if ms_file.data is None:
+                logger.error(f"MS data is None for {filename}")
+            else:
+                logger.info(f"MS data for {filename} contains {len(ms_file.data)} scans")
+                # Examine the first few scans to verify data structure
+                for i, scan in enumerate(ms_file.data[:2]):
+                    logger.info(f"Scan {i} in {filename}: ID: {scan.get('id', 'No ID')}, contains {len(scan.get('m/z array', []))} m/z values")
+                
+            if ms_file.xics is None:
+                logger.error(f"XICs is None for {filename}")
+            else:
+                logger.info(f"XICs for {filename} contains {len(ms_file.xics)} compounds")
+                logger.info(f"{ms_file.xics}")
+                # Examine the first few compounds
+                for i, compound in enumerate(ms_file.xics[:2]):
+                    logger.info(f"Compound {i} in {filename}: {compound.name}, contains {len(compound.ions)} ions")
+        
+        # Track memory after processing
+        logger.info(f"Memory usage after processing: {int(self._get_memory_usage())} MB")
         
         # Emit an event to indicate that processing has finished
         self.emit('processing_finished', {'lc_results': lc_results, 'ms_results': ms_results})
@@ -157,6 +241,27 @@ class LCInspectorModelOptimized(BaseModel):
         # Find the corresponding MS and LC files
         ms_file = self.ms_measurements.get(filename, None)
         lc_file = self.lc_measurements.get(filename, None)
+        
+        # Verify MS file integrity before returning
+        if ms_file is not None:
+            if hasattr(ms_file, 'data') and ms_file.data is None:
+                logger.warning(f"MS data is None for {filename} in get_plots, attempting recovery")
+                # Just accessing the property will trigger recovery
+                data = ms_file.data
+                if data is not None:
+                    logger.info(f"Successfully recovered MS data for {filename}")
+                else:
+                    logger.error(f"Failed to recover MS data for {filename}")
+            
+            if hasattr(ms_file, 'xics') and ms_file.xics is None:
+                logger.warning(f"XICs is None for {filename} in get_plots, attempting recovery")
+                # Just accessing the property will trigger recovery
+                xics = ms_file.xics
+                if xics is not None:
+                    logger.info(f"Successfully recovered XICs for {filename}")
+                else:
+                    logger.error(f"Failed to recover XICs for {filename}")
+        
         return lc_file, ms_file
 
     def process_calibration_data(self, file, concentration, compound, ms_file):
@@ -184,6 +289,11 @@ class LCInspectorModelOptimized(BaseModel):
         selected_files : dict
             A dictionary mapping filenames to concentration values.
         """
+        # Verify data integrity before calibration
+        pre_calibration_check = self.verify_ms_data_integrity("pre_calibration")
+        if pre_calibration_check["integrity_issues"]:
+            logger.warning("MS data integrity issues detected before calibration. Attempting recovery.")
+            self._attempt_data_recovery(pre_calibration_check)
         # Process files in parallel
         with ThreadPoolExecutor(max_workers=min(os.cpu_count(), 4)) as executor:
             futures = []
@@ -256,6 +366,12 @@ class LCInspectorModelOptimized(BaseModel):
         logger.info(f"Calibration finished. Emitting event with {len(self.compounds)} compounds.")
         for compound in self.compounds:
             logger.info(f"Compound: {compound.name}")
+            
+        # Verify data integrity after calibration
+        post_calibration_check = self.verify_ms_data_integrity("post_calibration")
+        if post_calibration_check["integrity_issues"]:
+            logger.warning("MS data integrity issues detected after calibration. Attempting recovery.")
+            self._attempt_data_recovery(post_calibration_check)
             
         # Emit an event to indicate that calibration has finished
         self.emit('calibration_finished', self.compounds)
@@ -375,6 +491,11 @@ class LCInspectorModelOptimized(BaseModel):
         pd.DataFrame
             A DataFrame containing the results.
         """
+        # Verify data integrity before export
+        pre_export_check = self.verify_ms_data_integrity("pre_export")
+        if pre_export_check["integrity_issues"]:
+            logger.warning("MS data integrity issues detected before export. Attempting recovery.")
+            self._attempt_data_recovery(pre_export_check)
         results = []
         
         # Use parallel processing to generate result rows
@@ -433,18 +554,12 @@ class LCInspectorModelOptimized(BaseModel):
             logger.error(f"Error generating export rows for {compound.name} in {ms_measurement.filename}: {e}")
             return []
 
-    def __del__(self):
-        """Clean up resources when the model is deleted"""
-        # Clear any running worker
-        if self.worker and self.worker.isRunning():
-            try:
-                self.worker.terminate()
-                self.worker.wait()
-            except:
-                pass
-        
-        # Force garbage collection
-        gc.collect()
-
-# For backward compatibility
-LCInspectorModel = LCInspectorModelOptimized
+    def _get_memory_usage(self):
+        """Get current memory usage in MB"""
+        try:
+            import psutil
+            process = psutil.Process(os.getpid())
+            memory_info = process.memory_info()
+            return memory_info.rss / (1024 * 1024)  # Convert to MB
+        except ImportError:
+            return 0  # If psutil is not available

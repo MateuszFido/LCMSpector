@@ -15,17 +15,16 @@ from PyQt6.QtWidgets import QApplication
 from PyQt6.QtCore import QCoreApplication
 from PyQt6.QtGui import QIcon
 
-from model.lc_inspector_model_optimized import LCInspectorModelOptimized
+from model.model import Model
 from ui.view import View
-from ui.controller_refactored import Controller
+from ui.controller import Controller
 
 def configure_logging():
     """Configure logging for the application."""
     log_dir = Path(tempfile.gettempdir()) / "lc_inspector_logs"
     os.makedirs(log_dir, exist_ok=True)
-    
+
     log_file = log_dir / "lc_inspector.log"
-    
     # Configure the root logger
     logging.basicConfig(
         level=logging.INFO,
@@ -50,11 +49,11 @@ def main():
     """Main entry point for the application."""
     # Configure logging
     logger = configure_logging()
-    logger.info("Starting LC-Inspector (Optimized version)")
+    logger.info("Starting LCMSpector...")
     
     # Create the application
     app = QApplication(sys.argv)
-    app.setApplicationName("LC-Inspector Optimized")
+    app.setApplicationName("LCMSpector")
     app.setApplicationVersion("1.0.0")
     
     # Set the application icon
@@ -63,7 +62,7 @@ def main():
         app.setWindowIcon(QIcon(icon_path))
     
     # Create model, view, and controller instances
-    model = LCInspectorModelOptimized()
+    model = Model()
     view = View()
     controller = Controller(model, view)
     

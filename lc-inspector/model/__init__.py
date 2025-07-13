@@ -7,6 +7,6 @@ The model classes are responsible for data management and business logic.
 
 from model.events import EventEmitter
 from model.base import BaseModel
-from model.lc_inspector_model import LCInspectorModel
+from model.model import Model
 
-__all__ = ['EventEmitter', 'BaseModel', 'LCInspectorModel']
+__all__ = ['EventEmitter', 'BaseModel', 'Model']
