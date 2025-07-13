@@ -557,7 +557,7 @@ class View(QtWidgets.QMainWindow):
         elif event.key() == QtCore.Qt.Key.Key_Right:
             self.line_marker.setPos(self.line_marker.pos() + 0.01)
 
-    def change_MS_annotations(self):
+    def change_mode(self):
         """
         Update the layout of the Upload tab based on the current selection in the combo box.
 
@@ -573,11 +573,13 @@ class View(QtWidgets.QMainWindow):
             if layout:
                 for i in reversed(range(layout.count())):
                     widget = layout.itemAt(i).widget()
+                    print(widget)
                     if widget is not None and isinstance(widget, DragDropListWidget):
                         widget.clear()
                         widget.deleteLater()
 
         if self.comboBox.currentText() == "LC/GC-MS":
+            print('switched to LC/GC-MS mode')
             clear_layout(self.gridLayout)
             self.labelAnnotations.setVisible(False)
             self.browseAnnotations.setVisible(False)
@@ -597,8 +599,11 @@ class View(QtWidgets.QMainWindow):
             self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
             self.button_clear_LC.clicked.connect(self.listLC.clear)
             self.button_clear_MS.clicked.connect(self.listMS.clear)
+            self.update_ms_file_list()
+            self.update_lc_file_list()
 
         elif self.comboBox.currentText() == "MS Only":
+            print('switched to MS Only')
             clear_layout(self.gridLayout)
             self.labelLCdata.setVisible(False)
             self.labelAnnotations.setVisible(False)
@@ -611,35 +616,31 @@ class View(QtWidgets.QMainWindow):
             self.controller.mode = "MS Only"
             self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
             self.button_clear_MS.clicked.connect(self.listMS.clear)
+            self.update_ms_file_list()
 
         else:
+            print('switched to LC Only')
             clear_layout(self.gridLayout)
-            pass
             # Remove MS widgets
-            self.gridLayout.removeWidget(self.listMS)
-            self.listMS.deleteLater()
             self.labelMSdata.setVisible(False)
             self.browseMS.setVisible(False)
+            # Recreate the LC widgets
+            self.listLC = DragDropListWidget(parent=self.tabUpload)
+            self.listLC.setMinimumWidth(500)
+            self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
             # Replace with annotations
             self.listAnnotations = DragDropListWidget(parent=self.tabUpload)
             self.listAnnotations.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listAnnotations, 2, 2, 1, 2)
             self.labelAnnotations.setVisible(True)
             self.browseAnnotations.setVisible(True)
-            # Recreate the LC widgets
-            self.listLC = DragDropListWidget(parent=self.tabUpload)
-            self.listLC.setMinimumWidth(500)
-            self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
             self.labelLCdata.setVisible(True)
             self.browseLC.setVisible(True)
             self.controller.mode = "LC/GC Only"
             self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
             self.listAnnotations.filesDropped.connect(self.handle_files_dropped_annotations)
-
-        # Make updates to the model
-        self.update_lc_file_list()
-        self.update_ms_file_list()
-        self.update_annotation_file()
+            self.update_lc_file_list()
+            self.update_annotation_file()
 
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
@@ -987,7 +988,7 @@ class View(QtWidgets.QMainWindow):
         # self.processButton.clicked.connect(self.on_process)
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
-        self.comboBox.currentIndexChanged.connect(self.change_MS_annotations)
+        self.comboBox.currentIndexChanged.connect(self.change_mode)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
         self.button_clear_LC.clicked.connect(self.listLC.clear)
         self.button_clear_MS.clicked.connect(self.listMS.clear)

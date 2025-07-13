@@ -63,8 +63,9 @@ class LCMeasurement(Measurement):
     """
     def __init__(self, path):
         super().__init__(path)
-        self.data = load_absorbance_data(path)  # Initialize as None
-        self.baseline_corrected = baseline_correction(self.data)  # Initialize as None
+        self.data = load_absorbance_data(path)  
+        self.annotations = None
+        self.baseline_corrected = baseline_correction(self.data)  
         logger.info(f"Loaded LC file {self.filename}.")
 
     def plot(self):
