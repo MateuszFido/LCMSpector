@@ -1,4 +1,20 @@
-import os, yaml, logging.config, multiprocessing, threading
+"""
+Main entry point for the LCMSpector application with performance optimizations.
+
+This module provides the main entry point for the LCMSpector application.
+It sets up logging, creates the application, model, view, and controller instances,
+and handles application startup.
+"""
+
+import os
+import yaml
+import logging.config
+import multiprocessing
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
+from ui.model import Model
+from ui.view import View
+from ui.controller import Controller
 
 # Protective guards for binary building 
 if os.sys.stdout is None:
@@ -12,25 +28,34 @@ with open(os.path.join(os.path.dirname(__file__), "debug.yaml"), "r+") as f:
     config["handlers"]["file"]["filename"] = os.path.join(os.path.dirname(__file__), "app.log")
     logging.config.dictConfig(config)
 logger = logging.getLogger(__name__)
-logger.info(f"-------------------------------------\nStarting LC-Inspector at {os.getcwd()}...")
+logger.info(f"-------------------------------------\nStarting LCMSpector at {os.getcwd()}...")
 
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
-from ui.model import Model
-from ui.view import View
-from ui.controller import Controller
+def main():
+    """Main entry point for the application."""
+    # Create the application
+    app = QApplication(os.sys.argv)
+    app.setApplicationName("LCMSpector")
+    app.setApplicationVersion("1.0.0")
 
+    # Set the application icon
+    icon_path = os.path.join(os.path.dirname(__file__), "resources", "icon.icns")
+    if os.path.exists(icon_path):
+        app.setWindowIcon(QIcon(icon_path))
 
-if __name__ == "__main__":
-    app = QApplication([])
+    # Create model, view, and controller instances
     model = Model()
     view = View()
     controller = Controller(model, view)
+    
+    # Set the application style
+    app.setStyle("Fusion")
+    
+    # Show the main window
     view.show()
 
-    logger.info("Main executed, Qt application started.")
-    logger.info(f"Current thread: {threading.current_thread().name}")
-    logger.info(f"Current process: {os.getpid()}")
-    exit_code = app.exec()
-    logger.info(f"Exiting with exit code {exit_code}.")
-    os.sys.exit(exit_code)
+    # Start the event loop
+    logger.info("Application initialized, starting event loop")
+    os.sys.exit(app.exec())
 
+if __name__ == "__main__":
+    main()
