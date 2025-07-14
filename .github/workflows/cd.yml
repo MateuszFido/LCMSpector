@@ -33,7 +33,7 @@ jobs:
       - name: Build executable (macOS)
         run: |
          cd lc-inspector/ 
-         pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "debug.yaml:."  --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --onedir --windowed main.py
+         pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --onedir --windowed main.py
         shell: bash
         if: matrix.os == 'macos-latest'
 
@@ -41,7 +41,7 @@ jobs:
         run:  |
          cd lc-inspector/
          pip install pillow
-         pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "debug.yaml:."  --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --noconsole --onedir main.py
+         pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --noconsole --onedir main.py
         shell: cmd
         if: matrix.os == 'windows-latest'
 
