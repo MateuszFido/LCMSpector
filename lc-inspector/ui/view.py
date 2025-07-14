@@ -11,7 +11,7 @@ from datetime import datetime
 from pyqtgraph.dockarea import Dock, DockArea
 import numpy as np
 from scipy.signal import find_peaks
-from ui.widgets import DragDropListWidget, IonTable, GenericTable, ChromatogramPlotWidget
+from ui.widgets import DragDropListWidget, IonTable, GenericTable, ChromatogramPlotWidget, UnifiedResultsTable
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -288,32 +288,71 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile.addItems(filenames)
 
     def update_table_quantitation(self, concentrations):
-        self.tableWidget_files.clear()
-        self.tableWidget_files.setRowCount(0)
-        self.tableWidget_files.setColumnCount(3)
-        self.tableWidget_files.setShowGrid(True)
-        self.tableWidget_files.setStyleSheet("gridline-color: #e0e0e0;")
-        for row, item in enumerate(concentrations):
-            self.tableWidget_files.insertRow(row)
-            self.tableWidget_files.setItem(row, 0, QtWidgets.QTableWidgetItem(item[0]))
-            self.tableWidget_files.setItem(row, 1, QtWidgets.QTableWidgetItem(item[1]))
-            checkbox = QtWidgets.QTableWidgetItem("")
-            checkbox.setCheckState(Qt.CheckState.Unchecked)
-            self.tableWidget_files.setItem(row, 2, checkbox)
-        self.tableWidget_files.setHorizontalHeaderLabels(["File", "Concentration", "Use for calibration?"])
-        self.tableWidget_files.horizontalHeader().setStretchLastSection(True)
-        self.tableWidget_files.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
+        """
+        Update the unified results table with file concentrations and setup columns.
+        This replaces the old separate tableWidget_files functionality.
+        """
+        # Store concentrations for later use
+        self.file_concentrations = concentrations
+        
+        # Setup columns and populate data based on current compound selection
+        self.update_unified_table_for_compound()
+    
+    def update_unified_table_for_compound(self):
+        """
+        Update the unified table based on the currently selected compound.
+        """
+        if not hasattr(self, 'file_concentrations'):
+            return
+            
+        # Get the currently selected compound
+        current_compound = None
+        if (hasattr(self.controller, 'model') and 
+            hasattr(self.controller.model, 'compounds') and 
+            self.controller.model.compounds and
+            self.comboBoxChooseCompound.currentIndex() >= 0):
+            
+            current_compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
+            
+            # Setup columns for the current compound
+            self.unifiedResultsTable.setup_columns(current_compound)
+            
+            # Get MS measurements if available
+            ms_measurements = getattr(self.controller.model, 'ms_measurements', {})
+            
+            # Populate the table with data for the current compound
+            self.unifiedResultsTable.populate_data(self.file_concentrations, ms_measurements, current_compound)
+        else:
+            # Fallback: just setup basic columns without compound data
+            self.unifiedResultsTable.setColumnCount(3)
+            self.unifiedResultsTable.setHorizontalHeaderLabels(["File", "Calibration", "Concentration"])
+            self.unifiedResultsTable.setRowCount(len(self.file_concentrations))
+            
+            for row, (filename, concentration) in enumerate(self.file_concentrations):
+                # File name
+                file_item = QtWidgets.QTableWidgetItem(filename)
+                file_item.setFlags(file_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.unifiedResultsTable.setItem(row, 0, file_item)
+                
+                # Calibration checkbox
+                checkbox_widget = QtWidgets.QWidget()
+                checkbox = QtWidgets.QCheckBox()
+                checkbox.setChecked(False)
+                layout = QtWidgets.QHBoxLayout(checkbox_widget)
+                layout.addWidget(checkbox)
+                layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.setContentsMargins(0, 0, 0, 0)
+                self.unifiedResultsTable.setCellWidget(row, 1, checkbox_widget)
+                
+                # Concentration
+                conc_item = QtWidgets.QTableWidgetItem(concentration or "")
+                self.unifiedResultsTable.setItem(row, 2, conc_item)
 
     def get_calibration_files(self):
-        selected_files = {}
-        for i in range(self.tableWidget_files.rowCount()):
-            item = self.tableWidget_files.item(i, 2)
-            if item is not None and item.checkState() == Qt.CheckState.Checked:
-                selected_files[self.tableWidget_files.item(i, 0).text()] = self.tableWidget_files.item(i, 1).text()
-        if not selected_files:
-            logger.error("No files selected for calibration.")
-            self.statusbar.showMessage("No files selected for calibration. Showing MS2 only")
-        return selected_files
+        """
+        Get calibration files from the unified results table.
+        """
+        return self.unifiedResultsTable.get_calibration_files()
 
     def update_choose_compound(self, compounds):
         self.comboBoxChooseCompound.clear()
@@ -401,34 +440,13 @@ class View(QtWidgets.QMainWindow):
                     logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
 
     def display_concentrations(self):
-        compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
-        self.tableWidget_concentrations.clear()
-        self.tableWidget_concentrations.setRowCount(0)
-        self.tableWidget_concentrations.setColumnCount(len(compound.ions.keys())+2)
-        self.tableWidget_concentrations.setShowGrid(True)
-        self.tableWidget_concentrations.setStyleSheet("gridline-color: #e0e0e0;")
-        labels = ['File', *(compound.ion_info), 'Concentration']
-        self.tableWidget_concentrations.setHorizontalHeaderLabels(labels)
-        self.tableWidget_concentrations.horizontalHeader().setStretchLastSection(True)
-        self.tableWidget_concentrations.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.Stretch)
-        for i in range(self.tableWidget_files.rowCount()):
-            try:
-                ms_file = self.controller.model.ms_measurements[self.tableWidget_files.item(i, 0).text()]
-            except KeyError:
-                logger.error(f"File {self.tableWidget_files.item(i, 0).text()} not found in ms_measurements.")
-                continue
-            self.tableWidget_concentrations.insertRow(i)
-            self.tableWidget_concentrations.setItem(i, 0, QtWidgets.QTableWidgetItem(self.tableWidget_files.item(i, 0).text()))
-            for ms_compound in ms_file.xics:
-                if ms_compound.name == compound.name:
-                    for j, ion in enumerate(ms_compound.ions.keys()):
-                        self.tableWidget_concentrations.setItem(i, j+1, 
-                        QtWidgets.QTableWidgetItem(f"{str(np.format_float_scientific(np.round(np.sum(ms_compound.ions[ion]['MS Intensity']),0), precision=2))} a.u."))
-                    try:
-                        self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem(str(ms_compound.concentration)+" mM"))
-                    except AttributeError:
-                        self.tableWidget_concentrations.setItem(i, j+2, QtWidgets.QTableWidgetItem("N/A"))
-        self.tableWidget_concentrations.resizeColumnsToContents()
+        """
+        This method is now handled by the unified results table.
+        The concentration display is automatically updated when the table is populated.
+        """
+        # The unified table automatically shows concentrations and ion intensities
+        # No separate method needed as this is handled in update_table_quantitation
+        pass
 
     def display_library_ms2(self):
         try:
@@ -450,15 +468,21 @@ class View(QtWidgets.QMainWindow):
 
 
     def display_ms2(self):
-        selected_indexes = self.tableWidget_files.selectionModel().selectedRows()
-        try:
-            ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(selected_indexes[0].row(), 0).text())
-        except IndexError:
-            ms_file = self.controller.model.ms_measurements.get(self.tableWidget_files.item(0, 0).text())
-        if ms_file is None:
-            logger.error(f"No MS file found for {self.tableWidget_files.item(selected_indexes[0].row(), 0).text()}")
+        """
+        Display MS2 data for the selected file in the unified results table.
+        """
+        selected_file = self.unifiedResultsTable.get_selected_file()
+        if not selected_file:
+            logger.error("No file selected for MS2 display")
             plot_no_ms2_found(self.canvas_ms2)
             return
+            
+        ms_file = self.controller.model.ms_measurements.get(selected_file)
+        if ms_file is None:
+            logger.error(f"No MS file found for {selected_file}")
+            plot_no_ms2_found(self.canvas_ms2)
+            return
+            
         try:
             self.controller.model.find_ms2_in_file(ms_file)
             compound = next((xic for xic in ms_file.xics if xic.name == self.comboBoxChooseCompound.currentText()), None)
@@ -848,17 +872,18 @@ class View(QtWidgets.QMainWindow):
         self.label_calibrate = QtWidgets.QLabel(parent=self.tabQuantitation)
         self.label_calibrate.setWordWrap(True)
         self.label_calibrate.setObjectName("label_calibrate")
+        # Set size policy to prevent unnecessary expansion
+        self.label_calibrate.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
         self.gridLayout_top_left.addWidget(self.label_calibrate, 0, 0, 1, 1)
         self.calibrateButton = QtWidgets.QPushButton(parent=self.tabQuantitation)
         self.calibrateButton.setObjectName("calibrateButton")
+        # Set size policy for the button to prevent expansion
+        self.calibrateButton.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
-        self.tableWidget_files = GenericTable(parent=self.tabQuantitation)
-        self.tableWidget_files.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.SizeAdjustPolicy.AdjustToContents)
-        self.tableWidget_files.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
-        self.tableWidget_files.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
-        self.tableWidget_files.setObjectName("tableWidget_files")
-        self.gridLayout_top_left.addWidget(self.tableWidget_files, 1, 0, 1, 2)
-        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 1, 1)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 4, 1)
+        self.unifiedResultsTable = UnifiedResultsTable(parent=self.tabQuantitation)
+        self.unifiedResultsTable.setObjectName("unifiedResultsTable")
+        self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 3, 2)
         self.gridLayout_top_right = QtWidgets.QGridLayout()
         self.gridLayout_top_right.setObjectName("gridLayout_top_right")
         self.label_curr_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
@@ -882,9 +907,6 @@ class View(QtWidgets.QMainWindow):
         self.canvas_calibration.setObjectName("canvas_calibration")
         self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 2)
         self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
-        self.tableWidget_concentrations = GenericTable(parent=self.tabQuantitation)
-        self.tableWidget_concentrations.setObjectName("tableWidget_concentrations")
-        self.gridLayout_quant.addWidget(self.tableWidget_concentrations, 1, 0, 3, 1)  # Span over three rows
         self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_ms2.setObjectName("canvas_ms2")
         self.canvas_ms2.setMouseEnabled(x=True, y=False)
@@ -994,6 +1016,10 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
+        # Connect compound selection change to update the unified table
+        self.comboBoxChooseCompound.currentIndexChanged.connect(self.update_unified_table_for_compound)
+        # Connect unified table selection change to display MS2 data
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(self.display_ms2)
 
 
     def retranslateUi(self, MainWindow):
@@ -1053,4 +1079,3 @@ class View(QtWidgets.QMainWindow):
         cp = self.screen().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
-
