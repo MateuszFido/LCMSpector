@@ -5,7 +5,7 @@ from scipy.stats import linregress
 import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
-from utils.loading import load_ms2_library, load_ms2_data
+from utils.loading_optimized import load_ms2_library, load_ms2_data
 from calculation.workers import Worker
 
 logger = logging.getLogger(__name__)
