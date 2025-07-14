@@ -336,6 +336,269 @@ class SetItemCommand(QtGui.QUndoCommand):
         else:
             item.setText(self.old_value)
 
+class UnifiedResultsTable(GenericTable):
+    """
+    Unified table widget that combines the functionality of tableWidget_files and tableWidget_concentrations.
+    Shows file names, calibration options, concentrations, and ion intensities in a single scrollable table.
+    """
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setObjectName("unifiedResultsTable")
+        self.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectionBehavior.SelectRows)
+        self.setSelectionMode(QtWidgets.QAbstractItemView.SelectionMode.SingleSelection)
+        
+        # Enable horizontal scrolling
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setStretchLastSection(False)
+        
+        # Store compound information for dynamic column generation
+        self.compounds = []
+        self.file_data = {}
+        
+    def contextMenuEvent(self, event):
+        """
+        Override context menu to disable row deletion while preserving other functionality.
+        """
+        self.menu = QtWidgets.QMenu(self)
+
+        # Keep useful actions but remove row deletion
+        select_all_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-select-all"), "(⌘+A) Select All", self)
+        select_all_action.triggered.connect(self.select_all)
+        self.menu.addAction(select_all_action)
+        
+        copy_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-copy"), "(⌘+C) Copy", self)
+        copy_action.triggered.connect(self.copy)
+        self.menu.addAction(copy_action)
+
+        paste_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-paste"), "(⌘+V) Paste", self)
+        paste_action.triggered.connect(self.paste_from_clipboard)
+        self.menu.addAction(paste_action)
+
+        undo_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-undo"), "(⌘+Z) Undo", self)
+        undo_action.triggered.connect(self.undoStack.undo)
+        self.menu.addAction(undo_action)
+
+        redo_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-redo"), "(⌘+U) Redo", self)
+        redo_action.triggered.connect(self.undoStack.redo)
+        self.menu.addAction(redo_action)
+
+        self.menu.popup(QtGui.QCursor.pos())
+
+    def keyPressEvent(self, event):
+        """
+        Override key press events to disable row deletion while preserving other shortcuts.
+        """
+        if event.key() == Qt.Key.Key_V and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.paste_from_clipboard()
+        elif event.key() == Qt.Key.Key_A and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.select_all()
+        elif event.key() == Qt.Key.Key_C and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.copy()
+        elif event.key() == Qt.Key.Key_Z and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.undoStack.undo()
+        elif event.key() == Qt.Key.Key_U and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.undoStack.redo()
+        # Note: Deliberately NOT handling Delete/Backspace keys to prevent row deletion
+        else:
+            # Call QTableWidget's keyPressEvent directly to skip GenericTable's row deletion
+            QtWidgets.QTableWidget.keyPressEvent(self, event)
+        
+    def setup_columns(self, compound):
+        """
+        Set up the table columns based on a single compound and its ions.
+        
+        Parameters:
+        -----------
+        compound : Compound
+            Single Compound object containing ion information
+        """
+        self.current_compound = compound
+        
+        # Base columns: File, Calibration checkbox, Concentration
+        base_headers = ["File", "Calibration?", "Concentration"]
+        
+        # Dynamic columns for the current compound's ions
+        ion_headers = []
+        if compound and compound.ion_info:
+            for ion_info in compound.ion_info:
+                # Add MS intensity column for each ion
+                ion_headers.append(f"{ion_info} (MS)")
+                # Add LC intensity column for each ion if available
+                ion_headers.append(f"{ion_info} (LC)")
+        
+        all_headers = base_headers + ion_headers
+        
+        self.setColumnCount(len(all_headers))
+        self.setHorizontalHeaderLabels(all_headers)
+        
+        # Set appropriate column widths
+        self.setColumnWidth(0, 200)  # File column
+        self.setColumnWidth(1, 150)  # Calibration checkbox column
+        self.setColumnWidth(2, 150)  # Concentration column
+        
+        # Set ion columns to reasonable width
+        for i in range(3, len(all_headers)):
+            self.setColumnWidth(i, 120)
+    
+    def populate_data(self, file_concentrations, ms_measurements, current_compound):
+        """
+        Populate the table with file data, concentrations, and ion intensities for the current compound.
+        
+        Parameters:
+        -----------
+        file_concentrations : list
+            List of [filename, concentration] pairs
+        ms_measurements : dict
+            Dictionary of MS measurement objects
+        current_compound : Compound
+            The currently selected compound to display data for
+        """
+        self.file_data = {}
+        
+        # Clear existing data but preserve row count and basic structure
+        for row in range(self.rowCount()):
+            for col in range(self.columnCount()):
+                if col >= 3:  # Only clear ion data columns, preserve file/calibration/concentration
+                    self.setItem(row, col, None)
+        
+        # If no rows exist yet, set them up
+        if self.rowCount() != len(file_concentrations):
+            self.setRowCount(len(file_concentrations))
+        
+        for row, (filename, concentration) in enumerate(file_concentrations):
+            # Store file data for later retrieval
+            self.file_data[row] = filename
+            
+            # Column 0: File name (only set if not already set)
+            if not self.item(row, 0):
+                file_item = QtWidgets.QTableWidgetItem(filename)
+                file_item.setFlags(file_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                self.setItem(row, 0, file_item)
+            
+            # Column 1: Calibration checkbox (only set if not already set)
+            if not self.cellWidget(row, 1):
+                checkbox_widget = QtWidgets.QWidget()
+                checkbox = QtWidgets.QCheckBox()
+                checkbox.setChecked(False)
+                layout = QtWidgets.QHBoxLayout(checkbox_widget)
+                layout.addWidget(checkbox)
+                layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+                layout.setContentsMargins(0, 0, 0, 0)
+                self.setCellWidget(row, 1, checkbox_widget)
+            
+            # Column 2: Concentration (editable) - update if changed
+            if not self.item(row, 2) or self.item(row, 2).text() != (concentration or ""):
+                conc_item = QtWidgets.QTableWidgetItem(concentration or "")
+                self.setItem(row, 2, conc_item)
+            
+            # Dynamic columns: Ion intensities for current compound only
+            if current_compound and hasattr(current_compound, 'ions'):
+                col_index = 3
+                ms_file = ms_measurements.get(filename)
+                
+                if ms_file and ms_file.xics:
+                    # Find the matching compound in the MS file
+                    ms_compound = None
+                    for xic_compound in ms_file.xics:
+                        if xic_compound.name == current_compound.name:
+                            ms_compound = xic_compound
+                            break
+                    
+                    if ms_compound:
+                        for ion_idx, ion in enumerate(current_compound.ions.keys()):
+                            # MS Intensity column
+                            if ion in ms_compound.ions:
+                                ms_intensity = ms_compound.ions[ion]['MS Intensity']
+                                if ms_intensity is not None:
+                                    import numpy as np
+                                    ms_value = f"{np.format_float_scientific(np.round(np.sum(ms_intensity), 0), precision=2)}"
+                                else:
+                                    ms_value = "N/A"
+                            else:
+                                ms_value = "N/A"
+                            
+                            ms_item = QtWidgets.QTableWidgetItem(ms_value)
+                            ms_item.setFlags(ms_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            self.setItem(row, col_index, ms_item)
+                            col_index += 1
+                            
+                            # LC Intensity column
+                            if ion in ms_compound.ions:
+                                lc_intensity = ms_compound.ions[ion]['LC Intensity']
+                                lc_value = str(lc_intensity) if lc_intensity is not None else "N/A"
+                            else:
+                                lc_value = "N/A"
+                            
+                            lc_item = QtWidgets.QTableWidgetItem(lc_value)
+                            lc_item.setFlags(lc_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            self.setItem(row, col_index, lc_item)
+                            col_index += 1
+                    else:
+                        # Fill with N/A if compound not found in MS file
+                        for ion in current_compound.ions.keys():
+                            for _ in range(2):  # MS and LC columns
+                                na_item = QtWidgets.QTableWidgetItem("N/A")
+                                na_item.setFlags(na_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                                self.setItem(row, col_index, na_item)
+                                col_index += 1
+                else:
+                    # Fill with N/A if no MS file found
+                    for ion in current_compound.ions.keys():
+                        for _ in range(2):  # MS and LC columns
+                            na_item = QtWidgets.QTableWidgetItem("N/A")
+                            na_item.setFlags(na_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+                            self.setItem(row, col_index, na_item)
+                            col_index += 1
+    
+    def get_calibration_files(self):
+        """
+        Get the files selected for calibration and their concentrations.
+        
+        Returns:
+        --------
+        dict : Dictionary mapping filename to concentration for selected calibration files
+        """
+        selected_files = {}
+        for row in range(self.rowCount()):
+            checkbox_widget = self.cellWidget(row, 1)
+            if checkbox_widget:
+                checkbox = checkbox_widget.findChild(QtWidgets.QCheckBox)
+                if checkbox and checkbox.isChecked():
+                    filename = self.item(row, 0).text()
+                    concentration = self.item(row, 2).text()
+                    selected_files[filename] = concentration
+        return selected_files
+    
+    def get_selected_file(self):
+        """
+        Get the currently selected file for MS2 display.
+        
+        Returns:
+        --------
+        str : Filename of the selected row, or None if no selection
+        """
+        selected_rows = self.selectionModel().selectedRows()
+        if selected_rows:
+            row = selected_rows[0].row()
+            return self.item(row, 0).text()
+        elif self.rowCount() > 0:
+            return self.item(0, 0).text()
+        return None
+    
+    def update_concentrations(self, compounds):
+        """
+        Update the concentration display after calibration.
+        
+        Parameters:
+        -----------
+        compounds : list
+            List of Compound objects with updated concentration information
+        """
+        # This method can be called to refresh concentration displays
+        # after calibration calculations are complete
+        pass
+
 class ChromatogramPlotWidget(pg.PlotWidget):
     sigKeyPressed = QtCore.pyqtSignal(object)
     

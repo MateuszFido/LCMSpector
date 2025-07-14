@@ -159,8 +159,7 @@ def load_ms2_data(path: str, compound, mass_accuracy: float):
                 if scan['ms level'] == 2 and np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], ion, atol=ms2_threshold):
                     compound.ms2.append(scan)
 
-    print(f"Loaded {len(compound.ms2)} MS2 scans in {time.time() - start_time:.2f} seconds.")
-    logger.info(f"Loaded MS2 scans in {time.time() - start_time:.2f} seconds.")
+    logger.info(f"Loaded {len(compound.ms2)} MS2 scans in {time.time() - start_time:.2f} seconds.")
 
 def load_ms2_library() -> dict:
     """

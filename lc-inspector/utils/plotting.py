@@ -332,7 +332,6 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
     ms2_scans = compound_to_plot.ms2
     if not ms2_scans:
-        raise Exception
         logger.error(f"plot_ms2_from_file: ms2_scans is None for {ms_compound.name} in {ms_file.filename}")
         return
 
@@ -351,12 +350,13 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
         mzs.append(scan['m/z array'])
         intensities.append(scan['intensity array'])
 
-    if not mzs or not intensities:
-        logger.error(f"plot_ms2_from_file: mzs or intensities is None")
-        return
-    else:
+    try:
         mzs = np.concatenate(mzs)
         intensities = np.concatenate(intensities)
+    except ValueError as e:
+        logger.error(f"plot_ms2_from_file: ValueError: {e} in {ms_file.filename}")
+        plot_no_ms2_found(canvas)
+        return
 
     canvas.setTitle(f'{ms_file.filename}: MS2 spectrum of {ms_compound.name}')
     canvas.addItem(pg.BarGraphItem(x=mzs, height=intensities/np.max(intensities)*100, width=0.2, pen=mkPen('b', width=1), brush=mkBrush('b'), name=f"{ms_file}"))
