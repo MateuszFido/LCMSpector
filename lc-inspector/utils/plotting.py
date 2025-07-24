@@ -174,6 +174,8 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
                 continue
             plotting_data = compound.ions[ion]["MS Intensity"]
             try:
+                if j > len(color_list):
+                    j = 0
                 plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion} ({compound.ion_info[j]})')
                 text_item = pg.TextItem(f"{compound.ion_info[j]}", color=color_list[j], anchor=(0, 0))
             except IndexError:
