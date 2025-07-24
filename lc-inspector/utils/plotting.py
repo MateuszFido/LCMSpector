@@ -167,20 +167,21 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
         args = ({'color': 'b', 'font-size': '10pt'})
         plot_item.setLabel('bottom', text='Time (min)', **args)
         plot_item.setLabel('left', text='Intensity (a.u.)', **args)
-        color_list = ('#a559aa', "#59a89c", "#f0c571", "#e02b35", "#082a54", '#9d2c00', '#7e4794', '#c8c8c8')
+        color_list = ('#e25759', "#0b81a2", "#7e4794", "#59a89c", "#9d2c00", '#36b700', '#f0c571', '#c8c8c8', 
+       '#e25759', "#0b81a2", "#7e4794", "#59a89c", "#9d2c00", '#36b700', '#f0c571', '#c8c8c8')
         plot_item.addLegend().setPos(0,0)
         for j, ion in enumerate(compound.ions.keys()):
+            if j >= len(color_list):
+                break
             if compound.ions[ion]["MS Intensity"] is None:
                 continue
             plotting_data = compound.ions[ion]["MS Intensity"]
             try:
-                if j > len(color_list):
-                    j = 0
                 plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion} ({compound.ion_info[j]})')
                 text_item = pg.TextItem(f"{compound.ion_info[j]}", color=color_list[j], anchor=(0, 0))
-            except IndexError:
-                plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion}')
-                text_item = pg.TextItem(f"{ion}", color=color_list[j], anchor=(0, 0))
+            except Exception as e:
+                logger.warning(f"Failed to plot {ion} ({compound.ion_info[j]}): {e}")
+                continue
             highest_intensity = np.argmax(plotting_data[1])
             scan_time = plotting_data[0][highest_intensity]
             plot_item.plot([scan_time], [plotting_data[1][highest_intensity]], pen=mkPen(color_list[j], width=1), symbol='o', symbolSize=5)
