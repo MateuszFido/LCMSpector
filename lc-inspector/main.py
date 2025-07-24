@@ -55,7 +55,7 @@ def main():
     """Main entry point for the application."""
     # Configure logging
     logger = configure_logging()
-    logger.info("Starting LCMSpector...")
+    logger.info("Starting LCMSpector with temp dir: " + tempfile.gettempdir() + "...")
     
     # Create the application
     app = QApplication(os.sys.argv)
