@@ -114,6 +114,8 @@ class GenericTable(QtWidgets.QTableWidget):
             self.undoStack.undo()
         elif event.key() == Qt.Key.Key_U and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
             self.undoStack.redo()
+        elif event.key() == Qt.Key.Key_N and (event.modifiers() & QtCore.Qt.KeyboardModifier.ControlModifier):
+            self.append_row(self.rowCount())
         else:
             super().keyPressEvent(event)
 
@@ -202,7 +204,7 @@ class IonTable(GenericTable):
             config_path = Path(__file__).parent.parent / "config.json"
             with open(config_path, "r") as f:
                 config = json.load(f)
-            config[ion_list_name] = ions
+            config[ion_list_name] = {name: ions[name] for name in ions}
             with open(config_path, "w") as f:
                 json.dump(config, f, indent=4)
             self.view.comboBoxIonLists.clear()
