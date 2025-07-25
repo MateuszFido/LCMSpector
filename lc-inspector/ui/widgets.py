@@ -289,9 +289,12 @@ class CopyCommand(QtGui.QUndoCommand):
         self.redo()
 
     def redo(self):
-        self.clipboard_text = "\t".join([item.data() for item in self.items])
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(self.clipboard_text)
+        try:
+            self.clipboard_text = "\t".join([str(item.data()) for item in self.items])
+            clipboard = QtWidgets.QApplication.clipboard()
+            clipboard.setText(self.clipboard_text)
+        except TypeError:
+            pass
 
     def undo(self):
         clipboard = QtWidgets.QApplication.clipboard()
