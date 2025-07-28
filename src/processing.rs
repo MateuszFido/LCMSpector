@@ -1,11 +1,11 @@
 use crate::measurements::Compound;
-use mzdata::spectrum::{MultiLayerSpectrum};
+use mzdata::spectrum::MultiLayerSpectrum;
 use ndarray::Array2;
 use rayon::prelude::*;
 use std::time::Instant;
 
 /// Optimized function to construct extracted ion chromatograms (XICs) from MS data
-/// 
+///
 /// This implementation uses Rayon for parallel processing of compounds and ions,
 /// designed to be both thread-safe and efficient, making it suitable for both
 /// single and multi-process environments.
@@ -16,17 +16,17 @@ pub fn construct_xics<'a>(
 ) -> Vec<Compound> {
     let start_time = Instant::now();
     println!("Starting to construct XICs...");
-    
+
     // Process compounds in parallel using Rayon
     let compounds: Vec<Compound> = ion_list
         .par_iter()
         .map(|compound| {
             // Clone the compound for mutation
             let mut compound_clone = compound.clone();
-            
+
             // Extract all ion names first to avoid borrowing issues
             let ion_names: Vec<String> = compound_clone.ions.keys().cloned().collect();
-            
+
             // Process each ion and collect results
             let ion_results: Vec<(String, Option<f64>, Option<f64>)> = ion_names
                 .par_iter()
@@ -35,7 +35,7 @@ pub fn construct_xics<'a>(
                     process_ion(ion_name, data, mass_accuracy)
                 })
                 .collect();
-            
+
             // Update the compound with results
             for (ion_name, ms_intensity, rt) in ion_results {
                 if let Some(ion_data) = compound_clone.ions.get_mut(&ion_name) {
@@ -45,20 +45,23 @@ pub fn construct_xics<'a>(
                     }
                 }
             }
-            
+
             compound_clone
         })
         .collect();
-    
-    println!("Finished constructing XICs in {:.2?} seconds.", start_time.elapsed());
+
+    println!(
+        "Finished constructing XICs in {:.2?} seconds.",
+        start_time.elapsed()
+    );
     compounds
 }
 
-/// Process a single ion 
+/// Process a single ion
 fn process_ion(
-    ion_name: &str, 
+    ion_name: &str,
     data: &[MultiLayerSpectrum],
-    mass_accuracy: f64
+    mass_accuracy: f64,
 ) -> (String, Option<f64>, Option<f64>) {
     // Calculate mass range
     let mass = ion_name
@@ -82,10 +85,9 @@ fn process_ion(
     }
 
     // Create XIC array
-    let xic_array = Array2::from_shape_vec(
-        (2, intensities.len()), 
-        [scan_times, intensities].concat()
-    ).expect("Failed to create XIC array");
+    let xic_array =
+        Array2::from_shape_vec((2, intensities.len()), [scan_times, intensities].concat())
+            .expect("Failed to create XIC array");
 
     // Get the total intensity
     let total_intensity = if xic_array.is_empty() {
@@ -121,12 +123,12 @@ fn process_ion(
 
 /// Find all matching intensities for a given mass range efficiently
 fn find_matching_intensities(
-    data: &[MultiLayerSpectrum], 
-    mass_range: (f64, f64)
+    data: &[MultiLayerSpectrum],
+    mass_range: (f64, f64),
 ) -> (Vec<f64>, Vec<f64>) {
     let mut intensities = Vec::new();
     let mut scan_times = Vec::new();
-    
+
     // Reserve capacity based on an estimate to reduce reallocations
     let estimated_matches = data.len() / 10;
     intensities.reserve(estimated_matches);
@@ -136,9 +138,9 @@ fn find_matching_intensities(
         if let Some(arrays) = spectrum.arrays.as_ref() {
             let mzs = arrays.mzs().unwrap();
             let intensity_values = arrays.intensities().unwrap();
-            
+
             let scan_time = spectrum.description.acquisition.start_time();
-            
+
             // Linear scan for all values in the mass range
             for i in 0..mzs.len() {
                 // Convert each mz value to f64 before comparison
@@ -150,16 +152,16 @@ fn find_matching_intensities(
             }
         }
     }
-    
+
     (intensities, scan_times)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use mzdata::spectrum::SpectrumLike;
     use std::collections::HashMap;
-    use mzdata::{spectrum::SpectrumLike};
-    
+
     #[test]
     fn test_construct_xics() {
         // open the ion list from ion_lists.json

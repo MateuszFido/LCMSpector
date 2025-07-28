@@ -10,6 +10,7 @@ from lcmspector.calculation.workers import Worker
 import lcmspector_backend as lcms
 import json
 import os
+from pprint import pprint
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -79,24 +80,27 @@ class Model:
         """
         ms_measurements = {}
         
+        # Ensure rust_results and file_paths have the same length
+        if len(rust_results) != len(file_paths):
+            logger.error(f"Mismatch in rust_results ({len(rust_results)}) and file_paths ({len(file_paths)}) lengths")
+            return ms_measurements
+        
         for result, file_path in zip(rust_results, file_paths):
             # Create a new MSMeasurement object
-            ms_measurement = MSMeasurement(file_path, 
-            result.get('ms1_scans', []), 
-            result.get('ms2_scans', []), 
-            self.compounds, 
-            result.get('mass_accuracy', 0.0001))
+            ms_measurement = MSMeasurement(file_path, result.get('spectra_data', []), result.get('ms2_scans', []), self.compounds, result.get('mass_accuracy', 0.0001))
             
             # Populate xics from Rust result
             ms_measurement.xics = []
-            for rust_compound in result['xics']:
+            for rust_compound in result.get('xics', []):
                 # Find or create a Compound object
-                compound = next((c for c in self.compounds if c.name == rust_compound['name']), None)
+                compound = next((c for c in self.compounds if c.name == rust_compound.get('name', '')), None)
                 if not compound:
-                    compound = Compound(rust_compound['name'], list(rust_compound['ions'].keys()), [])
+                    compound = Compound(rust_compound.get('name', 'Unknown'), 
+                                        list(rust_compound.get('ions', {}).keys()), 
+                                        [])
                 
                 # Update compound ions with data from Rust result
-                for ion_name, ion_data in rust_compound['ions'].items():
+                for ion_name, ion_data in rust_compound.get('ions', {}).items():
                     if ion_name in compound.ions:
                         compound.ions[ion_name]['RT'] = ion_data.get('RT', None)
                         compound.ions[ion_name]['MS Intensity'] = ion_data.get('MS Intensity', None)
@@ -106,7 +110,7 @@ class Model:
             
             # Store the measurement
             ms_measurements[ms_measurement.filename] = ms_measurement
-        
+
         return ms_measurements
 
     def process(self, mode):

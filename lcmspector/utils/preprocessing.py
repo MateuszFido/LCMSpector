@@ -89,28 +89,56 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 
 def construct_xics(data, ion_list, mass_accuracy):
     compounds = copy.deepcopy(ion_list)
+    
+    # Detect if we're using the new format from Rust
+    is_rust_format = data and isinstance(data[0], dict) and 'mzs' in data[0]
+    
     for compound in compounds:
         for ion in compound.ions.keys():
             xic = []
             scan_id = []
             # Find a range around the ion (theoretical mass - observed mass)
-            mass_range = (ion-3*mass_accuracy, ion+3*mass_accuracy)
+            mass_range = (float(ion)-3*mass_accuracy, float(ion)+3*mass_accuracy)
             # Safeguard for if mass_range is less than 0
             if mass_range[0] < 0:
                 mass_range = (0, mass_range[1])
                 logger.error(f"Mass range for ion {ion} starting at less than 0, setting to 0.")
+            
             for scan in data:
-                indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
-                intensities = scan['intensity array'][indices]
+                if is_rust_format:
+                    # New format from Rust
+                    mzs = scan.get('mzs', [])
+                    intensities_array = scan.get('intensities', [])
+                    scan_time = scan.get('scan_time', 0)
+                    
+                    # Convert to numpy arrays if they aren't already
+                    if not isinstance(mzs, np.ndarray):
+                        mzs = np.array(mzs)
+                    if not isinstance(intensities_array, np.ndarray):
+                        intensities_array = np.array(intensities_array)
+                    
+                    indices = np.where(np.logical_and(mzs >= mass_range[0], mzs <= mass_range[1]))
+                    intensities = intensities_array[indices]
+                else:
+                    # Old format
+                    indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
+                    intensities = scan['intensity array'][indices]
+                    scan_time = auxiliary.cvquery(scan, 'MS:1000016')
+                
                 xic.append(np.sum(intensities))
-                scan_time = scan['scanList']['scan'][0]['scan start time']
                 scan_id.append(scan_time)
+            
             xic = np.array((scan_id, xic))
             compound.ions[ion]['MS Intensity'] = xic
+            
             # Get the scan time of the index with the highest intensity
             try:
-                compound.ions[ion]['RT'] = data[np.argmax(xic[1])]['scanList']['scan'][0]['scan start time']
+                if xic[1].size > 0:
+                    max_index = int(np.argmax(xic[1]))
+                    compound.ions[ion]['RT'] = scan_id[max_index]
+                else:
+                    compound.ions[ion]['RT'] = 0
             except Exception as e:
                 compound.ions[ion]['RT'] = 0
-                logger.error(f"Error: {e}")
+                logger.error(f"Error calculating RT for ion {ion}: {e}")
     return tuple(compounds)

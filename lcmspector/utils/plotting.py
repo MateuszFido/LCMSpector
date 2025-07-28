@@ -60,39 +60,58 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     ----------
     path : Path
         The path to the .mzML file used for naming and saving the plot.
-    data_matrix : pd.DataFrame
-        The DataFrame containing the m/z and intensity values.
+    data_matrix : pd.DataFrame or List of Dict
+        The data containing the m/z and intensity values, either in traditional format
+        or in the new format from Rust (with 'mzs', 'intensities', 'scan_time').
 
     Returns
     -------
     None
     """
     
-    scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
+    # Handle data from different sources (original pyteomics format or from Rust)
+    is_rust_format = False
+    if data_matrix and isinstance(data_matrix[0], dict) and 'scan_time' in data_matrix[0]:
+        is_rust_format = True
+        scan_time_diff = np.abs([np.abs(spectrum.get('scan_time', 0) - rt) for spectrum in data_matrix])
+    else:
+        # Original format using cvquery
+        scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
+    
     try:
         index = np.argmin(scan_time_diff)
     except:
         index = 0
+    
     widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
+    
     try:
-        data_matrix[index]
+        spectrum = data_matrix[index]
     except IndexError:
         return
-    if len(data_matrix[index]['m/z array']) < 500:
+    
+    # Extract mzs and intensities based on data format
+    if is_rust_format:
+        mzs = spectrum.get('mzs', [])
+        intensities = spectrum.get('intensities', [])
+    else:
+        mzs = spectrum['m/z array']
+        intensities = spectrum['intensity array']
+    
+    if len(mzs) < 500:
         # Plot as a histogram
-        widget.addItem(pg.BarGraphItem(x=data_matrix[index]['m/z array'], height=data_matrix[index]['intensity array'], width=0.2, pen=mkPen('b', width=2), brush=mkBrush('b')))
+        widget.addItem(pg.BarGraphItem(x=mzs, height=intensities, width=0.2, pen=mkPen('b', width=2), brush=mkBrush('b')))
     else:
         # Plot as a curve
-        widget.plot(data_matrix[index]['m/z array'], data_matrix[index]['intensity array'], pen=mkPen('b', width=2))
+        widget.plot(mzs, intensities, pen=mkPen('b', width=2))
+    
     widget.getPlotItem().setTitle(f'MS1 full-scan spectrum at {round(rt, 2)} minutes', color='#b8b8b8', size='12pt')
     widget.setLabel('left', 'Intensity / a.u.')
     widget.setLabel('bottom', 'm/z')
     
     # Annotate the m/z of the 5 highest peaks
-    mzs = data_matrix[index]['m/z array']
-    intensities = data_matrix[index]['intensity array']
     peaks, _ = find_peaks(intensities, prominence=10)
     sorted_indices = np.argsort(intensities[peaks])[::-1]
     sorted_mzs = mzs[peaks][sorted_indices][0:10]
@@ -256,9 +275,28 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     widget.setTitle(f'Total ion chromatogram of {filename}')
     tic = []
     times = []
+    
+    # Detect if we're using the new format from Rust
+    is_rust_format = ms_data and isinstance(ms_data[0], dict) and 'mzs' in ms_data[0]
+    
     for scan in ms_data:
-        tic.append(scan['total ion current'])
-        times.append(cvquery(scan, 'MS:1000016'))
+        if is_rust_format:
+            # Calculate total ion current by summing intensities for the new format
+            intensities = scan.get('intensities', [])
+            if not isinstance(intensities, np.ndarray):
+                intensities = np.array(intensities)
+            total_ion_current = np.sum(intensities)
+            
+            # Get scan time
+            scan_time = scan.get('scan_time', 0)
+        else:
+            # Old format using pyteomics
+            total_ion_current = scan['total ion current']
+            scan_time = cvquery(scan, 'MS:1000016')
+        
+        tic.append(total_ion_current)
+        times.append(scan_time)
+    
     widget.plot(times, tic, pen=mkPen('b', width=1))
     widget.setLabel('left', 'Intensity (cps)')
     widget.setLabel('bottom', 'Time (min)')

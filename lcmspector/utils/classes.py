@@ -91,11 +91,13 @@ class MSMeasurement(Measurement):
         A set containing the m/z and intensity values of the MS2 spectra.
     """
     def __init__(self, path, ms1_scans, ms2_scans, ion_list, mass_accuracy=0.0001):
+    def __init__(self, path, ms1_scans, ms2_scans, ion_list, mass_accuracy=0.0001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
         self.data = ms1_scans
-        self.xics = ion_list
         self.ms2_data = ms2_scans
+        self.xics = ion_list
+        self.mass_accuracy = mass_accuracy
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)
