@@ -1,6 +1,6 @@
-from utils.loading import load_absorbance_data, load_ms1_data
-from utils.preprocessing import baseline_correction, construct_xics
-from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
+from lcmspector.utils.loading import load_absorbance_data, load_ms1_data
+from lcmspector.utils.preprocessing import baseline_correction, construct_xics
+from lcmspector.utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from abc import abstractmethod
 import os, logging, re
 from pathlib import Path

@@ -3,10 +3,13 @@ import logging, traceback, multiprocessing, time, threading, os
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
-from utils.classes import LCMeasurement, MSMeasurement, Compound
-from calculation.calc_conc import calculate_concentration
-from utils.loading import load_ms2_library, load_ms2_data
-from calculation.workers import Worker
+from lcmspector.utils.classes import LCMeasurement, MSMeasurement, Compound
+from lcmspector.calculation.calc_conc import calculate_concentration
+from lcmspector.utils.loading import load_ms2_library, load_ms2_data
+from lcmspector.calculation.workers import Worker
+import lcmspector_backend as lcms
+import json
+import os
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -57,6 +60,53 @@ class Model:
         logger.info(f"Current thread: {threading.current_thread().name}")
         logger.info(f"Current process: {os.getpid()}")
         
+    def _convert_rust_results_to_measurements(self, rust_results, file_paths):
+        """
+        Convert Rust processing results to MSMeasurement objects.
+        
+        Parameters:
+        -----------
+        rust_results : list
+            List of dictionaries returned by Rust processing
+        file_paths : list
+            Corresponding file paths for the results
+        
+        Returns:
+        --------
+        dict
+            Dictionary of MSMeasurement objects keyed by filename
+        """
+        ms_measurements = {}
+        
+        for result, file_path in zip(rust_results, file_paths):
+            # Create a new MSMeasurement object
+            ms_measurement = MSMeasurement(file_path, self.compounds, 0.0001)
+            
+            # Populate xics from Rust result
+            ms_measurement.xics = []
+            for rust_compound in result['xics']:
+                # Find or create a Compound object
+                compound = next((c for c in self.compounds if c.name == rust_compound['name']), None)
+                if not compound:
+                    compound = Compound(rust_compound['name'], list(rust_compound['ions'].keys()), [])
+                
+                # Update compound ions with data from Rust result
+                for ion_name, ion_data in rust_compound['ions'].items():
+                    if ion_name in compound.ions:
+                        compound.ions[ion_name]['RT'] = ion_data.get('RT', None)
+                        compound.ions[ion_name]['MS Intensity'] = ion_data.get('MS Intensity', None)
+                        compound.ions[ion_name]['LC Intensity'] = ion_data.get('LC Intensity', None)
+                
+                ms_measurement.xics.append(compound)
+            
+            # Set mass accuracy from Rust result
+            ms_measurement.mass_accuracy = result.get('mass_accuracy', 0.0001)
+            
+            # Store the measurement
+            ms_measurements[ms_measurement.filename] = ms_measurement
+        
+        return ms_measurements
+
     def process(self, mode):
         # safety check 
         if self.worker and self.worker.isRunning():

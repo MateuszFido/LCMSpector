@@ -1,7 +1,10 @@
 from PyQt6.QtCore import QThread, QObject, pyqtSignal
 import time, sys, traceback, multiprocessing, logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from utils.classes import LCMeasurement, MSMeasurement
+from lcmspector.utils.classes import LCMeasurement, MSMeasurement
+import lcmspector_backend as lcms
+import os
+
 logger = logging.getLogger(__name__)
 class WorkerSignals(QObject):
     '''
@@ -67,11 +70,32 @@ class Worker(QThread):
                 else:
                     lc_futures = {}
 
+                ms_futures = {}
                 if self.mode in {"LC/GC-MS", "MS Only"}:
-                    ms_futures = {executor.submit(MSMeasurement, ms_file, self.model.compounds, 0.0001): ms_file for ms_file in self.model.ms_measurements}
-                else:
-                    ms_futures = {}
+                    # Use Rust backend for MS file processing
+                    if self.model.ms_measurements:
+                        ms_file_paths = list(self.model.ms_measurements.keys())
+                        try:
+                            rust_results = lcms.process_files_in_parallel(
+                                file_paths=ms_file_paths,
+                                mass_accuracy=0.0001,
+                                ion_list_path=os.path.join(os.path.dirname(os.path.dirname(__file__)), 'config.json')
+                            )
+                            # Convert Rust results to MSMeasurement objects
+                            ms_results = self.model._convert_rust_results_to_measurements(rust_results, ms_file_paths)
+                        except Exception as e:
+                            logger.error(f"Error processing MS files with Rust backend: {e}")
+                            # Fallback to original processing if Rust processing fails
+                            ms_futures = {executor.submit(MSMeasurement, ms_file, self.model.compounds, 0.0001): ms_file for ms_file in self.model.ms_measurements}
+                            for future in as_completed(ms_futures):
+                                try:
+                                    result = future.result()
+                                    ms_results[result.filename] = result
+                                except Exception as e:
+                                    logger.error(f"Error processing file: {e}")
+                                update_progress()
 
+                # Process LC and MS files
                 for future in as_completed(list(lc_futures) + list(ms_futures)):
                     try:
                         result = future.result()
@@ -82,6 +106,7 @@ class Worker(QThread):
                     except Exception as e:
                         logger.error(f"Error processing file: {e}")
                     update_progress()
+
         except Exception as e:
             logger.error(f"Error in processing pool: {e}")
             return

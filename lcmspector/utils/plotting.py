@@ -180,7 +180,7 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
                 plot_item.plot(np.transpose(plotting_data), pen=mkPen(color_list[j], width=1), name=f'{ion} ({compound.ion_info[j]})')
                 text_item = pg.TextItem(f"{compound.ion_info[j]}", color=color_list[j], anchor=(0, 0))
             except Exception as e:
-                logger.warning(f"Failed to plot {ion} ({compound.ion_info[j]}): {e}")
+                logger.warning(f"Failed to plot {ion}): {e}")
                 continue
             highest_intensity = np.argmax(plotting_data[1])
             scan_time = plotting_data[0][highest_intensity]

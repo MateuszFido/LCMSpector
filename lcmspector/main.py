@@ -7,16 +7,24 @@ and handles application startup.
 """
 
 import os
+import sys
 import yaml
 import logging.config
 import multiprocessing
 import tempfile
 from pathlib import Path
+
+# Add the project root directory to sys.path to make lcmspector package importable
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, project_root)
+
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
-from ui.model import Model
-from ui.view import View
-from ui.controller import Controller
+
+# Now we can import from lcmspector package
+from lcmspector.ui.model import Model
+from lcmspector.ui.view import View
+from lcmspector.ui.controller import Controller
 
 # Guards for binary building 
 if os.sys.stdout is None:
