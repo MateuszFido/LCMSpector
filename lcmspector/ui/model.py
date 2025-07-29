@@ -42,7 +42,8 @@ class Model:
         Calibrates the concentrations for selected files.
     """
     
-    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker']
+    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 
+    'controller', 'compounds', 'library', 'worker']
 
     def __init__(self):
         self.lc_measurements = {}
@@ -80,7 +81,11 @@ class Model:
         
         for result, file_path in zip(rust_results, file_paths):
             # Create a new MSMeasurement object
-            ms_measurement = MSMeasurement(file_path, self.compounds, 0.0001)
+            ms_measurement = MSMeasurement(file_path, 
+            result.get('ms1_scans', []), 
+            result.get('ms2_scans', []), 
+            self.compounds, 
+            result.get('mass_accuracy', 0.0001))
             
             # Populate xics from Rust result
             ms_measurement.xics = []
@@ -98,9 +103,6 @@ class Model:
                         compound.ions[ion_name]['LC Intensity'] = ion_data.get('LC Intensity', None)
                 
                 ms_measurement.xics.append(compound)
-            
-            # Set mass accuracy from Rust result
-            ms_measurement.mass_accuracy = result.get('mass_accuracy', 0.0001)
             
             # Store the measurement
             ms_measurements[ms_measurement.filename] = ms_measurement

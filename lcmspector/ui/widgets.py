@@ -75,7 +75,7 @@ class GenericTable(QtWidgets.QTableWidget):
         add_row_action.triggered.connect(self.append_row)
         self.menu.addAction(add_row_action)
 
-        remove_row_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-delete"), "(⌫) Remove Row", self)
+        remove_row_action = QtGui.QAction(QtGui.QIcon.fromTheme("edit-delete"), "(⌫) Clear Selection", self)
         remove_row_action.triggered.connect(self.clear_selection)
         self.menu.addAction(remove_row_action)
 

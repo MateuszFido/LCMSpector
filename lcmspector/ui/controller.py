@@ -1,4 +1,4 @@
-from calculation.workers import Worker, WorkerSignals
+from calculation.workers import Worker
 from utils.classes import LCMeasurement, MSMeasurement
 from PyQt6.QtCore import pyqtSlot
 import logging, traceback, threading, os

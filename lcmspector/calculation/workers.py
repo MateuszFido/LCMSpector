@@ -47,7 +47,7 @@ class Worker(QThread):
                 rust_results = lcms.process_files_in_parallel(
                     file_paths=ms_file_paths,
                     mass_accuracy=0.0001,
-                    ion_list_path=os.path.join(os.path.dirname(__file__), "config.json")
+                    ion_list_path=os.path.join(os.getcwd(), "config.json")
                 )
                 ms_results = self.model._convert_rust_results_to_measurements(rust_results, ms_file_paths)
                 self.progressUpdated.emit(100)
