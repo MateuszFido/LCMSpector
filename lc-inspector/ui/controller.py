@@ -1,9 +1,20 @@
+"""
+Controller module for LC-Inspector application.
+
+This module manages the interaction between the model and view components,
+handling data processing, loading, and UI interactions.
+"""
+import os
+import logging
+import threading
+import traceback
+from datetime import datetime
+
+from PyQt6.QtCore import pyqtSignal
 from utils.classes import LCMeasurement, MSMeasurement
-from PyQt6.QtCore import pyqtSlot
-import logging, traceback, threading, os
+
 logger = logging.getLogger(__name__)
 logger.propagate = False
-from datetime import datetime
 
 class Controller:
     def __init__(self, model, view):
@@ -21,8 +32,8 @@ class Controller:
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_library_ms2)
         self.mode = "LC/GC-MS"
         logger.info("Controller initialized.")
-        logger.info(f"Current thread: {threading.current_thread().name}")
-        logger.info(f"Current process: {os.getpid()}")
+        logger.info("Current thread: %s", threading.current_thread().name)
+        logger.info("Current process: %d", os.getpid())
 
     def load_lc_data(self):
         pass
@@ -68,8 +79,12 @@ class Controller:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
             logger.error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
 
-    def on_processing_finished(self, ms_results):
-        self.model.ms_measurements = ms_results
+    def on_processing_finished(self, compound_results):
+        # iterate over the compound results and match them with their respective MS file
+        for compound_result in compound_results:
+            self.model.ms_measurements[compound_result[0].file].xics = compound_result
+            print(compound_result, type(compound_result))
+
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
         self.view.processButton.setEnabled(True)
@@ -97,12 +112,16 @@ class Controller:
             self.view.update_table_quantitation(concentrations)
             
     def display_selected_plots(self):
+        """
+        Display plots for the currently selected file.
+        """
         selected_file = self.view.comboBox_currentfile.currentText()
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
-        except Exception:
-            logger.error(f"Error getting plots for file {selected_file}: {traceback.format_exc()}")
-        self.view.display_plots(lc_file, ms_file)  # Update the view with the selected plots
+            self.view.display_plots(lc_file, ms_file)
+        except Exception as e:
+            logger.error("Error getting plots for file %s: %s", selected_file, str(e))
+
         
     def calibrate(self):
         """
@@ -127,10 +146,10 @@ class Controller:
         :return: None
         """
         try:
-            self.view.statusbar.showMessage(f"Looking for MS2 precursors...", 5000)
+            self.view.statusbar.showMessage("Looking for MS2 precursors...", 5000)
             self.model.find_ms2_precursors()
         except Exception:
-            logger.error(f"Error finding MS2 precursors: {traceback.format_exc()}")
+            logger.error("Error finding MS2 precursors: %s", traceback.format_exc())
             return
 
     def on_worker_error(self, error_message):
@@ -148,8 +167,12 @@ class Controller:
         self.view.statusbar.showMessage(f"Error: {error_message}", 5000)
 
     def on_loading_finished(self, lc_results, ms_results):
-        self.model.lc_measurements = lc_results
-        self.model.ms_measurements = ms_results
+        # Safeguard to only update what was just loaded
+        if lc_results:
+            self.model.lc_measurements = lc_results
+        if ms_results:
+            self.model.ms_measurements = ms_results
+
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
         self.view.processButton.setEnabled(True)

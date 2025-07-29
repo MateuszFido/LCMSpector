@@ -86,9 +86,10 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 #     return mz_axis
 
 
-def construct_xics(data, ion_list, mass_accuracy):
+def construct_xics(data, ion_list, mass_accuracy, file_name):
     compounds = copy.deepcopy(ion_list)
     for compound in compounds:
+        compound.file = file_name
         for ion in compound.ions.keys():
             xic = []
             scan_id = []
