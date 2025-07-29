@@ -3,6 +3,7 @@ import cython
 from libc.stdlib cimport malloc, free
 import numpy as np
 cimport numpy as np
+# FIXME: Unused
 
 cdef class ScanLoader:
     cdef:
