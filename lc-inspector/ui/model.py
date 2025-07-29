@@ -1,16 +1,17 @@
 # model.py
-import logging, traceback, multiprocessing, time, threading, os
+import logging, traceback, multiprocessing, threading, os
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
 from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library, load_ms2_data
-from calculation.workers import Worker
+from calculation.workers import LoadingWorker, ProcessingWorker
+from PyQt6.QtCore import QThread
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
-class Model:
+class Model(QThread):
     """
     The Model class handles the loading, processing, and annotation of LC and MS measurement files.
 
@@ -56,16 +57,20 @@ class Model:
         logger.info("Model initialized.")
         logger.info(f"Current thread: {threading.current_thread().name}")
         logger.info(f"Current process: {os.getpid()}")
-        
-    def process(self, mode):
-        # safety check 
-        if self.worker and self.worker.isRunning():
-            logger.warning("Worker thread is already running. Aborting.")
-            return
 
-        self.worker = Worker(self, mode)
+    def load(self, mode, file_type):
+        self.worker = LoadingWorker(self, mode, file_type)
+        self.worker.progressUpdated.connect(self.controller.view.update_progress_bar)
+        self.worker.progressUpdated.connect(self.controller.view.update_statusbar_with_loaded_file)
+        self.worker.finished.connect(self.controller.on_loading_finished)
+        self.worker.error.connect(self.controller.on_worker_error)
+        self.worker.start()
+
+    def process(self, mode):
+        self.worker = ProcessingWorker(self, mode)
         self.worker.progressUpdated.connect(self.controller.view.update_progress_bar)
         self.worker.finished.connect(self.controller.on_processing_finished)
+        self.worker.error.connect(self.controller.on_worker_error)
         self.worker.start()
 
     def get_plots(self, filename):

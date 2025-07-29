@@ -28,10 +28,6 @@ def load_absorbance_data(file_path):
     time_values = []
     intensity_values = []
 
-    # Check if the file exists
-    if not os.path.isfile(file_path):
-        raise FileNotFoundError(f"The file {file_path} does not exist.")
-
     with open(file_path, 'r', newline=None) as file:
         # Check the delimiter by looking at the first few lines
         delimiter = None
