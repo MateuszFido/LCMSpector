@@ -5,6 +5,7 @@ import logging, copy
 from pyteomics import auxiliary
 from scipy.signal import find_peaks, peak_widths
 import static_frame as sf
+import cython
 
 logger = logging.getLogger(__name__)
 def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:    
@@ -102,12 +103,13 @@ def construct_xics(data, ion_list, mass_accuracy):
                 indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
                 intensities = scan['intensity array'][indices]
                 xic.append(np.sum(intensities))
-                scan_id.append(auxiliary.cvquery(scan, 'MS:1000016'))
+                scan_time = scan['scanList']['scan'][0]['scan start time']
+                scan_id.append(scan_time)
             xic = np.array((scan_id, xic))
             compound.ions[ion]['MS Intensity'] = xic
             # Get the scan time of the index with the highest intensity
             try:
-                compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016') 
+                compound.ions[ion]['RT'] = data[np.argmax(xic[1])]['scanList']['scan'][0]['scan start time']
             except Exception as e:
                 compound.ions[ion]['RT'] = 0
                 logger.error(f"Error: {e}")

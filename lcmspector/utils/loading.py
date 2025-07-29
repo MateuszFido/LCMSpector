@@ -121,7 +121,7 @@ def load_ms1_data(path: str) -> list:
         The list of Scan objects containing the MS data.
     """
     start_time = time.time()
-    
+    print("Starting to load MS1 data...")
     with mzml.MzML(str(path)) as file:
         ms1_data = [scan for scan in file if scan['ms level'] == 1]
         if not ms1_data:
@@ -150,7 +150,7 @@ def load_ms2_data(path: str, compound, mass_accuracy: float):
     """
     start_time = time.time()
     ms2_threshold = mass_accuracy * 5
-
+    
     with mzml.MzML(str(path)) as file:
         file.reset()
         for ion in compound.ions.keys():
