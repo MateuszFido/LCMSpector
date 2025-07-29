@@ -97,9 +97,6 @@ class MSMeasurement(Measurement):
         self.xics = []
         self.ms2_data = None
 
-    def get_xics(self):
-        self.xics = construct_xics(self.data, self.mass_accuracy)
-
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)
 
@@ -123,6 +120,7 @@ class Compound():
         The retention time of the compound.
     '''
     def __init__(self, name: str, ions: list, ion_info: list):
+        self.file = None
         self.name = str(name)
         self.ions = {ion: {"RT": None, "MS Intensity": None, "LC Intensity": None} for ion in ions}
         self.ms2 = list()

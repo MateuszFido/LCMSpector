@@ -1,9 +1,26 @@
-from PyQt6.QtCore import QThread, QObject, pyqtSignal
-import time, sys, traceback, multiprocessing, logging
+"""
+Module for handling background workers in LC-Inspector application.
+
+This module provides QThread-based worker classes for asynchronous loading and 
+processing of LC/GC-MS measurement data. It supports:
+- Loading LC and MS measurement files in parallel
+- Processing MS files with multiprocessing
+- Emitting progress and result signals for UI updates
+
+The module uses ProcessPoolExecutor for efficient parallel processing and 
+leverages PyQt6's signal-slot mechanism for thread communication.
+"""
+import time
+import traceback
+import multiprocessing
+import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
+
+from PyQt6.QtCore import QThread, QObject, pyqtSignal
 from utils.classes import LCMeasurement, MSMeasurement
 from utils.preprocessing import construct_xics
 logger = logging.getLogger(__name__)
+
 class WorkerSignals(QObject):
     '''
     Defines the signals available from a running worker thread.
@@ -61,7 +78,7 @@ class LoadingWorker(QThread):
             self.progressUpdated.emit(int(progress / total_files * 200), filename)
 
         if self.mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error(f"ERROR: Invalid argument for load_data(mode): {self.mode}")
+            logger.error("ERROR: Invalid argument for load_data(mode): %s", self.mode)
             return
 
         try:
@@ -73,7 +90,6 @@ class LoadingWorker(QThread):
                     lc_futures = {}
 
                 if self.mode in {"LC/GC-MS", "MS Only"} and self.file_type == "MS":
-                    # Note: Removed specific mass accuracy parameter
                     ms_futures = {executor.submit(MSMeasurement, ms_file): ms_file for ms_file in self.model.ms_measurements}
                 else:
                     ms_futures = {}
@@ -83,26 +99,27 @@ class LoadingWorker(QThread):
                         result = future.result()
                         if future in lc_futures:
                             lc_results[result.filename] = result
-                            #self.model.controller.view.statusbar.showMessage(f"Loaded LC file: {result.filename}", 1000)
                         else:
                             ms_results[result.filename] = result
-                            #self.model.controller.view.statusbar.showMessage(f"Loaded MS file: {result.filename}", 1000)
                     except Exception as e:
-                        logger.error(f"Error loading file: {traceback.format_exc()}")
+                        logger.error("Error loading file: %s", traceback.format_exc())
                         self.error.emit(str(e))
                     update_progress(result.filename)
         except Exception as e:
-            logger.error(f"Error in loading pool: {e}")
+            logger.error("Error in loading pool: %s", traceback.format_exc())
             self.error.emit(str(e))
             return
 
-        logger.info(f"Loaded {len(lc_results)} LC files and {len(ms_results)} MS files for {self.mode} in {time.time() - st} seconds.")
+        logger.info(
+            "Loaded %d LC files and %d MS files for %s in %.2f seconds.",
+            len(lc_results), len(ms_results), self.mode, time.time() - st
+        )
         self.finished.emit(lc_results, ms_results)
 
 
 class ProcessingWorker(QThread):
     progressUpdated = pyqtSignal(int)
-    finished = pyqtSignal(dict, dict)
+    finished = pyqtSignal(list)
     error = pyqtSignal(str)
 
     def __init__(self, model, mode):
@@ -112,7 +129,6 @@ class ProcessingWorker(QThread):
 
     def run(self):
         st = time.time()
-        processed_ms_results = {}
         
         try:
             total_files = len(self.model.ms_measurements)
@@ -131,30 +147,30 @@ class ProcessingWorker(QThread):
             self.progressUpdated.emit(int(progress / total_files * 100))
 
         if self.mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error(f"ERROR: Invalid argument for process_data(mode): {self.mode}")
+            logger.error("ERROR: Invalid argument for process_data(mode): %s", self.mode)
             return
-
+        results = []
         try:
-            with ProcessPoolExecutor(max_workers=max(1, multiprocessing.cpu_count() - 3)) as executor:
+            with ProcessPoolExecutor(max_workers=max(5, multiprocessing.cpu_count() - 3)) as executor:
                 # Only process MS files if in MS or LC/GC-MS mode
                 if self.mode in {"LC/GC-MS", "MS Only"}:
                     # for every MS file, call construct_xics on its data and store the result
-                    ms_futures = {executor.submit(construct_xics, ms_file.data, self.model.compounds, ms_file.mass_accuracy): ms_file for ms_file in self.model.ms_measurements}
+                    ms_futures = {executor.submit(construct_xics, ms_file.data, self.model.compounds, ms_file.mass_accuracy, ms_file.filename): ms_file for ms_file in self.model.ms_measurements.values()}
                 else:
                     ms_futures = {}
 
                 for future in as_completed(list(ms_futures)):
                     try:
                         result = future.result()
-                        processed_ms_results[ms_file.filename] = result
-                    except Exception as e:
-                        logger.error(f"Error processing file {ms_file.filename}: {e}")
+                        results.append(result)
+                    except AttributeError as e:
+                        logger.error("Error in processing pool: %s", traceback.format_exc())
                         self.error.emit(str(e))
                     update_progress()
         except Exception as e:
-            logger.error(f"Error in processing pool: {e}")
+            logger.error("Error in processing pool: %s", traceback.format_exc())
             self.error.emit(str(e))
             return
 
-        logger.info(f"Processed {len(processed_ms_results)} MS files in {time.time() - st} seconds.")
-        self.finished.emit({}, processed_ms_results)
+        logger.info("Processed %d MS files in %.2f seconds.", len(results), time.time() - st)
+        self.finished.emit(results)

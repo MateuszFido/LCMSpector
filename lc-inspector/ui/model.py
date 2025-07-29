@@ -55,8 +55,8 @@ class Model(QThread):
         self.controller = None
         self.worker = None
         logger.info("Model initialized.")
-        logger.info(f"Current thread: {threading.current_thread().name}")
-        logger.info(f"Current process: {os.getpid()}")
+        logger.info("Current thread: %s", threading.current_thread().name)
+        logger.info("Current process: %d", os.getpid())
 
     def load(self, mode, file_type):
         self.worker = LoadingWorker(self, mode, file_type)
@@ -131,8 +131,7 @@ class Model(QThread):
         library_entries = set()
         # safety check
         if not compound:
-            raise Exception("No compound selected.")
-            return
+            raise ValueError("No compound selected.")
         for ion in compound.ions.keys():
             try:
                 library_entry = next((l for l in self.library.values() 
@@ -144,7 +143,7 @@ class Model(QThread):
                 else:
                     logger.debug(f"Library entry not found for {compound.name}: {ion}")
             except StopIteration:
-                logger.debug(f"Library entry not found for {compound.name}: {ion}")
+                logger.debug("Library entry not found for %s: %.4f", {compound.name}, {ion})
                 break
         #HACK: Terribly complex dict comprehension
         library_entries = {entry[0].split("Name: ", 1)[1].partition('\n')[0] \
