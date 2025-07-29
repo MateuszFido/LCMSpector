@@ -28,7 +28,7 @@ class View(QtWidgets.QMainWindow):
     def handle_files_dropped_LC(self, file_paths):
         """
         Slot to handle the dropped files.
-        Updates the model with the new file paths.
+        Updates the model with the new file paths and triggers loading.
         """
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
@@ -54,12 +54,17 @@ class View(QtWidgets.QMainWindow):
         if count_ok > 0:
             self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} LC files loaded successfully.", 3000)
         self.update_lc_file_list()  # Update the model with the new LC files
+        print(self.controller.model.lc_measurements)
+        # Trigger loading process
+        self.progressBar.setVisible(True)
+        self.progressLabel.setVisible(True)
+        self.controller.model.load(self.controller.mode)
 
 
     def handle_files_dropped_MS(self, file_paths):
         """
         Slot to handle the dropped files.
-        Updates the model with the new file paths.
+        Updates the model with the new file paths and triggers loading.
         """
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
@@ -84,6 +89,11 @@ class View(QtWidgets.QMainWindow):
         if count_ok > 0:
             self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} MS files loaded successfully.", 3000)
         self.update_ms_file_list()  # Update the model with the new LC files
+        
+        # Trigger loading process
+        self.progressBar.setVisible(True)
+        self.progressLabel.setVisible(True)
+        self.controller.model.load(self.controller.mode)
 
     def handle_files_dropped_annotations(self, file_paths):
         """
@@ -143,11 +153,15 @@ class View(QtWidgets.QMainWindow):
         """
         lc_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select LC Files", "", "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)")
         if lc_file_paths:
-            self.listLC.clear()
+            self.clear_list_lc()
             for lc_file_path in lc_file_paths:
                 self.listLC.addItem(lc_file_path)  # Add each LC file path to the listLC widget
             self.update_lc_file_list()  # Update the model with the new LC files
-            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {len(lc_file_paths)} LC files loaded successfully.", 3000)
+            
+            # Trigger loading process
+            self.progressBar.setVisible(True)
+            self.progressLabel.setVisible(True)
+            self.controller.model.load(self.controller.mode, "LC")
 
     def on_browseMS(self):
         """
@@ -156,11 +170,20 @@ class View(QtWidgets.QMainWindow):
         """
         ms_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)")
         if ms_file_paths:
-            self.listMS.clear()
+            self.clear_list_ms()
             for ms_file_path in ms_file_paths:
-                self.listMS.addItem(ms_file_path)  # Add each MS file path to the listMS widget
+                if ms_file_path.lower().endswith(".mzml") and os.path.isfile(ms_file_path):
+                    self.listMS.addItem(ms_file_path)  # Add each MS file path to the listMS widget
+                else:
+                    self.show_critical_error(f"Invalid file type: {ms_file_path.split('/')[-1]}\nCurrently only .mzML files are supported.")
+                    logger.error(f"Invalid file type: {ms_file_path.split('/')[-1]}")
+                    return
             self.update_ms_file_list()  # Update the model with the new MS files
-            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {len(ms_file_paths)} MS files loaded successfully.", 3000)
+            
+            # Trigger loading process
+            self.progressBar.setVisible(True)
+            self.progressLabel.setVisible(True)
+            self.controller.model.load(self.controller.mode, "MS")
 
     def on_browseAnnotations(self):
         """
@@ -169,7 +192,7 @@ class View(QtWidgets.QMainWindow):
         """
         annotation_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select Annotation Files", "", "Text Files (*.txt);;All Files (*)")
         if annotation_file_paths:
-            self.listAnnotations.clear()
+            self.clear_list_annotated_lc()
             for annotation_file_path in annotation_file_paths:
                 self.listAnnotations.addItem(annotation_file_path)  # Add each annotation file path to the listAnnotations widget
             self.update_annotation_file()  # Update the model with the new annotation files
@@ -279,6 +302,10 @@ class View(QtWidgets.QMainWindow):
     def update_progress_bar(self, value):
         self.progressBar.setValue(value)
         self.progressLabel.setText(f"{value}%")
+
+    def update_statusbar_with_loaded_file(self, progress, message):
+        self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Loaded file {message} ({progress}%)", 1000)
+
 
     def show_critical_error(self, message):
         QtWidgets.QMessageBox.critical(self, "Error", message)
@@ -581,6 +608,18 @@ class View(QtWidgets.QMainWindow):
         elif event.key() == QtCore.Qt.Key.Key_Right:
             self.line_marker.setPos(self.line_marker.pos() + 0.01)
 
+    def clear_list_lc(self):
+        self.listLC.clear()
+        self.controller.model.lc_measurements = []
+
+    def clear_list_ms(self):
+        self.listMS.clear()
+        self.controller.model.ms_measurements = []
+
+    def clear_list_annotated_lc(self):
+        self.listAnnotatedLC.clear()
+        self.controller.model.annotations = []
+
     def change_mode(self):
         """
         Update the layout of the Upload tab based on the current selection in the combo box.
@@ -786,6 +825,7 @@ class View(QtWidgets.QMainWindow):
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
         self.processButton.setDefault(True)
+        self.processButton.setEnabled(False)
         self.gridLayout.addWidget(self.processButton, 4, 2, 1, 2)
         self.tabWidget.addTab(self.tabUpload, "")
         self.tabResults = QtWidgets.QWidget()

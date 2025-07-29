@@ -1,4 +1,3 @@
-from calculation.workers import Worker, WorkerSignals
 from utils.classes import LCMeasurement, MSMeasurement
 from PyQt6.QtCore import pyqtSlot
 import logging, traceback, threading, os
@@ -32,9 +31,6 @@ class Controller:
         pass
     
     def process_data(self):
-        self.view.update_lc_file_list()
-        self.view.update_ms_file_list()
-        self.view.update_annotation_file()
         self.view.statusbar.showMessage(f"Processing data in {self.mode} mode ...")
         self.model.compounds = self.view.ionTable.get_items()
         if not self.model.compounds:
@@ -72,8 +68,7 @@ class Controller:
             self.view.show_critical_error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
             logger.error("Nothing to process. Please load LC files and either corresponding MS files or manual annotations before proceeding.")
 
-    def on_processing_finished(self, lc_results, ms_results):
-        self.model.lc_measurements = lc_results
+    def on_processing_finished(self, ms_results):
         self.model.ms_measurements = ms_results
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
@@ -84,7 +79,6 @@ class Controller:
         self.view.tabWidget.setCurrentIndex(self.view.tabWidget.indexOf(self.view.tabResults))
         self.view.tabWidget.setTabEnabled(self.view.tabWidget.indexOf(self.view.tabQuantitation), True)
 
-        # Resize view to fit the screen
         self.update_filenames()
         self.view.actionExport.setEnabled(True)
 
@@ -138,3 +132,32 @@ class Controller:
         except Exception:
             logger.error(f"Error finding MS2 precursors: {traceback.format_exc()}")
             return
+
+    def on_worker_error(self, error_message):
+        """
+        Handles errors from loading and processing workers.
+        
+        :param error_message: Error message from the worker
+        """
+        logger.error(f"Worker error: {error_message}")
+        
+        # Reset UI elements
+        self.view.progressBar.setVisible(False)
+        self.view.progressLabel.setVisible(False)
+        self.view.processButton.setEnabled(False)
+        self.view.statusbar.showMessage(f"Error: {error_message}", 5000)
+
+    def on_loading_finished(self, lc_results, ms_results):
+        self.model.lc_measurements = lc_results
+        self.model.ms_measurements = ms_results
+        self.view.progressBar.setVisible(False)
+        self.view.progressLabel.setVisible(False)
+        self.view.processButton.setEnabled(True)
+        if len(lc_results) == 0 and len(ms_results) == 0:
+            self.view.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- No files loaded.", 5000)
+            return
+        elif len(lc_results) == 0:
+            self.view.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(ms_results)} MS files.", 5000)
+        elif len(ms_results) == 0:
+            self.view.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(lc_results)} chromatography files.", 5000)
+        self.view.processButton.setEnabled(True)

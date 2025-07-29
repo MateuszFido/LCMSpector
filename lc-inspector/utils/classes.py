@@ -90,12 +90,15 @@ class MSMeasurement(Measurement):
     ms2_data : set
         A set containing the m/z and intensity values of the MS2 spectra.
     """
-    def __init__(self, path, ion_list, mass_accuracy=0.0001):
+    def __init__(self, path, mass_accuracy=0.0001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
         self.data = load_ms1_data(path)
-        self.xics = construct_xics(self.data, ion_list, self.mass_accuracy)
+        self.xics = []
         self.ms2_data = None
+
+    def get_xics(self):
+        self.xics = construct_xics(self.data, self.mass_accuracy)
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)
