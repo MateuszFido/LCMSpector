@@ -241,7 +241,7 @@ class TestRealSTMIXIntegration:
     
     @pytest.mark.integration
     @pytest.mark.stmix
-    def test_real_stmix_integration_positive_mode(self):
+    def test_stmix_integration_positive_mode(self):
         """
         Test complete integration workflow using real STMIX positive mode data.
         
@@ -403,7 +403,7 @@ class TestRealSTMIXIntegration:
             print(f"\nWorst performing compounds:")
             for i, result in enumerate(validation_results[-3:]):
                 print(f"  {i+1}. {result['Compound']}: {result['Relative_Error_Percent']:.1f}% error")
-            
+    
             # Validation assertions for real data
             assert total_predictions >= 5, f"Too few predictions ({total_predictions}), expected at least 5"
             assert accuracy_rate >= 0.20, f"Accuracy rate {accuracy_rate:.1%} below 20% threshold for real data"
@@ -423,7 +423,7 @@ class TestRealSTMIXIntegration:
     @pytest.mark.integration
     @pytest.mark.stmix
     @pytest.mark.slow
-    def test_real_stmix_integration_both_modes(self):
+    def test_stmix_integration_both_modes(self):
         """
         Test complete integration workflow for both positive and negative modes.
         
@@ -437,7 +437,7 @@ class TestRealSTMIXIntegration:
         
         # Test positive mode
         try:
-            pos_results = self.test_real_stmix_integration_positive_mode()
+            pos_results = self.test_stmix_integration_positive_mode()
             results['positive'] = pos_results
             print(f"\n✓ Positive mode integration completed successfully")
         except Exception as e:
