@@ -106,10 +106,37 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
                 scan_id.append(auxiliary.cvquery(scan, 'MS:1000016'))
             xic = np.array((scan_id, xic))
             compound.ions[ion]['MS Intensity'] = xic
+            
             # Get the scan time of the index with the highest intensity
             try:
-                compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016') 
+                compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016')
             except Exception as e:
                 compound.ions[ion]['RT'] = 0
                 logger.error(f"Error: {e}")
+            
+            # NEW: Calculate peak area for MS XIC data
+            try:
+                from utils.peak_integration import safe_peak_integration, integrate_ms_xic_peak
+                
+                # Get RT of peak maximum for target
+                rt_peak = compound.ions[ion]['RT']
+                if rt_peak == 0:
+                    rt_peak = xic[0][np.argmax(xic[1])] if len(xic[1]) > 0 else 0
+                
+                # Calculate peak area using trapezoidal integration
+                peak_area_info = safe_peak_integration(
+                    integrate_ms_xic_peak,
+                    scan_times=xic[0],
+                    intensities=xic[1],
+                    rt_target=rt_peak,
+                    mass_accuracy=mass_accuracy
+                )
+                compound.ions[ion]['MS Peak Area'] = peak_area_info
+                
+            except Exception as e:
+                logger.warning(f"Peak area calculation failed for {ion} in {compound.name}: {e}")
+                # Fallback to simple sum for backward compatibility
+                from utils.peak_integration import create_fallback_peak_area
+                compound.ions[ion]['MS Peak Area'] = create_fallback_peak_area(xic[0], xic[1])
+                
     return tuple(compounds)

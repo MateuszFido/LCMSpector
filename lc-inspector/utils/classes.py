@@ -3,6 +3,7 @@ from utils.preprocessing import baseline_correction, construct_xics
 from utils.plotting import plot_average_ms_data, plot_absorbance_data, plot_annotated_LC, plot_annotated_XICs
 from abc import abstractmethod
 import os, logging, re
+import numpy as np
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
@@ -63,10 +64,104 @@ class LCMeasurement(Measurement):
     """
     def __init__(self, path):
         super().__init__(path)
-        self.data = load_absorbance_data(path)  
+        self.data = load_absorbance_data(path)
         self.annotations = None
-        self.baseline_corrected = baseline_correction(self.data)  
-        logger.info(f"Loaded LC file {self.filename}.")
+        self.baseline_corrected = baseline_correction(self.data)
+        
+        # NEW: Calculate peak areas for detected peaks in LC chromatogram
+        self.peak_areas = self._calculate_lc_peak_areas()
+        logger.info(f"Loaded LC file {self.filename} with {len(self.peak_areas)} detected peaks.")
+
+    def _calculate_lc_peak_areas(self):
+        """Calculate peak areas for all detected peaks in LC chromatogram."""
+        try:
+            from utils.peak_integration import integrate_lc_peak, safe_peak_integration
+            from scipy.signal import find_peaks
+            
+            peak_areas = []
+            times = self.baseline_corrected['Time (min)'].values
+            corrected_values = self.baseline_corrected['Value (mAU)'].values
+            uncorrected_values = self.baseline_corrected['Uncorrected'].values
+            
+            # Enhanced adaptive prominence threshold for STMIX validation
+            signal_max = np.max(corrected_values)
+            signal_std = np.std(corrected_values)
+            signal_median = np.median(corrected_values)
+            
+            # More sensitive detection for low-concentration samples
+            # Use percentile-based noise estimation
+            noise_level = np.std(corrected_values[corrected_values <= np.percentile(corrected_values, 25)])
+            baseline_level = np.percentile(corrected_values, 10)
+            
+            # Adaptive prominence: sensitive enough for 0.01 mM STMIX samples
+            prominence_threshold = max(
+                5.0,  # Absolute minimum
+                noise_level * 4,  # 4x noise level
+                signal_std * 2,   # 2x standard deviation
+                (signal_max - baseline_level) * 0.005  # 0.5% of signal range
+            )
+            
+            # Enhanced peak detection parameters
+            peaks, properties = find_peaks(corrected_values,
+                                         prominence=prominence_threshold,
+                                         distance=3,  # Reduced for dense chromatograms
+                                         height=baseline_level + noise_level * 3,  # 3-sigma above baseline
+                                         width=2)  # Minimum peak width in data points
+            
+            logger.info(f"Found {len(peaks)} peaks in LC chromatogram {self.filename}")
+            
+            for i, peak_idx in enumerate(peaks):
+                rt_target = times[peak_idx]
+                try:
+                    peak_area_info = safe_peak_integration(
+                        integrate_lc_peak,
+                        retention_times=times,
+                        absorbances=uncorrected_values,
+                        baseline_corrected=corrected_values,
+                        rt_target=rt_target,
+                        min_peak_width=0.05,  # 0.05 minutes minimum
+                        max_peak_width=2.0,   # 2.0 minutes maximum
+                        noise_threshold=prominence_threshold * 0.5
+                    )
+                    peak_area_info['peak_rt'] = rt_target
+                    peak_area_info['peak_index'] = i + 1  # 1-based peak numbering
+                    peak_areas.append(peak_area_info)
+                    
+                except Exception as e:
+                    logger.warning(f"LC peak area calculation failed at RT {rt_target:.2f}: {e}")
+                    # Add fallback peak area info
+                    from utils.peak_integration import create_fallback_peak_area
+                    fallback_info = create_fallback_peak_area(times, corrected_values)
+                    fallback_info['peak_rt'] = rt_target
+                    fallback_info['peak_index'] = i + 1
+                    peak_areas.append(fallback_info)
+            
+            return peak_areas
+            
+        except Exception as e:
+            logger.error(f"Failed to calculate LC peak areas for {self.filename}: {e}")
+            return []
+
+    def get_peak_at_rt(self, target_rt: float, tolerance: float = 0.1):
+        """
+        Get peak area information for a peak at a specific retention time.
+        
+        Parameters
+        ----------
+        target_rt : float
+            Target retention time in minutes
+        tolerance : float
+            Tolerance for RT matching in minutes
+            
+        Returns
+        -------
+        dict or None
+            Peak area information if found, None otherwise
+        """
+        for peak_info in self.peak_areas:
+            if abs(peak_info['peak_rt'] - target_rt) <= tolerance:
+                return peak_info
+        return None
 
     def plot(self):
         plot_absorbance_data(self.path, self.baseline_corrected)
