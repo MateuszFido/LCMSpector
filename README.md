@@ -5,6 +5,15 @@
 ![LCMSpector Logo](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
 
 
+# Quickstart
+
+Follow this short guide to start with LCMSpector immediately:
+
+https://github.com/MateuszFido/LCMSpector/wiki/Quickstart-guide
+
+Or read on for a more detailed explanation!
+
+---
 #### Table of Contents
 
 1. [Description](#description)
@@ -35,6 +44,9 @@ For more information, visit the [LCMSpector wiki](https://github.com/MateuszFido
 <a name="features"/>
 
 # ✨ Features
+
+<img width="1503" height="859" alt="LC-Inspector-interface" src="https://github.com/user-attachments/assets/aa162e46-7d8c-4835-8e25-e3ff6b196acd" />
+
 * Trace compounds in raw mass spec data
 * Analyze and process LC/GC spectra 
 * View the underlying MS spectra, scan by scan
@@ -43,7 +55,7 @@ For more information, visit the [LCMSpector wiki](https://github.com/MateuszFido
 * Compare with integrated MS/MS libraries 
 * Vendor-agnostic, accepts any .mzML and .txt files 
 * Process everything on your machine without registration/uploading to external websites or servers
-* Easy UI, works on Windows and macOS > 
+* Easy UI, works on Windows, Mac, and Linux! 
 ***
 
 <p align="center">
