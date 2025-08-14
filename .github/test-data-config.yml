@@ -1,0 +1,222 @@
+# LCMSpector Test Data Configuration
+# This file defines data sources, validation rules, and cache settings for the LCMSpector testing suite
+
+# Data Sources Configuration
+data_sources:
+  # Primary strategy: Direct download from Polybox (currently available)
+  polybox:
+    enabled: true
+    url: "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+    archive_name: "LCMSpector-sample-data.zip"
+    timeout_seconds: 600
+    retry_attempts: 3
+    chunk_size: 8192  # 8KB chunks for progress reporting
+    verify_ssl: true
+  
+  # Future strategy: Git LFS (planned for when data is moved to LFS)
+  git_lfs:
+    enabled: false  # Disabled until data is moved from .gitignore to LFS
+    repository: "https://github.com/MateuszFido/LCMSpector.git"
+    branch: "main"
+    lfs_files:
+      - "*.mzml"
+      - "*.csv"
+    timeout_seconds: 300
+    retry_attempts: 3
+    notes: "Currently disabled - data is in .gitignore, not LFS"
+
+# Target Directory Configuration
+target_directory:
+  base_path: "data/LCMSpector-sample-data"
+  create_if_missing: true
+  preserve_structure: true
+  backup_existing: true
+  backup_suffix: "_backup_{timestamp}"
+
+# Cache Configuration
+cache:
+  enabled: true
+  base_directory: ".cache/lcmspector-data"
+  ttl_hours: 168  # 7 days
+  max_size_gb: 5.0
+  compression: true
+  integrity_checks: true
+  cleanup_on_validation_failure: true
+
+# Expected Data Structure
+expected_files:
+  # Core data files - STMIX mzML files are the primary requirement
+  stmix_patterns:
+    - pattern: "STMIX_BIG_{concentration}mM_{mode}.mzml"
+      concentrations: [0.01, 0.1, 0.5, 2.5, 5.0, 10.0]
+      modes: ["pos", "neg"]
+      required: true
+    
+    # Alternative patterns for backward compatibility
+    - pattern: "STMIX_{concentration}mM_{mode}.mzml"
+      concentrations: [0.01, 0.1, 0.5, 2.5, 5.0, 10.0]
+      modes: ["pos", "neg"]
+      required: false
+  
+  # Optional files
+  optional_files:
+    - "export.csv"
+    - "README.md"
+    - "metadata.json"
+    - "sample_info.csv"
+
+# Validation Rules
+validation:
+  # File size validation
+  file_size_limits:
+    min_size_mb: 0.1  # Minimum file size (0.1 MB)
+    max_size_mb: 500  # Maximum file size (500 MB)
+    warn_size_mb: 100  # Warn if file exceeds this size
+  
+  # STMIX-specific validation
+  stmix_validation:
+    expected_concentrations: [0.01, 0.1, 0.5, 2.5, 5.0, 10.0]
+    expected_modes: ["pos", "neg"]
+    concentration_tolerance: 0.001  # ±0.001 mM tolerance for filename parsing
+    required_coverage: 0.8  # 80% of expected files must be present
+    
+    # Content validation
+    check_mzml_headers: true
+    check_scan_count: true
+    min_scans_per_file: 100
+    max_scans_per_file: 10000
+  
+  # CSV validation (for optional export.csv if present)
+  csv_validation:
+    required_columns: ["Compound", "Concentration (mM)", "Ion", "Area"]
+    encoding: "utf-8"
+    delimiter: ","
+    check_data_types: true
+    allow_missing_values: false
+    optional: true  # Only validate if file exists
+  
+  # Integrity checks
+  integrity_checks:
+    verify_checksums: true
+    check_file_corruption: true
+    validate_archive_extraction: true
+    cross_reference_files: true
+
+# Download Configuration
+download:
+  # Progress reporting
+  progress_reporting:
+    enabled: true
+    update_interval_seconds: 2
+    show_speed: true
+    show_eta: true
+  
+  # Resume capability
+  resumable_downloads:
+    enabled: true
+    checkpoint_interval_mb: 10
+    max_resume_attempts: 3
+  
+  # Error handling
+  error_handling:
+    retry_delay_seconds: 5
+    exponential_backoff: true
+    max_backoff_seconds: 60
+    fail_fast_on_critical_errors: true
+
+# Platform-specific Configuration
+platform_config:
+  windows:
+    path_separator: "\\"
+    line_endings: "crlf"
+    max_path_length: 260
+    temp_directory: "%TEMP%"
+  
+  macos:
+    path_separator: "/"
+    line_endings: "lf"
+    max_path_length: 1024
+    temp_directory: "/tmp"
+    
+  linux:
+    path_separator: "/"
+    line_endings: "lf"
+    max_path_length: 4096
+    temp_directory: "/tmp"
+
+# CI/CD Integration
+ci_config:
+  # Minimal dataset for fast CI runs
+  minimal_mode:
+    enabled_in_ci: true
+    concentrations: [0.1, 1.0, 5.0]
+    modes: ["pos"]
+    max_download_time_minutes: 10
+    skip_optional_files: true
+  
+  # Timeout settings for CI
+  timeouts:
+    total_setup_minutes: 30
+    download_timeout_minutes: 20
+    validation_timeout_minutes: 5
+    cleanup_timeout_minutes: 2
+  
+  # Artifact caching
+  artifacts:
+    cache_key_prefix: "lcmspector-data"
+    include_hash_in_key: true
+    compress_artifacts: true
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_output: "logs/data_setup.log"
+  console_output: true
+  
+  # Log rotation
+  rotation:
+    enabled: true
+    max_size_mb: 10
+    backup_count: 5
+
+# Health Monitoring
+monitoring:
+  health_check_endpoints:
+    - url: "https://polybox.ethz.ch"
+      timeout_seconds: 10
+      expected_status: 200
+  
+  metrics:
+    track_download_speed: true
+    track_validation_time: true
+    track_success_rate: true
+    report_to_console: true
+
+# Security Configuration
+security:
+  verify_ssl_certificates: true
+  allowed_hosts:
+    - "polybox.ethz.ch"
+    - "github.com"
+    - "raw.githubusercontent.com"
+  
+  # File validation
+  file_validation:
+    check_file_signatures: true
+    allowed_extensions: [".mzml", ".csv", ".txt", ".md", ".json"]
+    scan_for_malicious_content: false  # Set to true if security scanning is available
+
+# Debugging and Development
+debug:
+  verbose_output: false
+  save_intermediate_files: false
+  skip_cleanup_on_error: true
+  log_http_requests: false
+  validate_config_on_load: true
+
+# Version and Compatibility
+version: "1.0.0"
+config_schema_version: "1.0"
+minimum_python_version: "3.8"
+compatible_platforms: ["windows", "macos", "linux"]

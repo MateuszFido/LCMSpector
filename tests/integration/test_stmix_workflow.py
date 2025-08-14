@@ -29,7 +29,7 @@ class TestSTMIXWorkflowIntegration:
         """Set up test fixtures for each test method."""
         self.model = Model()
         
-        # Create STMIX compound list from aminoacids_and_polyamines
+        # Create STMIX compound list from aminoacids
         self.stmix_compounds = self._create_stmix_compounds()
         self.model.compounds = self.stmix_compounds
         
@@ -40,7 +40,7 @@ class TestSTMIXWorkflowIntegration:
         """Create a subset of compounds for STMIX testing."""
         compounds = []
         
-        # Representative compounds from the aminoacids_and_polyamines list
+        # Representative compounds from the aminoacids list
         test_compounds = [
             {
                 'name': 'Alanine',

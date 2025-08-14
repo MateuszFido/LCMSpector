@@ -3,7 +3,7 @@ Regression tests for STMIX concentration series validation.
 
 This module validates that LC-Inspector correctly calculates concentrations
 for the STMIX concentration series, where each file contains all compounds
-from the aminoacids_and_polyamines list at the concentration indicated in the filename.
+from the aminoacids list at the concentration indicated in the filename.
 
 The STMIX series represents the ground truth for validation:
 - STMIX_BIG_0.01mM contains all compounds at 0.01 mM
@@ -67,13 +67,13 @@ class TestSTMIXConcentrationValidation:
             with pytest.raises(ValueError):
                 stmix_filename_parser(filename)
     
-    def test_known_compounds_loading(self, aminoacids_polyamines_compounds):
+    def test_known_compounds_loading(self, aminoacids_compounds):
         """
         Test loading of known compounds from config.json.
         
         Expected: All aminoacids and polyamines compounds loaded correctly
         """
-        compounds = aminoacids_polyamines_compounds
+        compounds = aminoacids_compounds
         
         # Verify we have a reasonable number of compounds
         assert len(compounds) >= 40, f"Expected at least 40 compounds, got {len(compounds)}"
@@ -127,7 +127,7 @@ class TestSTMIXConcentrationValidation:
             assert pos_key in mappings, f"Missing mapping for {pos_key}"
             assert neg_key in mappings, f"Missing mapping for {neg_key}"
     
-    def test_stmix_validation_single_concentration(self, aminoacids_polyamines_compounds):
+    def test_stmix_validation_single_concentration(self, aminoacids_compounds):
         """
         Test STMIX validation for a single concentration level.
         
@@ -170,7 +170,7 @@ class TestSTMIXConcentrationValidation:
         # Validate using the new STMIX validation method
         validator = DataComparisonTools()
         validation_stats = validator.validate_stmix_concentrations(
-            results_df, expected_concentration, aminoacids_polyamines_compounds
+            results_df, expected_concentration, aminoacids_compounds
         )
         
         # Verify validation results
@@ -189,7 +189,7 @@ class TestSTMIXConcentrationValidation:
         assert abs(alanine_stats['calculated'] - expected_concentration) / expected_concentration < 0.1
     
     @pytest.mark.parametrize("concentration", [0.01, 0.1, 0.5, 2.5, 5.0, 10.0])
-    def test_stmix_validation_all_concentrations(self, concentration, aminoacids_polyamines_compounds):
+    def test_stmix_validation_all_concentrations(self, concentration, aminoacids_compounds):
         """
         Test STMIX validation across all concentration levels.
         
@@ -199,7 +199,7 @@ class TestSTMIXConcentrationValidation:
         mock_results = []
         
         # Select a subset of known compounds for testing
-        test_compounds = list(aminoacids_polyamines_compounds.keys())[:10]
+        test_compounds = list(aminoacids_compounds.keys())[:10]
         
         for compound in test_compounds:
             mock_results.append({
@@ -214,7 +214,7 @@ class TestSTMIXConcentrationValidation:
         # Validate
         validator = DataComparisonTools()
         validation_stats = validator.validate_stmix_concentrations(
-            results_df, concentration, aminoacids_polyamines_compounds
+            results_df, concentration, aminoacids_compounds
         )
         
         # All compounds should be perfectly accurate
@@ -252,19 +252,19 @@ class TestSTMIXAccuracyBenchmarks:
             result = validator.validate_concentration_accuracy(calculated, expected)
             assert result == should_pass, f"Validation failed for expected={expected}, calculated={calculated}"
     
-    def test_stmix_detection_rate_requirements(self, aminoacids_polyamines_compounds):
+    def test_stmix_detection_rate_requirements(self, aminoacids_compounds):
         """
         Test detection rate requirements for STMIX validation.
         
         Expected: High detection rate for known compounds in STMIX
         """
-        total_compounds = len(aminoacids_polyamines_compounds)
+        total_compounds = len(aminoacids_compounds)
         
         # Simulate high detection rate (85% detection)
         detected_count = int(total_compounds * 0.85)
         mock_results = []
         
-        compound_names = list(aminoacids_polyamines_compounds.keys())
+        compound_names = list(aminoacids_compounds.keys())
         detected_compounds = compound_names[:detected_count]
         
         for compound in detected_compounds:
@@ -279,21 +279,21 @@ class TestSTMIXAccuracyBenchmarks:
         
         validator = DataComparisonTools()
         validation_stats = validator.validate_stmix_concentrations(
-            results_df, 0.1, aminoacids_polyamines_compounds
+            results_df, 0.1, aminoacids_compounds
         )
         
         detection_rate = validation_stats['detection_rate']
         assert detection_rate >= 0.80, f"Detection rate {detection_rate} below 80% threshold"
         assert len(validation_stats['missing_compounds']) == (total_compounds - detected_count)
     
-    def test_stmix_cross_concentration_consistency(self, aminoacids_polyamines_compounds):
+    def test_stmix_cross_concentration_consistency(self, aminoacids_compounds):
         """
         Test consistency of detection across different concentration levels.
         
         Expected: Consistent compound detection across STMIX concentration series
         """
         concentrations = [0.01, 0.1, 1.0, 10.0]
-        compound_names = list(aminoacids_polyamines_compounds.keys())[:5]
+        compound_names = list(aminoacids_compounds.keys())[:5]
         
         detection_results = {}
         
@@ -315,7 +315,7 @@ class TestSTMIXAccuracyBenchmarks:
             
             validator = DataComparisonTools()
             validation_stats = validator.validate_stmix_concentrations(
-                results_df, conc, aminoacids_polyamines_compounds
+                results_df, conc, aminoacids_compounds
             )
             
             # Handle case where no compounds are detected (no detection_rate key)
@@ -325,14 +325,14 @@ class TestSTMIXAccuracyBenchmarks:
         assert detection_results[10.0] >= detection_results[0.01], \
             "Higher concentrations should have better detection rates"
     
-    def test_stmix_validation_error_metrics(self, aminoacids_polyamines_compounds):
+    def test_stmix_validation_error_metrics(self, aminoacids_compounds):
         """
         Test comprehensive error metrics for STMIX validation.
         
         Expected: Detailed error analysis with multiple statistical measures
         """
         expected_concentration = 1.0
-        compound_names = list(aminoacids_polyamines_compounds.keys())[:10]
+        compound_names = list(aminoacids_compounds.keys())[:10]
         
         # Generate mock data with known error distribution
         mock_results = []
@@ -355,7 +355,7 @@ class TestSTMIXAccuracyBenchmarks:
         
         validator = DataComparisonTools()
         validation_stats = validator.validate_stmix_concentrations(
-            results_df, expected_concentration, aminoacids_polyamines_compounds
+            results_df, expected_concentration, aminoacids_compounds
         )
         
         # Verify error metrics are calculated correctly
@@ -374,7 +374,7 @@ class TestSTMIXAccuracyBenchmarks:
 class TestSTMIXIntegrationWorkflow:
     """Integration tests using STMIX data for complete workflow validation."""
     
-    def test_stmix_workflow_mock_integration(self, stmix_concentration_series, aminoacids_polyamines_compounds):
+    def test_stmix_workflow_mock_integration(self, stmix_concentration_series, aminoacids_compounds):
         """
         Test complete workflow integration using STMIX data simulation.
         
@@ -390,7 +390,7 @@ class TestSTMIXIntegrationWorkflow:
                 
             # Simulate compound detection with realistic accuracy - test all compounds
             mock_results = []
-            compound_names = list(aminoacids_polyamines_compounds.keys())
+            compound_names = list(aminoacids_compounds.keys())
             
             for compound in compound_names:
                 # Use deterministic concentration-dependent accuracy for consistent test results
@@ -414,7 +414,7 @@ class TestSTMIXIntegrationWorkflow:
                 results_df = pd.DataFrame(mock_results)
                 validator = DataComparisonTools()
                 validation_stats = validator.validate_stmix_concentrations(
-                    results_df, true_conc, aminoacids_polyamines_compounds
+                    results_df, true_conc, aminoacids_compounds
                 )
                 validation_results[true_conc] = validation_stats
         

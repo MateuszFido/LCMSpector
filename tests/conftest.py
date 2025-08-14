@@ -21,7 +21,7 @@ sys.path.insert(0, str(project_root))
 # Import shared fixtures from test utilities
 from tests.fixtures.test_utilities import (
     stmix_concentration_series,
-    aminoacids_polyamines_compounds,
+    aminoacids_compounds,
     stmix_filename_parser,
     synthetic_peak_data,
     validation_utilities,
@@ -108,7 +108,7 @@ def test_environment_setup():
     
     # Verify key files exist
     key_files = [
-        project_root / 'config.json',
+        lc_inspector_dir / 'config.json',
         lc_inspector_dir / 'calculation' / 'calc_conc.py',
         lc_inspector_dir / 'ui' / 'model.py'
     ]
