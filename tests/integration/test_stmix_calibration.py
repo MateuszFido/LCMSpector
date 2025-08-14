@@ -100,7 +100,7 @@ class TestRealSTMIXIntegration:
     def setup_method(self):
         """Set up test fixtures using real LC-Inspector components."""
         self.project_root = Path(__file__).parent.parent.parent
-        self.data_dir = self.project_root / "data" / "LCMSpector-sample-data"
+        self.data_dir = self.project_root / "tests" / "data"
         self.config_path = self.project_root / "lc-inspector" / "config.json"
         
         # Verify data files exist
