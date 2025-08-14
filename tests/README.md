@@ -6,7 +6,7 @@ This test suite provides comprehensive validation for LC-Inspector's concentrati
 
 ## Key Validation Principle
 
-**CRITICAL**: The test suite validates against the STMIX concentration series filenames as the ground truth, NOT against export.csv. Each STMIX file contains all compounds from the `aminoacids_and_polyamines` config section at the concentration indicated in the filename:
+**CRITICAL**: The test suite validates against the STMIX concentration series filenames as the ground truth, NOT against export.csv. Each STMIX file contains all compounds from the `aminoacids` config section at the concentration indicated in the filename:
 
 - `STMIX_BIG_0.01mM` → All compounds at 0.01 mM
 - `STMIX_BIG_0.1mM` → All compounds at 0.1 mM  
@@ -95,7 +95,7 @@ def parse_stmix_concentration(filename: str) -> float:
     return float(match.group(1))
 ```
 
-**Compound Reference**: All compounds from `config.json["aminoacids_and_polyamines"]` (50+ compounds)
+**Compound Reference**: All compounds from `config.json["aminoacids"]` (19 compounds)
 
 ### Synthetic Test Data
 
@@ -299,7 +299,7 @@ def test_stmix_concentration_validation(stmix_filename_parser, aminoacids_polyam
 ### Common Issues
 
 1. **Import Errors**: Ensure `lc-inspector` directory is in Python path
-2. **Missing Config**: Verify `config.json` exists with `aminoacids_and_polyamines` section
+2. **Missing Config**: Verify `config.json` exists with `aminoacids` section
 3. **Test Failures**: Check that validation thresholds match your quality requirements
 4. **Slow Tests**: Use `pytest --run-slow` for complete validation suite
 

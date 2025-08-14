@@ -435,16 +435,16 @@ def stmix_concentration_series():
 
 
 @pytest.fixture(scope="session")
-def aminoacids_polyamines_compounds():
+def aminoacids_compounds():
     """Load aminoacids and polyamines compound list from config.json."""
-    config_path = Path("config.json")
+    config_path = Path("lc-inspector/config.json")
     
     if config_path.exists():
         with open(config_path, 'r') as f:
             config = json.load(f)
         
-        compounds_data = config.get("aminoacids_and_polyamines", {})
-        logger.info(f"Loaded {len(compounds_data)} compounds from aminoacids_and_polyamines")
+        compounds_data = config.get("Amino acids and polyamines (DEEMM)", {})
+        logger.info(f"Loaded {len(compounds_data)} compounds from aminoacids and polyamines")
         return compounds_data
     else:
         logger.warning("config.json not found - using mock compounds")

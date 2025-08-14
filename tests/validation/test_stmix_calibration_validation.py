@@ -41,7 +41,7 @@ class TestSTMIXCalibrationValidation:
         self.calibration_concentrations = self.stmix_concentrations[:5]
         self.validation_concentration = self.stmix_concentrations[5]  # 10.0 mM
         
-        # Create test compounds from aminoacids_and_polyamines config section
+        # Create test compounds from aminoacids config section
         self.test_compounds = [
             Compound(name="Alanine", ions=[90.0549, 116.0706], ion_info=["Alanine-D", "Alanine-I"]),
             Compound(name="Glycine", ions=[76.0393, 102.0549], ion_info=["Glycine-D", "Glycine-I"]),
