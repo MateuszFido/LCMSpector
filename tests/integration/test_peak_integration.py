@@ -10,6 +10,7 @@ import numpy as np
 import sys
 import os
 import logging
+import pytest
 
 # Add the lc-inspector directory to the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -95,11 +96,9 @@ def test_peak_integration_module():
         
         logger.info("✓ LC peak integration test passed")
         
-        return True
-        
     except Exception as e:
         logger.error(f"✗ Peak integration test failed: {e}")
-        return False
+        pytest.fail(f"Peak integration test failed: {e}")
 
 def test_compound_enhancement():
     """Test that Compound class can be enhanced with peak area data."""
@@ -131,11 +130,10 @@ def test_compound_enhancement():
         assert compound.ions[100.0]['MS Peak Area']['total_area'] == 12345.67
         
         logger.info("✓ Compound class enhancement test passed")
-        return True
         
     except Exception as e:
         logger.error(f"✗ Compound enhancement test failed: {e}")
-        return False
+        pytest.fail(f"Compound enhancement test failed: {e}")
 
 def test_preprocessing_integration():
     """Test that preprocessing can import and use peak integration functions."""
@@ -145,11 +143,10 @@ def test_preprocessing_integration():
         from utils.peak_integration import safe_peak_integration, integrate_ms_xic_peak
         
         logger.info("✓ Preprocessing integration test passed")
-        return True
         
     except Exception as e:
         logger.error(f"✗ Preprocessing integration test failed: {e}")
-        return False
+        pytest.fail(f"Preprocessing integration test failed: {e}")
 
 def test_model_export_enhancement():
     """Test that model export functionality includes peak area fields."""
@@ -164,11 +161,10 @@ def test_model_export_enhancement():
         assert hasattr(model, 'export'), "Model should have export method"
         
         logger.info("✓ Model export enhancement test passed")
-        return True
         
     except Exception as e:
         logger.error(f"✗ Model export enhancement test failed: {e}")
-        return False
+        pytest.fail(f"Model export enhancement test failed: {e}")
 
 def run_all_tests():
     """Run all test functions and report results."""
@@ -189,10 +185,8 @@ def run_all_tests():
     for test_name, test_func in tests:
         logger.info(f"\nRunning {test_name}...")
         try:
-            if test_func():
-                passed += 1
-            else:
-                logger.error(f"Test {test_name} failed")
+            test_func()  # Now functions use assertions instead of returns
+            passed += 1
         except Exception as e:
             logger.error(f"Test {test_name} failed with exception: {e}")
     
@@ -206,8 +200,7 @@ def run_all_tests():
     
     logger.info("=" * 60)
     
-    return passed == total
+    assert passed == total, f"Only {passed}/{total} tests passed"
 
 if __name__ == "__main__":
-    success = run_all_tests()
-    sys.exit(0 if success else 1)
+    run_all_tests()
