@@ -5,9 +5,9 @@ name: Tests
 
 on:
   push:
-    branches: [ "ms2-integration" ]
+    branches: [ "ms2-integration", "main" ]
   pull_request:
-    branches: [ "ms2-integration" ]
+    branches: [ "ms2-integration", "main" ]
 
 permissions:
   contents: read
