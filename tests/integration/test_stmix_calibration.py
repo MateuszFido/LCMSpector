@@ -266,10 +266,15 @@ class TestRealSTMIXIntegration:
                 print(f"  Warning: Could not load {conc} mM positive mode data: {e}")
                 continue
         
-        if successful_loads < 3:
-            pytest.skip(f"Insufficient calibration files loaded ({successful_loads}/5), need at least 3")
-        
         print(f"Successfully loaded {successful_loads} calibration files")
+        
+        # This test must always succeed - ensure we have sufficient calibration data
+        assert successful_loads >= 3, (
+            f"Critical test failure: Only {successful_loads}/5 calibration files loaded. "
+            f"Available files checked: {[f for f in self.available_files if 'pos' in str(f)]}. "
+            f"Data directory: {self.data_dir}. "
+            f"This is a minimum-viability integration test that must always pass."
+        )
         
         # Mock the view's get_calibration_files method to return our files
         self.view.get_calibration_files.return_value = calibration_files
@@ -309,13 +314,20 @@ class TestRealSTMIXIntegration:
             for i, comp in enumerate(calibrated_compounds[:5]):
                 print(f"  {i+1}. {comp['Compound']}: R² = {comp['R²']:.4f}")
         
-        # Load validation data
+        # Load validation data - this must succeed for minimum viability
         print(f"\nLoading validation data ({self.validation_concentration} mM)...")
         try:
             validation_ms = self._load_and_process_stmix_file(self.validation_concentration, mode="pos")
             self.model.ms_measurements[validation_ms.filename] = validation_ms
+            print(f"Successfully loaded validation data: {validation_ms.filename}")
         except Exception as e:
-            pytest.skip(f"Could not load validation data: {e}")
+            # Add detailed debugging for critical test failure
+            available_validation_files = [f for f in self.available_files if f[0] == self.validation_concentration]
+            assert False, (
+                f"Critical test failure: Could not load validation data for {self.validation_concentration} mM. "
+                f"Error: {e}. Available validation files: {available_validation_files}. "
+                f"Data directory: {self.data_dir}. This is a minimum-viability test that must always pass."
+            )
         
         # Calculate concentrations for validation using Model
         print(f"Calculating concentrations using Model.calibrate()...")
@@ -422,12 +434,14 @@ class TestRealSTMIXIntegration:
     
     @pytest.mark.integration
     @pytest.mark.stmix
-    @pytest.mark.slow
     def test_stmix_integration_both_modes(self):
         """
         Test complete integration workflow for both positive and negative modes.
         
         Provides comprehensive validation using the complete real data pipeline.
+        
+        Note: This test requires significant real data processing and may be slow.
+        It tests both positive and negative ionization modes for comprehensive validation.
         """
         print(f"\n{'='*80}")
         print(f"COMPREHENSIVE REAL STMIX INTEGRATION TEST - BOTH MODES")
@@ -542,4 +556,3 @@ class TestRealSTMIXIntegration:
             print(f"  ⚠ Only {total_predictions} total predictions generated")
             print(f"  ⚠ May indicate issues with real data processing or file availability")
         
-        return results
