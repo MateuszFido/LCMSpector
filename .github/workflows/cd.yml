@@ -37,40 +37,40 @@ jobs:
 
       - name: Build executable (macOS)
         run: |
-         cd lc-inspector/ 
-         pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --onedir --windowed main.py
+         cd LCMSpector/ 
+         pyinstaller --name "LCMSpector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --onedir --windowed main.py
         shell: bash
         if: matrix.os == 'macos-latest'
 
       - name: Build executable (Windows)
         run:  |
-         cd lc-inspector/
+         cd LCMSpector/
          pip install pillow
-         pyinstaller --name "LC-Inspector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --noconsole --onedir main.py
+         pyinstaller --name "LCMSpector" --icon icon.icns --exclude-module torch --exclude-module matplotlib --exclude-module frozendict --exclude-module torchvision --exclude-module torchgen --exclude-module tqdm --exclude-module torchaudio --add-data "ui/logo.png:ui" --add-data "config.json:." --add-data "app.log:." --add-data "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp:resources" --noconsole --onedir main.py
         shell: cmd
         if: matrix.os == 'windows-latest'
 
       - name: Zip artifact for deployment (Windows)
-        run: tar.exe -acvf LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist/LC-Inspector
+        run: tar.exe -acvf LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip LCMSpector/dist/LCMSpector
         shell: cmd
         if: matrix.os == 'windows-latest'
 
       - name: Zip artifact for deployment (macOS)
-        run: zip -r LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip lc-inspector/dist/LC-Inspector.app
+        run: zip -r LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip LCMSpector/dist/LCMSpector.app
         shell: bash
         if: matrix.os == 'macos-latest'
 
       - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4
         with:
-          name: LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip
+          name: LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
           path: ./*.zip
         if: matrix.os == 'macos-latest'
         
       - name: Upload arifact (Windows)
         uses: actions/upload-artifact@v4
         with:
-          name: LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+          name: LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
           path: ./*.zip 
         if: matrix.os == 'windows-latest'
 
@@ -98,6 +98,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            LC-Inspector-${{ github.event.inputs.version }}-macOS-arm64.zip
-            LC-Inspector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
 
