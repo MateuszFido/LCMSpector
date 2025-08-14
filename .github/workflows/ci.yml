@@ -41,6 +41,7 @@ jobs:
         if [ -f requirements.txt ]; then
           pip install -r requirements.txt
         fi
+        sudo apt upgrade
         sudo apt install libgl1 libegl1 -y
       shell: bash
       if: matrix.os == 'ubuntu-latest'
