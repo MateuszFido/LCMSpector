@@ -1,0 +1,31 @@
+# Exclude test data and large files
+tests/data/
+*.mzml
+*.mzML
+
+# Exclude development files
+.git/
+.github/
+.pytest_cache/
+.vscode/
+*.pyc
+__pycache__/
+.coverage
+.tox/
+.env
+.venv/
+venv/
+
+# Exclude documentation
+*.md
+LICENSE
+
+# Keep necessary resource files
+!lc-inspector/resources/*.msp
+!lc-inspector/resources/*.png
+!lc-inspector/resources/*.icns
+!lc-inspector/resources/*.qrc
+
+# Exclude OS specific files
+.DS_Store
+Thumbs.db
