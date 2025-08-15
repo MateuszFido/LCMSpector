@@ -1072,6 +1072,7 @@ class View(QtWidgets.QMainWindow):
         """
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LCMSpector"))
+        MainWindow.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "resources", "icon.icns")))
         self.browseLC.setText(_translate("MainWindow", "Browse"))
         self.comboBox.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
         self.comboBox.setItemText(1, _translate("MainWindow", "MS Only"))
