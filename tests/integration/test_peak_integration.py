@@ -194,9 +194,9 @@ def run_all_tests():
     logger.info(f"Test Results: {passed}/{total} tests passed")
     
     if passed == total:
-        logger.info("🎉 All tests passed! Peak area integration is working correctly.")
+        logger.info("[SUCCESS] All tests passed! Peak area integration is working correctly.")
     else:
-        logger.warning(f"⚠️  {total - passed} tests failed. Please check the implementation.")
+        logger.warning(f"[WARNING]  {total - passed} tests failed. Please check the implementation.")
     
     logger.info("=" * 60)
     

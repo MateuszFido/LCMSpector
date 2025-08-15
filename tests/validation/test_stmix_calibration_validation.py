@@ -84,7 +84,7 @@ class TestSTMIXCalibrationValidation:
                 # Simulate concentration-dependent peak areas with realistic noise
                 base_signal = 10000.0  # Base signal at 1 mM
                 concentration_factor = concentration  # Linear response
-                noise_factor = 1.0 + np.random.normal(0, 0.05)  # ±5% noise
+                noise_factor = 1.0 + np.random.normal(0, 0.05)  # +/-5% noise
                 
                 # Mode-dependent signal intensity (pos mode typically stronger)
                 mode_factor = 1.0 if mode == "pos" else 0.7
@@ -123,7 +123,7 @@ class TestSTMIXCalibrationValidation:
         """
         Test STMIX calibration curve generation and validation in positive mode.
         
-        Expected: Accurate concentration interpolation within ±15% relative error
+        Expected: Accurate concentration interpolation within +/-15% relative error
         """
         print(f"\n{'='*60}")
         print(f"STMIX CALIBRATION VALIDATION - POSITIVE MODE")
@@ -158,7 +158,7 @@ class TestSTMIXCalibrationValidation:
                 print(f"\n{compound.name} Calibration:")
                 print(f"  Slope: {params['slope']:.1f}")
                 print(f"  Intercept: {params['intercept']:.1f}")
-                print(f"  R²: {params['r_value']**2:.4f}")
+                print(f"  R^2: {params['r_value']**2:.4f}")
         
         # Create validation sample (6th concentration)
         validation_ms = self._create_mock_stmix_measurement(self.validation_concentration, mode="pos")
@@ -229,7 +229,7 @@ class TestSTMIXCalibrationValidation:
         """
         Test STMIX calibration curve generation and validation in negative mode.
         
-        Expected: Accurate concentration interpolation within ±20% relative error (wider tolerance for negative mode)
+        Expected: Accurate concentration interpolation within +/-20% relative error (wider tolerance for negative mode)
         """
         print(f"\n{'='*60}")
         print(f"STMIX CALIBRATION VALIDATION - NEGATIVE MODE")
@@ -359,7 +359,7 @@ class TestSTMIXCalibrationValidation:
             if pos_mean_error < neg_mean_error:
                 print(" Positive mode more accurate (expected)")
             else:
-                print("⚠ Negative mode more accurate (unexpected but acceptable)")
+                print(" Negative mode more accurate (unexpected but acceptable)")
             
             # Both modes should be reasonably accurate
             assert pos_mean_error <= 25.0, "Positive mode error too high"

@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 
 # Constants based on architecture design
 CONCENTRATION_TOLERANCE = {
-    'relative_error': 0.15,      # ±15% for biological measurements
-    'absolute_error': 0.05,      # ±0.05 mM for low concentrations
+    'relative_error': 0.15,      # +/-15% for biological measurements
+    'absolute_error': 0.05,      # +/-0.05 mM for low concentrations
     'r_squared_min': 0.95,       # Calibration curve quality
     'slope_range': (1000, 50000000),  # Valid slope bounds
 }
