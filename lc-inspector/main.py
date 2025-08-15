@@ -155,7 +155,7 @@ def main():
     # Create model, view, and controller with updated config loading
     try:
         config = load_config()  # Use new config loader
-        model = Model(config)
+        model = Model()
         view = View()
         controller = Controller(model, view)
     except Exception as e:

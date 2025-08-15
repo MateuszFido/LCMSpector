@@ -43,6 +43,7 @@ class Model(QThread):
     __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker']
 
     def __init__(self):
+        super().__init__()
         self.lc_measurements = {}
         self.ms_measurements = {}
         self.annotations = []

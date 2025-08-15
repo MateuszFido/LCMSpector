@@ -23,13 +23,21 @@ def get_resource_path(relative_path):
     Returns:
         str: Absolute path to the resource
     """
-    if getattr(sys, 'frozen', False):
+    # Check for Nuitka build (more reliable detection)
+    is_nuitka = (
+        getattr(sys, 'frozen', False) or
+        'main.bin' in sys.executable or
+        'main.app' in sys.executable or
+        (hasattr(sys, 'argv') and sys.argv and 'main.bin' in sys.argv[0])
+    )
+    
+    if is_nuitka:
         # Nuitka standalone build
         if hasattr(sys, '_MEIPASS'):
             # Fallback for PyInstaller compatibility during transition
             base_path = sys._MEIPASS
         else:
-            # Nuitka standard resource location
+            # Nuitka standard resource location - same directory as executable
             base_path = Path(sys.executable).parent
         return os.path.join(base_path, relative_path)
     else:
@@ -94,13 +102,21 @@ def get_application_info():
     Returns:
         dict: Information about the execution environment
     """
+    # Use the same Nuitka detection logic as get_resource_path
+    is_nuitka = (
+        getattr(sys, 'frozen', False) or
+        'main.bin' in sys.executable or
+        'main.app' in sys.executable or
+        (hasattr(sys, 'argv') and sys.argv and 'main.bin' in sys.argv[0])
+    )
+    
     return {
         'frozen': getattr(sys, 'frozen', False),
-        'nuitka': getattr(sys, 'frozen', False) and not hasattr(sys, '_MEIPASS'),
+        'nuitka': is_nuitka and not hasattr(sys, '_MEIPASS'),
         'pyinstaller': getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'),
         'executable': sys.executable,
         'argv0': sys.argv[0] if sys.argv else None,
-        'base_path': Path(sys.executable).parent if getattr(sys, 'frozen', False) else Path(__file__).parent.parent
+        'base_path': Path(sys.executable).parent if is_nuitka else Path(__file__).parent.parent
     }
 
 
