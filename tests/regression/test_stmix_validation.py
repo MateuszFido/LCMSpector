@@ -142,7 +142,7 @@ class TestSTMIXConcentrationValidation:
         for compound in accurate_compounds:
             mock_results.append({
                 'Compound': compound,
-                'Concentration (mM)': expected_concentration * (1 + np.random.normal(0, 0.05)),  # ±5% error
+                'Concentration (mM)': expected_concentration * (1 + np.random.normal(0, 0.05)),  # +/-5% error
                 'Ion (m/z)': 100.0 + len(compound),  # Mock m/z
                 'File': 'STMIX_BIG_0.1mM_pos.mzml'
             })
@@ -152,7 +152,7 @@ class TestSTMIXConcentrationValidation:
         for compound in inaccurate_compounds:
             mock_results.append({
                 'Compound': compound,
-                'Concentration (mM)': expected_concentration * (1 + np.random.normal(0, 0.20)),  # ±20% error
+                'Concentration (mM)': expected_concentration * (1 + np.random.normal(0, 0.20)),  # +/-20% error
                 'Ion (m/z)': 200.0 + len(compound),  # Mock m/z
                 'File': 'STMIX_BIG_0.1mM_pos.mzml'
             })
@@ -395,7 +395,7 @@ class TestSTMIXIntegrationWorkflow:
             for compound in compound_names:
                 # Use deterministic concentration-dependent accuracy for consistent test results
                 base_accuracy = 0.90 if true_conc >= 0.1 else 0.75
-                # Use deterministic detection to ensure reliable test results (≥60% detection rate)
+                # Use deterministic detection to ensure reliable test results (>=60% detection rate)
                 if base_accuracy >= 0.75:  # Always detect when accuracy threshold is met
                     # Add realistic measurement error
                     error = np.random.normal(0, 0.08)  # 8% standard deviation

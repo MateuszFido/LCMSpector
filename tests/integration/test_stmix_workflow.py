@@ -268,7 +268,7 @@ class TestSTMIXWorkflowIntegration:
             print(f"\nSTMIX Workflow Validation Results:")
             print(f"Total samples tested: {len(valid_results)}")
             print(f"Mean relative error: {mean_relative_error:.3f}")
-            print(f"Accuracy rate (±15%): {accuracy_rate:.3f}")
+            print(f"Accuracy rate (+/-15%): {accuracy_rate:.3f}")
             print(f"Within tolerance: {within_15_percent}/{len(valid_results)}")
     
     def test_stmix_workflow_peak_area_vs_intensity_comparison(self):

@@ -79,14 +79,14 @@ jobs:
       - name: Upload artifact (macOS)
         uses: actions/upload-artifact@v4
         with:
-          name: lcmspector-${{ github.event.inputs.version }}-macOS-arm64.zip
+          name: LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
           path: ./*.zip
         if: matrix.os == 'macos-latest'
         
       - name: Upload arifact (Windows)
         uses: actions/upload-artifact@v4
         with:
-          name: lcmspector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+          name: LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
           path: ./*.zip
         if: matrix.os == 'windows-latest'
 
@@ -116,6 +116,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            lcmspector-${{ github.event.inputs.version }}-macOS-arm64.zip
-            lcmspector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
 

@@ -293,7 +293,7 @@ class TestRealSTMIXIntegration:
                     'Compound': compound.name,
                     'Slope': params['slope'],
                     'Intercept': params['intercept'],
-                    'R²': r_squared,
+                    'R^2': r_squared,
                     'P-value': params['p_value'],
                     'Std_Error': params['std_err']
                 })
@@ -302,16 +302,16 @@ class TestRealSTMIXIntegration:
         print(f"Compounds with successful calibration: {len(calibrated_compounds)}")
         
         if calibrated_compounds:
-            r_squared_values = [c['R²'] for c in calibrated_compounds]
+            r_squared_values = [c['R^2'] for c in calibrated_compounds]
             mean_r_squared = np.mean(r_squared_values)
-            print(f"Mean R²: {mean_r_squared:.4f}")
-            print(f"R² range: {min(r_squared_values):.4f} - {max(r_squared_values):.4f}")
+            print(f"Mean R^2: {mean_r_squared:.4f}")
+            print(f"R^2 range: {min(r_squared_values):.4f} - {max(r_squared_values):.4f}")
             
             # Show top performing compounds
-            calibrated_compounds.sort(key=lambda x: x['R²'], reverse=True)
+            calibrated_compounds.sort(key=lambda x: x['R^2'], reverse=True)
             print(f"\nTop 5 calibration performers:")
             for i, comp in enumerate(calibrated_compounds[:5]):
-                print(f"  {i+1}. {comp['Compound']}: R² = {comp['R²']:.4f}")
+                print(f"  {i+1}. {comp['Compound']}: R^2 = {comp['R^2']:.4f}")
         
         # Load validation data - this must succeed for minimum viability
         print(f"\nLoading validation data ({self.validation_concentration} mM)...")
@@ -341,7 +341,7 @@ class TestRealSTMIXIntegration:
         print(f"CONCENTRATION INTERPOLATION RESULTS (REAL DATA)")
         print(f"{'='*80}")
         print(f"True concentration: {self.validation_concentration} mM")
-        print(f"{'Compound':<25} {'Predicted':<12} {'Error %':<10} {'R²':<8} {'Status'}")
+        print(f"{'Compound':<25} {'Predicted':<12} {'Error %':<10} {'R^2':<8} {'Status'}")
         print(f"{'-'*70}")
         
         for xic in validation_ms.xics:
@@ -402,8 +402,8 @@ class TestRealSTMIXIntegration:
             print(f"  Error range: {min(relative_errors):.1f}% - {max(relative_errors):.1f}%")
             print(f"")
             print(f"Calibration Quality:")
-            print(f"  Mean calibration R²: {mean_r_squared:.4f}")
-            print(f"  R² range: {min(r_squared_values):.4f} - {max(r_squared_values):.4f}")
+            print(f"  Mean calibration R^2: {mean_r_squared:.4f}")
+            print(f"  R^2 range: {min(r_squared_values):.4f} - {max(r_squared_values):.4f}")
             
             # Best and worst performers
             validation_results.sort(key=lambda x: x['Relative_Error_Percent'])
@@ -419,7 +419,7 @@ class TestRealSTMIXIntegration:
             assert total_predictions >= 5, f"Too few predictions ({total_predictions}), expected at least 5"
             assert accuracy_rate >= 0.20, f"Accuracy rate {accuracy_rate:.1%} below 20% threshold for real data"
             assert mean_relative_error <= 80.0, f"Mean relative error {mean_relative_error:.1f}% too high for real data"
-            assert mean_r_squared >= 0.65, f"Mean R² {mean_r_squared:.4f} too low for calibration quality"
+            assert mean_r_squared >= 0.65, f"Mean R^2 {mean_r_squared:.4f} too low for calibration quality"
             
             print(f"\nReal STMIX positive mode integration test PASSED")
             print(f"  - Successfully processed {total_predictions} compounds with real mzML data")
