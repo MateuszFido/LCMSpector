@@ -27,7 +27,7 @@ jobs:
           curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
           unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
           ls -la
-          mv MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
+          mv -f MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
         shell: bash
         if: matrix.os != 'windows-latest'
 
