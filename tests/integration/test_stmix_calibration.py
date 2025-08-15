@@ -392,7 +392,7 @@ class TestRealSTMIXIntegration:
             print(f"POSITIVE MODE REAL DATA VALIDATION SUMMARY")
             print(f"{'='*80}")
             print(f"Total compounds tested: {total_predictions}")
-            print(f"Successful predictions (≤30%): {successful_predictions}")
+            print(f"Successful predictions (<= 30%): {successful_predictions}")
             print(f"Accuracy rate: {accuracy_rate:.1%}")
             print(f"")
             print(f"Error Statistics:")
@@ -539,7 +539,7 @@ class TestRealSTMIXIntegration:
         if results.get('positive'):
             pos_errors = [r['Relative_Error_Percent'] for r in results['positive']]
             pos_accuracy = sum(1 for e in pos_errors if e <= 30) / len(pos_errors)
-            print(f"  Positive mode accuracy (≤30%): {pos_accuracy:.1%}")
+            print(f"  Positive mode accuracy (<=30%): {pos_accuracy:.1%}")
             print(f"  Positive mode mean error: {np.mean(pos_errors):.1f}%")
         
         # Final validation
