@@ -9,6 +9,7 @@ cd lc-inspector\
 REM Ensure dependencies are installed
 echo Installing/updating Nuitka...
 pip install --upgrade "nuitka[full]"
+pip install imageio
 
 REM Clean previous builds
 echo Cleaning previous builds...
