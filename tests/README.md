@@ -137,6 +137,56 @@ PERFORMANCE_STANDARDS = {
 }
 ```
 
+## Test Data Acquisition
+
+### Current Infrastructure: Polybox Integration
+
+Test data for LC-Inspector is managed through ETH Zurich's Polybox cloud storage, providing reliable and accessible test datasets for both CI/CD pipelines and local development.
+
+**Data Source**:
+- Primary repository: [Polybox ETH Zurich](https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download)
+- Package: `LCMSpector-sample-data.zip`
+- Contents: STMIX concentration series and reference LC-MS/MS data
+
+**Automated CI/CD Download**:
+```yaml
+# Automatic test data acquisition in GitHub Actions
+- name: Download test data
+  run: |
+    curl -L -o tests/LCMSpector-sample-data.zip \
+         "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+    unzip tests/LCMSpector-sample-data.zip -d tests/
+```
+
+**Local Development Setup**:
+```bash
+# Manual download for local testing
+cd tests/
+curl -L -o LCMSpector-sample-data.zip \
+     "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+unzip LCMSpector-sample-data.zip
+```
+
+**Data Management Notes**:
+- **No git-lfs dependency**: Test data is downloaded on-demand, not stored in the repository
+- **Git LFS scope**: Only used for database files (`*.msp` files in `lc-inspector/resources/`)
+- **CI efficiency**: Fresh data download ensures tests run against current datasets
+- **Storage optimization**: Repository size remains minimal without large test files
+
+**Data Structure After Download**:
+```
+tests/
+├── LCMSpector-sample-data/
+│   ├── STMIX_BIG_0.01mM_pos.mzml
+│   ├── STMIX_BIG_0.1mM_pos.mzml
+│   ├── STMIX_BIG_0.5mM_pos.mzml
+│   ├── STMIX_BIG_2.5mM_pos.mzml
+│   ├── STMIX_BIG_5.0mM_pos.mzml
+│   ├── STMIX_BIG_10.0mM_pos.mzml
+│   └── [additional test datasets]
+└── [test modules as documented above]
+```
+
 ## Key Test Utilities
 
 ### ConcentrationTestValidator
