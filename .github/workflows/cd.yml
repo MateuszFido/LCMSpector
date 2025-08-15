@@ -22,8 +22,23 @@ jobs:
           lfs: false
           fetch-depth: 0
           
-      - name: Download selective LFS files
-        run: git lfs pull --include="lc-inspector/resources/*.msp"
+      - name: Download the MSP library from Polybox (Linux/macOS)
+        run: |
+        curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+        unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
+        ls -la
+        mv MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
+        shell: bash
+        if: matrix.os != 'windows-latest'
+
+      - name: Download the MSP library from Polybox (Windows)
+        run: |
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap.zip"
+        Expand-Archive -Path MoNA-export-All_LC-MS-MS_Orbitrap.zip -DestinationPath "." -Force
+        Get-ChildItem
+        Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector/resources"
+        shell: pwsh
+        if: matrix.os == 'windows-latest'
 
       - name: Set up Python
         uses: actions/setup-python@v4
