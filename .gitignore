@@ -11,7 +11,6 @@ dist
 *.dmg
 *.sparsebundle
 *.zip
-*.sh
 *.ps1
 test_data.mzml
 test_lc_data.txt
