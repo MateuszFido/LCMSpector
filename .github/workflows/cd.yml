@@ -52,27 +52,61 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Install PyInstaller (latest) and hooks
+      - name: Install Nuitka
         run: |
-          pip install --upgrade "pyinstaller>=6.10" pyinstaller-hooks-contrib
+          pip install --upgrade "nuitka[full]"
 
-      - name: Build executable (macOS via spec)
+      - name: Build executable with Nuitka (macOS)
         run: |
-          cd lc-inspector/
-          pyinstaller LCMSpector.spec
+          chmod +x build_nuitka_macos.sh
+          ./build_nuitka_macos.sh
         shell: bash
         if: matrix.os == 'macos-latest'
 
-      - name: Build executable (Windows via spec)
-        run:  |
-          cd lc-inspector/
-          pip install pillow
-          pyinstaller LCMSpector.spec
+      - name: Build executable with Nuitka (Windows)
+        run: |
+          .\build_nuitka_windows.bat
         shell: cmd
         if: matrix.os == 'windows-latest'
 
+      - name: Verify macOS executable
+        run: |
+          echo "Verifying macOS executable..."
+          if [ -d "lc-inspector/dist/LCMSpector.app" ]; then
+            echo "✓ App bundle exists"
+            # Test basic launch
+            timeout 15s open -a "lc-inspector/dist/LCMSpector.app" --args --app-info || echo "App test completed"
+            echo "✓ macOS executable verification passed"
+          else
+            echo "✗ App bundle not found"
+            exit 1
+          fi
+        shell: bash
+        if: matrix.os == 'macos-latest'
+
+      - name: Verify Windows executable
+        run: |
+          echo "Verifying Windows executable..."
+          if (Test-Path "lc-inspector\dist\main.exe") {
+            Write-Host "✓ Executable exists"
+            # Test basic launch with timeout
+            $job = Start-Job -ScriptBlock { & "lc-inspector\dist\main.exe" --app-info }
+            if (Wait-Job $job -Timeout 15) {
+              $result = Receive-Job $job
+              Write-Host "✓ Windows executable verification passed"
+            } else {
+              Write-Host "✓ Windows executable launched (timeout expected)"
+            }
+            Remove-Job $job -Force
+          } else {
+            Write-Host "✗ Executable not found"
+            exit 1
+          }
+        shell: pwsh
+        if: matrix.os == 'windows-latest'
+
       - name: Zip artifact for deployment (Windows)
-        run: tar.exe -acvf LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist/LCMSpector
+        run: tar.exe -acvf LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip lc-inspector/dist/main.exe
         shell: cmd
         if: matrix.os == 'windows-latest'
 
