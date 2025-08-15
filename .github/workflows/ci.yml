@@ -43,6 +43,24 @@ jobs:
         Get-ChildItem
       shell: pwsh
       if: matrix.os == 'windows-latest'
+
+    - name: Download MS2 library from polybox (Linux/macOS)
+      run: |
+        curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+        unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
+        ls -la
+        mv MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
+      shell: bash
+      if: matrix.os != 'windows-latest'
+
+    - name: Download MS2 library from polybox (Windows)
+      run: |
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap.zip"
+        Expand-Archive -Path MoNA-export-All_LC-MS-MS_Orbitrap.zip -DestinationPath "." -Force
+        Get-ChildItem
+        Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector/resources"
+      shell: pwsh
+      if: matrix.os == 'windows-latest'
     
     - name: Set up Python 3.12
       uses: actions/setup-python@v3

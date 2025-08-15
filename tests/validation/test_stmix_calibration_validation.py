@@ -211,7 +211,7 @@ class TestSTMIXCalibrationValidation:
             print(f"POSITIVE MODE SUMMARY")
             print(f"{'='*60}")
             print(f"Compounds tested: {total_compounds}")
-            print(f"Accurate predictions (≤15%): {accurate_predictions}")
+            print(f"Accurate predictions (<=15%): {accurate_predictions}")
             print(f"Accuracy rate: {accuracy_rate:.1%}")
             print(f"Mean relative error: {mean_relative_error:.1f}%")
             
@@ -259,7 +259,7 @@ class TestSTMIXCalibrationValidation:
                 print(f"\n{compound.name} Calibration:")
                 print(f"  Slope: {params['slope']:.1f}")
                 print(f"  Intercept: {params['intercept']:.1f}")
-                print(f"  R²: {params['r_value']**2:.4f}")
+                print(f"  R-value: {params['r_value']**2:.4f}")
         
         # Create validation sample (6th concentration)
         validation_ms = self._create_mock_stmix_measurement(self.validation_concentration, mode="neg")
@@ -312,7 +312,7 @@ class TestSTMIXCalibrationValidation:
             print(f"NEGATIVE MODE SUMMARY")
             print(f"{'='*60}")
             print(f"Compounds tested: {total_compounds}")
-            print(f"Accurate predictions (≤20%): {accurate_predictions}")
+            print(f"Accurate predictions (<=20%): {accurate_predictions}")
             print(f"Accuracy rate: {accuracy_rate:.1%}")
             print(f"Mean relative error: {mean_relative_error:.1f}%")
             
