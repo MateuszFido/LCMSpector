@@ -44,35 +44,44 @@ python3 -m nuitka \
     --disable-ccache \
     main.py
 
-echo "Build completed! App bundle created at: dist/LCMSpector.app"
+echo "Build completed! Validating Nuitka output..."
 
 # Validate the build
 echo "Validating build..."
-if [ -d "dist/LCMSpector.app" ]; then
-    echo "✓ App bundle created successfully"
+if [ -d "dist/main.app" ]; then
+    echo " App bundle created successfully"
     
     # Check bundle structure
-    if [ -f "dist/LCMSpector.app/Contents/MacOS/LCMSpector" ]; then
-        echo "✓ Executable found in bundle"
+    if [ -f "dist/main.app/Contents/MacOS/main" ]; then
+        echo " Executable found in bundle"
     else
-        echo "✗ Executable not found in bundle"
+        echo " Executable not found in bundle"
         exit 1
     fi
     
     # Check bundle size
-    bundle_size=$(du -sh dist/LCMSpector.app | cut -f1)
-    echo "✓ Bundle size: $bundle_size"
+    bundle_size=$(du -sh dist/main.app | cut -f1)
+    echo " Bundle size: $bundle_size"
     
     # Test execution with timeout
     echo "Testing app execution..."
-    timeout 10s open -a "dist/LCMSpector.app" --args --app-info || echo "App test completed (timeout expected)"
+    timeout 10s open -a "dist/main.app" --args --app-info || echo "App test completed (timeout expected)"
     
 else
-    echo "✗ App bundle not created"
+    echo " App bundle not created"
     exit 1
 fi
 
-echo "✓ macOS build validation completed successfully!"
+echo " macOS build validation completed successfully!"
+
+# Rename the app bundle to final name
+echo "Renaming app bundle to LCMSpector.app..."
+mv "dist/main.app" "dist/LCMSpector.app"
+
+# Rename the internal executable to match expected name
+echo "Renaming internal executable..."
+mv "dist/LCMSpector.app/Contents/MacOS/main" "dist/LCMSpector.app/Contents/MacOS/LCMSpector"
+echo " App bundle and executable renamed successfully"
 
 # Display bundle info
 echo ""

@@ -65,6 +65,16 @@ if exist "dist\main.exe" (
     ) else (
         echo ✓ Executable test passed
     )
+    
+    REM Rename executable to final name
+    echo Renaming executable to LCMSpector.exe...
+    move "dist\main.exe" "dist\LCMSpector.exe"
+    if exist "dist\LCMSpector.exe" (
+        echo Executable renamed successfully
+    ) else (
+        echo  Failed to rename executable
+        exit /b 1
+    )
 ) else (
     echo ✗ Executable not created
     exit /b 1
@@ -76,7 +86,8 @@ REM Display build info
 echo.
 echo Build Summary:
 echo ==============
-echo Executable path: %cd%\dist\main.exe
+echo Contents of dist folder:
+dir dist\
 echo Executable size: %sizeMB%MB
 
 REM Test resource verification
