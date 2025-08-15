@@ -9,7 +9,7 @@ import sys
 from PyInstaller.utils.hooks import copy_metadata
 from PyInstaller.building.build_main import Analysis, PYZ, EXE, COLLECT, BUNDLE
 
-BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+BASE_DIR = os.path.abspath(os.path.dirname(sys.argv[0]))
 is_mac = sys.platform == "darwin"
 is_win = sys.platform == "win32"
 
