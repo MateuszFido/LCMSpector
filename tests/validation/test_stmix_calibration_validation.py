@@ -195,7 +195,7 @@ class TestSTMIXCalibrationValidation:
                     'Mode': 'positive'
                 })
                 
-                status = "✓ PASS" if relative_error <= 0.15 else "✗ FAIL"
+                status = " PASS" if relative_error <= 0.15 else " FAIL"
                 print(f"{compound.name:<15} {predicted_conc:<12.3f} {relative_error*100:<10.1f} {status}")
                 
                 total_compounds += 1
@@ -296,7 +296,7 @@ class TestSTMIXCalibrationValidation:
                     'Mode': 'negative'
                 })
                 
-                status = "✓ PASS" if relative_error <= 0.20 else "✗ FAIL"
+                status = " PASS" if relative_error <= 0.20 else " FAIL"
                 print(f"{compound.name:<15} {predicted_conc:<12.3f} {relative_error*100:<10.1f} {status}")
                 
                 total_compounds += 1
@@ -357,7 +357,7 @@ class TestSTMIXCalibrationValidation:
             
             # Generally expect positive mode to be more accurate (but not strictly required)
             if pos_mean_error < neg_mean_error:
-                print("✓ Positive mode more accurate (expected)")
+                print(" Positive mode more accurate (expected)")
             else:
                 print("⚠ Negative mode more accurate (unexpected but acceptable)")
             

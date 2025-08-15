@@ -28,7 +28,7 @@ def test_peak_integration_module():
             safe_peak_integration,
             create_fallback_peak_area
         )
-        logger.info("✓ Peak integration module imported successfully")
+        logger.info(" Peak integration module imported successfully")
         
         # Create synthetic MS XIC data (Gaussian peak)
         times = np.linspace(0, 10, 100)  # 10 minutes, 100 data points
@@ -67,7 +67,7 @@ def test_peak_integration_module():
         assert ms_result['peak_height'] > 0, "Peak height should be positive"
         assert 0 <= ms_result['quality_score'] <= 1, "Quality score should be between 0 and 1"
         
-        logger.info("✓ MS XIC peak integration test passed")
+        logger.info(" MS XIC peak integration test passed")
         
         # Test LC peak integration with baseline-corrected data
         logger.info("Testing LC peak integration...")
@@ -94,10 +94,10 @@ def test_peak_integration_module():
         assert lc_result['total_area'] > 0, "LC total area should be positive"
         assert lc_result['baseline_corrected_area'] > 0, "LC baseline corrected area should be positive"
         
-        logger.info("✓ LC peak integration test passed")
+        logger.info(" LC peak integration test passed")
         
     except Exception as e:
-        logger.error(f"✗ Peak integration test failed: {e}")
+        logger.error(f" Peak integration test failed: {e}")
         pytest.fail(f"Peak integration test failed: {e}")
 
 def test_compound_enhancement():
@@ -129,10 +129,10 @@ def test_compound_enhancement():
         assert 'MS Peak Area' in compound.ions[100.0]
         assert compound.ions[100.0]['MS Peak Area']['total_area'] == 12345.67
         
-        logger.info("✓ Compound class enhancement test passed")
+        logger.info(" Compound class enhancement test passed")
         
     except Exception as e:
-        logger.error(f"✗ Compound enhancement test failed: {e}")
+        logger.error(f" Compound enhancement test failed: {e}")
         pytest.fail(f"Compound enhancement test failed: {e}")
 
 def test_preprocessing_integration():
@@ -142,10 +142,10 @@ def test_preprocessing_integration():
         from utils.preprocessing import construct_xics
         from utils.peak_integration import safe_peak_integration, integrate_ms_xic_peak
         
-        logger.info("✓ Preprocessing integration test passed")
+        logger.info(" Preprocessing integration test passed")
         
     except Exception as e:
-        logger.error(f"✗ Preprocessing integration test failed: {e}")
+        logger.error(f" Preprocessing integration test failed: {e}")
         pytest.fail(f"Preprocessing integration test failed: {e}")
 
 def test_model_export_enhancement():
@@ -160,10 +160,10 @@ def test_model_export_enhancement():
         # Verify the export method exists and can be called
         assert hasattr(model, 'export'), "Model should have export method"
         
-        logger.info("✓ Model export enhancement test passed")
+        logger.info(" Model export enhancement test passed")
         
     except Exception as e:
-        logger.error(f"✗ Model export enhancement test failed: {e}")
+        logger.error(f" Model export enhancement test failed: {e}")
         pytest.fail(f"Model export enhancement test failed: {e}")
 
 def run_all_tests():
