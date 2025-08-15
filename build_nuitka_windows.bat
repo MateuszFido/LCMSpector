@@ -22,7 +22,7 @@ python -m nuitka ^
     --onefile ^
     --enable-plugin=pyside6 ^
     --enable-plugin=numpy ^
-    --windows-icon-from-ico=icon.ico ^
+    --windows-icon-from-ico=resources/icon.png ^
     --windows-company-name="ETH Zurich" ^
     --windows-product-name="LCMSpector" ^
     --windows-file-version="1.0.0" ^
@@ -30,7 +30,7 @@ python -m nuitka ^
     --include-data-file=config.json=config.json ^
     --include-data-file=ui/logo.png=ui/logo.png ^
     --include-data-file=resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp=resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp ^
-    --include-data-file=resources/icon.ico=resources/icon.ico ^
+    --include-data-file=resources/icon.ico=resources/icon.png ^
     --include-data-file=resources/logo.png=resources/logo.png ^
     --include-data-file=resources/logo300x40.png=resources/logo300x40.png ^
     --nofollow-import-to=matplotlib,torch,torchvision,frozendict,tqdm ^
