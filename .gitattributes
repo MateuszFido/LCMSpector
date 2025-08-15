@@ -1,4 +1,1 @@
 lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp filter=lfs diff=lfs merge=lfs -text
-STMIX5_02.mzml filter=lfs diff=lfs merge=lfs -text
-STMIX5_05.txt filter=lfs diff=lfs merge=lfs -text
-tests/data filter=lfs diff=lfs merge=lfs -text

@@ -23,7 +23,27 @@ jobs:
     steps:
     - uses: actions/checkout@v4
       with:
-        lfs: true
+        lfs: false
+    - name: Download test data from polybox (Linux/macOS)
+      run: |
+        mkdir -p tests/
+        curl -L -o tests/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+        cd tests/
+        unzip -o LCMSpector-sample-data.zip
+        ls -la
+      shell: bash
+      if: matrix.os != 'windows-latest'
+    
+    - name: Download test data from polybox (Windows)
+      run: |
+        New-Item -ItemType Directory -Force -Path tests
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download" -OutFile "tests/LCMSpector-sample-data.zip"
+        Set-Location tests
+        Expand-Archive -Path "LCMSpector-sample-data.zip" -DestinationPath "." -Force
+        Get-ChildItem
+      shell: pwsh
+      if: matrix.os == 'windows-latest'
+    
     - name: Set up Python 3.12
       uses: actions/setup-python@v3
       with:
