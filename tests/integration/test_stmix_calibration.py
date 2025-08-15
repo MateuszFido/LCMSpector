@@ -358,7 +358,7 @@ class TestRealSTMIXIntegration:
                 
                 # Realistic tolerance for real data
                 is_accurate = relative_error <= 0.30  # 30% tolerance for real data
-                status = "✓ PASS" if is_accurate else "✗ FAIL"
+                status = "PASS" if is_accurate else "FAIL"
                 
                 validation_results.append({
                     'Compound': xic.name,
@@ -421,7 +421,7 @@ class TestRealSTMIXIntegration:
             assert mean_relative_error <= 80.0, f"Mean relative error {mean_relative_error:.1f}% too high for real data"
             assert mean_r_squared >= 0.65, f"Mean R² {mean_r_squared:.4f} too low for calibration quality"
             
-            print(f"\n✓ Real STMIX positive mode integration test PASSED")
+            print(f"\nReal STMIX positive mode integration test PASSED")
             print(f"  - Successfully processed {total_predictions} compounds with real mzML data")
             print(f"  - Used complete LC-Inspector pipeline with construct_xics()")
             print(f"  - Achieved {accuracy_rate:.1%} accuracy rate with {mean_relative_error:.1f}% mean error")
@@ -452,9 +452,9 @@ class TestRealSTMIXIntegration:
         try:
             pos_results = self.test_stmix_integration_positive_mode()
             results['positive'] = pos_results
-            print(f"\n✓ Positive mode integration completed successfully")
+            print(f"\n Positive mode integration completed successfully")
         except Exception as e:
-            print(f"\n✗ Positive mode integration failed: {e}")
+            print(f"\n Positive mode integration failed: {e}")
             results['positive'] = []
         
         # Reset model for negative mode
@@ -502,17 +502,17 @@ class TestRealSTMIXIntegration:
                             neg_predictions += 1
                     
                     results['negative'] = [{'mode': 'negative', 'predictions': neg_predictions}]
-                    print(f"✓ Negative mode integration completed with {neg_predictions} predictions")
+                    print(f" Negative mode integration completed with {neg_predictions} predictions")
                     
                 except Exception as e:
-                    print(f"✗ Negative mode validation failed: {e}")
+                    print(f" Negative mode validation failed: {e}")
                     results['negative'] = []
             else:
-                print(f"✗ Insufficient negative mode files ({successful_loads}/5)")
+                print(f" Insufficient negative mode files ({successful_loads}/5)")
                 results['negative'] = []
                 
         except Exception as e:
-            print(f"✗ Negative mode integration failed: {e}")
+            print(f" Negative mode integration failed: {e}")
             results['negative'] = []
         
         # Generate final comprehensive report
@@ -546,12 +546,12 @@ class TestRealSTMIXIntegration:
         assert total_predictions >= 5, f"Total predictions {total_predictions} too low for integration test"
         
         if total_predictions >= 10:
-            print(f"\n✓ COMPREHENSIVE REAL DATA INTEGRATION TEST PASSED")
-            print(f"  ✓ Successfully validated LC-Inspector concentration calculation pipeline")
-            print(f"  ✓ Demonstrated production-ready accuracy with real STMIX data")
-            print(f"  ✓ Confirmed robust performance across multiple compounds and concentrations")
+            print(f"\nCOMPREHENSIVE REAL DATA INTEGRATION TEST PASSED")
+            print(f"  Successfully validated LC-Inspector concentration calculation pipeline")
+            print(f"  Demonstrated production-ready accuracy with real STMIX data")
+            print(f"  Confirmed robust performance across multiple compounds and concentrations")
         else:
-            print(f"\n⚠ LIMITED REAL DATA INTEGRATION TEST")
-            print(f"  ⚠ Only {total_predictions} total predictions generated")
-            print(f"  ⚠ May indicate issues with real data processing or file availability")
+            print(f"\n! LIMITED REAL DATA INTEGRATION TEST")
+            print(f"  ! Only {total_predictions} total predictions generated")
+            print(f"  ! May indicate issues with real data processing or file availability")
         
