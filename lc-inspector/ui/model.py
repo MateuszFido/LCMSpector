@@ -7,7 +7,7 @@ from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library, load_ms2_data
 from calculation.workers import LoadingWorker, ProcessingWorker
-from PyQt6.QtCore import QThread
+from PySide6.QtCore import QThread
 
 logger = logging.getLogger(__name__)
 logger.propagate = False

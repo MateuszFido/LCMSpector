@@ -16,7 +16,7 @@ import multiprocessing
 import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-from PyQt6.QtCore import QThread, QObject, pyqtSignal
+from PySide6.QtCore import QThread, QObject, Signal
 from utils.classes import LCMeasurement, MSMeasurement
 from utils.preprocessing import construct_xics
 logger = logging.getLogger(__name__)
@@ -40,15 +40,15 @@ class WorkerSignals(QObject):
         int indicating % progress
 
     '''
-    finished = pyqtSignal()
-    error = pyqtSignal(tuple)
-    result = pyqtSignal(object)
-    progress = pyqtSignal(int)
+    finished = Signal()
+    error = Signal(tuple)
+    result = Signal(object)
+    progress = Signal(int)
 
 class LoadingWorker(QThread):
-    progressUpdated = pyqtSignal(int, str)
-    finished = pyqtSignal(dict, dict)
-    error = pyqtSignal(str)
+    progressUpdated = Signal(int, str)
+    finished = Signal(dict, dict)
+    error = Signal(str)
 
     def __init__(self, model, mode, file_type):
         super().__init__()
@@ -118,9 +118,9 @@ class LoadingWorker(QThread):
 
 
 class ProcessingWorker(QThread):
-    progressUpdated = pyqtSignal(int)
-    finished = pyqtSignal(list)
-    error = pyqtSignal(str)
+    progressUpdated = Signal(int)
+    finished = Signal(list)
+    error = Signal(str)
 
     def __init__(self, model, mode):
         super().__init__()

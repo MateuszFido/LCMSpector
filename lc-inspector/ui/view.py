@@ -1,6 +1,6 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFileDialog, QDialog, QApplication
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 logger.propagate = False
 
 class View(QtWidgets.QMainWindow):
-    progress_update = QtCore.pyqtSignal(int)
+    progress_update = QtCore.Signal(int)
 
     def __init__(self):
         super().__init__()
