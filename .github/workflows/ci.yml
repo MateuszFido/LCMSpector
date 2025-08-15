@@ -50,6 +50,7 @@ jobs:
 
     - name: Install dependencies (Windows)
       run: |
+        set PYTHONUTF8=1
         pip install pytest flake8
         if exist requirements.txt (
           pip install -r requirements.txt
