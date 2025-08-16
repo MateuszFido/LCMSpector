@@ -47,12 +47,12 @@ echo Build completed! Executable created at: dist\main.exe
 REM Validate the build
 echo Validating build...
 if exist "dist\main.exe" (
-    echo ✓ Executable created successfully
+    echo Executable created successfully
     
     REM Check file size
     for %%I in ("dist\main.exe") do set size=%%~zI
     set /a sizeMB=%size%/1024/1024
-    echo ✓ Executable size: %sizeMB%MB
+    echo Executable size: %sizeMB%MB
     
     REM Test execution with timeout
     echo Testing executable...
@@ -60,10 +60,10 @@ if exist "dist\main.exe" (
     "dist\main.exe" --app-info
     
     if errorlevel 1 (
-        echo ✗ Executable test failed
+        echo Executable test failed
         exit /b 1
     ) else (
-        echo ✓ Executable test passed
+        echo Executable test passed
     )
     
     REM Rename executable to final name
@@ -76,7 +76,7 @@ if exist "dist\main.exe" (
         exit /b 1
     )
 ) else (
-    echo ✗ Executable not created
+    echo Executable not created
     exit /b 1
 )
 

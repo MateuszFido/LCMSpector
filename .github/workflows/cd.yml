@@ -87,19 +87,19 @@ jobs:
       - name: Verify Windows executable
         run: |
           echo "Verifying Windows executable..."
-          if (Test-Path "lc-inspector\dist\main.exe") {
-            Write-Host "✓ Executable exists"
+          if (Test-Path "lc-inspector\dist\LCMspector.exe") {
+            Write-Host "Executable exists"
             # Test basic launch with timeout
-            $job = Start-Job -ScriptBlock { & "lc-inspector\dist\main.exe" --app-info }
+            $job = Start-Job -ScriptBlock { & "lc-inspector\dist\LCMspector.exe" --app-info }
             if (Wait-Job $job -Timeout 15) {
               $result = Receive-Job $job
-              Write-Host "✓ Windows executable verification passed"
+              Write-Host "Windows executable verification passed"
             } else {
-              Write-Host "✓ Windows executable launched (timeout expected)"
+              Write-Host "Windows executable launched (timeout expected)"
             }
             Remove-Job $job -Force
           } else {
-            Write-Host "✗ Executable not found"
+            Write-Host "Executable not found"
             exit 1
           }
         shell: pwsh
