@@ -133,8 +133,8 @@ graph TB
     end
     
     subgraph "Controller"
-        B --> D[update_file_lists()]
-        D --> E[model.load()]
+        B --> D[update_file_lists]
+        D --> E[model.load]
     end
     
     subgraph "Model"
@@ -150,11 +150,11 @@ graph TB
     end
     
     subgraph "Data"
-        J --> L[load_absorbance_data()]
-        L --> M[baseline_correction()]
-        M --> N[_calculate_lc_peak_areas()]
+        J --> L[load_absorbance_data]
+        L --> M[baseline_correction]
+        M --> N[_calculate_lc_peak_areas]
         
-        K --> O[load_ms1_data()]
+        K --> O[load_ms1_data]
         O --> P[Scan Objects]
     end
     
@@ -195,7 +195,7 @@ graph TB
     end
     
     subgraph "Core"
-        F --> G[construct_xics()]
+        F --> G[construct_xics]
         G --> H[Mass Ranges]
         H --> I[Scan Intensity Extraction]
         I --> J[XIC Arrays]
@@ -248,7 +248,7 @@ graph TB
     end
     
     subgraph "Calibration"
-        C --> D[model.calibrate()]
+        C --> D[model.calibrate]
         D --> E[Parse/convert units]
         E --> F[Extract signals]
         F --> G[Build calibration points]
@@ -257,7 +257,7 @@ graph TB
     end
     
     subgraph "Quantitation"
-        I --> J[calculate_concentration()]
+        I --> J[calculate_concentration]
         J --> K[Apply to samples]
         K --> L[Store results]
     end
@@ -301,28 +301,28 @@ graph TB
     subgraph "Detection"
         A[RT / Intensity] --> B[Signal stats]
         B --> C[Prominence]
-        C --> D[find_peaks()]
+        C --> D[find_peaks]
         D --> E[Pick max]
     end
     
     subgraph "Boundaries"
-        E --> F[detect_peak_boundaries()]
+        E --> F[detect_peak_boundaries]
         F --> G[Adaptive thresholds]
         G --> H[Valley/width checks]
     end
     
     subgraph "Baseline"
-        H --> I[calculate_baseline_linear()]
+        H --> I[calculate_baseline_linear]
         I --> J[Interpolation + correction]
     end
     
     subgraph "Integration"
-        J --> K[integrate_peak_area_trapezoidal()]
+        J --> K[integrate_peak_area_trapezoidal]
         K --> L[Total + corrected area]
     end
     
     subgraph "Quality"
-        L --> M[calculate_peak_quality_metrics()]
+        L --> M[calculate_peak_quality_metrics]
         M --> N[SNR, symmetry, baseline]
     end
 ```
@@ -370,8 +370,8 @@ config.json structure:
 Loading flow:
 ```mermaid
 graph LR
-    A[Start] --> B[Model.__init__()]
-    B --> C[load_ms2_library()]
+    A[Start] --> B[Model.__init__]
+    B --> C[load_ms2_library]
     C --> D[Read config.json]
     D --> E[Parse categories/ions]
     E --> F[Populate UI]
