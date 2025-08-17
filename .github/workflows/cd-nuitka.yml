@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -30,6 +30,12 @@ jobs:
       - name: Upgrade pip tooling
         run: |
           python -m pip install --upgrade pip setuptools wheel
+
+      - name: Install system deps (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y patchelf zip unzip
 
       - name: Install runtime dependencies
         run: |
@@ -94,6 +100,23 @@ jobs:
           # Zip the .dist folder (contains LCMSpector.exe and libs)
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
 
+      - name: Build with Nuitka (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          python -m nuitka lc-inspector/main.py \
+            --standalone \
+            --enable-plugin=qt-plugins \
+            --include-qt-plugins=platforms,imageformats,styles \
+            --noinclude-qt-translations \
+            --include-data-dir=lc-inspector/resources=resources \
+            --output-filename=LCMSpector \
+            --output-dir=dist
+
+          # Tar.gz the .dist folder
+          cd dist
+          tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz" LCMSpector.dist
+
       - name: Upload artifact (macOS)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
@@ -108,4 +131,12 @@ jobs:
         with:
           name: LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
           path: dist/LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+          if-no-files-found: error
+
+      - name: Upload artifact (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
+          path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
           if-no-files-found: error
