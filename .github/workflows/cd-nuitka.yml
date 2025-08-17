@@ -95,10 +95,11 @@ jobs:
             --include-data-dir="lc-inspector\resources"="lc-inspector\resources" `
             --windows-console-mode=disable `
             --output-filename=LCMSpector `
-            --output-dir=dist
+            --output-dir=dist `
+            --assume-yes-for-downloads
 
           # Zip the .dist folder (contains LCMSpector.exe and libs)
-          Get-ChildItem -Force
+          Get-ChildItem dist\ -Recurse -Force
           Rename-Item "dist\main.dist" "LCMSpector.dist"
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
 
