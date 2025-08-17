@@ -12,8 +12,8 @@ import logging.config
 import multiprocessing
 import tempfile
 from pathlib import Path
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
 from ui.model import Model
 from ui.view import View
 from ui.controller import Controller

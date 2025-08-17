@@ -4,13 +4,12 @@ Resource handling utilities for Nuitka compatibility.
 This module provides utilities for handling resources in both development
 and Nuitka-compiled environments, following the migration plan specifications.
 """
+from __future__ import annotations
 
 import os
 import sys
 import json
 from pathlib import Path
-
-from __future__ import annotations
 
 import io
 import logging
