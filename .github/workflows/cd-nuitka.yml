@@ -98,6 +98,7 @@ jobs:
             --output-dir=dist
 
           # Zip the .dist folder (contains LCMSpector.exe and libs)
+          Get-ChildItem -Force
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
 
       - name: Build with Nuitka (Linux)
@@ -114,6 +115,7 @@ jobs:
 
           # Tar.gz the .dist folder
           cd dist
+          ls
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz" LCMSpector.dist
 
       - name: Upload artifact (macOS)
