@@ -71,11 +71,10 @@ jobs:
           python -m nuitka lc-inspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
-            --include-qt-plugins=platforms,imageformats,styles \
             --noinclude-qt-translations \
-            --include-data-dir=lc-inspector/resources=resources \
+            --include-data-dir="lc-inspector/resources"=resources \
             --macos-create-app-bundle \
-            --macos-app-icon=lc-inspector/resources/icon.icns \
+            --macos-app-icon="lc-inspector/resources/icon.icns" \
             --output-filename=LCMSpector \
             --output-dir=dist
 
@@ -90,9 +89,8 @@ jobs:
           python -m nuitka lc-inspector\main.py `
             --standalone `
             --plugin-enable=pyside6 `
-            --include-qt-plugins=platforms,imageformats,styles `
             --noinclude-qt-translations `
-            --include-data-dir=lc-inspector/resources=resources `
+            --include-data-dir="lc-inspector/resources"=resources `
             --windows-console-mode=disable `
             --output-filename=LCMSpector `
             --output-dir=dist
@@ -107,9 +105,8 @@ jobs:
           python -m nuitka lc-inspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
-            --include-qt-plugins=platforms,imageformats,styles \
             --noinclude-qt-translations \
-            --include-data-dir=lc-inspector/resources=resources \
+            --include-data-dir="lc-inspector/resources"=resources \
             --output-filename=LCMSpector \
             --output-dir=dist
 
