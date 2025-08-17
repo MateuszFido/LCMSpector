@@ -115,7 +115,7 @@ jobs:
 
           # Tar.gz the .dist folder
           cd dist
-          ls
+          ls -alh
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz" LCMSpector.dist
 
       - name: Upload artifact (macOS)
