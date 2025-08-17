@@ -76,11 +76,12 @@ jobs:
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
             --macos-app-icon="lc-inspector/resources/icon.icns" \
-            --output-filename=LCMSpector \
             --output-dir=dist
 
           # Zip the .app bundle for release
           cd dist
+          # Failsafe for if Nuitka still somehow wrongly produces "main.app" 
+          mv main.app LCMSpector.app
           zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
 
       - name: Build with Nuitka (Windows)
