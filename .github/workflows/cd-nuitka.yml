@@ -43,7 +43,7 @@ jobs:
 
       - name: Install Nuitka and helpers
         run: |
-          pip install --upgrade nuitka orderedset zstandard
+          pip install --upgrade nuitka zstandard
 
       # Keep MSP external and present at build time (so it's included as data in one-folder)
       - name: Download the MSP library from Polybox (Linux/macOS)
