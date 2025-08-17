@@ -10,6 +10,73 @@ import sys
 import json
 from pathlib import Path
 
+from __future__ import annotations
+
+import io
+import logging
+from pathlib import Path
+from urllib.request import urlopen
+from zipfile import ZipFile, BadZipFile
+
+LOGGER = logging.getLogger(__name__)
+
+# Public download of the MoNA Orbitrap MSP (as used in CI)
+MSP_ZIP_URL = "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+MSP_FILENAME = "MoNA-export-All_LC-MS-MS_Orbitrap.msp"
+
+def ensure_ms2_library() -> Path | None:
+    """
+    Ensure the MS2 library MSP file exists under lc-inspector/resources.
+    If missing, attempt to download and extract it from Polybox.
+
+    Returns:
+        Path to the MSP file if present/created, else None.
+    """
+    # In Nuitka one-folder, compiled modules for top-level packages (e.g., utils)
+    # live under dist/<package>. Placing resources at dist/resources means
+    # utils/__file__/.. (package) -> dist, so parent.parent / "resources" resolves
+    # to the right directory.
+    resources_dir = Path(__file__).resolve().parent.parent / "resources"
+    resources_dir.mkdir(parents=True, exist_ok=True)
+    msp_path = resources_dir / MSP_FILENAME
+
+    if msp_path.exists() and msp_path.is_file():
+        return msp_path
+
+    try:
+        LOGGER.info("MS2 library not found; downloading from Polybox...")
+        with urlopen(MSP_ZIP_URL, timeout=60) as resp:
+            data = resp.read()
+
+        with ZipFile(io.BytesIO(data)) as zf:
+            names = zf.namelist()
+            candidate = next((n for n in names if n.endswith(".msp")), None)
+            if not candidate:
+                LOGGER.error("Downloaded archive does not contain an .msp file.")
+                return None
+            zf.extract(member=candidate, path=str(resources_dir))
+            extracted = resources_dir / candidate
+            if extracted.name != MSP_FILENAME:
+                try:
+                    extracted.rename(msp_path)
+                except OSError:
+                    data = extracted.read_bytes()
+                    msp_path.write_bytes(data)
+                    try:
+                        extracted.unlink()
+                    except OSError:
+                        pass
+
+        if msp_path.exists():
+            LOGGER.info("MS2 library downloaded to %s", msp_path)
+            return msp_path
+    except (TimeoutError, BadZipFile, OSError) as e:
+        LOGGER.error("Failed to download/extract MS2 library: %s", e)
+    except Exception as e:
+        LOGGER.error("Unexpected error retrieving MS2 library: %s", e)
+
+    return None
+
 
 def get_resource_path(relative_path):
     """
