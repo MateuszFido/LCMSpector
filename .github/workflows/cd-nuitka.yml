@@ -70,7 +70,7 @@ jobs:
         run: |
           python -m nuitka lc-inspector/main.py \
             --standalone \
-            --enable-plugin=qt-plugins \
+            --plugin-enable=pyside6 \
             --include-qt-plugins=platforms,imageformats,styles \
             --noinclude-qt-translations \
             --include-data-dir=lc-inspector/resources=resources \
@@ -89,7 +89,7 @@ jobs:
         run: |
           python -m nuitka lc-inspector\main.py `
             --standalone `
-            --enable-plugin=qt-plugins `
+            --plugin-enable=pyside6 `
             --include-qt-plugins=platforms,imageformats,styles `
             --noinclude-qt-translations `
             --include-data-dir=lc-inspector/resources=resources `
@@ -106,7 +106,7 @@ jobs:
         run: |
           python -m nuitka lc-inspector/main.py \
             --standalone \
-            --enable-plugin=qt-plugins \
+            --plugin-enable=pyside6 \
             --include-qt-plugins=platforms,imageformats,styles \
             --noinclude-qt-translations \
             --include-data-dir=lc-inspector/resources=resources \
