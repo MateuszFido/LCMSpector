@@ -72,7 +72,7 @@ jobs:
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"=resources \
+            --include-data-dir="lc-inspector/resources"="lc-inspector/resources" \
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
             --macos-app-icon="lc-inspector/resources/icon.icns" \
@@ -92,14 +92,14 @@ jobs:
             --standalone `
             --plugin-enable=pyside6 `
             --noinclude-qt-translations `
-            --include-data-dir="lc-inspector/resources"=resources `
+            --include-data-dir="lc-inspector\resources"="lc-inspector\resources" `
             --windows-console-mode=disable `
             --output-filename=LCMSpector `
             --output-dir=dist
 
           # Zip the .dist folder (contains LCMSpector.exe and libs)
           Get-ChildItem -Force
-          Rename-Item -Path "dist\main.dist" -NewName "dist\LCMSpector.dist"
+          Rename-Item "dist\main.dist" "LCMSpector.dist"
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
 
       - name: Build with Nuitka (Linux)
@@ -110,7 +110,7 @@ jobs:
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"=resources \
+            --include-data-dir="lc-inspector/resources"="lc-inspector/resources" \
             --output-filename=LCMSpector \
             --output-dir=dist
 
