@@ -43,9 +43,7 @@ jobs:
 
       - name: Install Nuitka and helpers
         run: |
-          # orderedset (no dash) is a different package that tries to build a C extension and fails on macOS.
-          # Nuitka uses ordered-set (with dash). Keep it explicit to avoid resolver quirks.
-          pip install --upgrade nuitka ordered-set zstandard
+          pip install --upgrade nuitka zstandard
 
       # Keep MSP external and present at build time (so it's included as data in one-folder)
       - name: Download the MSP library from Polybox (Linux/macOS)
@@ -72,7 +70,7 @@ jobs:
         run: |
           python -m nuitka lc-inspector/main.py \
             --standalone \
-            --enable-plugin=qt-plugins \
+            --plugin-enable=pyside6 \
             --include-qt-plugins=platforms,imageformats,styles \
             --noinclude-qt-translations \
             --include-data-dir=lc-inspector/resources=resources \
@@ -91,7 +89,7 @@ jobs:
         run: |
           python -m nuitka lc-inspector\main.py `
             --standalone `
-            --enable-plugin=qt-plugins `
+            --plugin-enable=pyside6 `
             --include-qt-plugins=platforms,imageformats,styles `
             --noinclude-qt-translations `
             --include-data-dir=lc-inspector/resources=resources `
@@ -108,7 +106,7 @@ jobs:
         run: |
           python -m nuitka lc-inspector/main.py \
             --standalone \
-            --enable-plugin=qt-plugins \
+            --plugin-enable=pyside6 \
             --include-qt-plugins=platforms,imageformats,styles \
             --noinclude-qt-translations \
             --include-data-dir=lc-inspector/resources=resources \
