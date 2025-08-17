@@ -74,6 +74,7 @@ jobs:
             --noinclude-qt-translations \
             --include-data-dir="lc-inspector/resources"=resources \
             --macos-create-app-bundle \
+            --macos-app-name=LCMSpector \
             --macos-app-icon="lc-inspector/resources/icon.icns" \
             --output-filename=LCMSpector \
             --output-dir=dist
