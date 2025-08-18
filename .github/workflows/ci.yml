@@ -5,9 +5,9 @@ name: Tests
 
 on:
   push:
-    branches: [ "ms2-integration", "main" ]
+    branches: [ "nuitka", "main" ]
   pull_request:
-    branches: [ "ms2-integration", "main" ]
+    branches: [ "nuitka", "main" ]
 
 permissions:
   contents: read
