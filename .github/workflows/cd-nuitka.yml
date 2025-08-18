@@ -74,7 +74,7 @@ jobs:
             --noinclude-qt-translations \
             --include-data-dir="lc-inspector/resources"="resources" \
             --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/logo.png"="ui/logo.png" \
+            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
             --macos-app-icon="lc-inspector/resources/icon.icns" \
@@ -96,7 +96,7 @@ jobs:
             --noinclude-qt-translations `
             --include-data-dir="lc-inspector/resources"="resources" \
             --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/logo.png"="ui/logo.png" \
+            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
             --windows-console-mode=disable `
             --output-filename=LCMSpector `
             --output-dir=dist `
@@ -117,7 +117,7 @@ jobs:
             --noinclude-qt-translations \
             --include-data-dir="lc-inspector/resources"="resources" \
             --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/logo.png"="ui/logo.png" \
+            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
             --output-filename=LCMSpector \
             --output-dir=dist
 
