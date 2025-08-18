@@ -168,10 +168,10 @@ def load_ms2_library() -> dict:
     """
     library = {}
     library_path = Path(__file__).parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp" 
-    if notpathlib.Path.exists(library_path):
+    if not Path.exists(library_path):
         logger.warning(f"MS2 library not found at {library_path}. Trying one directory up...")
         library_path = Path(__file__).parent.parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"
-        if notpathlib.Path.exists(library_path):
+        if not Path.exists(library_path):
             logger.error(f"MS2 library not found at {library_path}. The MS2 functionality will be disabled.")
             return {}
 
