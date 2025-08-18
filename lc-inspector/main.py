@@ -13,13 +13,14 @@ import multiprocessing
 import tempfile
 from pathlib import Path
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide6.QtWidgets import QApplication
+from PySide6.QtCore import QThread
 from ui.model import Model
 from ui.view import View
 from ui.controller import Controller
-from utils.resources import ensure_ms2_library  # NEW
+from utils.resources import ensure_ms2_library, DownloadWorker
 
-# Guards for binary building 
+# Guards for binary building
 if os.sys.stdout is None:
     os.sys.stdout = open(os.devnull, "w")
 if os.sys.stderr is None:
@@ -68,10 +69,7 @@ def main():
     # Configure logging
     logger = configure_logging()
     logger.info("Starting LCMSpector with temp dir: " + tempfile.gettempdir() + "...")
-    
-    # Ensure MS2 library exists locally (downloads on first run if missing)
-    ensure_ms2_library()
-    
+
     # Create the application
     app = QApplication(os.sys.argv)
     app.setApplicationName("LCMSpector")
@@ -87,15 +85,57 @@ def main():
     model = Model()
     view = View()
     controller = Controller(model, view)
-    
+
+
+
     # Set the application style
     app.setStyle("Fusion")
-    
+
     # Show the main window
     view.show()
 
     # Start the event loop
     logger.info("Application initialized, starting event loop")
+
+    # Ensure MS2 library exists locally
+    if not ensure_ms2_library():
+        if view.show_download_confirmation():
+            view.show_download_progress_bar()
+
+            # Setup worker and thread for download
+            thread = QThread()
+            worker = DownloadWorker()
+            worker.moveToThread(thread)
+
+            # Connect signals
+            worker.progress.connect(view.update_download_progress_bar)
+            worker.finished.connect(thread.quit)
+            worker.finished.connect(view.hide_download_progress_bar)
+            worker.error.connect(thread.quit)
+            thread.started.connect(worker.run)
+
+            # Start and wait for the thread to finish
+            thread.start()
+            while thread.isRunning():
+                app.processEvents()
+            
+            # Check for errors after thread finishes
+            error_message = None
+            def set_error(msg):
+                nonlocal error_message
+                error_message = msg
+            
+            worker.error.connect(set_error)
+
+            if error_message:
+                view.show_download_failure(error_message)
+                os.sys.exit(1)
+            else:
+                view.show_download_success()
+        else:
+            logger.error("MS2 library not found. The MS2 functionality will be disabled.")
+
+
     os.sys.exit(app.exec())
 
 if __name__ == "__main__":

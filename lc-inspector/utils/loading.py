@@ -167,14 +167,23 @@ def load_ms2_library() -> dict:
         The MS2 library as a dictionary where the keys are the feature names and the values are lists of lines from the file.
     """
     library = {}
-    library_path = Path(__file__).parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp" 
-    if not Path.exists(library_path):
-        logger.warning(f"MS2 library not found at {library_path}. Trying one directory up...")
-        library_path = Path(__file__).parent.parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"
-        if not Path.exists(library_path):
-            logger.error(f"MS2 library not found at {library_path}. The MS2 functionality will be disabled.")
-            return {}
+    library_path = Path(__file__).parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"
+    if library_path.exists():
+        return _load_ms2_library(library_path)
 
+    for root, dirs, files in os.walk('.'):
+        if library_path.name in files:
+            library_path = Path(root) / library_path.name
+            return _load_ms2_library(library_path)
+
+    if not library_path.exists():
+        logger.error(f"MS2 library not found at {library_path} or any subdirectories. The MS2 functionality will be disabled.")
+        return {}
+
+    return _load_ms2_library(library_path)
+
+def _load_ms2_library(library_path: Path) -> dict:
+    library = {}
     with open(library_path, mode="r", encoding="utf-8") as src:
         library = {line.split("Name: ")[1].strip(): [line] + list(itertools.takewhile(lambda x: x.strip() != "", src)) for line in src if line.startswith("Name: ")}
     

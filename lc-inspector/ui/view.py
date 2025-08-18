@@ -1,6 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFileDialog, QDialog, QApplication
+from PySide6.QtWidgets import QFileDialog, QDialog, QApplication, QMessageBox
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
@@ -23,13 +23,48 @@ class View(QtWidgets.QMainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.progress_update.connect(self.update_progress_bar)
+        self.progress_update.connect(self.update_progressBar)
+
+    def show_download_confirmation(self):
+        """Displays a confirmation dialog for downloading the MS2 library."""
+        reply = QMessageBox.question(self, 'MS2 Library Not Found',
+                                     "The MS2 library is missing. Would you like to download it now? (approx. 400 MB)",
+                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        return reply == QMessageBox.Yes
+
+    def show_download_progressBar(self):
+        """Shows the main window's progress bar for the download."""
+        self.progressBar.setVisible(True)
+        self.progressLabel.setVisible(True)
+        self.statusbar.showMessage("Downloading MS2 Library...")
+
+    def update_download_progressBar(self, value):
+        """Updates the main window's progress bar."""
+        self.progressBar.setValue(value)
+        self.progressLabel.setText(f"{value}%")
+
+    def hide_download_progressBar(self):
+        """Hides the main window's progress bar."""
+        self.progressBar.setVisible(False)
+        self.progressLabel.setVisible(False)
+        self.statusbar.clearMessage()
+
+    def show_download_success(self):
+        """Shows a success message after the download is complete."""
+        QMessageBox.information(self, "Download Complete", "MS2 library downloaded successfully.")
+
+    def show_download_failure(self, error_message):
+        """Shows a failure message if the download fails."""
+        QMessageBox.critical(self, "Download Failed", f"Failed to download MS2 library:\n{error_message}")
 
     def handle_files_dropped_LC(self, file_paths):
         """
         Slot to handle the dropped files.
         Updates the model with the new file paths and triggers loading.
         """
+        self.progressBar.setValue(0)
+        self.progressBar.show()
+        self.processButton.setEnabled(False)
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
@@ -58,7 +93,7 @@ class View(QtWidgets.QMainWindow):
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
-        self.controller.model.load(self.controller.mode)
+        self.controller.model.load(self.controller.mode, "LC")
 
 
     def handle_files_dropped_MS(self, file_paths):
@@ -66,6 +101,9 @@ class View(QtWidgets.QMainWindow):
         Slot to handle the dropped files.
         Updates the model with the new file paths and triggers loading.
         """
+        self.progressBar.setValue(0)
+        self.progressBar.show()
+        self.processButton.setEnabled(False)
         count_ok = 0
         error_shown = False # Safeguard to show error message only once
         for file_path in file_paths:
@@ -93,7 +131,7 @@ class View(QtWidgets.QMainWindow):
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
-        self.controller.model.load(self.controller.mode)
+        self.controller.model.load(self.controller.mode, "MS")
 
     def handle_files_dropped_annotations(self, file_paths):
         """
@@ -151,6 +189,9 @@ class View(QtWidgets.QMainWindow):
         Slot for the browseLC button. Opens a file dialog for selecting LC files,
         which are then added to the listLC widget and the model is updated.
         """
+        self.progressBar.setValue(0)
+        self.progressBar.show()
+        self.processButton.setEnabled(False)
         lc_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select LC Files", "", "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)")
         if lc_file_paths:
             self.clear_list_lc()
@@ -168,6 +209,9 @@ class View(QtWidgets.QMainWindow):
         Slot for the browseMS button. Opens a file dialog for selecting MS files,
         which are then added to the listMS widget and the model is updated.
         """
+        self.progressBar.setValue(0)
+        self.progressBar.show()
+        self.processButton.setEnabled(False)
         ms_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)")
         if ms_file_paths:
             self.clear_list_ms()
@@ -299,7 +343,7 @@ class View(QtWidgets.QMainWindow):
         finally:
             self.controller.model.annotations = annotation_files 
 
-    def update_progress_bar(self, value):
+    def update_progressBar(self, value):
         self.progressBar.setValue(value)
         self.progressLabel.setText(f"{value}%")
 

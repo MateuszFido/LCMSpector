@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 import sys
+import ssl
 import json
 from pathlib import Path
 
@@ -17,64 +18,101 @@ from pathlib import Path
 from urllib.request import urlopen
 from zipfile import ZipFile, BadZipFile
 
+from PySide6.QtCore import QObject, Signal
+
 LOGGER = logging.getLogger(__name__)
 
 # Public download of the MoNA Orbitrap MSP (as used in CI)
 MSP_ZIP_URL = "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
 MSP_FILENAME = "MoNA-export-All_LC-MS-MS_Orbitrap.msp"
 
-def ensure_ms2_library() -> Path | None:
+
+def get_resources_dir() -> Path:
+    """Returns the path to the resources directory."""
+    return Path(__file__).resolve().parent.parent / "resources"
+
+
+class DownloadWorker(QObject):
+    """
+    Worker to download the MS2 library in a separate thread.
+    """
+    progress = Signal(int)
+    finished = Signal()
+    error = Signal(str)
+
+    def run(self):
+        """
+        Downloads and extracts the MS2 library MSP file from Polybox.
+        """
+        resources_dir = get_resources_dir()
+        resources_dir.mkdir(parents=True, exist_ok=True)
+        msp_path = resources_dir / MSP_FILENAME
+
+        try:
+            LOGGER.info("MS2 library not found; downloading from Polybox...")
+            context = ssl._create_unverified_context()
+            with urlopen(MSP_ZIP_URL, context=context, timeout=60) as resp:
+                total_size = int(resp.headers.get('content-length', 0))
+                chunk_size = 8192
+                data = b''
+                bytes_read = 0
+                while True:
+                    chunk = resp.read(chunk_size)
+                    if not chunk:
+                        break
+                    data += chunk
+                    bytes_read += len(chunk)
+                    if total_size > 0:
+                        percent = int((bytes_read / total_size) * 100)
+                        self.progress.emit(percent)
+
+            with ZipFile(io.BytesIO(data)) as zf:
+                names = zf.namelist()
+                candidate = next((n for n in names if n.endswith(".msp")), None)
+                if not candidate:
+                    msg = "Downloaded archive does not contain an .msp file."
+                    LOGGER.error(msg)
+                    self.error.emit(msg)
+                    return
+                zf.extract(member=candidate, path=str(resources_dir))
+                extracted = resources_dir / candidate
+                if extracted.name != MSP_FILENAME:
+                    try:
+                        extracted.rename(msp_path)
+                    except OSError:
+                        file_data = extracted.read_bytes()
+                        msp_path.write_bytes(file_data)
+                        try:
+                            extracted.unlink()
+                        except OSError:
+                            pass
+
+            if msp_path.exists():
+                LOGGER.info("MS2 library downloaded to %s", msp_path)
+                self.finished.emit()
+            else:
+                msg = "Failed to create MSP file after download."
+                LOGGER.error(msg)
+                self.error.emit(msg)
+
+        except (TimeoutError, BadZipFile, OSError) as e:
+            LOGGER.error("Failed to download/extract MS2 library: %s", e)
+            self.error.emit(f"Failed to download/extract MS2 library: {e}")
+        except Exception as e:
+            LOGGER.error("Unexpected error retrieving MS2 library: %s", e)
+            self.error.emit(f"Unexpected error retrieving MS2 library: {e}")
+
+
+def ensure_ms2_library() -> bool:
     """
     Ensure the MS2 library MSP file exists under lc-inspector/resources.
-    If missing, attempt to download and extract it from Polybox.
 
     Returns:
-        Path to the MSP file if present/created, else None.
+        True if the library exists, False otherwise.
     """
-    # In Nuitka one-folder, compiled modules for top-level packages (e.g., utils)
-    # live under dist/<package>. Placing resources at dist/resources means
-    # utils/__file__/.. (package) -> dist, so parent.parent / "resources" resolves
-    # to the right directory.
-    resources_dir = Path(__file__).resolve().parent.parent / "resources"
-    resources_dir.mkdir(parents=True, exist_ok=True)
+    resources_dir = get_resources_dir()
     msp_path = resources_dir / MSP_FILENAME
-
-    if msp_path.exists() and msp_path.is_file():
-        return msp_path
-
-    try:
-        LOGGER.info("MS2 library not found; downloading from Polybox...")
-        with urlopen(MSP_ZIP_URL, timeout=60) as resp:
-            data = resp.read()
-
-        with ZipFile(io.BytesIO(data)) as zf:
-            names = zf.namelist()
-            candidate = next((n for n in names if n.endswith(".msp")), None)
-            if not candidate:
-                LOGGER.error("Downloaded archive does not contain an .msp file.")
-                return None
-            zf.extract(member=candidate, path=str(resources_dir))
-            extracted = resources_dir / candidate
-            if extracted.name != MSP_FILENAME:
-                try:
-                    extracted.rename(msp_path)
-                except OSError:
-                    data = extracted.read_bytes()
-                    msp_path.write_bytes(data)
-                    try:
-                        extracted.unlink()
-                    except OSError:
-                        pass
-
-        if msp_path.exists():
-            LOGGER.info("MS2 library downloaded to %s", msp_path)
-            return msp_path
-    except (TimeoutError, BadZipFile, OSError) as e:
-        LOGGER.error("Failed to download/extract MS2 library: %s", e)
-    except Exception as e:
-        LOGGER.error("Unexpected error retrieving MS2 library: %s", e)
-
-    return None
+    return msp_path.exists() and msp_path.is_file()
 
 
 def get_resource_path(relative_path):
