@@ -72,7 +72,8 @@ jobs:
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"="lc-inspector/resources" \
+            --include-data-dir="lc-inspector/resources"="resources" \
+            --include-data-files=config.json=config.json \
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
             --macos-app-icon="lc-inspector/resources/icon.icns" \
@@ -92,7 +93,8 @@ jobs:
             --standalone `
             --plugin-enable=pyside6 `
             --noinclude-qt-translations `
-            --include-data-dir="lc-inspector\resources"="lc-inspector\resources" `
+            --include-data-dir="lc-inspector\resources"="resources" `
+            --include-data-files=config.json=config.json `
             --windows-console-mode=disable `
             --output-filename=LCMSpector `
             --output-dir=dist `
@@ -111,7 +113,8 @@ jobs:
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"="lc-inspector/resources" \
+            --include-data-dir="lc-inspector/resources"="resources" \
+            --include-data-files=config.json=config.json \
             --output-filename=LCMSpector \
             --output-dir=dist
 
@@ -143,3 +146,33 @@ jobs:
           name: LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
           path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
           if-no-files-found: error
+
+release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          lfs: false
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: List downloaded files (Debugging)
+        run: ls -R
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
