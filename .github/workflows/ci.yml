@@ -26,12 +26,12 @@ jobs:
         if file -b --mime-type data/LCMSpector-sample-data.zip | grep -q "application/zip"; then
           unzip -o data/LCMSpector-sample-data.zip -d data/
         elif file -b --mime-type data/LCMSpector-sample-data.zip | grep -q "application/gzip"; then
-          tar -xf data/LCMSpector-sample-data.zip -C -d data/
+          tar -xf data/LCMSpector-sample-data.zip -d data/
         fi
         if file -b --mime-type data/MoNA-export-All_LC-MS-MS_Orbitrap.zip | grep -q "application/zip"; then
           unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
         elif file -b --mime-type data/MoNA-export-All_LC-MS-MS_Orbitrap.zip | grep -q "application/gzip"; then
-          tar -xf data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -C -d data/
+          tar -xf data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
         fi
         rm data/LCMSpector-sample-data.zip
         rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip

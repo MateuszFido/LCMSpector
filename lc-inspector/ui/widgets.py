@@ -1,11 +1,10 @@
-from PySide6 import QtCore, QtGui, QtWidgets
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
-from utils.classes import Compound
 from datetime import datetime
 import json
 from pathlib import Path
 import pyqtgraph as pg 
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Qt
+from utils.classes import Compound
 
 class DragDropListWidget(QtWidgets.QListWidget):
     filesDropped = QtCore.Signal(list)  # Define a custom signal
@@ -161,9 +160,11 @@ class IonTable(GenericTable):
     def get_items(self):
         items = []
         for row in range(self.rowCount()):
-            if self.item(row, 0) is None: continue
+            if self.item(row, 0) is None: 
+                continue
             name = self.item(row, 0).text()
-            if name == "": continue
+            if name == "": 
+                continue
             try: 
                 ions = [float(x) for x in self.item(row, 1).text().split(",")]
             except ValueError:
@@ -175,7 +176,7 @@ class IonTable(GenericTable):
             try:
                 compound = Compound(name, ions, ion_info)
                 items.append(compound)
-            except UnboundLocalError as e:
+            except UnboundLocalError:
                 #HACK: for now fails silently
                 continue        
         return items
@@ -183,12 +184,15 @@ class IonTable(GenericTable):
     def save_ion_list(self):
         # Prompt the user how they want to name the list
         ion_list_name, okPressed = QtWidgets.QInputDialog.getText(self, "New ion list", "Name the new ion list:")
-        if not okPressed: return
+        if not okPressed: 
+            return
         ions = {}
         for row in range(self.rowCount()):
-            if self.item(row, 0) is None: continue
+            if self.item(row, 0) is None: 
+                continue
             name = self.item(row, 0).text()
-            if name == "": continue
+            if name == "": 
+                continue
             else:
                 ions[name] = {}
             try: 
@@ -326,7 +330,7 @@ class SetItemCommand(QtGui.QUndoCommand):
     def redo(self):
         try:
             item = QtWidgets.QTableWidgetItem(self.value)
-        except:
+        except Exception:
             item = None
         if item is None:
             item = QtWidgets.QTableWidgetItem(self.value)
