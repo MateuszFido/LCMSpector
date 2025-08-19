@@ -50,8 +50,7 @@ jobs:
             Write-Host "Successfully extracted zip archive."
         } catch {
             Write-Host "Failed to extract as zip, trying tar."
-            tar.exe xf --skip-old-files LCMSpector-sample-data
-        }
+            tar.exe --skip-old-files -xf LCMSpector-sample-data }
         Get-ChildItem
       shell: pwsh
       if: matrix.os == 'windows-latest'
@@ -79,7 +78,7 @@ jobs:
             Write-Host "Successfully extracted zip archive."
         } catch {
             Write-Host "Failed to extract as zip, trying tar."
-            tar.exe xf --skip-old-files MoNA-export-All_LC-MS-MS_Orbitrap
+            tar.exe --skip-old-files -xf MoNA-export-All_LC-MS-MS_Orbitrap
         }
         Get-ChildItem
         Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector/resources" -Force
