@@ -27,9 +27,15 @@ jobs:
     - name: Download test data from polybox (Linux/macOS)
       run: |
         mkdir -p tests/
-        curl -L -o tests/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+        curl -L -o tests/LCMSpector-sample-data "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         cd tests/
-        unzip -o LCMSpector-sample-data.zip
+        if unzip -t LCMSpector-sample-data >/dev/null 2>&1; then
+          echo "Archive is a zip file."
+          unzip -o LCMSpector-sample-data
+        else
+          echo "Archive is not a zip file, assuming tar."
+          tar xf LCMSpector-sample-data
+        fi
         ls -la
       shell: bash
       if: matrix.os != 'windows-latest'
@@ -37,17 +43,29 @@ jobs:
     - name: Download test data from polybox (Windows)
       run: |
         New-Item -ItemType Directory -Force -Path tests
-        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download" -OutFile "tests/LCMSpector-sample-data.zip"
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download" -OutFile "tests/LCMSpector-sample-data"
         Set-Location tests
-        Expand-Archive -Path "LCMSpector-sample-data.zip" -DestinationPath "." -Force
+        try {
+            Expand-Archive -Path "LCMSpector-sample-data" -DestinationPath "." -Force
+            Write-Host "Successfully extracted zip archive."
+        } catch {
+            Write-Host "Failed to extract as zip, trying tar."
+            tar.exe xf LCMSpector-sample-data
+        }
         Get-ChildItem
       shell: pwsh
       if: matrix.os == 'windows-latest'
 
     - name: Download MS2 library from polybox (Linux/macOS)
       run: |
-        curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
-        unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
+        curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+        if unzip -t MoNA-export-All_LC-MS-MS_Orbitrap >/dev/null 2>&1; then
+          echo "Archive is a zip file."
+          unzip -o MoNA-export-All_LC-MS-MS_Orbitrap
+        else
+          echo "Archive is not a zip file, assuming tar."
+          tar xf MoNA-export-All_LC-MS-MS_Orbitrap
+        fi
         ls -la
         mv MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
       shell: bash
@@ -55,8 +73,14 @@ jobs:
 
     - name: Download MS2 library from polybox (Windows)
       run: |
-        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap.zip"
-        Expand-Archive -Path MoNA-export-All_LC-MS-MS_Orbitrap.zip -DestinationPath "." -Force
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap"
+        try {
+            Expand-Archive -Path MoNA-export-All_LC-MS-MS_Orbitrap -DestinationPath "." -Force
+            Write-Host "Successfully extracted zip archive."
+        } catch {
+            Write-Host "Failed to extract as zip, trying tar."
+            tar.exe xf MoNA-export-All_LC-MS-MS_Orbitrap
+        }
         Get-ChildItem
         Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector/resources" -Force
       shell: pwsh
