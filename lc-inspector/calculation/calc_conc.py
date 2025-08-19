@@ -1,4 +1,3 @@
-import math
 import numpy as np
 
 def calculate_concentration(area, curve_params):
