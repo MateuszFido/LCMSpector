@@ -1,17 +1,22 @@
+import os
+import sys
+import traceback
+import logging
+import json
+from pathlib import Path
+from datetime import datetime
+
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFileDialog, QDialog, QApplication, QMessageBox
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
 plot_total_ion_current, plot_library_ms2, plot_no_ms2_found, plot_ms2_from_file
-import os, sys, traceback, logging, json
-from pathlib import Path
-from datetime import datetime
-from pyqtgraph.dockarea import Dock, DockArea
+from pyqtgraph.dockarea import DockArea
 import numpy as np
 from scipy.signal import find_peaks
-from ui.widgets import DragDropListWidget, IonTable, GenericTable, ChromatogramPlotWidget, UnifiedResultsTable
+from ui.widgets import DragDropListWidget, IonTable, ChromatogramPlotWidget, UnifiedResultsTable
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
