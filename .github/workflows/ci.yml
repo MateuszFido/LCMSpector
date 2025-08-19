@@ -24,8 +24,7 @@ jobs:
         curl -L -o data/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
         unzip -o data/LCMSpector-sample-data.zip -d data/LCMSpector-sample-data
-        unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
-        mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp data/lc-inspector-resources.msp
+        unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/MoNA-export-All_LC-MS-MS_Orbitrap.msp
         rm data/LCMSpector-sample-data.zip
         rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip
     - uses: actions/upload-artifact@v4
@@ -51,7 +50,8 @@ jobs:
     - name: Prepare test data
       run: |
         mkdir -p lc-inspector/resources
-        mv tests/lc-inspector-resources.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
+        mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
+        mv data/LCMSpector-sample-data lc-inspector/tests/LCMSpector-sample-data
       shell: bash
 
     - name: Set up Python 3.12
