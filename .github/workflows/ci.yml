@@ -68,9 +68,6 @@ jobs:
         python-version: "3.12"
     - name: Install dependencies (macOS)
       run: |
-          # Install Qt6 system dependencies
-          brew install qt6
-          export PATH="/opt/homebrew/opt/qt6/bin:/usr/local/opt/qt6/bin:$PATH"
           pip install pytest flake8
           if [ -f requirements.txt ]; then
             pip install -r requirements.txt
@@ -80,20 +77,12 @@ jobs:
 
     - name: Install dependencies (Ubuntu)
       run: |
-        # Install Qt6 system dependencies for PySide6
-        sudo apt update
-        sudo apt install -y \
-          qt6-base-dev \
-          qt6-tools-dev-tools \
-          libqt6gui6 \
-          libqt6widgets6 \
-          libqt6core6 \
-          libegl1-mesa \
-          xvfb
         pip install pytest flake8
         if [ -f requirements.txt ]; then
           pip install -r requirements.txt
         fi
+        sudo apt update
+        sudo apt install libgl1 libegl1 -y
       shell: bash
       if: matrix.os == 'ubuntu-latest'
 
@@ -113,22 +102,6 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest (Ubuntu)
-      run: |
-        export DISPLAY=:99
-        Xvfb :99 -screen 0 1024x768x24 &
-        sleep 3
-        pytest -s
-      shell: bash
-      if: matrix.os == 'ubuntu-latest'
-      env:
-        QT_QPA_PLATFORM: offscreen
-        QT_API: pyside6
-
-    - name: Test with pytest (Windows/macOS)
+    - name: Test with pytest
       run: |
         pytest -s
-      if: matrix.os != 'ubuntu-latest'
-      env:
-        QT_QPA_PLATFORM: offscreen
-        QT_API: pyside6
