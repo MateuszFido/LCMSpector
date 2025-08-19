@@ -20,13 +20,13 @@ jobs:
     steps:
     - name: Download and zip test data
       run: |
-        mkdir -p data/tests
-        curl -L -o data/tests/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+        mkdir -p data
+        curl -L -o data/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
-        unzip -o data/tests/LCMSpector-sample-data.zip -d data/tests/
+        unzip -o data/LCMSpector-sample-data.zip -d data/
         unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
         mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp data/lc-inspector-resources.msp
-        rm data/tests/LCMSpector-sample-data.zip
+        rm data/LCMSpector-sample-data.zip
         rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip
     - uses: actions/upload-artifact@v4
       with:
@@ -47,13 +47,11 @@ jobs:
     - uses: actions/download-artifact@v4
       with:
         name: test-data
-        path: tests/data
+        path: tests/
     - name: Prepare test data
       run: |
         mkdir -p lc-inspector/resources
-        mv tests/data/lc-inspector-resources.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
-        mv tests/data/tests/* tests/data/
-        rmdir tests/data/tests
+        mv tests/lc-inspector-resources.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
       shell: bash
 
     - name: Set up Python 3.12
