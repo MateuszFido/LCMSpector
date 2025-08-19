@@ -1,142 +1,131 @@
-name: Build and Release Executables (Nuitka)
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Tests
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: "Enter the version (e.g., v1.0.0)"
-        required: true
+  push:
+    branches: [ "nuitka", "main" ]
+  pull_request:
+    branches: [ "nuitka", "main" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
+
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
-
-    runs-on: ${{ matrix.os }}
+        os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          lfs: false
-          fetch-depth: 0
+    - uses: actions/checkout@v4
+      with:
+        lfs: false
+    - name: Download test data from polybox (Linux/macOS)
+      run: |
+        mkdir -p tests/
+        curl -L -o tests/LCMSpector-sample-data "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+        cd tests/
+        if unzip -t LCMSpector-sample-data >/dev/null 2>&1; then
+          echo "Archive is a zip file."
+          unzip -n LCMSpector-sample-data
+        else
+          echo "Archive is not a zip file, assuming tar."
+          tar xf --skip-old-files LCMSpector-sample-data
+        fi
+        ls -la
+      shell: bash
+      if: matrix.os != 'windows-latest'
+    
+    - name: Download test data from polybox (Windows)
+      run: |
+        New-Item -ItemType Directory -Force -Path tests
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download" -OutFile "tests/LCMSpector-sample-data"
+        Set-Location tests
+        try {
+            Expand-Archive -Path "LCMSpector-sample-data" -DestinationPath "." -Force
+            Write-Host "Successfully extracted zip archive."
+        } catch {
+            Write-Host "Failed to extract as zip, trying tar."
+            tar.exe xf --skip-old-files LCMSpector-sample-data
+        }
+        Get-ChildItem
+      shell: pwsh
+      if: matrix.os == 'windows-latest'
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+    - name: Download MS2 library from polybox (Linux/macOS)
+      run: |
+        curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+        if unzip -t MoNA-export-All_LC-MS-MS_Orbitrap >/dev/null 2>&1; then
+          echo "Archive is a zip file."
+          unzip -n MoNA-export-All_LC-MS-MS_Orbitrap
+        else
+          echo "Archive is not a zip file, assuming tar."
+          tar xf --skip-old-files MoNA-export-All_LC-MS-MS_Orbitrap
+        fi
+        ls -la
+        mv MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
+      shell: bash
+      if: matrix.os != 'windows-latest'
 
-      - name: Upgrade pip tooling
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
+    - name: Download MS2 library from polybox (Windows)
+      run: |
+        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap"
+        try {
+            Expand-Archive -Path MoNA-export-All_LC-MS-MS_Orbitrap -DestinationPath "." -Force
+            Write-Host "Successfully extracted zip archive."
+        } catch {
+            Write-Host "Failed to extract as zip, trying tar."
+            tar.exe xf --skip-old-files MoNA-export-All_LC-MS-MS_Orbitrap
+        }
+        Get-ChildItem
+        Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector/resources" -Force
+      shell: pwsh
+      if: matrix.os == 'windows-latest'
+    
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.12"
+    - name: Install dependencies (macOS)
+      run: |
+          pip install pytest flake8
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+      shell: bash
+      if: matrix.os == 'macOS-latest'
 
-      - name: Install system deps (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y patchelf zip unzip
-
-      - name: Install runtime dependencies
-        run: |
+    - name: Install dependencies (Ubuntu)
+      run: |
+        pip install pytest flake8
+        if [ -f requirements.txt ]; then
           pip install -r requirements.txt
+        fi
+        sudo apt update
+        sudo apt install libgl1 libegl1 -y
+      shell: bash
+      if: matrix.os == 'ubuntu-latest'
 
-      - name: Install Nuitka and helpers
-        run: |
-          pip install --upgrade nuitka zstandard
-
-      # Keep MSP external and present at build time (so it's included as data in one-folder)
-      - name: Download the MSP library from Polybox (Linux/macOS)
-        run: |
-          curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
-          unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
-          mkdir -p lc-inspector/resources
-          mv -f MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
-        shell: bash
-        if: matrix.os != 'windows-latest'
-
-      - name: Download the MSP library from Polybox (Windows)
-        run: |
-          New-Item -ItemType Directory -Force -Path lc-inspector\resources | Out-Null
-          Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap.zip"
-          Expand-Archive -Path "MoNA-export-All_LC-MS-MS_Orbitrap.zip" -DestinationPath "." -Force
-          Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector\resources" -Force
-        shell: pwsh
-        if: matrix.os == 'windows-latest'
-
-      - name: Build with Nuitka (macOS)
-        if: matrix.os == 'macos-latest'
-        shell: bash
-        run: |
-          python -m nuitka lc-inspector/main.py \
-            --standalone \
-            --plugin-enable=pyside6 \
-            --include-qt-plugins=platforms,imageformats,styles \
-            --noinclude-qt-translations \
-            --include-data-dir=lc-inspector/resources=resources \
-            --macos-create-app-bundle \
-            --macos-app-icon=lc-inspector/resources/icon.icns \
-            --output-filename=LCMSpector \
-            --output-dir=dist
-
-          # Zip the .app bundle for release
-          cd dist
-          zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
-
-      - name: Build with Nuitka (Windows)
-        if: matrix.os == 'windows-latest'
-        shell: pwsh
-        run: |
-          python -m nuitka lc-inspector\main.py `
-            --standalone `
-            --plugin-enable=pyside6 `
-            --include-qt-plugins=platforms,imageformats,styles `
-            --noinclude-qt-translations `
-            --include-data-dir=lc-inspector/resources=resources `
-            --windows-console-mode=disable `
-            --output-filename=LCMSpector `
-            --output-dir=dist
-
-          # Zip the .dist folder (contains LCMSpector.exe and libs)
-          Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
-
-      - name: Build with Nuitka (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        shell: bash
-        run: |
-          python -m nuitka lc-inspector/main.py \
-            --standalone \
-            --plugin-enable=pyside6 \
-            --include-qt-plugins=platforms,imageformats,styles \
-            --noinclude-qt-translations \
-            --include-data-dir=lc-inspector/resources=resources \
-            --output-filename=LCMSpector \
-            --output-dir=dist
-
-          # Tar.gz the .dist folder
-          cd dist
-          tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz" LCMSpector.dist
-
-      - name: Upload artifact (macOS)
-        if: matrix.os == 'macos-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-          path: dist/LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-          if-no-files-found: error
-
-      - name: Upload artifact (Windows)
-        if: matrix.os == 'windows-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-          path: dist/LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-          if-no-files-found: error
-
-      - name: Upload artifact (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        uses: actions/upload-artifact@v4
-        with:
-          name: LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
-          path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
-          if-no-files-found: error
+    - name: Install dependencies (Windows)
+      run: |
+        set PYTHONUTF8=1
+        pip install pytest flake8
+        if exist requirements.txt (
+          pip install -r requirements.txt
+        )
+      shell: cmd
+      if: matrix.os == 'windows-latest'
+        
+    - name: Lint with flake8
+      run: |
+        # stop the build if there are Python syntax errors or undefined names
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Test with pytest
+      run: |
+        pytest -s
