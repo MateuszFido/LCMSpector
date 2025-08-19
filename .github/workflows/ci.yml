@@ -23,7 +23,7 @@ jobs:
         mkdir -p data
         curl -L -o data/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
-        unzip -o data/LCMSpector-sample-data.zip -d data/
+        unzip -o data/LCMSpector-sample-data.zip -d data/LCMSpector-sample-data
         unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
         mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp data/lc-inspector-resources.msp
         rm data/LCMSpector-sample-data.zip
@@ -97,3 +97,4 @@ jobs:
     - name: Test with pytest
       run: |
         pytest -s
+
