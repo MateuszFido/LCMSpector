@@ -11,10 +11,8 @@ import sys
 import ssl
 import json
 from pathlib import Path
-
 import io
 import logging
-from pathlib import Path
 from urllib.request import urlopen
 from zipfile import ZipFile, BadZipFile
 
