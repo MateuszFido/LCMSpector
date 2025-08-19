@@ -170,7 +170,7 @@ class View(QtWidgets.QMainWindow):
         else:
             try:
                 ion_list = lists[self.comboBoxIonLists.currentText()]
-            except:
+            except Exception:
                 logger.error(f"Could not find ion list: {self.comboBoxIonLists.currentText()}")
                 self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
                 ion_list = None
@@ -446,13 +446,13 @@ class View(QtWidgets.QMainWindow):
                     self.canvas_baseline.getPlotItem().addItem(self.line_marker, ignoreBounds=True)
                     self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
                     self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
-                except Exception as e: 
+                except Exception: 
                     logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
             self.canvas_avgMS.clear()
             if ms_file:
                 try:
                     plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
-                except AttributeError as e: 
+                except AttributeError: 
                     logger.error(f"No average MS found: {traceback.format_exc()}")
             self.canvas_XICs.clear()
             if ms_file:
@@ -460,7 +460,7 @@ class View(QtWidgets.QMainWindow):
                 self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
-                except AttributeError as e: 
+                except AttributeError: 
                     logger.error(f"No XIC plot found: {traceback.format_exc()}")
             if lc_file and ms_file:
                 if lc_file.filename == ms_file.filename:
@@ -468,7 +468,7 @@ class View(QtWidgets.QMainWindow):
                         self.canvas_annotatedLC.clear()
                         self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
                     except RuntimeError:
-                        logger.error(f"Canvas was deleted, reacreating canvas_annotatedLC.")
+                        logger.error("Canvas was deleted, reacreating canvas_annotatedLC.")
                         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
                         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
                         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
@@ -488,7 +488,7 @@ class View(QtWidgets.QMainWindow):
                 self.gridLayout_2.removeWidget(self.scrollArea)
                 self.gridLayout_2.addWidget(self.scrollArea, 0, 1, 2, 1)
                 self.browseAnnotations.deleteLater()
-            except RuntimeError as e:
+            except RuntimeError:
                 logger.error(f"Widgets not found: {traceback.format_exc()}")
             if ms_file:
                 try:
@@ -500,7 +500,7 @@ class View(QtWidgets.QMainWindow):
                     self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
                     plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
-                except AttributeError as e:
+                except AttributeError:
                     logger.error(f"No plot found: {traceback.format_exc()}") 
 
     def display_calibration_curve(self):
@@ -512,7 +512,7 @@ class View(QtWidgets.QMainWindow):
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
                     plot_calibration_curve(compound, self.canvas_calibration)
-                except TypeError as e: 
+                except TypeError: 
                     logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
 
     def display_concentrations(self):
@@ -564,7 +564,7 @@ class View(QtWidgets.QMainWindow):
             compound = next((xic for xic in ms_file.xics if xic.name == self.comboBoxChooseCompound.currentText()), None)
             precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
             plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
-        except Exception as e:
+        except Exception:
             logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}")
             plot_no_ms2_found(self.canvas_ms2)
     
@@ -603,7 +603,7 @@ class View(QtWidgets.QMainWindow):
                 canvas.removeItem(item)
         try:
             data = canvas.getPlotItem().listDataItems()[0].getData()
-        except IndexError as e:
+        except IndexError:
             logger.error(f"Error getting data items for MS viewing. {traceback.format_exc()}")
             return
         current_view_range = canvas.getViewBox().viewRange()
