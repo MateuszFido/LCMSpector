@@ -10,9 +10,6 @@ import threading
 import traceback
 from datetime import datetime
 
-from PySide6.QtCore import Signal
-from utils.classes import LCMeasurement, MSMeasurement
-
 logger = logging.getLogger(__name__)
 logger.propagate = False
 

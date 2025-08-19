@@ -24,14 +24,14 @@ jobs:
         curl -L -o data/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
         if file -b --mime-type data/LCMSpector-sample-data.zip | grep -q "application/zip"; then
-          unzip -o data/LCMSpector-sample-data.zip -d data/LCMSpector-sample-data
+          unzip -o data/LCMSpector-sample-data.zip -d data/
         elif file -b --mime-type data/LCMSpector-sample-data.zip | grep -q "application/gzip"; then
-          tar -xf data/LCMSpector-sample-data.zip -C data/LCMSpector-sample-data
+          tar -xf data/LCMSpector-sample-data.zip -C -d data/
         fi
         if file -b --mime-type data/MoNA-export-All_LC-MS-MS_Orbitrap.zip | grep -q "application/zip"; then
-          unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip data/
+          unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
         elif file -b --mime-type data/MoNA-export-All_LC-MS-MS_Orbitrap.zip | grep -q "application/gzip"; then
-          tar -xf data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -C data/
+          tar -xf data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -C -d data/
         fi
         rm data/LCMSpector-sample-data.zip
         rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip
