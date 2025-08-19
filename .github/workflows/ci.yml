@@ -13,8 +13,28 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      data-archive: data.zip
+    steps:
+    - name: Download and zip test data
+      run: |
+        mkdir -p data/tests
+        curl -L -o data/tests/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
+        curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+        unzip -o data/tests/LCMSpector-sample-data.zip -d data/tests/
+        unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/
+        mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp data/lc-inspector-resources.msp
+        rm data/tests/LCMSpector-sample-data.zip
+        rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip
+    - uses: actions/upload-artifact@v4
+      with:
+        name: test-data
+        path: data/
 
+  build:
+    needs: setup
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
@@ -24,67 +44,18 @@ jobs:
     - uses: actions/checkout@v4
       with:
         lfs: false
-    - name: Download test data from polybox (Linux/macOS)
+    - uses: actions/download-artifact@v4
+      with:
+        name: test-data
+        path: tests/data
+    - name: Prepare test data
       run: |
-        mkdir -p tests/
-        curl -L -o tests/LCMSpector-sample-data "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
-        cd tests/
-        if unzip -t LCMSpector-sample-data >/dev/null 2>&1; then
-          echo "Archive is a zip file."
-          unzip -n LCMSpector-sample-data
-        else
-          echo "Archive is not a zip file, assuming tar."
-          tar xf --skip-old-files LCMSpector-sample-data
-        fi
-        ls -la
+        mkdir -p lc-inspector/resources
+        mv tests/data/lc-inspector-resources.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
+        mv tests/data/tests/* tests/data/
+        rmdir tests/data/tests
       shell: bash
-      if: matrix.os != 'windows-latest'
-    
-    - name: Download test data from polybox (Windows)
-      run: |
-        New-Item -ItemType Directory -Force -Path tests
-        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download" -OutFile "tests/LCMSpector-sample-data"
-        Set-Location tests
-        try {
-            Expand-Archive -Path "LCMSpector-sample-data" -DestinationPath "." -Force
-            Write-Host "Successfully extracted zip archive."
-        } catch {
-            Write-Host "Failed to extract as zip, trying tar."
-            tar.exe -xf --force-local LCMSpector-sample-data }
-        Get-ChildItem
-      shell: pwsh
-      if: matrix.os == 'windows-latest'
 
-    - name: Download MS2 library from polybox (Linux/macOS)
-      run: |
-        curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
-        if unzip -t MoNA-export-All_LC-MS-MS_Orbitrap >/dev/null 2>&1; then
-          echo "Archive is a zip file."
-          unzip -n MoNA-export-All_LC-MS-MS_Orbitrap
-        else
-          echo "Archive is not a zip file, assuming tar."
-          tar xf --skip-old-files MoNA-export-All_LC-MS-MS_Orbitrap
-        fi
-        ls -la
-        mv MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
-      shell: bash
-      if: matrix.os != 'windows-latest'
-
-    - name: Download MS2 library from polybox (Windows)
-      run: |
-        Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap"
-        try {
-            Expand-Archive -Path MoNA-export-All_LC-MS-MS_Orbitrap -DestinationPath "." -Force
-            Write-Host "Successfully extracted zip archive."
-        } catch {
-            Write-Host "Failed to extract as zip, trying tar."
-            tar.exe -xf --force-local MoNA-export-All_LC-MS-MS_Orbitrap
-        }
-        Get-ChildItem
-        Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector/resources" -Force
-      shell: pwsh
-      if: matrix.os == 'windows-latest'
-    
     - name: Set up Python 3.12
       uses: actions/setup-python@v3
       with:
