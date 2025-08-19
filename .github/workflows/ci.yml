@@ -23,6 +23,7 @@ jobs:
         mkdir -p data
         curl -L -o data/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
+        ls -alh
         if file -b --mime-type data/LCMSpector-sample-data.zip | grep -q "application/zip"; then
           unzip -o data/LCMSpector-sample-data.zip -d data/
         elif file -b --mime-type data/LCMSpector-sample-data.zip | grep -q "application/gzip"; then
@@ -35,6 +36,7 @@ jobs:
         fi
         rm data/LCMSpector-sample-data.zip
         rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip
+        ls -al
     - uses: actions/upload-artifact@v4
       with:
         name: test-data
@@ -57,6 +59,7 @@ jobs:
         path: tests/LCMSpector-sample-data
     - name: Prepare test data
       run: |
+        ls -alh
         mkdir -p lc-inspector/resources
         mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
         mv data/LCMSpector-sample-data lc-inspector/tests/LCMSpector-sample-data
