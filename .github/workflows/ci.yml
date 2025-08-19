@@ -88,7 +88,6 @@ jobs:
           libqt6gui6 \
           libqt6widgets6 \
           libqt6core6 \
-          libgl1-mesa-glx \
           libegl1-mesa \
           xvfb
         pip install pytest flake8
