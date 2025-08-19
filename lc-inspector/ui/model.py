@@ -1,9 +1,11 @@
 # model.py
-import logging, traceback, multiprocessing, threading, os
+import logging
+import traceback
+import threading
+import os
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
-from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library, load_ms2_data
 from calculation.workers import LoadingWorker, ProcessingWorker
@@ -164,7 +166,7 @@ class Model(QThread):
                         compound_signal, model_compound.calibration_parameters
                     )
                     ms_compound.calibration_parameters = model_compound.calibration_parameters
-                except Exception as e:
+                except Exception:
                     logger.error(f"Error calibrating file {ms_file.filename}: {traceback.format_exc()}")
 
     def find_ms2_precursors(self) -> dict:
@@ -175,8 +177,8 @@ class Model(QThread):
             raise ValueError("No compound selected.")
         for ion in compound.ions.keys():
             try:
-                library_entry = next((l for l in self.library.values() 
-                                    if (precursor_mz := next((line.split(' ')[1] for line in l if 'PrecursorMZ:' in line), None)) is not None 
+                library_entry = next((section for section in self.library.values() 
+                                    if (precursor_mz := next((line.split(' ')[1] for line in section if 'PrecursorMZ:' in line), None)) is not None 
                                     and np.isclose(float(precursor_mz), float(ion), atol=0.005)), None)
                 if library_entry:
                     logger.info(f"Precursor m/z {ion} found for {compound.name} in the library.")
