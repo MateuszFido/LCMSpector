@@ -61,8 +61,8 @@ jobs:
       run: |
         ls -alh
         mkdir -p lc-inspector/resources
-        mv data/MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
-        mv data/LCMSpector-sample-data lc-inspector/tests/LCMSpector-sample-data
+        mv tests/LCMSpector-sample-data/MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
+        mv tests/LCMSpector-sample-data/LCMSpector-sample-data lc-inspector/tests/LCMSpector-sample-data
       shell: bash
 
     - name: Set up Python 3.12
