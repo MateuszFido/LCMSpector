@@ -24,7 +24,7 @@ jobs:
         curl -L -o data/LCMSpector-sample-data.zip "https://polybox.ethz.ch/index.php/s/f5BXnkYoEgpHtnL/download"
         curl -L -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
         unzip -o data/LCMSpector-sample-data.zip -d data/LCMSpector-sample-data
-        unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip -d data/MoNA-export-All_LC-MS-MS_Orbitrap.msp
+        unzip -o data/MoNA-export-All_LC-MS-MS_Orbitrap.zip data/
         rm data/LCMSpector-sample-data.zip
         rm data/MoNA-export-All_LC-MS-MS_Orbitrap.zip
     - uses: actions/upload-artifact@v4

@@ -170,7 +170,6 @@ def load_ms2_library() -> dict:
     library : dict
         The MS2 library as a dictionary where the keys are the feature names and the values are lists of lines from the file.
     """
-    library = {}
     library_path = Path(__file__).parent.parent / "resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp"
     if library_path.exists():
         return _load_ms2_library(library_path)
