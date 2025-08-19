@@ -1,9 +1,13 @@
+import csv
+import re 
+import os 
+import logging
+import itertools
+import time
+from pathlib import Path
 import pandas as pd
 import numpy as np
-import csv, re, os, logging, itertools, time
-from pathlib import Path
 from pyteomics import mzml
-from pyteomics.auxiliary import cvquery
 
 logger = logging.getLogger(__name__)
 def detect_delimiter(line):
