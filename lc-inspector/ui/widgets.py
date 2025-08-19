@@ -1,6 +1,6 @@
-from PyQt6 import QtCore, QtGui, QtWidgets
-from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QFileDialog, QDialog, QApplication, QDialogButtonBox
 from utils.classes import Compound
 from datetime import datetime
 import json
@@ -8,7 +8,7 @@ from pathlib import Path
 import pyqtgraph as pg 
 
 class DragDropListWidget(QtWidgets.QListWidget):
-    filesDropped = QtCore.pyqtSignal(list)  # Define a custom signal
+    filesDropped = QtCore.Signal(list)  # Define a custom signal
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setAcceptDrops(True)  # Enable accepting drops
@@ -605,7 +605,7 @@ class UnifiedResultsTable(GenericTable):
         pass
 
 class ChromatogramPlotWidget(pg.PlotWidget):
-    sigKeyPressed = QtCore.pyqtSignal(object)
+    sigKeyPressed = QtCore.Signal(object)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

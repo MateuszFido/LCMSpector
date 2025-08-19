@@ -1,13 +1,15 @@
 # model.py
-import logging, traceback, multiprocessing, threading, os
+import logging
+import traceback
+import threading
+import os
 import numpy as np
 from scipy.stats import linregress
 import pandas as pd
-from utils.classes import LCMeasurement, MSMeasurement, Compound
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library, load_ms2_data
 from calculation.workers import LoadingWorker, ProcessingWorker
-from PyQt6.QtCore import QThread
+from PySide6.QtCore import QThread
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -43,6 +45,7 @@ class Model(QThread):
     __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker']
 
     def __init__(self):
+        super().__init__()
         self.lc_measurements = {}
         self.ms_measurements = {}
         self.annotations = []
@@ -60,7 +63,7 @@ class Model(QThread):
 
     def load(self, mode, file_type):
         self.worker = LoadingWorker(self, mode, file_type)
-        self.worker.progressUpdated.connect(self.controller.view.update_progress_bar)
+        self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
         self.worker.progressUpdated.connect(self.controller.view.update_statusbar_with_loaded_file)
         self.worker.finished.connect(self.controller.on_loading_finished)
         self.worker.error.connect(self.controller.on_worker_error)
@@ -68,7 +71,7 @@ class Model(QThread):
 
     def process(self, mode):
         self.worker = ProcessingWorker(self, mode)
-        self.worker.progressUpdated.connect(self.controller.view.update_progress_bar)
+        self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
         self.worker.finished.connect(self.controller.on_processing_finished)
         self.worker.error.connect(self.controller.on_worker_error)
         self.worker.start()
@@ -163,7 +166,7 @@ class Model(QThread):
                         compound_signal, model_compound.calibration_parameters
                     )
                     ms_compound.calibration_parameters = model_compound.calibration_parameters
-                except Exception as e:
+                except Exception:
                     logger.error(f"Error calibrating file {ms_file.filename}: {traceback.format_exc()}")
 
     def find_ms2_precursors(self) -> dict:
@@ -174,8 +177,8 @@ class Model(QThread):
             raise ValueError("No compound selected.")
         for ion in compound.ions.keys():
             try:
-                library_entry = next((l for l in self.library.values() 
-                                    if (precursor_mz := next((line.split(' ')[1] for line in l if 'PrecursorMZ:' in line), None)) is not None 
+                library_entry = next((section for section in self.library.values() 
+                                    if (precursor_mz := next((line.split(' ')[1] for line in section if 'PrecursorMZ:' in line), None)) is not None 
                                     and np.isclose(float(precursor_mz), float(ion), atol=0.005)), None)
                 if library_entry:
                     logger.info(f"Precursor m/z {ion} found for {compound.name} in the library.")
