@@ -1,12 +1,16 @@
+import logging
+import copy
 import numpy as np
 import pandas as pd
-from utils.loading import load_absorbance_data
-import logging, copy
 from pyteomics import auxiliary
-from scipy.signal import find_peaks, peak_widths
 import static_frame as sf
-
 logger = logging.getLogger(__name__)
+try:
+    from utils.peak_integration import safe_peak_integration, \
+        integrate_ms_xic_peak, create_fallback_peak_area                 
+except ImportError:
+    logger.warning("Peak integration module not found, using simple sum.")
+
 def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:    
     """
     Baseline corrects the chromatogram using the LLS algorithm.
@@ -55,7 +59,7 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
     baseline = inv_tform + shift 
         
     normalized = sf.FrameHE.from_dict({'Time (min)': retention_time, 'Value (mAU)': baseline_corrected, 'Baseline': baseline, 'Uncorrected': absorbance})
-    logger.info(f"Baseline corrected chromatogram calculated.")
+    logger.info("Baseline corrected chromatogram calculated.")
     return normalized
 
 # Currently unused 
@@ -85,7 +89,6 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 #     mz_axis = np.round(np.linspace(low_mass, high_mass, resolution, dtype=np.float64), decimals=len(str(mass_accuracy).split('.')[1]))
 #     return mz_axis
 
-
 def construct_xics(data, ion_list, mass_accuracy, file_name):
     compounds = copy.deepcopy(ion_list)
     for compound in compounds:
@@ -113,16 +116,12 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
             except Exception as e:
                 compound.ions[ion]['RT'] = 0
                 logger.error(f"Error: {e}")
-            
-            # NEW: Calculate peak area for MS XIC data
+            # Try complex integration
             try:
-                from utils.peak_integration import safe_peak_integration, integrate_ms_xic_peak
-                
                 # Get RT of peak maximum for target
                 rt_peak = compound.ions[ion]['RT']
                 if rt_peak == 0:
                     rt_peak = xic[0][np.argmax(xic[1])] if len(xic[1]) > 0 else 0
-                
                 # Calculate peak area using trapezoidal integration
                 peak_area_info = safe_peak_integration(
                     integrate_ms_xic_peak,
@@ -132,11 +131,9 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
                     mass_accuracy=mass_accuracy
                 )
                 compound.ions[ion]['MS Peak Area'] = peak_area_info
-                
             except Exception as e:
                 logger.warning(f"Peak area calculation failed for {ion} in {compound.name}: {e}")
                 # Fallback to simple sum for backward compatibility
-                from utils.peak_integration import create_fallback_peak_area
                 compound.ions[ion]['MS Peak Area'] = create_fallback_peak_area(xic[0], xic[1])
                 
     return tuple(compounds)
