@@ -89,39 +89,74 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 #     mz_axis = np.round(np.linspace(low_mass, high_mass, resolution, dtype=np.float64), decimals=len(str(mass_accuracy).split('.')[1]))
 #     return mz_axis
 
+
 def construct_xics(data, ion_list, mass_accuracy, file_name):
-    compounds = copy.deepcopy(ion_list)
-    for compound in compounds:
-        compound.file = file_name
+    """
+    Optimized version of construct_xics that preprocesses data and reduces redundant operations.
+    """
+    # Precompute scan metadata to avoid repeated expensive XML lookups
+    scan_times = np.array([auxiliary.cvquery(scan, 'MS:1000016') for scan in data])
+    
+    compounds = []
+    for compound in ion_list:
+        new_compound = copy.copy(compound)  # Shallow copy the compound
+        new_compound.ions = copy.deepcopy(compound.ions)  # Deep copy the ions dict
+        new_compound.file = file_name
+        compounds.append(new_compound)
+    
+    # Group ions by compound
+    ion_to_compounds = {}
+    for idx, compound in enumerate(compounds):
         for ion in compound.ions.keys():
-            xic = []
-            scan_id = []
-            # Find a range around the ion (theoretical mass - observed mass)
-            mass_range = (ion-3*mass_accuracy, ion+3*mass_accuracy)
-            # Safeguard for if mass_range is less than 0
-            if mass_range[0] < 0:
-                mass_range = (0, mass_range[1])
-                logger.error(f"Mass range for ion {ion} starting at less than 0, setting to 0.")
-            for scan in data:
-                indices = np.where(np.logical_and(scan['m/z array'] >= mass_range[0], scan['m/z array'] <= mass_range[1]))
-                intensities = scan['intensity array'][indices]
-                xic.append(np.sum(intensities))
-                scan_id.append(auxiliary.cvquery(scan, 'MS:1000016'))
-            xic = np.array((scan_id, xic))
-            compound.ions[ion]['MS Intensity'] = xic
+            if ion not in ion_to_compounds:
+                ion_to_compounds[ion] = []
+            ion_to_compounds[ion].append((idx, ion))
+    
+    # Process each unique ion only once
+    for ion, compound_refs in ion_to_compounds.items():
+        # Find a range around the ion
+        mass_range = (ion-3*mass_accuracy, ion+3*mass_accuracy)
+        # Safeguard for negative m/z
+        if mass_range[0] < 0:
+            mass_range = (0, mass_range[1])
+            logger.error(f"Mass range for ion {ion} starting at less than 0, setting to 0.")
+        
+        # Process all scans for this ion at once
+        xic_intensities = np.zeros(len(data))
+        
+        # Use binary search for range finding
+        for i, scan in enumerate(data):
+            mz_array = scan['m/z array']
+            intensity_array = scan['intensity array']
+            
+            start_idx = np.searchsorted(mz_array, mass_range[0], side='left')
+            end_idx = np.searchsorted(mz_array, mass_range[1], side='right')
+            
+            if start_idx < end_idx:  # Only sum if we have values in range
+                xic_intensities[i] = np.sum(intensity_array[start_idx:end_idx])
+        
+        xic = np.array((scan_times, xic_intensities))
+        max_idx = np.argmax(xic_intensities)
+        
+        # Apply results to all compounds that need this ion
+        for comp_idx, ion_key in compound_refs:
+            compound = compounds[comp_idx]
+            compound.ions[ion_key]['MS Intensity'] = xic
             
             # Get the scan time of the index with the highest intensity
             try:
-                compound.ions[ion]['RT'] = auxiliary.cvquery(data[int(np.argmax(xic[1]))], 'MS:1000016')
+                compound.ions[ion_key]['RT'] = scan_times[max_idx]
             except Exception as e:
-                compound.ions[ion]['RT'] = 0
+                compound.ions[ion_key]['RT'] = 0
                 logger.error(f"Error: {e}")
-            # Try complex integration
+            
+            # Calculate peak area
             try:
                 # Get RT of peak maximum for target
-                rt_peak = compound.ions[ion]['RT']
+                rt_peak = compound.ions[ion_key]['RT']
                 if rt_peak == 0:
                     rt_peak = xic[0][np.argmax(xic[1])] if len(xic[1]) > 0 else 0
+                
                 # Calculate peak area using trapezoidal integration
                 peak_area_info = safe_peak_integration(
                     integrate_ms_xic_peak,
@@ -130,10 +165,9 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
                     rt_target=rt_peak,
                     mass_accuracy=mass_accuracy
                 )
-                compound.ions[ion]['MS Peak Area'] = peak_area_info
+                compound.ions[ion_key]['MS Peak Area'] = peak_area_info
             except Exception as e:
-                logger.warning(f"Peak area calculation failed for {ion} in {compound.name}: {e}")
-                # Fallback to simple sum for backward compatibility
-                compound.ions[ion]['MS Peak Area'] = create_fallback_peak_area(xic[0], xic[1])
-                
+                logger.warning(f"Peak area calculation failed for {ion_key} in {compound.name}: {e}")
+                compound.ions[ion_key]['MS Peak Area'] = create_fallback_peak_area(xic[0], xic[1])
+    
     return tuple(compounds)
