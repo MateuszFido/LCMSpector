@@ -92,7 +92,23 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 
 def construct_xics(data, ion_list, mass_accuracy, file_name):
     """
-    Optimized version of construct_xics that preprocesses data and reduces redundant operations.
+    Creates XICs (extracted ion chromatograms) for a list of ions and Scan objects for a given data file.
+
+    Parameters
+    ----------
+    data : List of Scan objects
+        The list of Scan objects containing the MS data.
+    ion_list : List of Compound objects
+        The list of Compounds to generate XICs for.
+    mass_accuracy : float
+        The mass accuracy to use for XIC extraction.
+    file_name : str
+        The name of the file being processed.
+
+    Returns
+    -------
+    Tuple of Compound objects
+        A tuple of Compound objects with XICs computed.
     """
     # Precompute scan metadata to avoid repeated expensive XML lookups
     scan_times = np.array([auxiliary.cvquery(scan, 'MS:1000016') for scan in data])
