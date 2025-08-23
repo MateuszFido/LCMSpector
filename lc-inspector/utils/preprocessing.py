@@ -2,7 +2,6 @@ import logging
 import copy
 import numpy as np
 import pandas as pd
-from pyteomics import auxiliary
 import static_frame as sf
 logger = logging.getLogger(__name__)
 try:
@@ -110,8 +109,8 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
     Tuple of Compound objects
         A tuple of Compound objects with XICs computed.
     """
-    # Precompute scan metadata to avoid repeated expensive XML lookups
-    scan_times = np.array([auxiliary.cvquery(scan, 'MS:1000016') for scan in data])
+    # Precompute scan metadata to avoid repeated lookups
+    scan_times = np.array([scan['scanList']['scan'][0]['scan start time'] for scan in data])
     
     compounds = []
     for compound in ion_list:
@@ -137,7 +136,6 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
             mass_range = (0, mass_range[1])
             logger.error(f"Mass range for ion {ion} starting at less than 0, setting to 0.")
         
-        # Process all scans for this ion at once
         xic_intensities = np.zeros(len(data))
         
         # Use binary search for range finding

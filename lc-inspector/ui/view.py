@@ -320,6 +320,13 @@ class View(QtWidgets.QMainWindow):
             ms_files = [self.listMS.item(i).text() for i in range(self.listMS.count())]
         except RuntimeError:
             logger.error("listMS has been deleted!")
+        except AttributeError:
+            logger.warning("One of QWidgetItem is None, retrying...")
+            try:
+                ms_files = [self.listMS.item(i).text() for i in range(self.listMS.count())]
+            except AttributeError:
+                logger.error("One of QWidgetItem is still None, aborting...")
+                self.show_critical_error("Something went wrong during updating of the MS file list. Please try again.")
         finally:
             self.controller.model.ms_measurements = ms_files  
 
