@@ -5,13 +5,13 @@
 ![LCMSpector Logo](https://github.com/MateuszFido/LC-Inspector/blob/gui-redesign/resources/logo.png?raw=true)
 
 
-# Quickstart
+# 🚀 Quickstart
 
-Follow this short guide to start with LCMSpector immediately:
+Follow this short guide to get started with LCMSpector:
 
 https://github.com/MateuszFido/LCMSpector/wiki/Quickstart-guide
 
-Or read on for a more detailed explanation!
+Or read on for a more detailed explanation:
 
 ---
 #### Table of Contents
@@ -68,9 +68,9 @@ For more information, visit the [LCMSpector wiki](https://github.com/MateuszFido
 
 ## Desktop app
 
-Executables for Windows and macOS are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases). 
+Executables for Windows, macOS, and Linux are published under [Releases](https://github.com/MateuszFido/LC-Inspector/releases). 
 
-Linux users can now also use the [Docker version of LCMSpector](#-running-with-docker).
+You can now also use the [Docker version of LCMSpector](#-running-with-docker).
 
 *   On Windows, if you encounter a warning, go to `Windows Defender -> Protection history -> LC-Inspector`, find the LC-Inspector entry, and click `Restore`. If the warning "Windows protected your PC" appears, click `More info` and `Run anyway`.
 *   On MacOS, you can remove the app from quarantine by running the following command: `xattr -d com.apple.quarantine /path/to/app.app`
@@ -116,7 +116,6 @@ The user can upload and process the data entirely locally on their machine. No n
 # 🐳 Running with Docker
 
 Docker is a fantastic alternative if you don't want to install the app directly on your system. 
-If using LCMSpector from source is not an option for you, it's also currently the only way you can run LCMSpector on Linux systems.
 
 ## MacOS
 
