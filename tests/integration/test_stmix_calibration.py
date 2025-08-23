@@ -16,12 +16,11 @@ accuracy using the complete production workflow with real analytical data.
 
 import pytest
 import numpy as np
-import pandas as pd
 import json
 import sys
 import os
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 # Add the lc-inspector directory to the path for imports
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'lc-inspector'))
@@ -29,7 +28,6 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'lc-inspe
 from ui.model import Model
 from ui.controller import Controller
 from utils.classes import Compound, MSMeasurement
-from utils.loading import load_ms1_data
 from utils.preprocessing import construct_xics
 
 
@@ -141,7 +139,7 @@ class TestRealSTMIXIntegration:
         self.model.compounds = self.compounds
         
         print(f"\n{'='*80}")
-        print(f"REAL STMIX INTEGRATION TEST SETUP")
+        print("INTEGRATION TEST SETUP")
         print(f"{'='*80}")
         print(f"Sample data directory: {self.data_dir}")
         print(f"Total compounds loaded: {len(self.compounds)}")
@@ -153,14 +151,14 @@ class TestRealSTMIXIntegration:
         for conc in self.stmix_concentrations:
             # Handle the 5.0 -> 5mM and 10.0 -> 10mM filename convention
             if conc == 5.0:
-                pos_file = self.data_dir / f"STMIX_BIG_5mM_pos.mzml"
-                neg_file = self.data_dir / f"STMIX_BIG_5mM_neg.mzml"
+                pos_file = self.data_dir / "STMIX_BIG_5mM_pos.mzml"
+                neg_file = self.data_dir / "STMIX_BIG_5mM_neg.mzml"
             elif conc == 10.0:
-                pos_file = self.data_dir / f"STMIX_BIG_10mM_pos.mzml"
-                neg_file = self.data_dir / f"STMIX_BIG_10mM_neg.mzml"
+                pos_file = self.data_dir / "STMIX_BIG_10mM_pos.mzml"
+                neg_file = self.data_dir / "STMIX_BIG_10mM_neg.mzml"
             else:
-                pos_file = self.data_dir / f"STMIX_BIG_{conc}mM_pos.mzml"
-                neg_file = self.data_dir / f"STMIX_BIG_{conc}mM_neg.mzml"
+                pos_file = self.data_dir / "STMIX_BIG_{conc}mM_pos.mzml"
+                neg_file = self.data_dir / "STMIX_BIG_{conc}mM_neg.mzml"
             
             pos_exists = pos_file.exists()
             neg_exists = neg_file.exists()
@@ -247,14 +245,13 @@ class TestRealSTMIXIntegration:
         Uses the complete LC-Inspector processing pipeline with real mzML files.
         """
         print(f"\n{'='*80}")
-        print(f"REAL STMIX INTEGRATION TEST - POSITIVE MODE")
+        print("INTEGRATION TEST - POSITIVE MODE")
         print(f"{'='*80}")
         
-        # Load and process calibration files using real pipeline
         calibration_files = {}
         successful_loads = 0
         
-        print(f"\nLoading calibration data using real LC-Inspector pipeline...")
+        print("\nLoading calibration data...")
         for conc in self.calibration_concentrations:
             try:
                 ms_measurement = self._load_and_process_stmix_file(conc, mode="pos")
@@ -267,7 +264,6 @@ class TestRealSTMIXIntegration:
         
         print(f"Successfully loaded {successful_loads} calibration files")
         
-        # This test must always succeed - ensure we have sufficient calibration data
         assert successful_loads >= 3, (
             f"Critical test failure: Only {successful_loads}/5 calibration files loaded. "
             f"Available files checked: {[f for f in self.available_files if 'pos' in str(f)]}. "
@@ -275,11 +271,9 @@ class TestRealSTMIXIntegration:
             f"This is a minimum-viability integration test that must always pass."
         )
         
-        # Mock the view's get_calibration_files method to return our files
         self.view.get_calibration_files.return_value = calibration_files
         
-        # Run calibration using controller (as the app would)
-        print(f"\nRunning calibration using Controller...")
+        print("\nRunning calibration using the Controller...")
         self.controller.calibrate()
         
         # Verify calibration parameters
@@ -298,7 +292,7 @@ class TestRealSTMIXIntegration:
                     'Std_Error': params['std_err']
                 })
         
-        print(f"\nCalibration Results Summary:")
+        print("\nCalibration Summary:")
         print(f"Compounds with successful calibration: {len(calibrated_compounds)}")
         
         if calibrated_compounds:
@@ -309,11 +303,10 @@ class TestRealSTMIXIntegration:
             
             # Show top performing compounds
             calibrated_compounds.sort(key=lambda x: x['R^2'], reverse=True)
-            print(f"\nTop 5 calibration performers:")
+            print("\nTop 5 calibration performers:")
             for i, comp in enumerate(calibrated_compounds[:5]):
                 print(f"  {i+1}. {comp['Compound']}: R^2 = {comp['R^2']:.4f}")
         
-        # Load validation data - this must succeed for minimum viability
         print(f"\nLoading validation data ({self.validation_concentration} mM)...")
         try:
             validation_ms = self._load_and_process_stmix_file(self.validation_concentration, mode="pos")
@@ -329,7 +322,7 @@ class TestRealSTMIXIntegration:
             )
         
         # Calculate concentrations for validation using Model
-        print(f"Calculating concentrations using Model.calibrate()...")
+        print("Calculating concentrations using Model.calibrate()...")
         self.model.calibrate({})  # Empty dict to skip calibration curve generation, just calculate concentrations
         
         # Collect and analyze results
@@ -338,7 +331,7 @@ class TestRealSTMIXIntegration:
         total_predictions = 0
         
         print(f"\n{'='*80}")
-        print(f"CONCENTRATION INTERPOLATION RESULTS (REAL DATA)")
+        print("CONCENTRATION INTERPOLATION RESULTS")
         print(f"{'='*80}")
         print(f"True concentration: {self.validation_concentration} mM")
         print(f"{'Compound':<25} {'Predicted':<12} {'Error %':<10} {'R^2':<8} {'Status'}")
@@ -389,47 +382,43 @@ class TestRealSTMIXIntegration:
             mean_r_squared = np.mean(r_squared_values)
             
             print(f"\n{'='*80}")
-            print(f"POSITIVE MODE REAL DATA VALIDATION SUMMARY")
+            print("POSITIVE MODE VALIDATION SUMMARY")
             print(f"{'='*80}")
             print(f"Total compounds tested: {total_predictions}")
             print(f"Successful predictions (<= 30%): {successful_predictions}")
             print(f"Accuracy rate: {accuracy_rate:.1%}")
-            print(f"")
-            print(f"Error Statistics:")
+            print("Error Statistics:")
             print(f"  Mean relative error: {mean_relative_error:.1f}%")
             print(f"  Median relative error: {median_relative_error:.1f}%")
             print(f"  Std deviation: {std_relative_error:.1f}%")
             print(f"  Error range: {min(relative_errors):.1f}% - {max(relative_errors):.1f}%")
-            print(f"")
-            print(f"Calibration Quality:")
+            print("Calibration Quality:")
             print(f"  Mean calibration R^2: {mean_r_squared:.4f}")
             print(f"  R^2 range: {min(r_squared_values):.4f} - {max(r_squared_values):.4f}")
             
             # Best and worst performers
             validation_results.sort(key=lambda x: x['Relative_Error_Percent'])
-            print(f"\nBest performing compounds:")
+            print("\nBest performing compounds:")
             for i, result in enumerate(validation_results[:3]):
                 print(f"  {i+1}. {result['Compound']}: {result['Relative_Error_Percent']:.1f}% error")
             
-            print(f"\nWorst performing compounds:")
+            print("\nWorst performing compounds:")
             for i, result in enumerate(validation_results[-3:]):
                 print(f"  {i+1}. {result['Compound']}: {result['Relative_Error_Percent']:.1f}% error")
     
-            # Validation assertions for real data
             assert total_predictions >= 5, f"Too few predictions ({total_predictions}), expected at least 5"
             assert accuracy_rate >= 0.20, f"Accuracy rate {accuracy_rate:.1%} below 20% threshold for real data"
             assert mean_relative_error <= 80.0, f"Mean relative error {mean_relative_error:.1f}% too high for real data"
             assert mean_r_squared >= 0.65, f"Mean R^2 {mean_r_squared:.4f} too low for calibration quality"
             
-            print(f"\nReal STMIX positive mode integration test PASSED")
-            print(f"  - Successfully processed {total_predictions} compounds with real mzML data")
-            print(f"  - Used complete LC-Inspector pipeline with construct_xics()")
-            print(f"  - Achieved {accuracy_rate:.1%} accuracy rate with {mean_relative_error:.1f}% mean error")
+            print("\nSTMIX positive mode integration test PASSED")
+            print("  - Successfully processed {total_predictions} compounds with mzML data")
+            print("  - Achieved {accuracy_rate:.1%} accuracy rate with {mean_relative_error:.1f}% mean error")
             
             return validation_results
             
         else:
-            pytest.fail("No valid concentration predictions obtained from real data processing")
+            pytest.fail("No valid concentration predictions obtained")
     
     @pytest.mark.integration
     @pytest.mark.stmix
@@ -443,7 +432,7 @@ class TestRealSTMIXIntegration:
         It tests both positive and negative ionization modes for comprehensive validation.
         """
         print(f"\n{'='*80}")
-        print(f"COMPREHENSIVE REAL STMIX INTEGRATION TEST - BOTH MODES")
+        print("INTEGRATION TEST - BOTH MODES")
         print(f"{'='*80}")
         
         results = {}
@@ -452,23 +441,19 @@ class TestRealSTMIXIntegration:
         try:
             pos_results = self.test_stmix_integration_positive_mode()
             results['positive'] = pos_results
-            print(f"\n Positive mode integration completed successfully")
+            print("\n Positive mode integration completed successfully")
         except Exception as e:
             print(f"\n Positive mode integration failed: {e}")
             results['positive'] = []
         
         # Reset model for negative mode
         print(f"\n{'='*40}")
-        print(f"Switching to negative mode...")
+        print("Switching to negative mode...")
         self.model = Model()
         self.model.compounds = self.compounds
         self.controller.model = self.model
         
-        # Test negative mode with more lenient expectations
-        try:
-            print(f"\nTesting negative mode with adjusted pipeline...")
-            
-            # Load negative mode calibration data
+        try:            
             calibration_files = {}
             successful_loads = 0
             
@@ -517,21 +502,16 @@ class TestRealSTMIXIntegration:
         
         # Generate final comprehensive report
         print(f"\n{'='*80}")
-        print(f"FINAL REAL DATA INTEGRATION REPORT")
+        print("FINAL REPORT")
         print(f"{'='*80}")
         
         total_pos_predictions = len(results.get('positive', []))
         total_neg_predictions = len(results.get('negative', []))
         total_predictions = total_pos_predictions + total_neg_predictions
         
-        print(f"Integration test completed using complete LC-Inspector pipeline:")
-        print(f"  - Loaded real STMIX mzML files from sample data")
-        print(f"  - Used MSMeasurement and construct_xics() for data processing")
-        print(f"  - Processed {len(self.compounds)} aminoacids compounds")
-        print(f"  - Generated calibration curves using real MS data")
-        print(f"  - Tested concentration interpolation on real validation data")
-        print(f"")
-        print(f"Results:")
+        print("Integration test completed:")
+        print(f"  - Processed {len(self.compounds)} compounds")
+        print("Results:")
         print(f"  Positive mode predictions: {total_pos_predictions}")
         print(f"  Negative mode predictions: {total_neg_predictions}")
         print(f"  Total predictions: {total_predictions}")
@@ -546,12 +526,7 @@ class TestRealSTMIXIntegration:
         assert total_predictions >= 5, f"Total predictions {total_predictions} too low for integration test"
         
         if total_predictions >= 10:
-            print(f"\nCOMPREHENSIVE REAL DATA INTEGRATION TEST PASSED")
-            print(f"  Successfully validated LC-Inspector concentration calculation pipeline")
-            print(f"  Demonstrated production-ready accuracy with real STMIX data")
-            print(f"  Confirmed robust performance across multiple compounds and concentrations")
+            print("\nINTEGRATION TEST PASSED")
         else:
-            print(f"\n! LIMITED REAL DATA INTEGRATION TEST")
+            print("\n! LIMITED INTEGRATION TEST")
             print(f"  ! Only {total_predictions} total predictions generated")
-            print(f"  ! May indicate issues with real data processing or file availability")
-        
