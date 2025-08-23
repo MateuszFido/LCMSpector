@@ -15,3 +15,4 @@ dist
 test_data.mzml
 test_lc_data.txt
 .VSCodeCounter/
+tests/data
