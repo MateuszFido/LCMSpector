@@ -59,10 +59,10 @@ jobs:
         path: tests/LCMSpector-sample-data
     - name: Prepare test data
       run: |
-        ls tests/LCMSpector-sample-data -alh
+        ls -alh tests/LCMSpector-sample-data 
         mkdir -p lc-inspector/resources
         mv -v tests/LCMSpector-sample-data/MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
-        mv -v tests/LCMSpector-sample-data/LCMSpector-sample-data lc-inspector/tests/
+        mv -v tests/LCMSpector-sample-data/LCMSpector-sample-data tests/
       shell: bash
 
     - name: Set up Python 3.12
