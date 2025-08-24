@@ -110,7 +110,7 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
         A tuple of Compound objects with XICs computed.
     """
     # Precompute scan metadata to avoid repeated lookups
-    scan_times = np.array([scan['scanList']['scan'][0]['scan start time'] for scan in data])
+    scan_times = np.array([scan['scan start time'] for scan in data])
     
     compounds = []
     for compound in ion_list:

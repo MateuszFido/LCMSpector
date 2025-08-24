@@ -1,13 +1,13 @@
-import os, time, logging
+import os
+import time
+import logging
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
 from scipy.signal import find_peaks, peak_widths
-from pyqtgraph import exporters, mkPen, mkBrush
+from pyqtgraph import mkPen, mkBrush
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QDialog, QVBoxLayout
 from pyqtgraph.dockarea import DockArea
-from pyteomics.auxiliary import cvquery
 from static_frame import FrameHE
 
 logger = logging.getLogger(__name__)
@@ -68,10 +68,10 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     None
     """
     
-    scan_time_diff = np.abs([np.abs(cvquery(data_matrix[i], 'MS:1000016') - rt) for i in range(len(data_matrix))])
+    scan_time_diff = np.abs([np.abs(data_matrix[i]['scan start time'] - rt) for i in range(len(data_matrix))])
     try:
         index = np.argmin(scan_time_diff)
-    except:
+    except ValueError:
         index = 0
     widget.clear()
     # Plotting the average MS data
@@ -258,7 +258,7 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
     times = []
     for scan in ms_data:
         tic.append(scan['total ion current'])
-        times.append(cvquery(scan, 'MS:1000016'))
+        times.append(scan['scan start time'])
     widget.plot(times, tic, pen=mkPen('b', width=1))
     widget.setLabel('left', 'Intensity (cps)')
     widget.setLabel('bottom', 'Time (min)')
@@ -308,25 +308,25 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
     canvas.clear()
     canvas.setBackground("w")
     if not ms_file:
-        logger.error(f"plot_ms2_from_file: ms_file is None")
+        logger.error("plot_ms2_from_file: ms_file is None")
         raise Exception
         return
 
     if not ms_compound:
-        logger.error(f"plot_ms2_from_file: ms_compound is None")
+        logger.error("plot_ms2_from_file: ms_compound is None")
         raise Exception
         return
 
     try:
         xics = ms_file.xics
     except AttributeError:
-        logger.error(f"plot_ms2_from_file: ms_file.xics is None")
+        logger.error("plot_ms2_from_file: ms_file.xics is None")
         return
 
     compound_to_plot = next((xic for xic in xics if xic.name == ms_compound.name), None)
 
     if not compound_to_plot:
-        logger.error(f"plot_ms2_from_file: compound_to_plot is None")
+        logger.error("plot_ms2_from_file: compound_to_plot is None")
         raise Exception
         return
 
@@ -340,7 +340,7 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
     for scan in ms2_scans:
         try:
-            if np.isclose(cvquery(scan, 'MS:1000744'), precursor, atol=0.0005):
+            if np.isclose(scan['precursorList']['precursor'][0]['selectedIonList']['selectedIon'][0]['selected ion m/z'], precursor, atol=0.0005):
                 mzs = scan['m/z array']
                 intensities = scan['intensity array']
                 break

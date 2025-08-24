@@ -84,7 +84,7 @@ def main():
     # Create model, view, and controller instances
     model = Model()
     view = View()
-    controller = Controller(model, view)
+    Controller(model, view)
 
 
 

@@ -123,11 +123,29 @@ def load_ms1_data(path: str) -> list:
     start_time = time.time()
     
     with mzml.MzML(str(path)) as file:
-        ms1_data = [scan for scan in file if scan['ms level'] == 1]
+        ms1_data = [
+            {
+                'total ion current': scan['total ion current'],
+                'ms level': scan['ms level'],
+                'm/z array': scan['m/z array'],
+                'intensity array': scan['intensity array'],
+                'scan start time': scan['scanList']['scan'][0]['scan start time']
+            }
+            for scan in file if scan['ms level'] == 1
+        ]
         if not ms1_data:
             logger.error("No MS1 scans found in the .mzML file. Rerunning on higher order MSn.")
             file.reset()
-            ms1_data = [scan for scan in file]
+            ms1_data = [
+                {
+                    'total ion current': scan['total ion current'],
+                    'ms level': scan['ms level'],
+                    'm/z array': scan['m/z array'],
+                    'intensity array': scan['intensity array'],
+                    'scan start time': scan['scanList']['scan'][0]['scan start time']
+                }
+                for scan in file
+            ]
     logger.info(f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds.")
     return ms1_data
 
