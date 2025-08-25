@@ -98,6 +98,7 @@ jobs:
             --include-data-files="lc-inspector/config.json"="config.json" `
             --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" `
             --windows-console-mode=disable `
+            --windows-icon-from-ico="lc-inspector/resources/icon.ico" `
             --output-filename=LCMSpector `
             --output-dir=dist `
             --assume-yes-for-downloads
