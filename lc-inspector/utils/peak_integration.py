@@ -7,8 +7,8 @@ with automatic boundary detection.
 """
 
 import numpy as np
-from typing import Dict, Tuple, Optional, List, Union
-from scipy.signal import find_peaks, peak_widths, savgol_filter
+from typing import Dict, Tuple, Union
+from scipy.signal import find_peaks
 try:
     from scipy.integrate import trapz
 except ImportError:
@@ -542,7 +542,6 @@ def calculate_peak_quality_metrics(
     
     # Tailing factor calculation (USP method adapted)
     peak_region = intensities[start_index:end_index+1]
-    peak_times = times[start_index:end_index+1]
     if len(peak_region) > 4:
         # Find 10% height points for tailing assessment
         peak_height = peak_region[peak_index - start_index]

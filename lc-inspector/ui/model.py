@@ -141,13 +141,11 @@ class Model(QThread):
                 continue
             for ms_compound, model_compound in zip(ms_file.xics, self.compounds):
                 try:
-                    # NEW: Use peak areas for concentration calculation if available
                     compound_signal = 0
                     use_peak_areas = False
                     
                     for ion in ms_compound.ions.keys():
                         ion_data = ms_compound.ions[ion]
-                        
                         # Check if peak area data is available and use baseline-corrected area
                         if 'MS Peak Area' in ion_data and ion_data['MS Peak Area'].get('baseline_corrected_area', 0) > 0:
                             compound_signal += ion_data['MS Peak Area']['baseline_corrected_area']
@@ -158,9 +156,9 @@ class Model(QThread):
                                 compound_signal += np.round(np.sum(ion_data['MS Intensity'][1]), 0)
                     
                     if use_peak_areas:
-                        logger.debug(f"Concentration calculation using peak areas for {ms_compound.name}: {compound_signal}")
+                        logger.info(f"Concentration calculation using peak areas for {ms_compound.name}: {compound_signal}")
                     else:
-                        logger.debug(f"Concentration calculation using intensity sums for {ms_compound.name}: {compound_signal}")
+                        logger.info(f"Concentration calculation using intensity sums for {ms_compound.name}: {compound_signal}")
                     
                     ms_compound.concentration = calculate_concentration(
                         compound_signal, model_compound.calibration_parameters
