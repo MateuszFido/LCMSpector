@@ -8,7 +8,7 @@ from datetime import datetime
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 import pyqtgraph as pg
 from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
 plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
@@ -255,7 +255,7 @@ class View(QtWidgets.QMainWindow):
         pass  # This is handled by the controller
 
     def on_exit(self):
-        sys.exit(0)
+        QApplication.instance().quit()
 
     def on_export(self):
         results = self.controller.model.export()

@@ -82,80 +82,105 @@ class Model(QThread):
         lc_file = self.lc_measurements.get(filename, None)
         return lc_file, ms_file
 
-    def calibrate(self, selected_files):
-        for j, (file, concentration) in enumerate(selected_files.items()):
-            if not concentration.strip():
-                continue
-            concentration_value, suffix = (concentration.split(" ") + [None])[:2]
-            conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-9, 'pm': 1e-12}
-            concentration = float(concentration_value) * conversion_factors.get(suffix and suffix.lower(), 1)
+    def _get_compound_signal(self, ms_compound, use_peak_area=True):
+        """Helper to calculate compound signal, with option to force intensity sum."""
+        compound_signal = 0
+        peak_area_was_used = False
+        for ion in ms_compound.ions.keys():
+            ion_data = ms_compound.ions[ion]
             
-            ms_file = self.ms_measurements.get(file)
-            if not ms_file or not ms_file.xics:
-                logger.error(f"No xics found for file {file}.")
+            # Use peak area if requested and available
+            if use_peak_area and 'MS Peak Area' in ion_data and ion_data['MS Peak Area'].get('baseline_corrected_area', 0) > 0:
+                compound_signal += ion_data['MS Peak Area']['baseline_corrected_area']
+                peak_area_was_used = True
+            else:
+                # Fallback to intensity sum
+                if ion_data['MS Intensity'] is not None and len(ion_data['MS Intensity']) > 1:
+                    compound_signal += np.round(np.sum(ion_data['MS Intensity'][1]), 0)
+        
+        return compound_signal, peak_area_was_used
+
+    def calibrate(self, selected_files):
+        for i, compound in enumerate(self.compounds):
+            if not compound.ions:
+                logger.error(f"No ions found for compound {compound.name}.")
                 continue
 
-            for i, compound in enumerate(self.compounds):
-                if not compound.ions:
-                    logger.error(f"No ions found for compound {compound.name}.")
+            # 1. Initial calibration attempt using peak areas
+            use_peak_area_calibration = True
+            compound.calibration_curve.clear()
+            for file, concentration_str in selected_files.items():
+                if not concentration_str.strip():
+                    continue
+                concentration_value, suffix = (concentration_str.split(" ") + [None])[:2]
+                conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-9, 'pm': 1e-12}
+                concentration = float(concentration_value) * conversion_factors.get(suffix and suffix.lower(), 1)
+                
+                ms_file = self.ms_measurements.get(file)
+                if not ms_file or not ms_file.xics:
+                    logger.error(f"No xics found for file {file}.")
                     continue
                 
-                # NEW: Use peak area for calibration if available, otherwise fall back to intensity sum
-                compound_signal = 0
-                use_peak_areas = False
-                
-                for ion in compound.ions.keys():
-                    ion_data = ms_file.xics[i].ions[ion]
-                    
-                    # Check if peak area data is available and use baseline-corrected area
-                    if 'MS Peak Area' in ion_data and ion_data['MS Peak Area'].get('baseline_corrected_area', 0) > 0:
-                        compound_signal += ion_data['MS Peak Area']['baseline_corrected_area']
-                        use_peak_areas = True
-                        logger.debug(f"Using peak area for calibration: {ion} = {ion_data['MS Peak Area']['baseline_corrected_area']}")
-                    else:
-                        # Fallback to original intensity sum method
-                        if ion_data['MS Intensity'] is not None:
-                            compound_signal += np.round(np.sum(ion_data['MS Intensity'][1]), 0)
-                        logger.debug(f"Using intensity sum for calibration: {ion}")
-                
-                if use_peak_areas:
-                    logger.info(f"Calibration using peak areas for {compound.name}: {compound_signal}")
-                else:
-                    logger.info(f"Calibration using intensity sums for {compound.name}: {compound_signal}")
-                
+                ms_compound = ms_file.xics[i]
+                compound_signal, _ = self._get_compound_signal(ms_compound, use_peak_area=True)
                 compound.calibration_curve[concentration] = compound_signal
-                
-                if j == len(selected_files) - 1:
-                    slope, intercept, r_value, p_value, std_err = linregress(
-                        list(compound.calibration_curve.keys()),
-                        list(compound.calibration_curve.values())
-                    )
-                    compound.calibration_parameters = {
-                        'slope': slope, 'intercept': intercept, 'r_value': r_value,
-                        'p_value': p_value, 'std_err': std_err
-                    }
 
+            # 2. Perform linear regression and check R²
+            concentrations = list(compound.calibration_curve.keys())
+            signals = list(compound.calibration_curve.values())
+            
+            if len(concentrations) < 2:
+                logger.error(f"Not enough calibration points for {compound.name}.")
+                continue
+
+            slope, intercept, r_value, p_value, std_err = linregress(concentrations, signals)
+            r_squared = r_value**2
+
+            # 3. Fallback to intensity sum if R² is poor
+            if r_squared < 0.75:
+                logger.warning(f"Low R² ({r_squared:.2f}) for {compound.name} with peak areas. Falling back to intensity sum.")
+                use_peak_area_calibration = False
+                compound.calibration_curve.clear()
+                for file, concentration_str in selected_files.items():
+                    if not concentration_str.strip():
+                        continue
+                    concentration_value, suffix = (concentration_str.split(" ") + [None])[:2]
+                    conversion_factors = {'m': 1e3, 'mm': 1, 'um': 1e-3, 'nm': 1e-9, 'pm': 1e-12}
+                    concentration = float(concentration_value) * conversion_factors.get(suffix and suffix.lower(), 1)
+                    
+                    ms_file = self.ms_measurements.get(file)
+                    if not ms_file or not ms_file.xics:
+                        continue
+                    
+                    ms_compound = ms_file.xics[i]
+                    compound_signal, _ = self._get_compound_signal(ms_compound, use_peak_area=False)
+                    compound.calibration_curve[concentration] = compound_signal
+                
+                concentrations = list(compound.calibration_curve.keys())
+                signals = list(compound.calibration_curve.values())
+                slope, intercept, r_value, p_value, std_err = linregress(concentrations, signals)
+                r_squared = r_value**2
+                logger.info(f"Recalibrated {compound.name} with intensity sum, new R²: {r_squared:.2f}")
+
+            compound.calibration_parameters = {
+                'slope': slope, 'intercept': intercept, 'r_value': r_value, 'r_squared': r_squared,
+                'p_value': p_value, 'std_err': std_err, 'use_peak_area': use_peak_area_calibration
+            }
+
+        # 4. Calculate concentrations for all files using the determined calibration method
         for ms_file in self.ms_measurements.values():
-            if not ms_file.xics:  # Skip files with no XIC data
+            if not ms_file.xics:
                 logger.warning(f"Skipping concentration calculation for {ms_file.filename}: no XIC data")
                 continue
             for ms_compound, model_compound in zip(ms_file.xics, self.compounds):
                 try:
-                    compound_signal = 0
-                    use_peak_areas = False
+                    if not model_compound.calibration_parameters:
+                        continue
                     
-                    for ion in ms_compound.ions.keys():
-                        ion_data = ms_compound.ions[ion]
-                        # Check if peak area data is available and use baseline-corrected area
-                        if 'MS Peak Area' in ion_data and ion_data['MS Peak Area'].get('baseline_corrected_area', 0) > 0:
-                            compound_signal += ion_data['MS Peak Area']['baseline_corrected_area']
-                            use_peak_areas = True
-                        else:
-                            # Fallback to original intensity sum method
-                            if ion_data['MS Intensity'] is not None:
-                                compound_signal += np.round(np.sum(ion_data['MS Intensity'][1]), 0)
+                    use_peak_area_for_calc = model_compound.calibration_parameters.get('use_peak_area', True)
+                    compound_signal, peak_area_was_used = self._get_compound_signal(ms_compound, use_peak_area=use_peak_area_for_calc)
                     
-                    if use_peak_areas:
+                    if peak_area_was_used:
                         logger.info(f"Concentration calculation using peak areas for {ms_compound.name}: {compound_signal}")
                     else:
                         logger.info(f"Concentration calculation using intensity sums for {ms_compound.name}: {compound_signal}")
@@ -165,7 +190,7 @@ class Model(QThread):
                     )
                     ms_compound.calibration_parameters = model_compound.calibration_parameters
                 except Exception:
-                    logger.error(f"Error calibrating file {ms_file.filename}: {traceback.format_exc()}")
+                    logger.error(f"Error calculating concentration for {ms_compound.name} in {ms_file.filename}: {traceback.format_exc()}")
 
     def find_ms2_precursors(self) -> dict:
         compound = self.compounds[self.controller.view.comboBoxChooseCompound.currentIndex()]
@@ -261,6 +286,7 @@ class Model(QThread):
                         results_dict['Concentration (mM)'] = compound.concentration
                         results_dict['Calibration slope'] = compound.calibration_parameters['slope']
                         results_dict['Calibration intercept'] = compound.calibration_parameters['intercept']
+                        results_dict['Calibration R2'] = compound.calibration_parameters.get('r_squared', 0)
                     except Exception as e:
                         logger.error(f"Error exporting concentration information for {ms_measurement.filename}: {e}")
                         results_dict['Concentration (mM)'] = 0
