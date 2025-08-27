@@ -100,7 +100,7 @@ class Model(QThread):
         
         return compound_signal, peak_area_was_used
 
-    def calibrate(self, selected_files):
+    def calibrate(self, selected_files, log_x=False, log_y=False):
         for i, compound in enumerate(self.compounds):
             if not compound.ions:
                 logger.error(f"No ions found for compound {compound.name}.")
@@ -126,18 +126,28 @@ class Model(QThread):
                 compound.calibration_curve[concentration] = compound_signal
 
             # 2. Perform linear regression and check R²
-            concentrations = list(compound.calibration_curve.keys())
-            signals = list(compound.calibration_curve.values())
+            concentrations = np.array(list(compound.calibration_curve.keys()))
+            signals = np.array(list(compound.calibration_curve.values()))
             
             if len(concentrations) < 2:
                 logger.error(f"Not enough calibration points for {compound.name}.")
                 continue
 
+            # Data transformation for log scale
+            if log_x:
+                positive_concentrations = concentrations > 0
+                concentrations = np.log10(concentrations[positive_concentrations])
+                signals = signals[positive_concentrations]
+            if log_y:
+                positive_signals = signals > 0
+                signals = np.log10(signals[positive_signals])
+                concentrations = concentrations[positive_signals]
+
             slope, intercept, r_value, p_value, std_err = linregress(concentrations, signals)
             r_squared = r_value**2
 
             # 3. Fallback to intensity sum if R² is poor
-            if r_squared < 0.75:
+            if r_squared < 0.95:
                 logger.warning(f"Low R² ({r_squared:.2f}) for {compound.name} with peak areas. Falling back to intensity sum.")
                 use_peak_area_calibration = False
                 compound.calibration_curve.clear()
@@ -156,15 +166,26 @@ class Model(QThread):
                     compound_signal, _ = self._get_compound_signal(ms_compound, use_peak_area=False)
                     compound.calibration_curve[concentration] = compound_signal
                 
-                concentrations = list(compound.calibration_curve.keys())
-                signals = list(compound.calibration_curve.values())
+                concentrations = np.array(list(compound.calibration_curve.keys()))
+                signals = np.array(list(compound.calibration_curve.values()))
+
+                if log_x:
+                    positive_concentrations = concentrations > 0
+                    concentrations = np.log10(concentrations[positive_concentrations])
+                    signals = signals[positive_concentrations]
+                if log_y:
+                    positive_signals = signals > 0
+                    signals = np.log10(signals[positive_signals])
+                    concentrations = concentrations[positive_signals]
+
                 slope, intercept, r_value, p_value, std_err = linregress(concentrations, signals)
                 r_squared = r_value**2
                 logger.info(f"Recalibrated {compound.name} with intensity sum, new R²: {r_squared:.2f}")
 
             compound.calibration_parameters = {
                 'slope': slope, 'intercept': intercept, 'r_value': r_value, 'r_squared': r_squared,
-                'p_value': p_value, 'std_err': std_err, 'use_peak_area': use_peak_area_calibration
+                'p_value': p_value, 'std_err': std_err, 'use_peak_area': use_peak_area_calibration,
+                'log_x': log_x, 'log_y': log_y
             }
 
         # 4. Calculate concentrations for all files using the determined calibration method

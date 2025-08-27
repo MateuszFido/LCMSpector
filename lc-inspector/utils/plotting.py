@@ -219,30 +219,48 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
     widget.setBackground("w")
     x = np.array(list(compound.calibration_curve.keys()))
     y = np.array(list(compound.calibration_curve.values()))
-    try: 
-        compound.calibration_parameters
-    except AttributeError as e:
-        logger.error(f"---Error when trying to plot calibration curve for {compound.name}: {e} ---")
-        return
-    if not all(k in compound.calibration_parameters for k in ('slope', 'intercept')):
+    
+    try:
+        params = compound.calibration_parameters
+        log_x = params.get('log_x', False)
+        log_y = params.get('log_y', False)
+        widget.getPlotItem().setLogMode(x=log_x, y=log_y)
+    except AttributeError:
+        params = {}
+        log_x = False
+        log_y = False
+
+    if not all(k in params for k in ('slope', 'intercept')):
         logger.error(f"---Error when trying to plot calibration curve for {compound.name} ---")
         return
-    try: 
-        m = int(round(compound.calibration_parameters['slope']))
-        b = int(round(compound.calibration_parameters['intercept']))
-    except Exception as e:
-        logger.error(f"---Error when trying to plot calibration curve for {compound.name}: {e} ---")
-        return
-    
-    curve = m * x + b
+
+    m = params['slope']
+    b = params['intercept']
+
     widget.plot(x, y, name=compound.name, pen=None, symbol='o', symbolSize=5)
-    widget.plot(x, curve, pen=mkPen('r', width=1))
+    
+    # Plot regression line
+    if log_x:
+        x_fit = np.log10(x[x > 0])
+    else:
+        x_fit = x
+    
+    y_fit = m * x_fit + b
+    
+    if log_y:
+        y_fit = 10**y_fit
+    
+    if log_x:
+        x_fit = 10**x_fit
+
+    widget.plot(x_fit, y_fit, pen=mkPen('r', width=1))
+
     widget.setTitle(f'Calibration curve for {compound.name}')
-    widget.setLabel('left', 'Intensity / a.u.')
-    widget.setLabel('bottom', 'Concentration (mM)')
+    widget.setLabel('left', 'Intensity / a.u.' + (' (log scale)' if log_y else ''))
+    widget.setLabel('bottom', 'Concentration (mM)'+ (' (log scale)' if log_x else ''))
     
     text_item = pg.TextItem(
-        text=f"Curve equation:\ny = {m}\u22c5x+{b}\nR\u00b2 = {np.round(compound.calibration_parameters['r_value']**2, 4)}",
+        text=f"y = {m:.2f}x + {b:.2f}\nR² = {params.get('r_squared', 0):.4f}",
         color='#232323', border=pg.mkPen('#232323', width=1), anchor=(0, 0)
     )
     text_item.setPos(np.min(x), np.max(y))

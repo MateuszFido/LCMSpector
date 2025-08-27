@@ -85,6 +85,8 @@ class MockView:
         self.display_plots = Mock()
         self.update_choose_compound = Mock()
         self.get_calibration_files = Mock()
+        self.logXCheckBox = Mock()
+        self.logYCheckBox = Mock()
 
 
 class TestRealSTMIXIntegration:
@@ -98,7 +100,7 @@ class TestRealSTMIXIntegration:
     def setup_method(self):
         """Set up test fixtures using real LC-Inspector components."""
         self.project_root = Path(__file__).parent.parent.parent
-        self.data_dir = self.project_root / "tests" / "LCMSpector-sample-data"
+        self.data_dir = self.project_root / "tests" / "data" / "LCMSpector-sample-data"
         self.config_path = self.project_root / "lc-inspector" / "config.json"
         
         # Verify data files exist
@@ -157,8 +159,8 @@ class TestRealSTMIXIntegration:
                 pos_file = self.data_dir / "STMIX_BIG_10mM_pos.mzml"
                 neg_file = self.data_dir / "STMIX_BIG_10mM_neg.mzml"
             else:
-                pos_file = self.data_dir / "STMIX_BIG_{conc}mM_pos.mzml"
-                neg_file = self.data_dir / "STMIX_BIG_{conc}mM_neg.mzml"
+                pos_file = self.data_dir / f"STMIX_BIG_{conc}mM_pos.mzml"
+                neg_file = self.data_dir / f"STMIX_BIG_{conc}mM_neg.mzml"
             
             pos_exists = pos_file.exists()
             neg_exists = neg_file.exists()

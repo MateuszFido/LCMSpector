@@ -27,6 +27,8 @@ class Controller:
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_concentrations)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_ms2)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(self.view.display_library_ms2)
+        self.view.logXCheckBox.stateChanged.connect(self.on_log_scale_change)
+        self.view.logYCheckBox.stateChanged.connect(self.on_log_scale_change)
         self.mode = "LC/GC-MS"
         logger.info("Controller initialized.")
         logger.info("Current thread: %s", threading.current_thread().name)
@@ -128,7 +130,9 @@ class Controller:
         selected_files = self.view.get_calibration_files()
         if selected_files:
             try:
-                self.model.calibrate(selected_files)
+                log_x = self.view.logXCheckBox.isChecked()
+                log_y = self.view.logYCheckBox.isChecked()
+                self.model.calibrate(selected_files, log_x, log_y)
             except Exception:
                 logger.error(f"Error calibrating files: {traceback.format_exc()}")
                 return
@@ -136,6 +140,13 @@ class Controller:
             logger.error("No files selected for calibration.")
         self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.update_choose_compound(self.model.compounds)
+        self.view.display_calibration_curve()
+
+    def on_log_scale_change(self):
+        """
+        Recalculates the calibration curve when the log scale checkboxes are toggled.
+        """
+        self.calibrate()
 
     def find_ms2_precursors(self):
         """

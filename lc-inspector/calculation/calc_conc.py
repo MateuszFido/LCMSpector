@@ -17,15 +17,27 @@ def calculate_concentration(area, curve_params):
         - Handles negative slopes normally (valid for some calibration curves)
         - Handles negative concentrations (below detection limit cases)
     """
-    slope = curve_params['slope']
-    intercept = curve_params['intercept']
-    
+    slope = curve_params.get('slope', 0)
+    intercept = curve_params.get('intercept', 0)
+    log_x = curve_params.get('log_x', False)
+    log_y = curve_params.get('log_y', False)
+
     # Check for zero slope to prevent division by zero
     if slope == 0:
         return 0
-    
+
+    # Transform area if y-axis is log-scaled
+    if log_y:
+        if area <= 0:
+            return 0  # Cannot take log of non-positive area
+        area = np.log10(area)
+
     # Calculate concentration
     concentration = (area - intercept) / slope
+
+    # Back-transform concentration if x-axis is log-scaled
+    if log_x:
+        concentration = 10**concentration
     
     # Handle NaN and infinity cases
     if np.isnan(concentration) or not np.isfinite(concentration):

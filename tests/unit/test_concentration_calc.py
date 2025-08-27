@@ -180,8 +180,7 @@ class TestCalculateConcentrationEdgeCases:
         curve_params = {'intercept': 1000.0}  # Missing slope
         area = 2000.0
         
-        with pytest.raises(KeyError):
-            calculate_concentration(area, curve_params)
+        assert calculate_concentration(area, curve_params) == 0
     
     def test_missing_intercept_parameter(self):
         """
@@ -192,8 +191,7 @@ class TestCalculateConcentrationEdgeCases:
         curve_params = {'slope': 1000.0}  # Missing intercept
         area = 2000.0
         
-        with pytest.raises(KeyError):
-            calculate_concentration(area, curve_params)
+        assert calculate_concentration(area, curve_params) == 2.0
     
     def test_empty_curve_parameters(self):
         """
@@ -204,8 +202,7 @@ class TestCalculateConcentrationEdgeCases:
         curve_params = {}
         area = 2000.0
         
-        with pytest.raises(KeyError):
-            calculate_concentration(area, curve_params)
+        assert calculate_concentration(area, curve_params) == 0
     
     def test_string_area_input(self):
         """

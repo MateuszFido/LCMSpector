@@ -221,6 +221,7 @@ class Compound():
         self.ms2 = list()
         self.ion_info = ion_info
         self.calibration_curve = {}
+        self.calibration_parameters = {}
 
     def __str__(self):
         return f"Compound: {self.name}, ions: {self.ions}, ion info: {self.ion_info}"
