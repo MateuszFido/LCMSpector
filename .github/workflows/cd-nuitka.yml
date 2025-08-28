@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest, macos-12, ubuntu-20.04]
+        os: [windows-latest, macos-latest, ubuntu-latest, macos-13, ubuntu-22.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -87,7 +87,7 @@ jobs:
           zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
 
       - name: Build with Nuitka (macOS Intel)
-        if: matrix.os == 'macos-12'
+        if: matrix.os == 'macos-13'
         shell: bash
         run: |
           python -m nuitka lc-inspector/main.py \
@@ -150,7 +150,7 @@ jobs:
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz" LCMSpector.dist
 
       - name: Build with Nuitka (Linux Compat)
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         shell: bash
         run: |
           python -m nuitka lc-inspector/main.py \
@@ -177,7 +177,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload artifact (macOS Intel)
-        if: matrix.os == 'macos-12'
+        if: matrix.os == 'macos-13'
         uses: actions/upload-artifact@v4
         with:
           name: LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
@@ -201,7 +201,7 @@ jobs:
           if-no-files-found: error
 
       - name: Upload artifact (Linux Compat)
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         uses: actions/upload-artifact@v4
         with:
           name: LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
