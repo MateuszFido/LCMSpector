@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest, macos-latest, ubuntu-latest, macos-12, ubuntu-20.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -32,7 +32,7 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
 
       - name: Install system deps (Linux)
-        if: matrix.os == 'ubuntu-latest'
+        if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install -y patchelf zip unzip
@@ -86,6 +86,28 @@ jobs:
           mv main.app LCMSpector.app
           zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
 
+      - name: Build with Nuitka (macOS Intel)
+        if: matrix.os == 'macos-12'
+        shell: bash
+        run: |
+          python -m nuitka lc-inspector/main.py \
+            --standalone \
+            --plugin-enable=pyside6 \
+            --noinclude-qt-translations \
+            --include-data-dir="lc-inspector/resources"="resources" \
+            --include-data-files="lc-inspector/config.json"="config.json" \
+            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
+            --macos-create-app-bundle \
+            --macos-app-name=LCMSpector \
+            --macos-app-icon="lc-inspector/resources/icon.icns" \
+            --output-dir=dist
+
+          # Zip the .app bundle for release
+          cd dist
+          # Failsafe for if Nuitka still somehow wrongly produces "main.app"
+          mv main.app LCMSpector.app
+          zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip" LCMSpector.app
+
       - name: Build with Nuitka (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -108,7 +130,7 @@ jobs:
           Rename-Item "dist\main.dist" "LCMSpector.dist"
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
 
-      - name: Build with Nuitka (Linux)
+      - name: Build with Nuitka (Linux Latest)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
@@ -125,14 +147,41 @@ jobs:
           # Tar.gz the .dist folder
           cd dist
           mv main.dist LCMSpector.dist
-          tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz" LCMSpector.dist
+          tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz" LCMSpector.dist
 
-      - name: Upload artifact (macOS)
+      - name: Build with Nuitka (Linux Compat)
+        if: matrix.os == 'ubuntu-20.04'
+        shell: bash
+        run: |
+          python -m nuitka lc-inspector/main.py \
+            --standalone \
+            --plugin-enable=pyside6 \
+            --noinclude-qt-translations \
+            --include-data-dir="lc-inspector/resources"="resources" \
+            --include-data-files="lc-inspector/config.json"="config.json" \
+            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
+            --output-filename=LCMSpector \
+            --output-dir=dist
+
+          # Tar.gz the .dist folder
+          cd dist
+          mv main.dist LCMSpector.dist
+          tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz" LCMSpector.dist
+
+      - name: Upload artifact (macOS ARM)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
         with:
           name: LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
           path: dist/LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+          if-no-files-found: error
+
+      - name: Upload artifact (macOS Intel)
+        if: matrix.os == 'macos-12'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
+          path: dist/LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
           if-no-files-found: error
 
       - name: Upload artifact (Windows)
@@ -143,12 +192,20 @@ jobs:
           path: dist/LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
           if-no-files-found: error
 
-      - name: Upload artifact (Linux)
+      - name: Upload artifact (Linux Latest)
         if: matrix.os == 'ubuntu-latest'
         uses: actions/upload-artifact@v4
         with:
-          name: LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
-          path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
+          name: LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+          path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+          if-no-files-found: error
+
+      - name: Upload artifact (Linux Compat)
+        if: matrix.os == 'ubuntu-20.04'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+          path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
           if-no-files-found: error
 
   release:
@@ -178,5 +235,7 @@ jobs:
             prerelease: false
             files: |
               LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+              LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
               LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-              LCMSpector-${{ github.event.inputs.version }}-Linux-x86_64.tar.gz
+              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
