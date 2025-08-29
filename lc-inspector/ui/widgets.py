@@ -617,3 +617,42 @@ class ChromatogramPlotWidget(pg.PlotWidget):
     def keyPressEvent(self, ev):
         self.scene().keyPressEvent(ev)
         self.sigKeyPressed.emit(ev)
+
+
+class LabelledSlider(QtWidgets.QWidget):
+    """
+    A widget that combines a QLabel, a QSlider, and another QLabel to display the current value.
+    The slider works with floating-point values over a specified range.
+    """
+    valueChanged = QtCore.Signal(float)
+
+    def __init__(self, label_text, values, default_val, parent=None):
+        super().__init__(parent)
+        self.values = values
+        self.layout = QtWidgets.QHBoxLayout(self)
+        self.label = QtWidgets.QLabel(label_text)
+        self.slider = QtWidgets.QSlider(Qt.Orientation.Horizontal)
+        self.value_label = QtWidgets.QLabel(str(default_val))
+
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(len(values) - 1)
+        try:
+            default_index = self.values.index(default_val)
+            self.slider.setValue(default_index)
+        except ValueError:
+            self.slider.setValue(0)
+
+
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.slider)
+        self.layout.addWidget(self.value_label)
+
+        self.slider.valueChanged.connect(self.update_value_label)
+
+    def update_value_label(self, index):
+        value = self.values[index]
+        self.value_label.setText(str(value))
+        self.valueChanged.emit(value)
+
+    def value(self):
+        return self.values[self.slider.value()]

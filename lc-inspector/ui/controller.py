@@ -41,6 +41,7 @@ class Controller:
     def process_data(self):
         self.view.statusbar.showMessage(f"Processing data in {self.mode} mode ...")
         self.model.compounds = self.view.ionTable.get_items()
+        self.model.mass_accuracy = self.view.mass_accuracy_slider.value()
         if not self.model.compounds:
             self.view.show_critical_error("No compounds found!\n\nPlease define m/z values to trace or choose from the predefined lists before processing.")
             return

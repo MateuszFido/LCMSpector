@@ -1,5 +1,4 @@
 import os
-import sys
 import traceback
 import logging
 import json
@@ -16,7 +15,7 @@ plot_total_ion_current, plot_library_ms2, plot_no_ms2_found, plot_ms2_from_file
 from pyqtgraph.dockarea import DockArea
 import numpy as np
 from scipy.signal import find_peaks
-from ui.widgets import DragDropListWidget, IonTable, ChromatogramPlotWidget, UnifiedResultsTable
+from ui.widgets import DragDropListWidget, IonTable, ChromatogramPlotWidget, UnifiedResultsTable, LabelledSlider
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -876,6 +875,8 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.button_save_ion_list, 3, 5, 1, 1)
         self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_delete_ion_list.setObjectName("button_delete_ion_list")
+        self.mass_accuracy_slider = LabelledSlider("Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001)
+        self.gridLayout.addWidget(self.mass_accuracy_slider, 4, 4, 1, 3)
         self.gridLayout.addWidget(self.button_delete_ion_list, 3, 6, 1, 1)
         
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)

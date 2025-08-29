@@ -7,7 +7,6 @@ which is the critical component for converting peak areas to concentrations.
 
 import pytest
 import math
-import numpy as np
 import sys
 import os
 

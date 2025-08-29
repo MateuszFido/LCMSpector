@@ -26,7 +26,6 @@ def test_peak_integration_module():
             integrate_ms_xic_peak, 
             integrate_lc_peak,
             safe_peak_integration,
-            create_fallback_peak_area
         )
         logger.info(" Peak integration module imported successfully")
         
@@ -53,7 +52,7 @@ def test_peak_integration_module():
             noise_threshold=2000
         )
         
-        logger.info(f"MS Peak Area Results:")
+        logger.info("MS Peak Area Results:")
         logger.info(f"  Total Area: {ms_result['total_area']:.2f}")
         logger.info(f"  Baseline Corrected Area: {ms_result['baseline_corrected_area']:.2f}")
         logger.info(f"  Peak Height: {ms_result['peak_height']:.2f}")
@@ -83,7 +82,7 @@ def test_peak_integration_module():
             noise_threshold=1000
         )
         
-        logger.info(f"LC Peak Area Results:")
+        logger.info("LC Peak Area Results:")
         logger.info(f"  Total Area: {lc_result['total_area']:.2f}")
         logger.info(f"  Baseline Corrected Area: {lc_result['baseline_corrected_area']:.2f}")
         logger.info(f"  Peak Height: {lc_result['peak_height']:.2f}")

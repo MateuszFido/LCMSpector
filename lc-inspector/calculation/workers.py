@@ -122,10 +122,11 @@ class ProcessingWorker(QThread):
     finished = Signal(list)
     error = Signal(str)
 
-    def __init__(self, model, mode):
+    def __init__(self, model, mode, mass_accuracy):
         super().__init__()
         self.model = model
         self.mode = mode
+        self.mass_accuracy = mass_accuracy
 
     def run(self):
         st = time.time()
@@ -155,7 +156,7 @@ class ProcessingWorker(QThread):
                 # Only process MS files if in MS or LC/GC-MS mode
                 if self.mode in {"LC/GC-MS", "MS Only"}:
                     # for every MS file, call construct_xics on its data and store the result
-                    ms_futures = {executor.submit(construct_xics, ms_file.data, self.model.compounds, ms_file.mass_accuracy, ms_file.filename): ms_file for ms_file in self.model.ms_measurements.values()}
+                    ms_futures = {executor.submit(construct_xics, ms_file.data, self.model.compounds, self.mass_accuracy, ms_file.filename): ms_file for ms_file in self.model.ms_measurements.values()}
                 else:
                     ms_futures = {}
 
