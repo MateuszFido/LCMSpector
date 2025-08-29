@@ -88,7 +88,6 @@ class LCMeasurement(Measurement):
             # Enhanced adaptive prominence threshold for STMIX validation
             signal_max = np.max(corrected_values)
             signal_std = np.std(corrected_values)
-            signal_median = np.median(corrected_values)
             
             # More sensitive detection for low-concentration samples
             # Use percentile-based noise estimation
@@ -187,7 +186,7 @@ class MSMeasurement(Measurement):
     ms2_data : set
         A set containing the m/z and intensity values of the MS2 spectra.
     """
-    def __init__(self, path, mass_accuracy=None):
+    def __init__(self, path, mass_accuracy=0.001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
         self.data = load_ms1_data(path)

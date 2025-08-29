@@ -98,7 +98,7 @@ class TestRealSTMIXIntegration:
     def setup_method(self):
         """Set up test fixtures using real LC-Inspector components."""
         self.project_root = Path(__file__).parent.parent.parent
-        self.data_dir = self.project_root / "tests" / "LCMSpector-sample-data"
+        self.data_dir = self.project_root / "tests" / "data" / "LCMSpector-sample-data"
         self.config_path = self.project_root / "lc-inspector" / "config.json"
         
         # Verify data files exist
@@ -150,15 +150,10 @@ class TestRealSTMIXIntegration:
         available_files = []
         for conc in self.stmix_concentrations:
             # Handle the 5.0 -> 5mM and 10.0 -> 10mM filename convention
-            if conc == 5.0:
-                pos_file = self.data_dir / "STMIX_BIG_5mM_pos.mzml"
-                neg_file = self.data_dir / "STMIX_BIG_5mM_neg.mzml"
-            elif conc == 10.0:
-                pos_file = self.data_dir / "STMIX_BIG_10mM_pos.mzml"
-                neg_file = self.data_dir / "STMIX_BIG_10mM_neg.mzml"
-            else:
-                pos_file = self.data_dir / "STMIX_BIG_{conc}mM_pos.mzml"
-                neg_file = self.data_dir / "STMIX_BIG_{conc}mM_neg.mzml"
+            # Handle float formatting (e.g., 5.0 -> "5")
+            conc_str = f"{conc:g}"
+            pos_file = self.data_dir / f"STMIX_BIG_{conc_str}mM_pos.mzml"
+            neg_file = self.data_dir / f"STMIX_BIG_{conc_str}mM_neg.mzml"
             
             pos_exists = pos_file.exists()
             neg_exists = neg_file.exists()
@@ -185,12 +180,9 @@ class TestRealSTMIXIntegration:
             MSMeasurement: Fully processed MS measurement with real XIC data
         """
         # Construct filename based on actual file naming convention
-        if concentration == 5.0:
-            filename = f"STMIX_BIG_5mM_{mode}.mzml"
-        elif concentration == 10.0:
-            filename = f"STMIX_BIG_10mM_{mode}.mzml"
-        else:
-            filename = f"STMIX_BIG_{concentration}mM_{mode}.mzml"
+        # Handle float formatting (e.g., 5.0 -> "5")
+        concentration_str = f"{concentration:g}"
+        filename = f"STMIX_BIG_{concentration_str}mM_{mode}.mzml"
         
         file_path = self.data_dir / filename
         
