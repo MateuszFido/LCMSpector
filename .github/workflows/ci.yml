@@ -61,7 +61,7 @@ jobs:
       run: |
         ls -alh tests/LCMSpector-sample-data 
         mkdir -p lc-inspector/resources
-        mdkir -p tests/data
+        mkdir -p tests/data
         mv -v tests/LCMSpector-sample-data/MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources/MoNA-export-All_LC-MS-MS_Orbitrap.msp
         mv -v tests/LCMSpector-sample-data/LCMSpector-sample-data/* tests/data/LCMSpector-sample-data/
       shell: bash
