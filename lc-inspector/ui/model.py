@@ -42,7 +42,7 @@ class Model(QThread):
         Calibrates the concentrations for selected files.
     """
     
-    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker']
+    __slots__ = ['ms_measurements', 'lc_measurements', 'annotations', 'controller', 'compounds', 'library', 'worker', 'mass_accuracy']
 
     def __init__(self):
         super().__init__()
@@ -50,6 +50,7 @@ class Model(QThread):
         self.ms_measurements = {}
         self.annotations = []
         self.compounds = []
+        self.mass_accuracy = 0.0001
         self.library = load_ms2_library()
         if self.library:
             logger.info("MS2 library loaded.")
@@ -70,7 +71,7 @@ class Model(QThread):
         self.worker.start()
 
     def process(self, mode):
-        self.worker = ProcessingWorker(self, mode)
+        self.worker = ProcessingWorker(self, mode, self.mass_accuracy)
         self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
         self.worker.finished.connect(self.controller.on_processing_finished)
         self.worker.error.connect(self.controller.on_worker_error)
