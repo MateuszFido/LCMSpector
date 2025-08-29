@@ -35,7 +35,7 @@ Or read on for a more detailed explanation:
 <a name="description"/>
 
 # 🔍 Description  
-LCMSpector is an open-source application for analyzing targeted mass spectrometry data. 
+LCMSpector (pronunciation: "el-see-em-spector" or "el-see-inspector") is an open-source application for analyzing targeted mass spectrometry data. 
 
 It allows you to process raw mass spectrometry and/or chromatography files and look for a set of compounds or peaks, trace their intensities, graph and export them (also the raw data), check with databases via MS/MS, and quantify using calibration standards.
 
