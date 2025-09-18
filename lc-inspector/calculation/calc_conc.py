@@ -27,8 +27,12 @@ def calculate_concentration(area, curve_params):
     # Calculate concentration
     concentration = (area - intercept) / slope
     
-    # Handle NaN and infinity cases
+    # Handle NaN and infinity 
     if np.isnan(concentration) or not np.isfinite(concentration):
+        return 0
+
+    if concentration < 0:
+        # level below detection limit, no point in reporting negative
         return 0
     
     # Return rounded result
