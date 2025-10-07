@@ -11,11 +11,11 @@
             ],
             "info": [
                 "Adenine-D",
-                "Adenine-NL",
-                "Adenine-D-D",
-                "Adenine-D-NL",
-                "Adenine-I-pos",
-                "Adenine-I-neg"
+                " Adenine-NL",
+                " Adenine-D-D",
+                " Adenine-D-NL",
+                " Adenine-I-pos",
+                " Adenine-I-neg"
             ]
         },
         "Adenosine": {
@@ -28,10 +28,10 @@
             ],
             "info": [
                 "Adenosine-D",
-                "Adenosine-NL",
-                "Adenosine-D-neg",
-                "Adenosine-I-pos",
-                "Adenosine-I-neg"
+                " Adenosine-NL",
+                " Adenosine-D-neg",
+                " Adenosine-I-pos",
+                " Adenosine-I-neg"
             ]
         },
         "Agmatine": {
@@ -41,17 +41,17 @@
                 471.245,
                 425.2031,
                 299.1724,
-                129.1145,
-                131.1292
+                131.1292,
+                129.1145
             ],
             "info": [
                 "Agmatine-D",
-                "Agmatine-NL",
-                "Agmatine-D-D",
-                "Agmatine-D-NL",
-                "Agmatine-D-neg",
-                "Agmatine-I-pos",
-                "Agmatine-I-neg"
+                " Agmatine-NL",
+                " Agmatine-D-D",
+                " Agmatine-D-NL",
+                " Agmatine-D-neg",
+                " Agmatine-I-pos",
+                " Agmatine-I-neg"
             ]
         },
         "Alanine": {
@@ -64,10 +64,10 @@
             ],
             "info": [
                 "Alanine-D",
-                "Alanine-NL",
-                "Alanine-D-neg",
-                "Alanine-I-pos",
-                "Alanine-I-neg"
+                " Alanine-NL",
+                " Alanine-D-neg",
+                " Alanine-I-pos",
+                " Alanine-I-neg"
             ]
         },
         "Arginine": {
@@ -82,18 +82,18 @@
             ],
             "info": [
                 "Arginine-D",
-                "Arginine-NL",
-                "Arginine-D-D",
-                "Arginine-D-NL",
-                "Arginine-D-neg",
-                "Arginine-I-pos",
-                "Arginine-I-neg"
+                " Arginine-NL",
+                " Arginine-D-D",
+                " Arginine-D-NL",
+                " Arginine-D-neg",
+                " Arginine-I-pos",
+                " Arginine-I-neg"
             ]
         },
         "Asparagine": {
             "ions": [
                 303.1187,
-                259.0925,
+                257.0768,
                 473.1766,
                 427.1348,
                 301.1041,
@@ -102,12 +102,12 @@
             ],
             "info": [
                 "Asparagine-D",
-                "Asparagine-NL",
-                "Asparagine-D-D",
-                "Asparagine-D-NL",
-                "Asparagine-D-neg",
-                "Asparagine-I-pos",
-                "Asparagine-I-neg"
+                " Asparagine-NL",
+                " Asparagine-D-D",
+                " Asparagine-D-NL",
+                " Asparagine-D-neg",
+                " Asparagine-I-pos",
+                " Asparagine-I-neg"
             ]
         },
         "Aspartic acid": {
@@ -120,10 +120,10 @@
             ],
             "info": [
                 "Aspartic acid-D",
-                "Aspartic acid-NL",
-                "Aspartic acid-D-neg",
-                "Aspartic acid-I-pos",
-                "Aspartic acid-I-neg"
+                " Aspartic acid-NL",
+                " Aspartic acid-D-neg",
+                " Aspartic acid-I-pos",
+                " Aspartic acid-I-neg"
             ]
         },
         "Betaine": {
@@ -146,12 +146,12 @@
             ],
             "info": [
                 "Cadaverine-D",
-                "Cadaverine-NL",
-                "Cadaverine-D-D",
-                "Cadaverine-D-NL",
-                "Cadaverine-D-neg",
-                "Cadaverine-I-pos",
-                "Cadaverine-I-neg"
+                " Cadaverine-NL",
+                " Cadaverine-D-D",
+                " Cadaverine-D-NL",
+                " Cadaverine-D-neg",
+                " Cadaverine-I-pos",
+                " Cadaverine-I-neg"
             ]
         },
         "Caffeine": {
@@ -161,7 +161,7 @@
             ],
             "info": [
                 "Caffeine-D",
-                "Caffeine-I-pos"
+                " Caffeine-I-pos"
             ]
         },
         "Choline": {
@@ -177,26 +177,26 @@
                 346.1609,
                 300.1191,
                 516.2188,
-                472.1926,
+                470.1769,
                 344.1463,
                 176.103,
                 174.0884
             ],
             "info": [
                 "Citrulline-D",
-                "Citrulline-NL",
-                "Citrulline-D-D",
-                "Citrulline-D-NL",
-                "Citrulline-D-neg",
-                "Citrulline-I-pos",
-                "Citrulline-I-neg"
+                " Citrulline-NL",
+                " Citrulline-D-D",
+                " Citrulline-D-NL",
+                " Citrulline-D-neg",
+                " Citrulline-I-pos",
+                " Citrulline-I-neg"
             ]
         },
         "Cysteine": {
             "ions": [
                 292.085,
                 246.0431,
-                462.1434,
+                462.1429,
                 416.101,
                 290.0703,
                 122.0271,
@@ -204,12 +204,12 @@
             ],
             "info": [
                 "Cysteine-D",
-                "Cysteine-NL",
-                "Cysteine-D-D",
-                "Cysteine-D-NL",
-                "Cysteine-D-neg",
-                "Cysteine-I-pos",
-                "Cysteine-I-neg"
+                " Cysteine-NL",
+                " Cysteine-D-D",
+                " Cysteine-D-NL",
+                " Cysteine-D-neg",
+                " Cysteine-I-pos",
+                " Cysteine-I-neg"
             ]
         },
         "DOPA": {
@@ -222,10 +222,10 @@
             ],
             "info": [
                 "DOPA-D",
-                "DOPA-NL",
-                "DOPA-D-neg",
-                "DOPA-I-pos",
-                "DOPA-I-neg"
+                " DOPA-NL",
+                " DOPA-D-neg",
+                " DOPA-I-pos",
+                " DOPA-I-neg"
             ]
         },
         "Dopamine": {
@@ -238,10 +238,10 @@
             ],
             "info": [
                 "Dopamine-D",
-                "Dopamine-NL",
-                "Dopamine-D-neg",
-                "Dopamine-I-pos",
-                "Dopamine-I-neg"
+                " Dopamine-NL",
+                " Dopamine-D-neg",
+                " Dopamine-I-pos",
+                " Dopamine-I-neg"
             ]
         },
         "GABA": {
@@ -254,26 +254,26 @@
             ],
             "info": [
                 "GABA-D",
-                "GABA-NL",
-                "GABA-D-neg",
-                "GABA-I-pos",
-                "GABA-I-neg"
+                " GABA-NL",
+                " GABA-D-neg",
+                " GABA-I-pos",
+                " GABA-I-neg"
             ]
         },
         "Glutamic acid": {
             "ions": [
-                304.1027,
+                318.1184,
                 272.0765,
-                302.0881,
+                316.1038,
                 148.0605,
                 146.0458
             ],
             "info": [
                 "Glutamic acid-D",
-                "Glutamic acid-NL",
-                "Glutamic acid-D-neg",
-                "Glutamic acid-I-pos",
-                "Glutamic acid-I-neg"
+                " Glutamic acid-NL",
+                " Glutamic acid-D-neg",
+                " Glutamic acid-I-pos",
+                " Glutamic acid-I-neg"
             ]
         },
         "Glutamine": {
@@ -286,10 +286,10 @@
             ],
             "info": [
                 "Glutamine-D",
-                "Glutamine-NL",
-                "Glutamine-D-neg",
-                "Glutamine-I-pos",
-                "Glutamine-I-neg"
+                " Glutamine-NL",
+                " Glutamine-D-neg",
+                " Glutamine-I-pos",
+                " Glutamine-I-neg"
             ]
         },
         "Glycine": {
@@ -302,10 +302,10 @@
             ],
             "info": [
                 "Glycine-D",
-                "Glycine-NL",
-                "Glycine-D-neg",
-                "Glycine-I-pos",
-                "Glycine-I-neg"
+                " Glycine-NL",
+                " Glycine-D-neg",
+                " Glycine-I-pos",
+                " Glycine-I-neg"
             ]
         },
         "Histamine": {
@@ -318,17 +318,17 @@
             ],
             "info": [
                 "Histamine-D",
-                "Histamine-NL",
-                "Histamine-D-neg",
-                "Histamine-I-pos",
-                "Histamine-I-neg"
+                " Histamine-NL",
+                " Histamine-D-neg",
+                " Histamine-I-pos",
+                " Histamine-I-neg"
             ]
         },
         "Histidine": {
             "ions": [
                 326.1347,
                 280.0928,
-                452.2028,
+                496.1926,
                 450.1508,
                 324.1201,
                 156.0768,
@@ -336,12 +336,12 @@
             ],
             "info": [
                 "Histidine-D",
-                "Histidine-NL",
-                "Histidine-D-D",
-                "Histidine-D-NL",
-                "Histidine-D-neg",
-                "Histidine-I-pos",
-                "Histidine-I-neg"
+                " Histidine-NL",
+                " Histidine-D-D",
+                " Histidine-D-NL",
+                " Histidine-D-neg",
+                " Histidine-I-pos",
+                " Histidine-I-neg"
             ]
         },
         "Homocitrulline": {
@@ -354,10 +354,10 @@
             ],
             "info": [
                 "Homocitrulline-D",
-                "Homocitrulline-NL",
-                "Homocitrulline-D-neg",
-                "Homocitrulline-I-pos",
-                "Homocitrulline-I-neg"
+                " Homocitrulline-NL",
+                " Homocitrulline-D-neg",
+                " Homocitrulline-I-pos",
+                " Homocitrulline-I-neg"
             ]
         },
         "Hypoxanthine": {
@@ -369,9 +369,9 @@
             ],
             "info": [
                 "Hypoxanthine-D",
-                "Hypoxanthine-D-neg",
-                "Hypoxanthine-I-pos",
-                "Hypoxanthine-I-neg"
+                " Hypoxanthine-D-neg",
+                " Hypoxanthine-I-pos",
+                " Hypoxanthine-I-neg"
             ]
         },
         "Kynurenine": {
@@ -387,29 +387,29 @@
             ],
             "info": [
                 "Kynurenine-D",
-                "Kynurenine-NL",
-                "Kynurenine-D-D",
-                "Kynurenine-D-NL",
-                "Kynurenine-D-neg",
-                "Kynurenine-D-D-neg",
-                "Kynurenine-I-pos",
-                "Kynurenine-I-neg"
+                " Kynurenine-NL",
+                " Kynurenine-D-D",
+                " Kynurenine-D-NL",
+                " Kynurenine-D-neg",
+                " Kynurenine-D-D-neg",
+                " Kynurenine-I-pos",
+                " Kynurenine-I-neg"
             ]
         },
         "(Iso)Leucine": {
             "ions": [
                 302.1599,
-                258.1336,
+                256.118,
                 300.1452,
                 132.102,
                 130.0873
             ],
             "info": [
                 "(Iso)Leucine-D",
-                "(Iso)Leucine-NL",
-                "(Iso)Leucine-D-neg",
-                "(Iso)Leucine-I-pos",
-                "(Iso)Leucine-I-neg"
+                " (Iso)Leucine-NL",
+                " (Iso)Leucine-D-neg",
+                " (Iso)Leucine-I-pos",
+                " (Iso)Leucine-I-neg"
             ]
         },
         "Lysine": {
@@ -425,13 +425,13 @@
             ],
             "info": [
                 "Lysine-D",
-                "Lysine-NL",
-                "Lysine-D-D",
-                "Lysine-D-NL",
-                "Lysine-D-neg",
-                "Lysine-D-D-neg",
-                "Lysine-I-pos",
-                "Lysine-I-neg"
+                " Lysine-NL",
+                " Lysine-D-D",
+                " Lysine-D-NL",
+                " Lysine-D-neg",
+                " Lysine-D-D-neg",
+                " Lysine-I-pos",
+                " Lysine-I-neg"
             ]
         },
         "Methionine": {
@@ -444,10 +444,10 @@
             ],
             "info": [
                 "Methionine-D",
-                "Methionine-NL",
-                "Methionine-D-neg",
-                "Methionine-I-pos",
-                "Methionine-I-neg"
+                " Methionine-NL",
+                " Methionine-D-neg",
+                " Methionine-I-pos",
+                " Methionine-I-neg"
             ]
         },
         "NH3": {
@@ -460,12 +460,12 @@
             ],
             "info": [
                 "NH3-D",
-                "NH3-NL",
-                "NH3-D-D",
-                "NH3-D-NL",
-                "NH3-D-neg",
-                "NH3-I-pos",
-                "NH3-I-neg"
+                " NH3-NL",
+                " NH3-D-D",
+                " NH3-D-NL",
+                " NH3-D-neg",
+                " NH3-I-pos",
+                " NH3-I-neg"
             ]
         },
         "Niacinamide": {
@@ -476,8 +476,8 @@
             ],
             "info": [
                 "Niacinamide-D",
-                "Niacinamide-NL",
-                "Niacinamide-I-pos"
+                " Niacinamide-NL",
+                " Niacinamide-I-pos"
             ]
         },
         "Ornithine": {
@@ -493,13 +493,13 @@
             ],
             "info": [
                 "Ornithine-D",
-                "Ornithine-NL",
-                "Ornithine-D-D",
-                "Ornithine-D-NL",
-                "Ornithine-D-neg",
-                "Ornithine-D-D-neg",
-                "Ornithine-I-pos",
-                "Ornithine-I-neg"
+                " Ornithine-NL",
+                " Ornithine-D-D",
+                " Ornithine-D-NL",
+                " Ornithine-D-neg",
+                " Ornithine-D-D-neg",
+                " Ornithine-I-pos",
+                " Ornithine-I-neg"
             ]
         },
         "Orotic acid": {
@@ -512,10 +512,10 @@
             ],
             "info": [
                 "Orotic acid-D",
-                "Orotic acid-D-D",
-                "Orotic acid-D-neg",
-                "Orotic acid-I-pos",
-                "Orotic acid-I-neg"
+                " Orotic acid-D-D",
+                " Orotic acid-D-neg",
+                " Orotic acid-I-pos",
+                " Orotic acid-I-neg"
             ]
         },
         "Phenylalanine": {
@@ -528,10 +528,10 @@
             ],
             "info": [
                 "Phenylalanine-D",
-                "Phenylalanine-NL",
-                "Phenylalanine-D-neg",
-                "Phenylalanine-I-pos",
-                "Phenylalanine-I-neg"
+                " Phenylalanine-NL",
+                " Phenylalanine-D-neg",
+                " Phenylalanine-I-pos",
+                " Phenylalanine-I-neg"
             ]
         },
         "Proline": {
@@ -543,9 +543,9 @@
             ],
             "info": [
                 "Proline-D",
-                "Proline-D-neg",
-                "Proline-I-pos",
-                "Proline-I-neg"
+                " Proline-D-neg",
+                " Proline-I-pos",
+                " Proline-I-neg"
             ]
         },
         "Putrescine": {
@@ -559,11 +559,11 @@
             ],
             "info": [
                 "Putrescine-D",
-                "Putrescine-NL",
-                "Putrescine-D-D",
-                "Putrescine-D-NL",
-                "Putrescine-I-pos",
-                "Putrescine-I-neg"
+                " Putrescine-NL",
+                " Putrescine-D-D",
+                " Putrescine-D-NL",
+                " Putrescine-I-pos",
+                " Putrescine-I-neg"
             ]
         },
         "Riboflavin": {
@@ -575,9 +575,9 @@
             ],
             "info": [
                 "Riboflavin-D",
-                "Riboflavin-D-neg",
-                "Riboflavin-I-pos",
-                "Riboflavin-I-neg"
+                " Riboflavin-D-neg",
+                " Riboflavin-I-pos",
+                " Riboflavin-I-neg"
             ]
         },
         "SAM": {
@@ -585,13 +585,15 @@
                 569.2025,
                 739.2604,
                 399.1446,
-                398.1372
+                398.1372,
+                397.1299
             ],
             "info": [
                 "SAM-D",
-                "SAM-D-D",
-                "SAM-I-pos",
-                "SAM-I-neg"
+                " SAM-D-D",
+                " SAM-I-pos",
+                " SAM-I-neg",
+                " -"
             ]
         },
         "Serine": {
@@ -604,10 +606,10 @@
             ],
             "info": [
                 "Serine-D",
-                "Serine-NL",
-                "Serine-D-neg",
-                "Serine-I-pos",
-                "Serine-I-neg"
+                " Serine-NL",
+                " Serine-D-neg",
+                " Serine-I-pos",
+                " Serine-I-neg"
             ]
         },
         "Serotonin": {
@@ -620,10 +622,10 @@
             ],
             "info": [
                 "Serotonin-D",
-                "Serotonin-NL",
-                "Serotonin-D-neg",
-                "Serotonin-I-pos",
-                "Serotonin-I-neg"
+                " Serotonin-NL",
+                " Serotonin-D-neg",
+                " Serotonin-I-pos",
+                " Serotonin-I-neg"
             ]
         },
         "Spermidine": {
@@ -638,12 +640,12 @@
             ],
             "info": [
                 "Spermidine-D",
-                "Spermidine-NL",
-                "Spermidine-D-D",
-                "Spermidine-D-NL",
-                "Spermidine-D-neg",
-                "Spermidine-I-pos",
-                "Spermidine-I-neg"
+                " Spermidine-NL",
+                " Spermidine-D-D",
+                " Spermidine-D-NL",
+                " Spermidine-D-neg",
+                " Spermidine-I-pos",
+                " Spermidine-I-neg"
             ]
         },
         "Spermine": {
@@ -658,24 +660,24 @@
             ],
             "info": [
                 "Spermine-D",
-                "Spermine-NL",
-                "Spermine-D-D",
-                "Spermine-D-NL",
-                "Spermine-D-neg",
-                "Spermine-I-pos",
-                "Spermine-I-neg"
+                " Spermine-NL",
+                " Spermine-D-D",
+                " Spermine-D-NL",
+                " Spermine-D-neg",
+                " Spermine-I-pos",
+                " Spermine-I-neg"
             ]
         },
         "TMAO": {
             "ions": [
-                230.1387,
-                115.573,
+                246.1336,
+                200.0918,
                 76.0757
             ],
             "info": [
                 "TMAO-D",
-                "TMAO-NL",
-                "TMAO-I-pos"
+                " TMAO-NL",
+                " TMAO-I-pos"
             ]
         },
         "Taurine": {
@@ -688,10 +690,10 @@
             ],
             "info": [
                 "Taurine-D",
-                "Taurine-NL",
-                "Taurine-D-neg",
-                "Taurine-I-pos",
-                "Taurine-I-neg"
+                " Taurine-NL",
+                " Taurine-D-neg",
+                " Taurine-I-pos",
+                " Taurine-I-neg"
             ]
         },
         "Threonine": {
@@ -704,10 +706,10 @@
             ],
             "info": [
                 "Threonine-D",
-                "Threonine-D-NL",
-                "Threonine-D-neg",
-                "Threonine-I-pos",
-                "Threonine-I-neg"
+                " Threonine-D-NL",
+                " Threonine-D-neg",
+                " Threonine-I-pos",
+                " Threonine-I-neg"
             ]
         },
         "Tryptamine": {
@@ -722,12 +724,12 @@
             ],
             "info": [
                 "Tryptamine-D",
-                "Tryptamine-NL",
-                "Tryptamine-D-D",
-                "Tryptamine-D-NL",
-                "Tryptamine-D-neg",
-                "Tryptamine-I-pos",
-                "Tryptamine-I-neg"
+                " Tryptamine-NL",
+                " Tryptamine-D-D",
+                " Tryptamine-D-NL",
+                " Tryptamine-D-neg",
+                " Tryptamine-I-pos",
+                " Tryptamine-I-neg"
             ]
         },
         "Tryptophan": {
@@ -740,10 +742,10 @@
             ],
             "info": [
                 "Tryptophan-D",
-                "Tryptophan-NL",
-                "Tryptophan-D-neg",
-                "Tryptophan-I-pos",
-                "Tryptophan-I-neg"
+                " Tryptophan-NL",
+                " Tryptophan-D-neg",
+                " Tryptophan-I-pos",
+                " Tryptophan-I-neg"
             ]
         },
         "Tyrosine": {
@@ -756,10 +758,10 @@
             ],
             "info": [
                 "Tyrosine-D",
-                "Tyrosine-NL",
-                "Tyrosine-D-neg",
-                "Tyrosine-I-pos",
-                "Tyrosine-I-neg"
+                " Tyrosine-NL",
+                " Tyrosine-D-neg",
+                " Tyrosine-I-pos",
+                " Tyrosine-I-neg"
             ]
         },
         "Uracil": {
@@ -770,24 +772,24 @@
             ],
             "info": [
                 "Uracil-D",
-                "Uracil-D-D",
-                "Uracil-I-pos"
+                " Uracil-D-D",
+                " Uracil-I-pos"
             ]
         },
         "Uridine": {
             "ions": [
                 415.1348,
                 413.1201,
-                371.1086,
+                369.0929,
                 245.0769,
                 243.0622
             ],
             "info": [
                 "Uridine-D",
-                "Uridine-D-neg",
-                "Uridine-NL",
-                "Uridine-I-pos",
-                "Uridine-I-neg"
+                " Uridine-D-neg",
+                " Uridine-NL",
+                " Uridine-I-pos",
+                " Uridine-I-neg"
             ]
         },
         "Urea": {
@@ -802,12 +804,12 @@
             ],
             "info": [
                 "Urea-D",
-                "Urea-NL",
-                "Urea-D-D",
-                "Urea-D-NL",
-                "Urea-D-neg",
-                "Urea-I-pos",
-                "Urea-I-neg"
+                " Urea-NL",
+                " Urea-D-D",
+                " Urea-D-NL",
+                " Urea-D-neg",
+                " Urea-I-pos",
+                " Urea-I-neg"
             ]
         },
         "Valine": {
@@ -816,14 +818,14 @@
                 242.1023,
                 286.1296,
                 118.0863,
-                116.0177
+                116.0717
             ],
             "info": [
                 "Valine-D",
-                "Valine-NL",
-                "Valine-D-neg",
-                "Valine-I-pos",
-                "Valine-I-neg"
+                " Valine-NL",
+                " Valine-D-neg",
+                " Valine-I-pos",
+                " Valine-I-neg"
             ]
         },
         "Carbamoyl Phosphate": {
@@ -836,10 +838,10 @@
             ],
             "info": [
                 "Carbamoyl phosphate-D",
-                "Carbamoyl phosphate-NL",
-                "Carbamoyl phosphate-D-neg",
-                "Carbamoyl phosphate-I-pos",
-                "Carbamoyl phosphate-I-neg"
+                " Carbamoyl phosphate-NL",
+                " Carbamoyl phosphate-D-neg",
+                " Carbamoyl phosphate-I-pos",
+                " Carbamoyl phosphate-I-neg"
             ]
         },
         "Aminoadipic acid": {
@@ -852,10 +854,10 @@
             ],
             "info": [
                 "Aminoadipic acid-D",
-                "Aminoadipic acid-NL",
-                "Aminoadipic acid-D-neg",
-                "Aminoadipic acid-I-pos",
-                "Aminoadipic acid-I-neg"
+                " Aminoadipic acid-NL",
+                " Aminoadipic acid-D-neg",
+                " Aminoadipic acid-I-pos",
+                " Aminoadipic acid-I-neg"
             ]
         }
     },
@@ -3726,6 +3728,2192 @@
             "info": [
                 "[M+H]+",
                 " [M-H]-"
+            ]
+        }
+    },
+    "DEEMM2": {
+        "Adenine": {
+            "ions": [
+                136.0618,
+                134.0472,
+                158.0443,
+                153.0889,
+                306.1197,
+                260.0778,
+                476.1776,
+                430.1357,
+                0.0,
+                0.0,
+                329.1095,
+                283.0676,
+                499.1674,
+                453.1255,
+                324.1541,
+                278.1122,
+                494.212,
+                448.1701
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Adenosine": {
+            "ions": [
+                268.1041,
+                266.0895,
+                290.0865,
+                285.1311,
+                438.162,
+                392.1201,
+                0.0,
+                0.0,
+                436.1474,
+                0.0,
+                461.1517,
+                415.1099,
+                0.0,
+                0.0,
+                456.1963,
+                410.1545,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Agmatine": {
+            "ions": [
+                131.1291,
+                129.1145,
+                153.1116,
+                148.1562,
+                301.1871,
+                255.1452,
+                471.245,
+                425.2031,
+                299.1725,
+                0.0,
+                324.1768,
+                278.135,
+                494.2347,
+                448.1929,
+                319.2214,
+                273.1796,
+                489.2793,
+                443.2375
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Alanine": {
+            "ions": [
+                90.055,
+                88.0404,
+                112.0374,
+                107.0821,
+                260.1129,
+                214.071,
+                0.0,
+                0.0,
+                258.0983,
+                0.0,
+                283.1027,
+                237.0608,
+                0.0,
+                0.0,
+                278.1473,
+                232.1054,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Arginine": {
+            "ions": [
+                175.119,
+                173.1044,
+                197.1014,
+                192.146,
+                345.1769,
+                299.135,
+                515.2348,
+                469.1929,
+                343.1623,
+                0.0,
+                368.1667,
+                322.1248,
+                538.2246,
+                492.1827,
+                363.2113,
+                317.1694,
+                533.2692,
+                487.2273
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Asparagine": {
+            "ions": [
+                133.0608,
+                131.0462,
+                155.0433,
+                150.0879,
+                303.1187,
+                257.0768,
+                473.1766,
+                427.1347,
+                301.1041,
+                0.0,
+                326.1085,
+                280.0666,
+                496.1664,
+                450.1245,
+                321.1531,
+                275.1112,
+                491.211,
+                445.1691
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Aspartic acid": {
+            "ions": [
+                134.0448,
+                132.0302,
+                156.0273,
+                151.0719,
+                304.1027,
+                258.0609,
+                0.0,
+                0.0,
+                302.0881,
+                0.0,
+                327.0925,
+                281.0506,
+                0.0,
+                0.0,
+                322.1371,
+                276.0952,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Betaine": {
+            "ions": [
+                118.0863,
+                0.0,
+                140.0687,
+                135.1134,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Cadaverine": {
+            "ions": [
+                103.123,
+                101.1084,
+                125.1055,
+                120.1501,
+                273.1809,
+                227.139,
+                443.2388,
+                397.197,
+                271.1663,
+                0.0,
+                296.1707,
+                250.1288,
+                466.2286,
+                420.1867,
+                291.2153,
+                245.1734,
+                461.2732,
+                415.2313
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Caffeine": {
+            "ions": [
+                195.0877,
+                0.0,
+                217.0701,
+                212.1147,
+                365.1456,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                388.1354,
+                0.0,
+                0.0,
+                0.0,
+                383.18,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Choline": {
+            "ions": [
+                104.1075,
+                0.0,
+                127.0973,
+                122.1419,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Citrulline": {
+            "ions": [
+                176.103,
+                174.0884,
+                198.0855,
+                193.1301,
+                346.1609,
+                300.119,
+                516.2188,
+                470.1769,
+                344.1463,
+                0.0,
+                369.1507,
+                323.1088,
+                539.2086,
+                493.1667,
+                364.1953,
+                318.1534,
+                534.2532,
+                488.2113
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Cysteine": {
+            "ions": [
+                122.027,
+                120.0124,
+                144.0095,
+                139.0541,
+                292.085,
+                246.0431,
+                462.1429,
+                416.101,
+                290.0704,
+                0.0,
+                315.0747,
+                269.0329,
+                485.1326,
+                439.0908,
+                310.1193,
+                264.0775,
+                480.1772,
+                434.1354
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "DOPA": {
+            "ions": [
+                198.0761,
+                196.0615,
+                220.0586,
+                215.1032,
+                368.134,
+                322.0922,
+                0.0,
+                0.0,
+                366.1194,
+                0.0,
+                391.1238,
+                345.0819,
+                0.0,
+                0.0,
+                386.1684,
+                340.1265,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Dopamine": {
+            "ions": [
+                154.0863,
+                152.0717,
+                176.0687,
+                171.1134,
+                324.1442,
+                278.1023,
+                0.0,
+                0.0,
+                322.1296,
+                0.0,
+                347.134,
+                301.0921,
+                0.0,
+                0.0,
+                342.1786,
+                296.1367,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "GABA": {
+            "ions": [
+                104.0706,
+                102.056,
+                126.0531,
+                121.0977,
+                274.1285,
+                228.0867,
+                0.0,
+                0.0,
+                272.1139,
+                0.0,
+                297.1183,
+                251.0764,
+                0.0,
+                0.0,
+                292.1629,
+                246.121,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Glutamic acid": {
+            "ions": [
+                148.0605,
+                146.0459,
+                170.0429,
+                165.0875,
+                318.1184,
+                272.0765,
+                0.0,
+                0.0,
+                316.1038,
+                0.0,
+                341.1081,
+                295.0663,
+                0.0,
+                0.0,
+                336.1527,
+                290.1109,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Glutamine": {
+            "ions": [
+                147.0764,
+                145.0618,
+                169.0589,
+                164.1035,
+                317.1344,
+                271.0925,
+                0.0,
+                0.0,
+                315.1198,
+                0.0,
+                340.1241,
+                294.0823,
+                0.0,
+                0.0,
+                335.1687,
+                289.1269,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Glycine": {
+            "ions": [
+                76.0393,
+                74.0247,
+                98.0218,
+                93.0664,
+                246.0972,
+                200.0554,
+                0.0,
+                0.0,
+                244.0826,
+                0.0,
+                269.087,
+                223.0451,
+                0.0,
+                0.0,
+                264.1316,
+                218.0897,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Histamine": {
+            "ions": [
+                112.0869,
+                110.0723,
+                134.0694,
+                129.114,
+                282.1449,
+                236.103,
+                0.0,
+                0.0,
+                280.1303,
+                0.0,
+                305.1346,
+                259.0928,
+                0.0,
+                0.0,
+                300.1792,
+                254.1374,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Histidine": {
+            "ions": [
+                156.0768,
+                154.0622,
+                178.0592,
+                173.1039,
+                326.1347,
+                280.0928,
+                496.1926,
+                450.1507,
+                324.1201,
+                0.0,
+                349.1245,
+                303.0826,
+                519.1824,
+                473.1405,
+                344.1691,
+                298.1272,
+                514.227,
+                468.1851
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Homocitrulline": {
+            "ions": [
+                190.1186,
+                188.104,
+                212.1011,
+                207.1457,
+                360.1766,
+                314.1347,
+                0.0,
+                0.0,
+                358.162,
+                0.0,
+                383.1663,
+                337.1245,
+                0.0,
+                0.0,
+                378.2109,
+                332.1691,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Hypoxanthine": {
+            "ions": [
+                137.0458,
+                135.0312,
+                159.0283,
+                154.0729,
+                307.1037,
+                0.0,
+                0.0,
+                0.0,
+                305.0891,
+                0.0,
+                330.0935,
+                0.0,
+                0.0,
+                0.0,
+                325.1381,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Kynurenine": {
+            "ions": [
+                209.0921,
+                207.0775,
+                231.0746,
+                226.1192,
+                379.15,
+                333.1081,
+                549.2079,
+                503.166,
+                377.1354,
+                0.0,
+                402.1398,
+                356.0979,
+                572.1977,
+                526.1558,
+                397.1844,
+                351.1425,
+                567.2423,
+                521.2004
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "(Iso)Leucine": {
+            "ions": [
+                132.1019,
+                130.0873,
+                154.0844,
+                149.129,
+                302.1598,
+                256.118,
+                0.0,
+                0.0,
+                300.1452,
+                0.0,
+                325.1496,
+                279.1077,
+                0.0,
+                0.0,
+                320.1942,
+                274.1523,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Lysine": {
+            "ions": [
+                147.1128,
+                145.0982,
+                169.0953,
+                164.1399,
+                317.1707,
+                271.1289,
+                487.2286,
+                441.1868,
+                315.1561,
+                0.0,
+                340.1605,
+                294.1186,
+                510.2184,
+                464.1765,
+                335.2051,
+                289.1632,
+                505.263,
+                459.2212
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Methionine": {
+            "ions": [
+                150.0583,
+                148.0437,
+                172.0408,
+                167.0854,
+                320.1163,
+                274.0744,
+                0.0,
+                0.0,
+                318.1017,
+                0.0,
+                343.106,
+                297.0642,
+                0.0,
+                0.0,
+                338.1506,
+                292.1088,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "NH3": {
+            "ions": [
+                18.0338,
+                16.0192,
+                40.0163,
+                35.0609,
+                188.0918,
+                142.0499,
+                358.1497,
+                312.1078,
+                186.0772,
+                0.0,
+                211.0815,
+                165.0397,
+                381.1394,
+                335.0976,
+                206.1261,
+                160.0843,
+                376.184,
+                330.1422
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Niacinamide": {
+            "ions": [
+                123.0553,
+                0.0,
+                145.0378,
+                140.0824,
+                293.1132,
+                247.0714,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                316.103,
+                270.0611,
+                0.0,
+                0.0,
+                311.1476,
+                265.1057,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Ornithine": {
+            "ions": [
+                133.0972,
+                131.0826,
+                155.0796,
+                150.1243,
+                303.1551,
+                257.1132,
+                473.213,
+                427.1711,
+                301.1405,
+                471.1984,
+                326.1449,
+                280.103,
+                496.2028,
+                450.1609,
+                321.1895,
+                275.1476,
+                491.2474,
+                445.2055
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Orotic acid": {
+            "ions": [
+                157.0244,
+                155.0098,
+                179.0069,
+                174.0515,
+                327.0823,
+                0.0,
+                497.1402,
+                0.0,
+                325.0677,
+                0.0,
+                350.0721,
+                0.0,
+                520.13,
+                0.0,
+                345.1167,
+                0.0,
+                515.1746,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Phenylalanine": {
+            "ions": [
+                166.0863,
+                164.0717,
+                188.0687,
+                183.1134,
+                336.1442,
+                290.1023,
+                0.0,
+                0.0,
+                334.1296,
+                0.0,
+                359.134,
+                313.0921,
+                0.0,
+                0.0,
+                354.1786,
+                308.1367,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Proline": {
+            "ions": [
+                116.0706,
+                114.056,
+                138.0531,
+                133.0977,
+                286.1285,
+                0.0,
+                0.0,
+                0.0,
+                284.1139,
+                0.0,
+                309.1183,
+                0.0,
+                0.0,
+                0.0,
+                304.1629,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Putrescine": {
+            "ions": [
+                89.1073,
+                87.0927,
+                111.0898,
+                106.1344,
+                259.1653,
+                213.1234,
+                429.2232,
+                383.1813,
+                0.0,
+                0.0,
+                282.155,
+                236.1132,
+                452.2129,
+                406.1711,
+                277.1996,
+                231.1578,
+                447.2575,
+                401.2157
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Riboflavin": {
+            "ions": [
+                377.1456,
+                375.131,
+                399.1281,
+                394.1727,
+                547.2035,
+                0.0,
+                0.0,
+                0.0,
+                545.1889,
+                0.0,
+                570.1933,
+                0.0,
+                0.0,
+                0.0,
+                565.2379,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "SAM": {
+            "ions": [
+                399.1445,
+                397.1299,
+                421.127,
+                416.1716,
+                569.2024,
+                0.0,
+                739.2604,
+                0.0,
+                0.0,
+                0.0,
+                592.1922,
+                0.0,
+                762.2501,
+                0.0,
+                587.2368,
+                0.0,
+                757.2947,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Serine": {
+            "ions": [
+                106.0499,
+                104.0353,
+                128.0324,
+                123.077,
+                276.1078,
+                230.0659,
+                0.0,
+                0.0,
+                274.0932,
+                0.0,
+                299.0976,
+                253.0557,
+                0.0,
+                0.0,
+                294.1422,
+                248.1003,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Serotonin": {
+            "ions": [
+                177.1023,
+                175.0877,
+                199.0847,
+                194.1293,
+                347.1602,
+                301.1183,
+                0.0,
+                0.0,
+                345.1456,
+                0.0,
+                370.1499,
+                324.1081,
+                0.0,
+                0.0,
+                365.1945,
+                319.1527,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Spermidine": {
+            "ions": [
+                146.1652,
+                144.1506,
+                168.1477,
+                163.1923,
+                316.2231,
+                270.1812,
+                486.281,
+                440.2392,
+                314.2085,
+                0.0,
+                339.2129,
+                293.171,
+                509.2708,
+                463.2289,
+                334.2575,
+                288.2156,
+                504.3154,
+                458.2735
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Spermine": {
+            "ions": [
+                203.223,
+                201.2084,
+                225.2055,
+                220.2501,
+                373.281,
+                327.2391,
+                543.3389,
+                497.297,
+                371.2664,
+                0.0,
+                396.2707,
+                350.2289,
+                566.3286,
+                520.2868,
+                391.3153,
+                345.2735,
+                561.3732,
+                515.3314
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "TMAO": {
+            "ions": [
+                76.0757,
+                0.0,
+                98.0582,
+                93.1028,
+                246.1336,
+                200.0918,
+                0.0,
+                0.0,
+                0.0,
+                0.0,
+                269.1234,
+                223.0815,
+                0.0,
+                0.0,
+                264.168,
+                218.1261,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Taurine": {
+            "ions": [
+                126.022,
+                124.0074,
+                148.0044,
+                143.049,
+                296.0799,
+                250.038,
+                0.0,
+                0.0,
+                294.0653,
+                0.0,
+                319.0696,
+                273.0278,
+                0.0,
+                0.0,
+                314.1142,
+                268.0724,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Threonine": {
+            "ions": [
+                120.0655,
+                118.0509,
+                142.048,
+                137.0926,
+                290.1235,
+                244.0816,
+                0.0,
+                0.0,
+                288.1089,
+                0.0,
+                313.1132,
+                267.0714,
+                0.0,
+                0.0,
+                308.1578,
+                262.116,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Tryptamine": {
+            "ions": [
+                161.1073,
+                159.0927,
+                183.0898,
+                178.1344,
+                331.1653,
+                285.1234,
+                501.2232,
+                455.1813,
+                329.1507,
+                0.0,
+                354.155,
+                308.1132,
+                524.2129,
+                478.1711,
+                349.1996,
+                303.1578,
+                519.2575,
+                473.2157
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Tryptophan": {
+            "ions": [
+                205.0972,
+                203.0826,
+                227.0796,
+                222.1243,
+                375.1551,
+                329.1132,
+                0.0,
+                0.0,
+                373.1405,
+                0.0,
+                398.1449,
+                352.103,
+                0.0,
+                0.0,
+                393.1895,
+                347.1476,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Tyrosine": {
+            "ions": [
+                182.0812,
+                180.0666,
+                204.0637,
+                199.1083,
+                352.1391,
+                306.0972,
+                0.0,
+                0.0,
+                350.1245,
+                0.0,
+                375.1289,
+                329.087,
+                0.0,
+                0.0,
+                370.1735,
+                324.1316,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Uracil": {
+            "ions": [
+                113.0346,
+                0.0,
+                135.017,
+                130.0617,
+                283.0925,
+                0.0,
+                453.1504,
+                0.0,
+                0.0,
+                0.0,
+                306.0823,
+                0.0,
+                476.1402,
+                0.0,
+                301.1269,
+                0.0,
+                471.1848,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Uridine": {
+            "ions": [
+                245.0768,
+                243.0622,
+                267.0593,
+                262.1039,
+                415.1347,
+                369.0929,
+                585.1927,
+                539.1508,
+                413.1201,
+                0.0,
+                438.1245,
+                392.0826,
+                608.1824,
+                562.1406,
+                433.1691,
+                387.1273,
+                603.227,
+                557.1852
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Urea": {
+            "ions": [
+                61.0397,
+                59.0251,
+                83.0221,
+                78.0667,
+                231.0976,
+                185.0557,
+                401.1555,
+                355.1136,
+                229.083,
+                0.0,
+                254.0873,
+                208.0455,
+                424.1452,
+                378.1034,
+                249.1319,
+                203.0901,
+                419.1899,
+                373.148
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Valine": {
+            "ions": [
+                118.0863,
+                116.0717,
+                140.0687,
+                135.1134,
+                288.1442,
+                242.1023,
+                0.0,
+                0.0,
+                286.1296,
+                0.0,
+                311.134,
+                265.0921,
+                0.0,
+                0.0,
+                306.1786,
+                260.1367,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Carbamoyl Phosphate": {
+            "ions": [
+                141.99,
+                139.9754,
+                163.9725,
+                159.0171,
+                312.0479,
+                266.0061,
+                0.0,
+                0.0,
+                310.0333,
+                0.0,
+                335.0377,
+                288.9958,
+                0.0,
+                0.0,
+                330.0823,
+                284.0404,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
+            ]
+        },
+        "Aminoadipic acid": {
+            "ions": [
+                162.0761,
+                160.0615,
+                184.0586,
+                179.1032,
+                332.134,
+                286.0922,
+                0.0,
+                0.0,
+                330.1194,
+                0.0,
+                355.1238,
+                309.0819,
+                0.0,
+                0.0,
+                350.1684,
+                304.1265,
+                0.0,
+                0.0
+            ],
+            "info": [
+                "pos",
+                " neg",
+                " +Na+",
+                " +NH4+",
+                " -D",
+                " -NL",
+                " -D-D",
+                " -D-NL",
+                " D-neg",
+                " D-D-neg",
+                " -D+Na+",
+                " -NL+Na+",
+                " -D-D+Na+",
+                " -D-NL+Na+",
+                " -D+NH4+",
+                " -NL+NH4+",
+                " -D-D+NH4+",
+                " -D-NL+NH4+"
             ]
         }
     }
