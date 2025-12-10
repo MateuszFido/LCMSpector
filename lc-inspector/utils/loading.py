@@ -9,6 +9,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 from pyteomics import mzml
+from numba import jit
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ def load_annotated_peaks(file_path):
 
     return df
 
-
+@jit
 def load_ms_data(path: str) -> Tuple[tuple, tuple]:
     """
     Using the pyteomics library, load the data from the .mzML file.
