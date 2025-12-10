@@ -4,22 +4,38 @@ import logging
 import json
 from pathlib import Path
 from datetime import datetime
+from types import MethodType
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
 import pyqtgraph as pg
-from utils.plotting import plot_absorbance_data, plot_average_ms_data, \
-plot_annotated_LC, plot_annotated_XICs, plot_calibration_curve,  \
-plot_total_ion_current, plot_library_ms2, plot_no_ms2_found, plot_ms2_from_file
+from utils.plotting import (
+    plot_absorbance_data,
+    plot_average_ms_data,
+    plot_annotated_LC,
+    plot_annotated_XICs,
+    plot_calibration_curve,
+    plot_total_ion_current,
+    plot_library_ms2,
+    plot_no_ms2_found,
+    plot_ms2_from_file,
+)
 from pyqtgraph.dockarea import DockArea
 import numpy as np
 from scipy.signal import find_peaks
-from ui.widgets import DragDropListWidget, IonTable, ChromatogramPlotWidget, UnifiedResultsTable, LabelledSlider
+from ui.widgets import (
+    DragDropListWidget,
+    IonTable,
+    ChromatogramPlotWidget,
+    UnifiedResultsTable,
+    LabelledSlider,
+)
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
 logger.propagate = False
+
 
 class View(QtWidgets.QMainWindow):
     progress_update = QtCore.Signal(int)
@@ -31,9 +47,13 @@ class View(QtWidgets.QMainWindow):
 
     def show_download_confirmation(self):
         """Displays a confirmation dialog for downloading the MS2 library."""
-        reply = QMessageBox.question(self, 'MS2 Library Not Found',
-                                     "The MS2 library is missing. Would you like to download it now? (approx. 400 MB)",
-                                     QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        reply = QMessageBox.question(
+            self,
+            "MS2 Library Not Found",
+            "The MS2 library is missing. Would you like to download it now? (approx. 400 MB)",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
         return reply == QMessageBox.Yes
 
     def show_download_progressBar(self):
@@ -55,11 +75,15 @@ class View(QtWidgets.QMainWindow):
 
     def show_download_success(self):
         """Shows a success message after the download is complete."""
-        QMessageBox.information(self, "Download Complete", "MS2 library downloaded successfully.")
+        QMessageBox.information(
+            self, "Download Complete", "MS2 library downloaded successfully."
+        )
 
     def show_download_failure(self, error_message):
         """Shows a failure message if the download fails."""
-        QMessageBox.critical(self, "Download Failed", f"Failed to download MS2 library:\n{error_message}")
+        QMessageBox.critical(
+            self, "Download Failed", f"Failed to download MS2 library:\n{error_message}"
+        )
 
     def handle_files_dropped_LC(self, file_paths):
         """
@@ -70,35 +94,47 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.show()
         self.processButton.setEnabled(False)
         count_ok = 0
-        error_shown = False # Safeguard to show error message only once
+        error_shown = False  # Safeguard to show error message only once
         for file_path in file_paths:
             # Check if the dropped file is a folder; if yes, check if it contains .txt files
             if os.path.isdir(file_path):
-                txt_files = [f for f in os.listdir(file_path) if f.lower().endswith(".txt") or f.lower().endswith(".csv")]
+                txt_files = [
+                    f
+                    for f in os.listdir(file_path)
+                    if f.lower().endswith(".txt") or f.lower().endswith(".csv")
+                ]
                 if len(txt_files) > 0:
                     for txt_file in txt_files:
                         count_ok += 1
-                        self.listLC.addItem(os.path.join(file_path, txt_file))  # Add each file path to the listLC widget
+                        self.listLC.addItem(
+                            os.path.join(file_path, txt_file)
+                        )  # Add each file path to the listLC widget
                 else:
                     continue
             if file_path.lower().endswith(".txt") or file_path.lower().endswith(".csv"):
                 count_ok += 1
-                self.listLC.addItem(file_path)  # Add each file path to the listLC widget
+                self.listLC.addItem(
+                    file_path
+                )  # Add each file path to the listLC widget
             elif not error_shown:
-                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .csv and .txt files are supported.")
+                self.show_critical_error(
+                    f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .csv and .txt files are supported."
+                )
                 logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
                 error_shown = True
             else:
                 continue
         if count_ok > 0:
-            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} LC files loaded successfully.", 3000)
+            self.statusbar.showMessage(
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} LC files loaded successfully.",
+                3000,
+            )
         self.update_lc_file_list()  # Update the model with the new LC files
         print(self.controller.model.lc_measurements)
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
         self.controller.model.load(self.controller.mode, "LC")
-
 
     def handle_files_dropped_MS(self, file_paths):
         """
@@ -109,29 +145,40 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.show()
         self.processButton.setEnabled(False)
         count_ok = 0
-        error_shown = False # Safeguard to show error message only once
+        error_shown = False  # Safeguard to show error message only once
         for file_path in file_paths:
             # Check if the dropped file is a folder; if yes, check if it contains .mzML files
             if os.path.isdir(file_path):
-                mzml_files = [f for f in os.listdir(file_path) if f.lower().endswith(".mzml")]
+                mzml_files = [
+                    f for f in os.listdir(file_path) if f.lower().endswith(".mzml")
+                ]
                 if len(mzml_files) > 0:
                     count_ok += len(mzml_files)
                     for mzml_file in mzml_files:
-                        self.listMS.addItem(os.path.join(file_path, mzml_file))  # Add each file path to the listLC widget
+                        self.listMS.addItem(
+                            os.path.join(file_path, mzml_file)
+                        )  # Add each file path to the listLC widget
                     continue
             if file_path.lower().endswith(".mzml"):
                 count_ok += 1
-                self.listMS.addItem(file_path)  # Add each file path to the listLC widget
+                self.listMS.addItem(
+                    file_path
+                )  # Add each file path to the listLC widget
             elif not error_shown:
-                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .mzML files are supported.")
+                self.show_critical_error(
+                    f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .mzML files are supported."
+                )
                 logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
                 error_shown = True
             else:
                 continue
         if count_ok > 0:
-            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} MS files loaded successfully.", 3000)
+            self.statusbar.showMessage(
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} MS files loaded successfully.",
+                3000,
+            )
         self.update_ms_file_list()  # Update the model with the new LC files
-        
+
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
@@ -143,50 +190,74 @@ class View(QtWidgets.QMainWindow):
         Updates the model with the new file paths.
         """
         count_ok = 0
-        error_shown = False # Safeguard to show error message only once
+        error_shown = False  # Safeguard to show error message only once
         for file_path in file_paths:
             if file_path.lower().endswith(".txt"):
                 count_ok += 1
-                self.listAnnotations.addItem(file_path)  # Add each file path to the listLC widget
+                self.listAnnotations.addItem(
+                    file_path
+                )  # Add each file path to the listLC widget
                 logger.info(f"Added annotation file: {file_path}")
             elif not error_shown:
-                self.show_critical_error(f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported.")
+                self.show_critical_error(
+                    f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .txt files are supported."
+                )
                 logger.error(f"Invalid file type: {file_path.split('/')[-1]}")
                 error_shown = True
             else:
                 continue
         if count_ok > 0:
-            self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} annotation files loaded successfully.", 3000)
+            self.statusbar.showMessage(
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} annotation files loaded successfully.",
+                3000,
+            )
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
         config_path = Path(__file__).parent.parent / "config.json"
         with open(config_path, "r") as f:
             lists = json.load(f)
-        if self.comboBoxIonLists.currentText() == "Create new ion list..." or self.comboBoxIonLists.currentText() == "":
+        if (
+            self.comboBoxIonLists.currentText() == "Create new ion list..."
+            or self.comboBoxIonLists.currentText() == ""
+        ):
             self.ionTable.clearContents()
             return
         else:
             try:
                 ion_list = lists[self.comboBoxIonLists.currentText()]
             except Exception:
-                logger.error(f"Could not find ion list: {self.comboBoxIonLists.currentText()}")
-                self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {self.comboBoxIonLists.currentText()}", 3000)
+                logger.error(
+                    f"Could not find ion list: {self.comboBoxIonLists.currentText()}"
+                )
+                self.statusbar.showMessage(
+                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {self.comboBoxIonLists.currentText()}",
+                    3000,
+                )
                 ion_list = None
 
             self.ionTable.clearContents()
             if ion_list:
-                i=0
+                i = 0
                 self.ionTable.setRowCount(len(ion_list))
                 for compound, keywords in ion_list.items():
-                    self.ionTable.set_item(i, 0, QtWidgets.QTableWidgetItem(str(compound)))
+                    self.ionTable.set_item(
+                        i, 0, QtWidgets.QTableWidgetItem(str(compound))
+                    )
                     for key, value in keywords.items():
                         if key == "ions":
-                            self.ionTable.set_item(i, 1, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
+                            self.ionTable.set_item(
+                                i,
+                                1,
+                                QtWidgets.QTableWidgetItem(", ".join(map(str, value))),
+                            )
                         elif key == "info":
-                            self.ionTable.set_item(i, 2, QtWidgets.QTableWidgetItem(', '.join(map(str,value))))
-                    i+=1
-
+                            self.ionTable.set_item(
+                                i,
+                                2,
+                                QtWidgets.QTableWidgetItem(", ".join(map(str, value))),
+                            )
+                    i += 1
 
     def on_browseLC(self):
         """
@@ -196,13 +267,20 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.setValue(0)
         self.progressBar.show()
         self.processButton.setEnabled(False)
-        lc_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select LC Files", "", "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)")
+        lc_file_paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Select LC Files",
+            "",
+            "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)",
+        )
         if lc_file_paths:
             self.clear_list_lc()
             for lc_file_path in lc_file_paths:
-                self.listLC.addItem(lc_file_path)  # Add each LC file path to the listLC widget
+                self.listLC.addItem(
+                    lc_file_path
+                )  # Add each LC file path to the listLC widget
             self.update_lc_file_list()  # Update the model with the new LC files
-            
+
             # Trigger loading process
             self.progressBar.setVisible(True)
             self.progressLabel.setVisible(True)
@@ -216,18 +294,26 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.setValue(0)
         self.progressBar.show()
         self.processButton.setEnabled(False)
-        ms_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)")
+        ms_file_paths, _ = QFileDialog.getOpenFileNames(
+            self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)"
+        )
         if ms_file_paths:
             self.clear_list_ms()
             for ms_file_path in ms_file_paths:
-                if ms_file_path.lower().endswith(".mzml") and os.path.isfile(ms_file_path):
-                    self.listMS.addItem(ms_file_path)  # Add each MS file path to the listMS widget
+                if ms_file_path.lower().endswith(".mzml") and os.path.isfile(
+                    ms_file_path
+                ):
+                    self.listMS.addItem(
+                        ms_file_path
+                    )  # Add each MS file path to the listMS widget
                 else:
-                    self.show_critical_error(f"Invalid file type: {ms_file_path.split('/')[-1]}\nCurrently only .mzML files are supported.")
+                    self.show_critical_error(
+                        f"Invalid file type: {ms_file_path.split('/')[-1]}\nCurrently only .mzML files are supported."
+                    )
                     logger.error(f"Invalid file type: {ms_file_path.split('/')[-1]}")
                     return
             self.update_ms_file_list()  # Update the model with the new MS files
-            
+
             # Trigger loading process
             self.progressBar.setVisible(True)
             self.progressLabel.setVisible(True)
@@ -238,13 +324,20 @@ class View(QtWidgets.QMainWindow):
         Slot for the browseAnnotations button. Opens a file dialog for selecting annotation files,
         which are then added to the listAnnotations widget and the model is updated.
         """
-        annotation_file_paths, _ = QFileDialog.getOpenFileNames(self, "Select Annotation Files", "", "Text Files (*.txt);;All Files (*)")
+        annotation_file_paths, _ = QFileDialog.getOpenFileNames(
+            self, "Select Annotation Files", "", "Text Files (*.txt);;All Files (*)"
+        )
         if annotation_file_paths:
             self.clear_list_annotated_lc()
             for annotation_file_path in annotation_file_paths:
-                self.listAnnotations.addItem(annotation_file_path)  # Add each annotation file path to the listAnnotations widget
+                self.listAnnotations.addItem(
+                    annotation_file_path
+                )  # Add each annotation file path to the listAnnotations widget
             self.update_annotation_file()  # Update the model with the new annotation files
-            self.statusbar.showMessage(f"Files added, {len(annotation_file_paths)} annotation files loaded successfully.", 3000)
+            self.statusbar.showMessage(
+                f"Files added, {len(annotation_file_paths)} annotation files loaded successfully.",
+                3000,
+            )
 
     def on_process(self):
         # Trigger the processing action in the controller
@@ -259,14 +352,19 @@ class View(QtWidgets.QMainWindow):
     def on_export(self):
         results = self.controller.model.export()
         if not results.empty:
-            file_name, _ = QFileDialog.getSaveFileName(self, "Save Results", "", "CSV Files (*.csv);;All Files (*)")
+            file_name, _ = QFileDialog.getSaveFileName(
+                self, "Save Results", "", "CSV Files (*.csv);;All Files (*)"
+            )
             if file_name:
-                f = open(file_name, 'w')
+                f = open(file_name, "w")
                 f.write(results.to_csv(index=False))
                 f.close()
                 output_folder = os.path.dirname(file_name)
             try:
-                self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Saved results to output folder {output_folder}", 5000)
+                self.statusbar.showMessage(
+                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Saved results to output folder {output_folder}",
+                    5000,
+                )
             except UnboundLocalError:
                 return
         else:
@@ -295,7 +393,7 @@ class View(QtWidgets.QMainWindow):
         except RuntimeError:
             logger.error("listLC has been deleted!")
         finally:
-            self.controller.model.lc_measurements = lc_files 
+            self.controller.model.lc_measurements = lc_files
 
     def update_ms_file_list(self):
         # Update the model with the MS file paths
@@ -322,12 +420,16 @@ class View(QtWidgets.QMainWindow):
         except AttributeError:
             logger.warning("One of QWidgetItem is None, retrying...")
             try:
-                ms_files = [self.listMS.item(i).text() for i in range(self.listMS.count())]
+                ms_files = [
+                    self.listMS.item(i).text() for i in range(self.listMS.count())
+                ]
             except AttributeError:
                 logger.error("One of QWidgetItem is still None, aborting...")
-                self.show_critical_error("Something went wrong during updating of the MS file list. Please try again.")
+                self.show_critical_error(
+                    "Something went wrong during updating of the MS file list. Please try again."
+                )
         finally:
-            self.controller.model.ms_measurements = ms_files  
+            self.controller.model.ms_measurements = ms_files
 
     def update_annotation_file(self):
         # Update the model with the annotation file paths
@@ -348,19 +450,24 @@ class View(QtWidgets.QMainWindow):
             logger.warning("listAnnotations is not defined!")
             return
         try:
-            annotation_files = [self.listAnnotations.item(i).text() for i in range(self.listAnnotations.count())]
+            annotation_files = [
+                self.listAnnotations.item(i).text()
+                for i in range(self.listAnnotations.count())
+            ]
         except RuntimeError:
             logger.error("listAnnotations has been deleted!")
         finally:
-            self.controller.model.annotations = annotation_files 
+            self.controller.model.annotations = annotation_files
 
     def update_progressBar(self, value):
         self.progressBar.setValue(value)
         self.progressLabel.setText(f"{value}%")
 
     def update_statusbar_with_loaded_file(self, progress, message):
-        self.statusbar.showMessage(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Loaded file {message} ({progress}%)", 1000)
-
+        self.statusbar.showMessage(
+            f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Loaded file {message} ({progress}%)",
+            1000,
+        )
 
     def show_critical_error(self, message):
         QtWidgets.QMessageBox.critical(self, "Error", message)
@@ -376,46 +483,53 @@ class View(QtWidgets.QMainWindow):
         """
         # Store concentrations for later use
         self.file_concentrations = concentrations
-        
+
         # Setup columns and populate data based on current compound selection
         self.update_unified_table_for_compound()
-    
+
     def update_unified_table_for_compound(self):
         """
         Update the unified table based on the currently selected compound.
         """
-        if not hasattr(self, 'file_concentrations'):
+        if not hasattr(self, "file_concentrations"):
             return
-            
+
         # Get the currently selected compound
         current_compound = None
-        if (hasattr(self.controller, 'model') and 
-            hasattr(self.controller.model, 'compounds') and 
-            self.controller.model.compounds and
-            self.comboBoxChooseCompound.currentIndex() >= 0):
-            
-            current_compound = self.controller.model.compounds[self.comboBoxChooseCompound.currentIndex()]
-            
+        if (
+            hasattr(self.controller, "model")
+            and hasattr(self.controller.model, "compounds")
+            and self.controller.model.compounds
+            and self.comboBoxChooseCompound.currentIndex() >= 0
+        ):
+            current_compound = self.controller.model.compounds[
+                self.comboBoxChooseCompound.currentIndex()
+            ]
+
             # Setup columns for the current compound
             self.unifiedResultsTable.setup_columns(current_compound)
-            
+
             # Get MS measurements if available
-            ms_measurements = getattr(self.controller.model, 'ms_measurements', {})
-            
+            ms_measurements = getattr(self.controller.model, "ms_measurements", {})
+
             # Populate the table with data for the current compound
-            self.unifiedResultsTable.populate_data(self.file_concentrations, ms_measurements, current_compound)
+            self.unifiedResultsTable.populate_data(
+                self.file_concentrations, ms_measurements, current_compound
+            )
         else:
             # Fallback: just setup basic columns without compound data
             self.unifiedResultsTable.setColumnCount(3)
-            self.unifiedResultsTable.setHorizontalHeaderLabels(["File", "Calibration", "Concentration"])
+            self.unifiedResultsTable.setHorizontalHeaderLabels(
+                ["File", "Calibration", "Concentration"]
+            )
             self.unifiedResultsTable.setRowCount(len(self.file_concentrations))
-            
+
             for row, (filename, concentration) in enumerate(self.file_concentrations):
                 # File name
                 file_item = QtWidgets.QTableWidgetItem(filename)
                 file_item.setFlags(file_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.unifiedResultsTable.setItem(row, 0, file_item)
-                
+
                 # Calibration checkbox
                 checkbox_widget = QtWidgets.QWidget()
                 checkbox = QtWidgets.QCheckBox()
@@ -425,7 +539,7 @@ class View(QtWidgets.QMainWindow):
                 layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
                 layout.setContentsMargins(0, 0, 0, 0)
                 self.unifiedResultsTable.setCellWidget(row, 1, checkbox_widget)
-                
+
                 # Concentration
                 conc_item = QtWidgets.QTableWidgetItem(concentration or "")
                 self.unifiedResultsTable.setItem(row, 2, conc_item)
@@ -446,19 +560,33 @@ class View(QtWidgets.QMainWindow):
             self.canvas_baseline.clear()
             if lc_file:
                 try:
-                    plot_absorbance_data(lc_file.path, lc_file.baseline_corrected, self.canvas_baseline)
-                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
-                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
-                    self.canvas_baseline.getPlotItem().addItem(self.line_marker, ignoreBounds=True)
-                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
-                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
-                except Exception: 
-                    logger.error(f"No baseline chromatogram found: {traceback.format_exc()}")
+                    plot_absorbance_data(
+                        lc_file.path, lc_file.baseline_corrected, self.canvas_baseline
+                    )
+                    self.canvas_baseline.getPlotItem().addItem(
+                        self.crosshair_v, ignoreBounds=True
+                    )
+                    self.canvas_baseline.getPlotItem().addItem(
+                        self.crosshair_h, ignoreBounds=True
+                    )
+                    self.canvas_baseline.getPlotItem().addItem(
+                        self.line_marker, ignoreBounds=True
+                    )
+                    self.crosshair_v_label = pg.InfLineLabel(
+                        self.crosshair_v, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                    )
+                    self.crosshair_h_label = pg.InfLineLabel(
+                        self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                    )
+                except Exception:
+                    logger.error(
+                        f"No baseline chromatogram found: {traceback.format_exc()}"
+                    )
             self.canvas_avgMS.clear()
             if ms_file:
                 try:
                     plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
-                except AttributeError: 
+                except AttributeError:
                     logger.error(f"No average MS found: {traceback.format_exc()}")
             self.canvas_XICs.clear()
             if ms_file:
@@ -466,23 +594,35 @@ class View(QtWidgets.QMainWindow):
                 self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
-                except AttributeError: 
+                except AttributeError:
                     logger.error(f"No XIC plot found: {traceback.format_exc()}")
             if lc_file and ms_file:
                 if lc_file.filename == ms_file.filename:
                     try:
                         self.canvas_annotatedLC.clear()
-                        self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
+                        self.curve_list = plot_annotated_LC(
+                            lc_file.path,
+                            lc_file.baseline_corrected,
+                            self.canvas_annotatedLC,
+                        )
                     except RuntimeError:
-                        logger.error("Canvas was deleted, reacreating canvas_annotatedLC.")
+                        logger.error(
+                            "Canvas was deleted, reacreating canvas_annotatedLC."
+                        )
                         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
                         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
                         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
                         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
-                        self.curve_list = plot_annotated_LC(lc_file.path, lc_file.baseline_corrected, self.canvas_annotatedLC)
+                        self.curve_list = plot_annotated_LC(
+                            lc_file.path,
+                            lc_file.baseline_corrected,
+                            self.canvas_annotatedLC,
+                        )
                     for curve in self.curve_list.keys():
-                        curve.sigClicked.connect(lambda c: self.highlight_peak(c, ms_file.xics))                
-                    
+                        curve.sigClicked.connect(
+                            lambda c: self.highlight_peak(c, ms_file.xics)
+                        )
+
         elif self.controller.mode == "MS Only":
             try:
                 self.canvas_baseline.clear()
@@ -498,28 +638,42 @@ class View(QtWidgets.QMainWindow):
                 logger.error(f"Widgets not found: {traceback.format_exc()}")
             if ms_file:
                 try:
-                    plot_total_ion_current(self.canvas_baseline, ms_file.data, ms_file.filename)
-                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_v, ignoreBounds=True)
-                    self.canvas_baseline.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
-                    self.canvas_baseline.getPlotItem().addItem(self.line_marker, ignoreBounds=True)
-                    self.crosshair_v_label = pg.InfLineLabel(self.crosshair_v, text="", color='#b8b8b8', rotateAxis=(1, 0))
-                    self.crosshair_h_label = pg.InfLineLabel(self.crosshair_h, text="", color='#b8b8b8', rotateAxis=(1, 0))
+                    plot_total_ion_current(
+                        self.canvas_baseline, ms_file.data, ms_file.filename
+                    )
+                    self.canvas_baseline.getPlotItem().addItem(
+                        self.crosshair_v, ignoreBounds=True
+                    )
+                    self.canvas_baseline.getPlotItem().addItem(
+                        self.crosshair_h, ignoreBounds=True
+                    )
+                    self.canvas_baseline.getPlotItem().addItem(
+                        self.line_marker, ignoreBounds=True
+                    )
+                    self.crosshair_v_label = pg.InfLineLabel(
+                        self.crosshair_v, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                    )
+                    self.crosshair_h_label = pg.InfLineLabel(
+                        self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                    )
                     plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError:
-                    logger.error(f"No plot found: {traceback.format_exc()}") 
+                    logger.error(f"No plot found: {traceback.format_exc()}")
 
     def display_calibration_curve(self):
         self.canvas_calibration.clear()
-        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis='y', enable=True)
-        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis='x', enable=True)
+        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis="y", enable=True)
+        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis="x", enable=True)
         self.canvas_calibration.getPlotItem().vb.setAutoVisible(x=True, y=True)
         for compound in self.controller.model.compounds:
             if compound.name == self.comboBoxChooseCompound.currentText():
                 try:
                     plot_calibration_curve(compound, self.canvas_calibration)
-                except TypeError: 
-                    logger.error(f"No calibration curve found for {compound.name}: {traceback.format_exc()}")
+                except TypeError:
+                    logger.error(
+                        f"No calibration curve found for {compound.name}: {traceback.format_exc()}"
+                    )
 
     def display_concentrations(self):
         """
@@ -541,13 +695,17 @@ class View(QtWidgets.QMainWindow):
         try:
             library_entry = library_entries[self.comboBoxChooseMS2File.currentText()]
             plot_library_ms2(library_entry, self.canvas_library_ms2)
-            self.comboBoxChooseMS2File.currentIndexChanged.connect(lambda: plot_library_ms2(library_entries[self.comboBoxChooseMS2File.currentText()], self.canvas_library_ms2))
+            self.comboBoxChooseMS2File.currentIndexChanged.connect(
+                lambda: plot_library_ms2(
+                    library_entries[self.comboBoxChooseMS2File.currentText()],
+                    self.canvas_library_ms2,
+                )
+            )
         except IndexError:
             logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
             plot_no_ms2_found(self.canvas_library_ms2)
         except KeyError:
             logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
-
 
     def display_ms2(self):
         """
@@ -558,22 +716,35 @@ class View(QtWidgets.QMainWindow):
             logger.error("No file selected for MS2 display")
             plot_no_ms2_found(self.canvas_ms2)
             return
-            
+
         ms_file = self.controller.model.ms_measurements.get(selected_file)
         if ms_file is None:
             logger.error(f"No MS file found for {selected_file}")
             plot_no_ms2_found(self.canvas_ms2)
             return
-            
+
         try:
             self.controller.model.find_ms2_in_file(ms_file)
-            compound = next((xic for xic in ms_file.xics if xic.name == self.comboBoxChooseCompound.currentText()), None)
-            precursor = float(self.comboBoxChooseMS2File.currentText().split("m/z ")[1].replace('(', '').replace(')', ''))
+            compound = next(
+                (
+                    xic
+                    for xic in ms_file.xics
+                    if xic.name == self.comboBoxChooseCompound.currentText()
+                ),
+                None,
+            )
+            precursor = float(
+                self.comboBoxChooseMS2File.currentText()
+                .split("m/z ")[1]
+                .replace("(", "")
+                .replace(")", "")
+            )
             plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
         except Exception:
-            logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}")
+            logger.error(
+                f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}"
+            )
             plot_no_ms2_found(self.canvas_ms2)
-    
 
     def highlight_peak(self, selected_curve, xics):
         # Clear previous annotations
@@ -590,44 +761,74 @@ class View(QtWidgets.QMainWindow):
         text_items = []
         for compound in xics:
             for j, ion in enumerate(compound.ions.keys()):
-                if np.any(np.isclose(compound.ions[ion]['RT'], selected_curve.getData()[0], atol=0.1)): # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
-                    logger.info(f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'],2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}.")
-                    text_item = pg.TextItem(text=f"{compound.name} ({ion})", color='#242526', anchor=(0, 0))
-                    text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.ExtraLight))
+                if np.any(
+                    np.isclose(
+                        compound.ions[ion]["RT"], selected_curve.getData()[0], atol=0.1
+                    )
+                ):  # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
+                    logger.info(
+                        f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'], 2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}."
+                    )
+                    text_item = pg.TextItem(
+                        text=f"{compound.name} ({ion})", color="#242526", anchor=(0, 0)
+                    )
+                    text_item.setFont(
+                        pg.QtGui.QFont(
+                            "Helvetica", 10, weight=pg.QtGui.QFont.Weight.ExtraLight
+                        )
+                    )
                     text_items.append(text_item)
                     self.canvas_annotatedLC.addItem(text_item)
-        selected_curve.setBrush(pg.mkBrush('#ee6677'))
-        selected_curve.setPen(pg.mkPen('#ee6677'))
-        positions = np.linspace(np.max(selected_curve.getData()[1])/2, np.max(selected_curve.getData()[1])+400, 20)
+        selected_curve.setBrush(pg.mkBrush("#ee6677"))
+        selected_curve.setPen(pg.mkPen("#ee6677"))
+        positions = np.linspace(
+            np.max(selected_curve.getData()[1]) / 2,
+            np.max(selected_curve.getData()[1]) + 400,
+            20,
+        )
         for i, text_item in enumerate(text_items):
-            text_item.setPos(float(np.median(selected_curve.getData()[0]+i//20)), float(positions[i%len(positions)]))
+            text_item.setPos(
+                float(np.median(selected_curve.getData()[0] + i // 20)),
+                float(positions[i % len(positions)]),
+            )
 
     def update_labels_avgMS(self, canvas):
         # Remove all the previous labels
         for item in canvas.items():
             if isinstance(item, pg.TextItem):
                 canvas.removeItem(item)
-        try:
-            data = canvas.getPlotItem().listDataItems()[0].getData()
-        except IndexError:
-            logger.error(f"Error getting data items for MS viewing. {traceback.format_exc()}")
+        if canvas.getPlotItem().listDataItems():
+            try:
+                data = canvas.getPlotItem().listDataItems()[0].getData()
+            except IndexError:
+                logger.error(
+                    f"Error getting data items for MS viewing. {traceback.format_exc()}"
+                )
+                return
+        else:
             return
         current_view_range = canvas.getViewBox().viewRange()
         # Get the intensity range within the current view range
-        mz_range = data[0][np.logical_and(data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1])]
+        mz_range = data[0][
+            np.logical_and(
+                data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
+            )
+        ]
         indices = [i for i, x in enumerate(data[0]) if x in mz_range]
         intensity_range = data[1][indices]
         peaks, _ = find_peaks(intensity_range, prominence=10)
-        if len(peaks) < 5: 
+        if len(peaks) < 5:
             peaks, _ = find_peaks(intensity_range)
         # Get the 10 highest peaks within the current view range
-        sorted_indices= np.argsort(intensity_range[peaks])[::-1]
+        sorted_indices = np.argsort(intensity_range[peaks])[::-1]
         # Get their mz values
         mzs = mz_range[peaks][sorted_indices][0:10]
         intensities = intensity_range[peaks][sorted_indices][0:10]
         for mz, intensity in zip(mzs, intensities):
-            text_item = pg.TextItem(text=f"{mz:.4f}", color='#242526', anchor=(0, 0))
-            text_item.setFont(pg.QtGui.QFont('Helvetica', 10, weight=pg.QtGui.QFont.Weight.Normal))
+            text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))
+            text_item.setFont(
+                pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.Normal)
+            )
             text_item.setPos(mz, intensity)
             canvas.addItem(text_item)
 
@@ -642,15 +843,21 @@ class View(QtWidgets.QMainWindow):
             return
         pos = e[0]
         if self.canvas_baseline.sceneBoundingRect().contains(pos):
-            mousePoint = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(pos)
+            mousePoint = (
+                self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(pos)
+            )
             self.crosshair_v.setPos(mousePoint.x())
             self.crosshair_h.setPos(mousePoint.y())
             self.crosshair_v_label.setText(f"{mousePoint.x():.2f} min")
             self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
-            
+
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
-        mouse_pos = self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(event._scenePos)
+        mouse_pos = (
+            self.canvas_baseline.getPlotItem()
+            .getViewBox()
+            .mapSceneToView(event._scenePos)
+        )
         self.line_marker.setVisible(True)
         self.line_marker.setPos(mouse_pos.x())
 
@@ -687,6 +894,7 @@ class View(QtWidgets.QMainWindow):
 
         :param self: The View instance.
         """
+
         def clear_layout(layout):
             if layout:
                 for i in reversed(range(layout.count())):
@@ -697,11 +905,11 @@ class View(QtWidgets.QMainWindow):
                         widget.deleteLater()
 
         if self.comboBox.currentText() == "LC/GC-MS":
-            print('switched to LC/GC-MS mode')
+            print("switched to LC/GC-MS mode")
             clear_layout(self.gridLayout)
             self.labelAnnotations.setVisible(False)
             self.browseAnnotations.setVisible(False)
-            # Replace with LC/GC-MS widgets 
+            # Replace with LC/GC-MS widgets
             self.listLC = DragDropListWidget(parent=self.tabUpload)
             self.listLC.setMinimumWidth(500)
             self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
@@ -721,7 +929,7 @@ class View(QtWidgets.QMainWindow):
             self.update_lc_file_list()
 
         elif self.comboBox.currentText() == "MS Only":
-            print('switched to MS Only')
+            print("switched to MS Only")
             clear_layout(self.gridLayout)
             self.labelLCdata.setVisible(False)
             self.labelAnnotations.setVisible(False)
@@ -737,7 +945,7 @@ class View(QtWidgets.QMainWindow):
             self.update_ms_file_list()
 
         else:
-            print('switched to LC Only')
+            print("switched to LC Only")
             clear_layout(self.gridLayout)
             # Remove MS widgets
             self.labelMSdata.setVisible(False)
@@ -756,17 +964,23 @@ class View(QtWidgets.QMainWindow):
             self.browseLC.setVisible(True)
             self.controller.mode = "LC/GC Only"
             self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
-            self.listAnnotations.filesDropped.connect(self.handle_files_dropped_annotations)
+            self.listAnnotations.filesDropped.connect(
+                self.handle_files_dropped_annotations
+            )
             self.update_lc_file_list()
             self.update_annotation_file()
 
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
-        logger.info(f'Clicked the chromatogram at position: {time_x}')
+        logger.info(f"Clicked the chromatogram at position: {time_x}")
         self.canvas_avgMS.clear()
         file = self.comboBox_currentfile.currentText()
         try:
-            plot_average_ms_data(time_x, self.controller.model.ms_measurements[file].data, self.canvas_avgMS)
+            plot_average_ms_data(
+                time_x,
+                self.controller.model.ms_measurements[file].data,
+                self.canvas_avgMS,
+            )
         except Exception as e:
             logger.error(f"Error displaying average MS for file {file}: {e}")
 
@@ -778,22 +992,27 @@ class View(QtWidgets.QMainWindow):
         ----------
         MainWindow : QMainWindow
             The main window object for which the UI is being set up.
-        
+
         This method configures the main window, central widget, tab widget, and various
         UI elements such as buttons, labels, combo boxes, and sliders. It applies size
         policies, sets geometries, and associates various UI elements with their respective
         actions. Additionally, it sets up the menu bar with file, edit, and help menus.
         """
-        
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.setToolTip("")
         MainWindow.setToolTipDuration(-1)
         MainWindow.setTabShape(QtWidgets.QTabWidget.TabShape.Rounded)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(1)
-        sizePolicy.setHeightForWidth(self.centralwidget.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.centralwidget.sizePolicy().hasHeightForWidth()
+        )
         self.centralwidget.setSizePolicy(sizePolicy)
         self.centralwidget.setMinimumSize(QtCore.QSize(1500, 720))
         self.centralwidget.setObjectName("centralwidget")
@@ -812,7 +1031,7 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
         self.comboBoxIonLists.addItem("Create new ion list...")
-        try: 
+        try:
             config_path = Path(__file__).parent.parent / "config.json"
             with open(config_path, "r") as f:
                 lists = json.load(f)
@@ -875,10 +1094,12 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.button_save_ion_list, 3, 5, 1, 1)
         self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_delete_ion_list.setObjectName("button_delete_ion_list")
-        self.mass_accuracy_slider = LabelledSlider("Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001)
+        self.mass_accuracy_slider = LabelledSlider(
+            "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
+        )
         self.gridLayout.addWidget(self.mass_accuracy_slider, 4, 4, 1, 3)
         self.gridLayout.addWidget(self.button_delete_ion_list, 3, 6, 1, 1)
-        
+
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
         self.processButton.setDefault(True)
@@ -892,10 +1113,14 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_5.setObjectName("gridLayout_5")
         self.label_results_currentfile = QtWidgets.QLabel(parent=self.tabResults)
         self.label_results_currentfile.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_results_currentfile.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_results_currentfile.sizePolicy().hasHeightForWidth()
+        )
         self.label_results_currentfile.setSizePolicy(sizePolicy)
         self.label_results_currentfile.setObjectName("label_results_currentfile")
         self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
@@ -905,36 +1130,68 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.setObjectName("canvas_baseline")
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
         self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
-        self.canvas_baseline.scene().sigMouseClicked.connect(lambda ev: self.update_labels_avgMS(self.canvas_avgMS))
+        self.canvas_baseline.scene().sigMouseClicked.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
         self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
         self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
-        self.canvas_baseline.sigKeyPressed.connect(lambda ev: self.update_labels_avgMS(self.canvas_avgMS))
-        self.crosshair_v = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine), movable=False)
-        self.crosshair_h = pg.InfiniteLine(angle=0, pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1), movable=False)
-        self.line_marker = pg.InfiniteLine(angle=90, pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1), movable=True)
+        self.canvas_baseline.sigKeyPressed.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+        self.crosshair_v = pg.InfiniteLine(
+            angle=90,
+            pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine),
+            movable=False,
+        )
+        self.crosshair_h = pg.InfiniteLine(
+            angle=0,
+            pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1),
+            movable=False,
+        )
+        self.line_marker = pg.InfiniteLine(
+            angle=90,
+            pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1),
+            movable=True,
+        )
 
-        self.proxy = pg.SignalProxy(self.canvas_baseline.scene().sigMouseMoved, rateLimit=60, slot=self.update_crosshair)
+        self.proxy = pg.SignalProxy(
+            self.canvas_baseline.scene().sigMouseMoved,
+            rateLimit=60,
+            slot=self.update_crosshair,
+        )
         self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
 
         self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.canvas_avgMS.setMouseEnabled(x=True, y=False)
-        self.canvas_avgMS.getPlotItem().getViewBox().enableAutoRange(axis='y')
-        self.canvas_avgMS.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(lambda ev: self.update_labels_avgMS(self.canvas_avgMS))
+
+        def setYRange(self):
+            self.enableAutoRange(axis="y")
+            self.setAutoVisible(y=True)
+
+        self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
+        self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
+        # NOTE: only works on actual RESIZING which means that moving the window doesn't update labels
+        self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
 
         self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
-        self.scrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.scrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.scrollArea.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+        )
+        self.scrollArea.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+        )
         self.canvas_XICs = DockArea(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
-        
+
         self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
@@ -942,21 +1199,25 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
 
         self.gridLayout_2.setColumnStretch(0, 2)  # Left column
-        self.gridLayout_2.setColumnStretch(1, 2)  # Right column 
+        self.gridLayout_2.setColumnStretch(1, 2)  # Right column
 
         self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
         self.comboBox_currentfile.setObjectName("comboBox_currentfile")
         self.gridLayout_5.addWidget(self.comboBox_currentfile, 0, 2, 1, 1)
         self.tabWidget.addTab(self.tabResults, "")
-        self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabResults), False)  # Disable the second tab
+        self.tabWidget.setTabEnabled(
+            self.tabWidget.indexOf(self.tabResults), False
+        )  # Disable the second tab
 
         self.tabQuantitation = QtWidgets.QWidget()
         self.tabQuantitation.setObjectName("tabQuantitation")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.tabQuantitation)
         self.gridLayout_6.setObjectName("gridLayout_6")
         self.gridLayout_quant = QtWidgets.QGridLayout()
-        self.gridLayout_quant.setSizeConstraint(QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint)
+        self.gridLayout_quant.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
+        )
         self.gridLayout_quant.setObjectName("gridLayout_quant")
         self.gridLayout_quant.setColumnStretch(0, 1)
         self.gridLayout_quant.setColumnStretch(1, 1)
@@ -970,12 +1231,16 @@ class View(QtWidgets.QMainWindow):
         self.label_calibrate.setWordWrap(True)
         self.label_calibrate.setObjectName("label_calibrate")
         # Set size policy to prevent unnecessary expansion
-        self.label_calibrate.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.label_calibrate.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         self.gridLayout_top_left.addWidget(self.label_calibrate, 0, 0, 1, 1)
         self.calibrateButton = QtWidgets.QPushButton(parent=self.tabQuantitation)
         self.calibrateButton.setObjectName("calibrateButton")
         # Set size policy for the button to prevent expansion
-        self.calibrateButton.setSizePolicy(QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed)
+        self.calibrateButton.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
         self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 4, 1)
         self.unifiedResultsTable = UnifiedResultsTable(parent=self.tabQuantitation)
@@ -984,10 +1249,14 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_top_right = QtWidgets.QGridLayout()
         self.gridLayout_top_right.setObjectName("gridLayout_top_right")
         self.label_curr_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_curr_compound.sizePolicy().hasHeightForWidth())
+        sizePolicy.setHeightForWidth(
+            self.label_curr_compound.sizePolicy().hasHeightForWidth()
+        )
         self.label_curr_compound.setSizePolicy(sizePolicy)
         self.label_curr_compound.setObjectName("label_curr_compound")
         self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 1)
@@ -1007,41 +1276,55 @@ class View(QtWidgets.QMainWindow):
         self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_ms2.setObjectName("canvas_ms2")
         self.canvas_ms2.setMouseEnabled(x=True, y=False)
-        self.canvas_ms2.getPlotItem().getViewBox().enableAutoRange(axis='y')
+        self.canvas_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(lambda ev: self.update_labels_avgMS(self.canvas_ms2))
+        self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_ms2)
+        )
 
         self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 1)
-        self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation) 
+        self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation)
         self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
-        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 1, 1, 1, 1)  # Above canvas_ms2
+        self.gridLayout_quant.addWidget(
+            self.comboBoxChooseMS2File, 1, 1, 1, 1
+        )  # Above canvas_ms2
         self.canvas_library_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
-        self.canvas_library_ms2.setSizePolicy(QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum)
+        self.canvas_library_ms2.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
+        )
         self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
-        self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis='y')
+        self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(lambda ev: self.update_labels_avgMS(self.canvas_library_ms2))
-        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)  
+        self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_library_ms2)
+        )
+        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
         self.tabWidget.addTab(self.tabQuantitation, "")
-        self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.tabQuantitation), False)  # Disable the second tab
+        self.tabWidget.setTabEnabled(
+            self.tabWidget.indexOf(self.tabQuantitation), False
+        )  # Disable the second tab
 
         self.gridLayout_4.addWidget(self.tabWidget, 2, 0, 1, 1)
         self.logo = QtWidgets.QLabel(parent=self.centralwidget)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         self.logo.setSizePolicy(sizePolicy)
         self.logo.setMaximumSize(QtCore.QSize(1200, 100))
         self.logo.setText("")
-        self.logo.setPixmap(QtGui.QPixmap(os.path.join(os.path.dirname(__file__), "logo.png")))
+        self.logo.setPixmap(
+            QtGui.QPixmap(os.path.join(os.path.dirname(__file__), "logo.png"))
+        )
         self.logo.setScaledContents(True)
         self.logo.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.logo.setObjectName("logo")
         self.gridLayout_4.addWidget(self.logo, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
-        
+
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
@@ -1094,12 +1377,12 @@ class View(QtWidgets.QMainWindow):
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
         # Connect signals
-        #TODO: Implement the rest of the menu items
-        #self.actionSave.triggered.connect(self.on_save)
+        # TODO: Implement the rest of the menu items
+        # self.actionSave.triggered.connect(self.on_save)
         self.actionExit.triggered.connect(self.on_exit)
         self.actionExport.triggered.connect(self.on_export)
-        #self.actionPreferences.triggered.connect(self.on_preferences)
-        #self.actionReadme.triggered.connect(self.on_readme)
+        # self.actionPreferences.triggered.connect(self.on_preferences)
+        # self.actionReadme.triggered.connect(self.on_readme)
         self.browseLC.clicked.connect(self.on_browseLC)
         self.browseMS.clicked.connect(self.on_browseMS)
         self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
@@ -1114,22 +1397,29 @@ class View(QtWidgets.QMainWindow):
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
         # Connect compound selection change to update the unified table
-        self.comboBoxChooseCompound.currentIndexChanged.connect(self.update_unified_table_for_compound)
+        self.comboBoxChooseCompound.currentIndexChanged.connect(
+            self.update_unified_table_for_compound
+        )
         # Connect unified table selection change to display MS2 data
-        self.unifiedResultsTable.selectionModel().selectionChanged.connect(self.display_ms2)
-
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self.display_ms2
+        )
 
     def retranslateUi(self, MainWindow):
         """
         Set the text of the UI elements according to the current locale.
-        
+
         Parameters
         ----------
             MainWindow: The main window object for which the UI is being set up.
         """
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "LCMSpector"))
-        MainWindow.setWindowIcon(QtGui.QIcon(os.path.join(os.path.dirname(__file__), "resources", "icon.icns")))
+        MainWindow.setWindowIcon(
+            QtGui.QIcon(
+                os.path.join(os.path.dirname(__file__), "resources", "icon.icns")
+            )
+        )
         self.browseLC.setText(_translate("MainWindow", "Browse"))
         self.comboBox.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
         self.comboBox.setItemText(1, _translate("MainWindow", "MS Only"))
@@ -1140,15 +1430,31 @@ class View(QtWidgets.QMainWindow):
         self.labelLCdata.setText(_translate("MainWindow", "Chromatography data (.txt)"))
         self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
         self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
-        self.comboBoxIonLists.setToolTip(_translate("MainWindow", "Choose an ion list from the list of ion lists provided with the software"))
+        self.comboBoxIonLists.setToolTip(
+            _translate(
+                "MainWindow",
+                "Choose an ion list from the list of ion lists provided with the software",
+            )
+        )
         self.processButton.setText(_translate("MainWindow", "Process"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload"))
-        self.label_results_currentfile.setText(_translate("MainWindow", "Current file:"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabResults), _translate("MainWindow", "Results"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload")
+        )
+        self.label_results_currentfile.setText(
+            _translate("MainWindow", "Current file:")
+        )
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabResults), _translate("MainWindow", "Results")
+        )
         self.label_curr_compound.setText(_translate("MainWindow", "Compound:"))
-        self.label_calibrate.setText(_translate("MainWindow", "Select the files to be used for calibration."))
+        self.label_calibrate.setText(
+            _translate("MainWindow", "Select the files to be used for calibration.")
+        )
         self.calibrateButton.setText(_translate("MainWindow", "Calculate"))
-        self.tabWidget.setTabText(self.tabWidget.indexOf(self.tabQuantitation), _translate("MainWindow", "Quantitation"))
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.tabQuantitation),
+            _translate("MainWindow", "Quantitation"),
+        )
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.actionFile.setText(_translate("MainWindow", "File"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
@@ -1171,7 +1477,7 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
         self.button_save_ion_list.setText(_translate("MainWindow", "Save"))
         self.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
-        
+
         self.resize(1500, 900)
         qr = self.frameGeometry()
         cp = self.screen().availableGeometry().center()

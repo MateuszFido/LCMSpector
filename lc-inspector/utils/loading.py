@@ -4,6 +4,7 @@ import os
 import logging
 import itertools
 import time
+from typing import Tuple
 from pathlib import Path
 import pandas as pd
 import numpy as np
@@ -124,7 +125,7 @@ def load_annotated_peaks(file_path):
     return df
 
 
-def load_ms1_data(path: str) -> list:
+def load_ms_data(path: str) -> Tuple[tuple, tuple]:
     """
     Using the pyteomics library, load the data from the .mzML file.
 
@@ -141,77 +142,18 @@ def load_ms1_data(path: str) -> list:
     start_time = time.time()
 
     with mzml.MzML(str(path)) as file:
-        ms1_data = [
-            {
-                "total ion current": scan["total ion current"],
-                "ms level": scan["ms level"],
-                "m/z array": scan["m/z array"],
-                "intensity array": scan["intensity array"],
-                "scan start time": scan["scanList"]["scan"][0]["scan start time"],
-            }
-            for scan in file
-            if scan["ms level"] == 1
-        ]
-        if not ms1_data:
-            logger.error(
-                "No MS1 scans found in the .mzML file. Rerunning on higher order MSn."
-            )
-            file.reset()
-            ms1_data = [
-                {
-                    "total ion current": scan["total ion current"],
-                    "ms level": scan["ms level"],
-                    "m/z array": scan["m/z array"],
-                    "intensity array": scan["intensity array"],
-                    "scan start time": scan["scanList"]["scan"][0]["scan start time"],
-                }
-                for scan in file
-            ]
-    logger.info(
-        f"Loaded {len(ms1_data)} MS1 scans in {time.time() - start_time:.2f} seconds."
-    )
-    return ms1_data
-
-
-def load_ms2_data(path: str, compound, mass_accuracy: float):
-    """
-    Using the pyteomics library, load the MS2 data from the .mzML file, filtering based on the given precursors.
-
-    Parameters
-    ----------
-    path : str
-        The path to the .mzML file.
-    compounds : tuple
-        The compounds to filter the MS2 data for.
-    mass_accuracy : float
-        The mass accuracy to use for filtering the MS2 data.
-
-    Returns
-    -------
-    None
-    """
-    start_time = time.time()
-    ms2_threshold = mass_accuracy * 5
-
-    with mzml.MzML(str(path)) as file:
-        file.reset()
-        for ion in compound.ions.keys():
-            data_range = file.time[
-                (compound.ions[ion]["RT"] - 0.5) : (compound.ions[ion]["RT"] + 0.5)
-            ]
-            for scan in data_range:
-                if scan["ms level"] == 2 and np.isclose(
-                    scan["precursorList"]["precursor"][0]["selectedIonList"][
-                        "selectedIon"
-                    ][0]["selected ion m/z"],
-                    ion,
-                    atol=ms2_threshold,
-                ):
-                    compound.ms2.append(scan)
+        ms1_data = []
+        ms2_data = []
+        for scan in file:
+            if scan["ms level"] == 1:
+                ms1_data.append(scan)
+            else:
+                ms2_data.append(scan)
 
     logger.info(
-        f"Loaded {len(compound.ms2)} MS2 scans in {time.time() - start_time:.2f} seconds."
+        f"Loaded {len(ms1_data)} MS1 and {len(ms2_data)} MSn scans in {time.time() - start_time:.2f} seconds."
     )
+    return tuple(ms1_data), tuple(ms2_data)
 
 
 def load_ms2_library() -> dict:
