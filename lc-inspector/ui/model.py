@@ -8,8 +8,9 @@ from scipy.stats import linregress
 import pandas as pd
 from calculation.calc_conc import calculate_concentration
 from utils.loading import load_ms2_library
-from calculation.workers import LoadingWorker, ProcessingWorker
+from utils.classes import MSMeasurement
 from PySide6.QtCore import QThread
+from numba import jit
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -57,10 +58,12 @@ class Model(QThread):
 
     def __init__(self):
         super().__init__()
-        self.lc_measurements = {}
-        self.ms_measurements = {}
-        self.annotations = []
-        self.compounds = []
+        self.lc_measurements = tuple()
+        self.lc_results = dict()
+        self.ms_measurements = tuple()
+        self.ms_results = dict()
+        self.annotations = tuple()
+        self.compounds = tuple()
         self.mass_accuracy = 0.0001
         self.library = load_ms2_library()
         if self.library:
@@ -75,22 +78,29 @@ class Model(QThread):
         logger.info("Current thread: %s", threading.current_thread().name)
         logger.info("Current process: %d", os.getpid())
 
+    @jit(mode=nopython)
     def load(self, mode, file_type):
-        self.worker = LoadingWorker(self, mode, file_type)
-        self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
-        self.worker.progressUpdated.connect(
-            self.controller.view.update_statusbar_with_loaded_file
-        )
-        self.worker.finished.connect(self.controller.on_loading_finished)
-        self.worker.error.connect(self.controller.on_worker_error)
-        self.worker.start()
+        for file in self.ms_measurements:
+            ms_result = MSMeasurement(file)
+            self.ms_results[ms_result.filename] = ms_result
+
+        return self.ms_results
+        # self.worker = LoadingWorker(self, mode, file_type)
+        # self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
+        # self.worker.progressUpdated.connect(
+        #    self.controller.view.update_statusbar_with_loaded_file
+        # )
+        # self.worker.finished.connect(self.controller.on_loading_finished)
+        # self.worker.error.connect(self.controller.on_worker_error)
+        # self.worker.start()
 
     def process(self, mode):
-        self.worker = ProcessingWorker(self, mode, self.mass_accuracy)
-        self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
-        self.worker.finished.connect(self.controller.on_processing_finished)
-        self.worker.error.connect(self.controller.on_worker_error)
-        self.worker.start()
+        pass
+        # self.worker = ProcessingWorker(self, mode, self.mass_accuracy)
+        # self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
+        # self.worker.finished.connect(self.controller.on_processing_finished)
+        # self.worker.error.connect(self.controller.on_worker_error)
+        # self.worker.start()
 
     def get_plots(self, filename):
         # Find the corresponding MS and LC files
