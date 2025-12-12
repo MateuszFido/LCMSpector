@@ -4,12 +4,9 @@ import os
 import logging
 import itertools
 import time
-from typing import Tuple
 from pathlib import Path
 import pandas as pd
-import numpy as np
 from pyteomics import mzml
-from numba import jit
 
 logger = logging.getLogger(__name__)
 
@@ -125,8 +122,8 @@ def load_annotated_peaks(file_path):
 
     return df
 
-@jit
-def load_ms_data(path: str) -> Tuple[tuple, tuple]:
+
+def load_ms_data(path: str) -> mzml.MzML:
     """
     Using the pyteomics library, load the data from the .mzML file.
 
@@ -142,19 +139,10 @@ def load_ms_data(path: str) -> Tuple[tuple, tuple]:
     """
     start_time = time.time()
 
-    with mzml.MzML(str(path)) as file:
-        ms1_data = []
-        ms2_data = []
-        for scan in file:
-            if scan["ms level"] == 1:
-                ms1_data.append(scan)
-            else:
-                ms2_data.append(scan)
+    f = mzml.MzML(path)
 
-    logger.info(
-        f"Loaded {len(ms1_data)} MS1 and {len(ms2_data)} MSn scans in {time.time() - start_time:.2f} seconds."
-    )
-    return tuple(ms1_data), tuple(ms2_data)
+    logger.info(f"Loaded {len(f)} MSn scans in {time.time() - start_time:.2f} seconds.")
+    return f
 
 
 def load_ms2_library() -> dict:

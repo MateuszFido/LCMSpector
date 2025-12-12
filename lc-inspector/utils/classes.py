@@ -210,7 +210,7 @@ class MSMeasurement(Measurement):
     def __init__(self, path, mass_accuracy=0.001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
-        self.data, self.ms2_data = load_ms_data(path)
+        self.data = load_ms_data(path)
         self.xics = []
 
     def plot(self):

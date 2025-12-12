@@ -3,7 +3,6 @@ import copy
 import numpy as np
 import pandas as pd
 import static_frame as sf
-from numba import jit
 
 logger = logging.getLogger(__name__)
 try:
@@ -103,7 +102,6 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 #     return mz_axis
 
 
-@jit
 def construct_xics(data, ion_list, mass_accuracy, file_name):
     """
     Creates XICs (extracted ion chromatograms) for a list of ions and Scan objects for a given data file.
@@ -125,8 +123,6 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
         A tuple of Compound objects with XICs computed.
     """
     # Precompute scan metadata to avoid repeated lookups
-    for scan in data:
-        print(scan)
     scan_times = np.array(
         [scan["scanList"]["scan"][0]["scan start time"] for scan in data]
     )
