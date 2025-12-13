@@ -11,12 +11,10 @@ from PySide6.QtCore import Qt
 from pyqtgraph.dockarea import DockArea
 from static_frame import FrameHE
 from pyteomics.mzml import MzML
+from ui import fonts
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
-
-default_font = QFont("Helvetica", 11)
-default_font.setFamily("Helvetica")
 
 
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
@@ -42,7 +40,9 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     """
 
     filename = os.path.basename(path).split(".")[0]
+    default_family = fonts.get_family_name()
 
+    args = {"color": "#2C2D2D", "font-size": "12pt", "font-family": default_family}
     # Plotting chromatogram before background correction
     widget.setBackground("w")
     widget.addLegend()
@@ -50,28 +50,28 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Uncorrected"],
-        pen=pg.mkPen("b", width=2),
+        pen=pg.mkPen("#333333", width=2),
         name="Before correction",
     )
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Baseline"],
-        pen=pg.mkPen("r", width=2, style=Qt.PenStyle.DashLine),
+        pen=pg.mkPen("#FF5C5C", width=2, style=Qt.PenStyle.DashLine),
         name="Baseline",
     )
-    widget.setLabel("left", "Absorbance (mAU)")
-    widget.setLabel("bottom", "Time (min)")
+    widget.setLabel("left", "Absorbance (mAU)", **args)
+    widget.setLabel("bottom", "Time (min)", **args)
 
     # Plotting chromatogram after background correction
     widget.plot(title=f"{filename} after background correction")
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Value (mAU)"],
-        pen=pg.mkPen("g", width=2),
+        pen=pg.mkPen("#2EC4B6", width=2),
         name="After correction",
     )
-    widget.setLabel("left", "Absorbance (mAU)")
-    widget.setLabel("bottom", "Time (min)")
+    widget.setLabel("left", "Absorbance (mAU)", **args)
+    widget.setLabel("bottom", "Time (min)", **args)
 
 
 def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
@@ -89,6 +89,9 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
     -------
     None
     """
+
+    default_font = fonts.get_main_font(11)
+    default_family = fonts.get_family_name()
 
     try:
         spectrum = data_matrix.time[rt]
@@ -127,7 +130,7 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
             color="#2C2D2D",
             size="11pt",
         )
-    args = {"color": "#2C2D2D", "font-family": "Helvetica", "font-size": "11pt"}
+    args = {"color": "#2C2D2D", "font-family": default_family, "font-size": "11pt"}
     widget.setLabel("left", "Intensity / a.u.", **args)
     widget.getAxis("left").setTextPen("#2C2D2D", width=2)
     widget.getAxis("left").setStyle(tickFont="Helvetica", maxTickLevel=1)
@@ -225,11 +228,7 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
             peak_curve, pen=pen, name=f"Peak {i}", fillLevel=1.0, brush=default_brush
         )
         plot_item.setCurveClickable(True)
-        curve_dict[plot_item.curve] = default_brush
-
-    logger.info(
-        f"Plotting annotated LC of {filename} took {(time.time() - start_time) / 1000} miliseconds"
-    )
+        curve_dict[plot_item.curve] = default_brush.color()
     return curve_dict
 
 
@@ -388,6 +387,8 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
 
 
 def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str):
+    default_font = fonts.get_main_font()
+    default_family = fonts.get_family_name()
     widget.setBackground("w")
     widget.addLegend()
     widget.setTitle(
@@ -402,7 +403,7 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str)
         tic.append(scan["total ion current"])
         times.append(scan["scanList"]["scan"][0]["scan start time"])
 
-    args = {"color": "#2C2D2D", "font-size": "12pt", "font-family": "Helvetica"}
+    args = {"color": "#2C2D2D", "font-size": "11pt", "font-family": default_family}
     widget.plot(times, tic, pen=mkPen("#3c5488ff", width=1))
     widget.getAxis("left").setTextPen("#2C2D2D", width=2)
     widget.getAxis("left").setStyle(tickFont="Helvetica", maxTickLevel=1)

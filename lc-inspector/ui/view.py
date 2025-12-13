@@ -4,7 +4,6 @@ import logging
 import json
 from pathlib import Path
 from datetime import datetime
-from types import MethodType
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
@@ -44,14 +43,6 @@ class View(QtWidgets.QMainWindow):
         super().__init__()
         self.setupUi(self)
         self.progress_update.connect(self.update_progressBar)
-
-    def load_fonts(self):
-        path = "resources/Nunito/static/Nunito-Regular.ttf"
-        font_id = QtGui.QFontDatabase.addApplicationFont(path)
-        if font_id == -1:
-            raise RuntimeError("Failed to load fonts.")
-        families = QtGui.QFontDatabase.applicationFontFamilies(font_id)
-        return families[0]
 
     def show_download_confirmation(self):
         """Displays a confirmation dialog for downloading the MS2 library."""

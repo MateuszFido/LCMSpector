@@ -12,12 +12,13 @@ import logging
 import multiprocessing
 import tempfile
 from pathlib import Path
-from PySide6.QtGui import QIcon, QFont
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 from PySide6.QtCore import QThread
 from ui.model import Model
 from ui.view import View
 from ui.controller import Controller
+from ui import fonts
 from utils.resources import ensure_ms2_library, DownloadWorker
 
 # Guards for binary building
@@ -85,7 +86,7 @@ def main():
     Controller(model, view)
 
     # Set the application style
-    main_font = QFont(view.load_fonts(), 11)
+    main_font = fonts.get_main_font(11)
     app.setStyle("Fusion")
     app.setFont(main_font)
 
