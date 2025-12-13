@@ -45,6 +45,14 @@ class View(QtWidgets.QMainWindow):
         self.setupUi(self)
         self.progress_update.connect(self.update_progressBar)
 
+    def load_fonts(self):
+        path = "resources/Nunito/static/Nunito-Regular.ttf"
+        font_id = QtGui.QFontDatabase.addApplicationFont(path)
+        if font_id == -1:
+            raise RuntimeError("Failed to load fonts.")
+        families = QtGui.QFontDatabase.applicationFontFamilies(font_id)
+        return families[0]
+
     def show_download_confirmation(self):
         """Displays a confirmation dialog for downloading the MS2 library."""
         reply = QMessageBox.question(
@@ -130,7 +138,6 @@ class View(QtWidgets.QMainWindow):
                 3000,
             )
         self.update_lc_file_list()  # Update the model with the new LC files
-        print(self.controller.model.lc_measurements)
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
@@ -899,7 +906,6 @@ class View(QtWidgets.QMainWindow):
             if layout:
                 for i in reversed(range(layout.count())):
                     widget = layout.itemAt(i).widget()
-                    print(widget)
                     if widget is not None and isinstance(widget, DragDropListWidget):
                         widget.clear()
                         widget.deleteLater()

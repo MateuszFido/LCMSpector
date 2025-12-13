@@ -1,5 +1,6 @@
 import logging
 import copy
+import time
 import numpy as np
 import pandas as pd
 import static_frame as sf
@@ -122,11 +123,6 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
     Tuple of Compound objects
         A tuple of Compound objects with XICs computed.
     """
-    # Precompute scan metadata to avoid repeated lookups
-    scan_times = np.array(
-        [scan["scanList"]["scan"][0]["scan start time"] for scan in data]
-    )
-
     compounds = []
     for compound in ion_list:
         new_compound = copy.copy(compound)  # Shallow copy the compound
@@ -153,18 +149,19 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
                 f"Mass range for ion {ion} starting at less than 0, setting to 0."
             )
 
-        xic_intensities = np.zeros(len(data))
+        xic_intensities = scan_times = np.zeros(len(data))
 
         # Use binary search for range finding
         for i, scan in enumerate(data):
-            mz_array = scan["m/z array"]
-            intensity_array = scan["intensity array"]
+            if scan["ms level"] == 1:
+                mz_array = scan["m/z array"]
+                intensity_array = scan["intensity array"]
+                start_idx = np.searchsorted(mz_array, mass_range[0], side="left")
+                end_idx = np.searchsorted(mz_array, mass_range[1], side="right")
 
-            start_idx = np.searchsorted(mz_array, mass_range[0], side="left")
-            end_idx = np.searchsorted(mz_array, mass_range[1], side="right")
-
-            if start_idx < end_idx:  # Only sum if we have values in range
-                xic_intensities[i] = np.sum(intensity_array[start_idx:end_idx])
+                if start_idx < end_idx:  # Only sum if we have values in range
+                    xic_intensities[i] = np.sum(intensity_array[start_idx:end_idx])
+                scan_times[i] = scan["scanList"]["scan"][0]["scan start time"]
 
         xic = np.array((scan_times, xic_intensities))
         max_idx = np.argmax(xic_intensities)

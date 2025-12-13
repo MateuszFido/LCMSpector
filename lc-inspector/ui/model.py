@@ -57,10 +57,8 @@ class Model(QThread):
 
     def __init__(self):
         super().__init__()
-        self.lc_measurements = tuple()
-        self.lc_results = dict()
-        self.ms_measurements = tuple()
-        self.ms_results = dict()
+        self.lc_measurements = dict()
+        self.ms_measurements = dict()
         self.annotations = tuple()
         self.compounds = tuple()
         self.mass_accuracy = 0.0001

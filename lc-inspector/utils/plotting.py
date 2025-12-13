@@ -1,6 +1,7 @@
 import os
 import time
 import logging
+from PySide6.QtGui import QFont
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -9,9 +10,13 @@ from pyqtgraph import mkPen, mkBrush
 from PySide6.QtCore import Qt
 from pyqtgraph.dockarea import DockArea
 from static_frame import FrameHE
+from pyteomics.mzml import MzML
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
+
+default_font = QFont("Helvetica", 11)
+default_font.setFamily("Helvetica")
 
 
 def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
@@ -41,7 +46,7 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     # Plotting chromatogram before background correction
     widget.setBackground("w")
     widget.addLegend()
-    widget.setTitle(f"LC chromatogram of {filename}")
+    widget.setTitle(f"{filename}")
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Uncorrected"],
@@ -58,7 +63,7 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     widget.setLabel("bottom", "Time (min)")
 
     # Plotting chromatogram after background correction
-    widget.plot(title="Chromatogram After Background Correction")
+    widget.plot(title=f"{filename} after background correction")
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Value (mAU)"],
@@ -69,7 +74,7 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     widget.setLabel("bottom", "Time (min)")
 
 
-def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
+def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
     """
     Plots the average MS data and annotates it with the m/z of the 5 highest peaks.
 
@@ -85,53 +90,60 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
     None
     """
 
-    scan_time_diff = np.abs(
-        [
-            np.abs(data_matrix[i]["scanList"]["scan"][0]["scan start time"] - rt)
-            for i in range(len(data_matrix))
-        ]
-    )
     try:
-        index = np.argmin(scan_time_diff)
+        spectrum = data_matrix.time[rt]
     except ValueError:
-        index = 0
+        try:
+            spectrum = data_matrix.time[0]
+        except IndexError:
+            logger.error("MzML file is empty.")
+            return
+
     widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
-    try:
-        data_matrix[index]
-    except IndexError:
-        return
-    if len(data_matrix[index]["m/z array"]) < 500:
+    if len(spectrum["m/z array"]) < 500:
         # Plot as a histogram
         widget.addItem(
             pg.BarGraphItem(
-                x=data_matrix[index]["m/z array"],
-                height=data_matrix[index]["intensity array"],
+                x=spectrum["m/z array"],
+                height=spectrum["intensity array"],
                 width=0.2,
-                pen=mkPen("b", width=2),
-                brush=mkBrush("b"),
+                pen=mkPen("#3c5488ff", width=2),
+                brush=mkBrush("#3c5488ff"),
             )
         )
     else:
         # Plot as a curve
         widget.plot(
-            data_matrix[index]["m/z array"],
-            data_matrix[index]["intensity array"],
-            pen=mkPen("b", width=2),
+            spectrum["m/z array"],
+            spectrum["intensity array"],
+            pen=mkPen("#3c5488ff", width=2),
+            brush=mkBrush("#3c5488ff"),
         )
     if widget.getPlotItem():
         widget.getPlotItem().setTitle(
-            f"MS1 full-scan spectrum at {round(rt, 2)} minutes",
-            color="#b8b8b8",
-            size="12pt",
+            f"Scan {spectrum['id']} MS{spectrum['ms level']} at {round(rt, 2)} mins",
+            color="#2C2D2D",
+            size="11pt",
         )
-    widget.setLabel("left", "Intensity / a.u.")
-    widget.setLabel("bottom", "m/z")
+    args = {"color": "#2C2D2D", "font-family": "Helvetica", "font-size": "11pt"}
+    widget.setLabel("left", "Intensity / a.u.", **args)
+    widget.getAxis("left").setTextPen("#2C2D2D", width=2)
+    widget.getAxis("left").setStyle(tickFont="Helvetica", maxTickLevel=1)
+    widget.getAxis("left").setTickPen("#2C2D2D", width=2)
+    widget.getAxis("left").setFont(default_font)
+    widget.getAxis("left").setTickFont(default_font)
+    widget.setLabel("bottom", "m/z", **args)
+    widget.getAxis("bottom").setTextPen("#2C2D2D", width=2)
+    widget.getAxis("bottom").setStyle(tickFont="Helvetica", maxTickLevel=1)
+    widget.getAxis("bottom").setTickPen("#2C2D2D", width=2)
+    widget.getAxis("bottom").setFont(default_font)
+    widget.getAxis("bottom").setTickFont(default_font)
 
     # Annotate the m/z of the 5 highest peaks
-    mzs = data_matrix[index]["m/z array"]
-    intensities = data_matrix[index]["intensity array"]
+    mzs = spectrum["m/z array"]
+    intensities = spectrum["intensity array"]
     peaks, _ = find_peaks(intensities, prominence=10)
     sorted_indices = np.argsort(intensities[peaks])[::-1]
     sorted_mzs = mzs[peaks][sorted_indices][0:10]
@@ -141,12 +153,10 @@ def plot_average_ms_data(rt: float, data_matrix: tuple, widget: pg.PlotWidget):
         i < len(sorted_mzs) and sorted_mzs[i] in mzs[peaks][sorted_indices] and i < 10
     ):
         text_item = pg.TextItem(
-            text=f"{sorted_mzs[i]:.4f}", color="#232323", anchor=(0, 0)
+            text=f"{sorted_mzs[i]:.4f}", color="#3c5488ff", anchor=(0, 0)
         )
         text_item.setPos(sorted_mzs[i], sorted_intensities[i])
-        text_item.setFont(
-            pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.ExtraLight)
-        )
+        text_item.setFont(default_font)
         widget.addItem(text_item)
         i += 1
 
@@ -251,7 +261,7 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
             plot_item = dock.widgets[0]
         plot_item.setBackground("w")
         plot_item.setMouseEnabled(x=True, y=False)
-        args = {"color": "b", "font-size": "10pt"}
+        args = {"color": "#2C2D2D", "font-size": "10pt"}
         plot_item.setLabel("bottom", text="Time (min)", **args)
         plot_item.setLabel("left", text="Intensity (a.u.)", **args)
         color_list = (
@@ -301,9 +311,7 @@ def plot_annotated_XICs(path: str, xics: tuple, widget: DockArea):
                 symbolSize=5,
             )
 
-            text_item.setFont(
-                pg.QtGui.QFont("Arial", 10, weight=pg.QtGui.QFont.Weight.ExtraLight)
-            )
+            text_item.setFont(pg.QtGui.QFont("Helvetica", 10))
             text_item.setPos(scan_time, plotting_data[1][highest_intensity])
             plot_item.addItem(text_item)
             plot_item.getViewBox().enableAutoRange(axis="y", enable=True)
@@ -369,14 +377,12 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
 
     text_item = pg.TextItem(
         text=f"Curve equation:\ny = {m}\u22c5x+{b}\nR\u00b2 = {np.round(compound.calibration_parameters['r_value'] ** 2, 4)}",
-        color="#232323",
-        border=pg.mkPen("#232323", width=1),
+        color="#3c5488ff",
+        border=pg.mkPen("#3c5488ff", width=1),
         anchor=(0, 0),
     )
     text_item.setPos(np.min(x), np.max(y))
-    text_item.setFont(
-        pg.QtGui.QFont("Arial", 10, weight=pg.QtGui.QFont.Weight.ExtraLight)
-    )
+    text_item.setFont(default_font)
     widget.addItem(text_item)
     widget.getPlotItem().vb.setAutoVisible(x=True, y=True)
 
@@ -384,15 +390,37 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
 def plot_total_ion_current(widget: pg.PlotWidget, ms_data: tuple, filename: str):
     widget.setBackground("w")
     widget.addLegend()
-    widget.setTitle(f"Total ion chromatogram of {filename}")
+    widget.setTitle(
+        f"Total ion current (TIC) of {filename}",
+        color="#2C2D2D",
+        size="12pt",
+        font="Helvetica",
+    )
     tic = []
     times = []
     for scan in ms_data:
         tic.append(scan["total ion current"])
         times.append(scan["scanList"]["scan"][0]["scan start time"])
-    widget.plot(times, tic, pen=mkPen("b", width=1))
-    widget.setLabel("left", "Intensity (cps)")
-    widget.setLabel("bottom", "Time (min)")
+
+    args = {"color": "#2C2D2D", "font-size": "12pt", "font-family": "Helvetica"}
+    widget.plot(times, tic, pen=mkPen("#3c5488ff", width=1))
+    widget.getAxis("left").setTextPen("#2C2D2D", width=2)
+    widget.getAxis("left").setStyle(tickFont="Helvetica", maxTickLevel=1)
+    widget.getAxis("left").setTickPen("#2C2D2D", width=2)
+    widget.getAxis("left").setFont(default_font)
+    widget.getAxis("left").setTickFont(default_font)
+    widget.setLabel(
+        "left",
+        "Intensity",
+        "cps",
+        **args,
+    )
+    widget.setLabel("bottom", "Time (min)", **args)
+    widget.getAxis("bottom").setTextPen("#2C2D2D", width=2)
+    widget.getAxis("bottom").setStyle(tickFont="Helvetica", maxTickLevel=1)
+    widget.getAxis("bottom").setTickPen("#2C2D2D", width=2)
+    widget.getAxis("bottom").setFont(default_font)
+    widget.getAxis("bottom").setTickFont(default_font)
 
 
 def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
@@ -401,7 +429,9 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
     widget.clear()
     widget.setBackground("w")
     widget.setTitle(
-        f"Library MS2 spectrum of {library_entry[0].split('Name: ', 1)[1].partition('\n')[0]}"
+        f"Library MS2 spectrum of {library_entry[0].split('Name: ', 1)[1].partition('\n')[0]}",
+        color="#2C2D2D",
+        size="12pt",
     )
     if not library_entry:
         return
@@ -439,7 +469,7 @@ def plot_library_ms2(library_entry: tuple, widget: pg.PlotWidget):
     # Add labels to top 5 peaks
     top_5 = sorted(zip(mzs, intensities), key=lambda x: x[1])[:5]
     for i, (mz, intensity) in enumerate(top_5):
-        text_item = pg.TextItem(text=f"{mz:.4f}", color="#232323", anchor=(0, 0))
+        text_item = pg.TextItem(text=f"{mz:.4f}", color="#3c5488ff", anchor=(0, 0))
         text_item.setPos(mz, intensity)
         text_item.setFont(
             pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.ExtraLight)
@@ -531,7 +561,7 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
     top_5 = sorted(zip(mzs, intensities), key=lambda x: x[1], reverse=True)[:5]
     for i, (mz, intensity) in enumerate(top_5):
         try:
-            text_item = pg.TextItem(text=f"{mz:.4f}", color="#232323", anchor=(0, 0))
+            text_item = pg.TextItem(text=f"{mz:.4f}", color="#3c5488ff", anchor=(0, 0))
         except TypeError as e:
             logger.error(
                 f"plot_ms2_from_file: TypeError {e} when creating text item for peak {mz} in {ms_file.filename}"
