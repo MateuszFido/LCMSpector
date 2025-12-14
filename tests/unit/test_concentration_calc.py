@@ -1,6 +1,5 @@
 import numpy as np
-
-__import__("lc-inspector.calculation.calc_conc.calculate_concentration")
+from calculation.calc_conc import calculate_concentration
 
 
 # ----------------------------------------------------------------------
