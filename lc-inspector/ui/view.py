@@ -4,7 +4,6 @@ import logging
 import json
 from pathlib import Path
 from datetime import datetime
-from types import MethodType
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
@@ -130,7 +129,6 @@ class View(QtWidgets.QMainWindow):
                 3000,
             )
         self.update_lc_file_list()  # Update the model with the new LC files
-        print(self.controller.model.lc_measurements)
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
@@ -393,7 +391,7 @@ class View(QtWidgets.QMainWindow):
         except RuntimeError:
             logger.error("listLC has been deleted!")
         finally:
-            self.controller.model.lc_measurements = lc_files
+            self.controller.model.lc_measurements = dict.fromkeys(lc_files)
 
     def update_ms_file_list(self):
         # Update the model with the MS file paths
@@ -429,7 +427,7 @@ class View(QtWidgets.QMainWindow):
                     "Something went wrong during updating of the MS file list. Please try again."
                 )
         finally:
-            self.controller.model.ms_measurements = ms_files
+            self.controller.model.ms_measurements = dict.fromkeys(ms_files)
 
     def update_annotation_file(self):
         # Update the model with the annotation file paths
@@ -457,7 +455,7 @@ class View(QtWidgets.QMainWindow):
         except RuntimeError:
             logger.error("listAnnotations has been deleted!")
         finally:
-            self.controller.model.annotations = annotation_files
+            self.controller.model.annotations = dict.fromkeys(annotation_files)
 
     def update_progressBar(self, value):
         self.progressBar.setValue(value)
@@ -899,7 +897,6 @@ class View(QtWidgets.QMainWindow):
             if layout:
                 for i in reversed(range(layout.count())):
                     widget = layout.itemAt(i).widget()
-                    print(widget)
                     if widget is not None and isinstance(widget, DragDropListWidget):
                         widget.clear()
                         widget.deleteLater()

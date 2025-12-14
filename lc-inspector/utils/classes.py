@@ -79,7 +79,6 @@ class LCMeasurement(Measurement):
         self.annotations = None
         self.baseline_corrected = baseline_correction(self.data)
 
-        # NEW: Calculate peak areas for detected peaks in LC chromatogram
         self.peak_areas = self._calculate_lc_peak_areas()
         logger.info(
             f"Loaded LC file {self.filename} with {len(self.peak_areas)} detected peaks."
@@ -210,7 +209,7 @@ class MSMeasurement(Measurement):
     def __init__(self, path, mass_accuracy=0.001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
-        self.data, self.ms2_data = load_ms_data(path)
+        self.data = load_ms_data(path)
         self.xics = []
 
     def plot(self):
@@ -222,19 +221,23 @@ class MSMeasurement(Measurement):
 
 class Compound:
     """
-    Class representing a targeted result for a single measurement pair (LC + MS).
-    Parameters
-    ----------
-    name : str
-        The name of the compound.
-    ions : list
-        A list of ion types.
-    ms_area : float
-        The MS area of the compound.
-    lc_area : float
-        The LC area of the compound.
-    rt : float
-        The retention time of the compound.
+    <<<<<<< HEAD
+        Class representing a targeted result for a single measurement pair (LC + MS).
+    =======
+        Class representing a targeted result for a compound.
+    >>>>>>> cythonize
+        Parameters
+        ----------
+        name : str
+            The name of the compound.
+        ions : list
+            A list of ion types.
+        ms_area : float
+            The MS area of the compound.
+        lc_area : float
+            The LC area of the compound.
+        rt : float
+            The retention time of the compound.
     """
 
     def __init__(self, name: str, ions: list, ion_info: list):

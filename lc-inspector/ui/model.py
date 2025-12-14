@@ -7,8 +7,8 @@ import numpy as np
 from scipy.stats import linregress
 import pandas as pd
 from calculation.calc_conc import calculate_concentration
-from utils.loading import load_ms2_library
 from calculation.workers import LoadingWorker, ProcessingWorker
+from utils.loading import load_ms2_library
 from PySide6.QtCore import QThread
 
 logger = logging.getLogger(__name__)
@@ -57,10 +57,10 @@ class Model(QThread):
 
     def __init__(self):
         super().__init__()
-        self.lc_measurements = {}
-        self.ms_measurements = {}
-        self.annotations = []
-        self.compounds = []
+        self.lc_measurements = dict()
+        self.ms_measurements = dict()
+        self.annotations = tuple()
+        self.compounds = tuple()
         self.mass_accuracy = 0.0001
         self.library = load_ms2_library()
         if self.library:
@@ -104,7 +104,6 @@ class Model(QThread):
         peak_area_was_used = False
         for ion in ms_compound.ions.keys():
             ion_data = ms_compound.ions[ion]
-
             # Use peak area if requested and available
             if (
                 use_peak_area
