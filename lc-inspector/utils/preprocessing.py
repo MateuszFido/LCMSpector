@@ -1,9 +1,10 @@
+import enum
 import logging
-import copy
-import time
 import numpy as np
 import pandas as pd
 import static_frame as sf
+from typing import Tuple
+from pyteomics.mzml import MzML
 
 logger = logging.getLogger(__name__)
 try:
@@ -103,7 +104,9 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 #     return mz_axis
 
 
-def construct_xics(data, ion_list, mass_accuracy, file_name):
+def build_xics(
+    data: MzML, ion_list: np.typing.NDArray[np.float32], mass_accuracy: np.float64
+) -> Tuple[np.typing.NDArray[np.float32], np.typing.NDArray[np.float32]]:
     """
     Creates XICs (extracted ion chromatograms) for a list of ions and Scan objects for a given data file.
 
@@ -123,83 +126,65 @@ def construct_xics(data, ion_list, mass_accuracy, file_name):
     Tuple of Compound objects
         A tuple of Compound objects with XICs computed.
     """
-    compounds = []
-    for compound in ion_list:
-        new_compound = copy.copy(compound)  # Shallow copy the compound
-        new_compound.ions = copy.deepcopy(compound.ions)  # Deep copy the ions dict
-        new_compound.file = file_name
-        compounds.append(new_compound)
 
-    # Group ions by compound
-    ion_to_compounds = {}
-    for idx, compound in enumerate(compounds):
-        for ion in compound.ions.keys():
-            if ion not in ion_to_compounds:
-                ion_to_compounds[ion] = []
-            ion_to_compounds[ion].append((idx, ion))
+    # turn target_mzs into numpy array and pre-allocate result containers
+    target_mzs = np.asarray(ion_list, dtype=np.float32)
+    xic_intensities = np.zeros((len(data), len(target_mzs)), dtype=np.float32)
+    scan_times = np.zeros(len(data), dtype=np.float32)
 
-    # Process each unique ion only once
-    for ion, compound_refs in ion_to_compounds.items():
-        # Find a range around the ion
-        mass_range = (ion - 3 * mass_accuracy, ion + 3 * mass_accuracy)
-        # Safeguard for negative m/z
-        if mass_range[0] < 0:
-            mass_range = (0, mass_range[1])
-            logger.error(
-                f"Mass range for ion {ion} starting at less than 0, setting to 0."
-            )
+    # Compute tolerance windows for each target mz
+    delta = target_mzs * mass_accuracy * 3
+    lower = target_mzs - delta
+    upper = target_mzs + delta
 
-        xic_intensities = scan_times = np.zeros(len(data))
+    for i, scan in enumerate(data):
+        mz_array = scan["m/z array"]
+        intensity_array = scan["intensity array"]
+        scan_times[i] = scan["scanList"]["scan"][0]["scan start time"]
 
-        # Use binary search for range finding
-        for i, scan in enumerate(data):
-            if scan["ms level"] == 1:
-                mz_array = scan["m/z array"]
-                intensity_array = scan["intensity array"]
-                start_idx = np.searchsorted(mz_array, mass_range[0], side="left")
-                end_idx = np.searchsorted(mz_array, mass_range[1], side="right")
+        # Binary search the arrays for mz ranges to sum in
+        left_idx = np.searchsorted(mz_array, lower, side="left")
+        right_idx = np.searchsorted(mz_array, upper, side="right")
 
-                if start_idx < end_idx:  # Only sum if we have values in range
-                    xic_intensities[i] = np.sum(intensity_array[start_idx:end_idx])
-                scan_times[i] = scan["scanList"]["scan"][0]["scan start time"]
+        for ion_idx, (left, right) in enumerate(zip(left_idx, right_idx)):
+            if left < right:  # Only sum if we have values in range
+                xic_intensities[i, ion_idx] = np.sum(intensity_array[left:right])
 
-        xic = np.array((scan_times, xic_intensities))
-        max_idx = np.argmax(xic_intensities)
+    return xic_intensities, scan_times
 
-        # Apply results to all compounds that need this ion
-        for comp_idx, ion_key in compound_refs:
-            compound = compounds[comp_idx]
-            compound.ions[ion_key]["MS Intensity"] = xic
 
-            # Get the scan time of the index with the highest intensity
-            try:
-                compound.ions[ion_key]["RT"] = scan_times[max_idx]
-            except Exception as e:
-                compound.ions[ion_key]["RT"] = 0
-                logger.error(f"Error: {e}")
+def construct_xics(
+    filename: str,
+    data: MzML,
+    compounds: tuple,
+    mass_accuracy: np.float64 = np.float64(0.0001),
+):
+    """Wrapper around build_xics for calling from ProcessPoolExecutor.
+    Returns a list of *filled* Compound objects."""
+    target_mzs = _extract_target_mzs(compounds)
+    intensities, rts = build_xics(data, target_mzs, mass_accuracy)
 
-            # Calculate peak area
-            try:
-                # Get RT of peak maximum for target
-                rt_peak = compound.ions[ion_key]["RT"]
-                if rt_peak == 0:
-                    rt_peak = xic[0][np.argmax(xic[1])] if len(xic[1]) > 0 else 0
+    # Map results onto Compound objects
+    mz_to_column = {mz: idx for idx, mz in enumerate(target_mzs)}  # lookup index
 
-                # Calculate peak area using trapezoidal integration
-                peak_area_info = safe_peak_integration(
-                    integrate_ms_xic_peak,
-                    scan_times=xic[0],
-                    intensities=xic[1],
-                    rt_target=rt_peak,
-                    mass_accuracy=mass_accuracy,
-                )
-                compound.ions[ion_key]["MS Peak Area"] = peak_area_info
-            except Exception as e:
-                logger.warning(
-                    f"Peak area calculation failed for {ion_key} in {compound.name}: {e}"
-                )
-                compound.ions[ion_key]["MS Peak Area"] = create_fallback_peak_area(
-                    xic[0], xic[1]
-                )
+    for compound in compounds:
+        compound.file = filename
+        for ion in compound.ions:
+            col = mz_to_column[ion]
+            xic = np.array((rts, intensities[:, col]), dtype=np.float32)
+            compound.ions[ion]["MS Intensity"] = xic
+            max_idx = np.argmax(xic[1])
+            compound.ions[ion]["RT"] = rts[max_idx]
 
-    return tuple(compounds)
+            # TODO: additional integration logic
+
+    return compounds
+
+
+def _extract_target_mzs(compounds: tuple) -> np.ndarray:
+    """Collect the m/z of every ion that appears in the supplied compounds."""
+    mzs = []
+    for cmpd in compounds:
+        for ion in cmpd.ions:  # ion_info is a list of (ion_name, mz) tuples
+            mzs.append(ion)  # info holds the exact m/z value
+    return np.unique(np.asarray(mzs, dtype=np.float64))

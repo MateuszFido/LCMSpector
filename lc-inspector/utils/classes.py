@@ -79,7 +79,6 @@ class LCMeasurement(Measurement):
         self.annotations = None
         self.baseline_corrected = baseline_correction(self.data)
 
-        # NEW: Calculate peak areas for detected peaks in LC chromatogram
         self.peak_areas = self._calculate_lc_peak_areas()
         logger.info(
             f"Loaded LC file {self.filename} with {len(self.peak_areas)} detected peaks."
@@ -222,7 +221,7 @@ class MSMeasurement(Measurement):
 
 class Compound:
     """
-    Class representing a targeted result for a single measurement pair (LC + MS).
+    Class representing a targeted result for a compound.
     Parameters
     ----------
     name : str

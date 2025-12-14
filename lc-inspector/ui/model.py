@@ -104,7 +104,6 @@ class Model(QThread):
         peak_area_was_used = False
         for ion in ms_compound.ions.keys():
             ion_data = ms_compound.ions[ion]
-
             # Use peak area if requested and available
             if (
                 use_peak_area

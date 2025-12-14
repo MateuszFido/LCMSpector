@@ -113,8 +113,8 @@ class Controller:
 
     def on_processing_finished(self, compound_results):
         # iterate over the compound results and match them with their respective MS file
-        for compound_result in compound_results:
-            self.model.ms_measurements[compound_result[0].file].xics = compound_result
+        for compound in compound_results:
+            self.model.ms_measurements[compound[0].file].xics = compound
 
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
@@ -164,8 +164,12 @@ class Controller:
         try:
             lc_file, ms_file = self.model.get_plots(selected_file)
             self.view.display_plots(lc_file, ms_file)
-        except Exception as e:
-            logger.error("Error getting plots for file %s: %s", selected_file, str(e))
+        except Exception:
+            logger.error(
+                "Error getting plots for file %s: %s",
+                selected_file,
+                traceback.format_exc(),
+            )
 
     def calibrate(self):
         """
