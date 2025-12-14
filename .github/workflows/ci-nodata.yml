@@ -1,0 +1,62 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macOS-latest, macOS]
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.12"
+      - name: Install dependencies (macOS)
+        run: |
+          pip install pytest
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+        shell: bash
+        if: matrix.os == 'macOS-latest'
+
+      - name: Install dependencies (Ubuntu)
+        run: |
+          pip install pytest
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+          sudo apt update
+          sudo apt install libgl1 libegl1 -y
+        shell: bash
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Install dependencies (Windows)
+        run: |
+          set PYTHONUTF8=1
+          pip install pytest 
+          if exist requirements.txt (
+            pip install -r requirements.txt
+          )
+        shell: cmd
+        if: matrix.os == 'windows-latest'
+
+      - name: Test with pytest
+        run: |
+          pytest -s
