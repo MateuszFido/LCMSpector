@@ -40,51 +40,22 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     """
 
     filename = os.path.basename(path).split(".")[0]
-<<<<<<< HEAD
-=======
     default_family = fonts.get_family_name()
->>>>>>> cythonize
 
     args = {"color": "#2C2D2D", "font-size": "12pt", "font-family": default_family}
     # Plotting chromatogram before background correction
     widget.setBackground("w")
     widget.addLegend()
-<<<<<<< HEAD
-    widget.setTitle(f"LC chromatogram of {filename}")
-    widget.plot(
-        dataframe["Time (min)"],
-        dataframe["Uncorrected"],
-        pen=pg.mkPen("b", width=2),
-=======
     widget.setTitle(f"{filename}")
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Uncorrected"],
         pen=pg.mkPen("#333333", width=2),
->>>>>>> cythonize
         name="Before correction",
     )
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Baseline"],
-<<<<<<< HEAD
-        pen=pg.mkPen("r", width=2, style=Qt.PenStyle.DashLine),
-        name="Baseline",
-    )
-    widget.setLabel("left", "Absorbance (mAU)")
-    widget.setLabel("bottom", "Time (min)")
-
-    # Plotting chromatogram after background correction
-    widget.plot(title="Chromatogram After Background Correction")
-    widget.plot(
-        dataframe["Time (min)"],
-        dataframe["Value (mAU)"],
-        pen=pg.mkPen("g", width=2),
-        name="After correction",
-    )
-    widget.setLabel("left", "Absorbance (mAU)")
-    widget.setLabel("bottom", "Time (min)")
-=======
         pen=pg.mkPen("#FF5C5C", width=2, style=Qt.PenStyle.DashLine),
         name="Baseline",
     )
@@ -101,7 +72,6 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     )
     widget.setLabel("left", "Absorbance (mAU)", **args)
     widget.setLabel("bottom", "Time (min)", **args)
->>>>>>> cythonize
 
 
 def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
@@ -120,18 +90,9 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
     None
     """
 
-<<<<<<< HEAD
-    scan_time_diff = np.abs(
-        [
-            np.abs(data_matrix[i]["scanList"]["scan"][0]["scan start time"] - rt)
-            for i in range(len(data_matrix))
-        ]
-    )
-=======
     default_font = fonts.get_main_font(11)
     default_family = fonts.get_family_name()
 
->>>>>>> cythonize
     try:
         spectrum = data_matrix.time[rt]
     except ValueError:
@@ -144,21 +105,6 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
     widget.clear()
     # Plotting the average MS data
     widget.setBackground("w")
-<<<<<<< HEAD
-    try:
-        data_matrix[index]
-    except IndexError:
-        return
-    if len(data_matrix[index]["m/z array"]) < 500:
-        # Plot as a histogram
-        widget.addItem(
-            pg.BarGraphItem(
-                x=data_matrix[index]["m/z array"],
-                height=data_matrix[index]["intensity array"],
-                width=0.2,
-                pen=mkPen("b", width=2),
-                brush=mkBrush("b"),
-=======
     if len(spectrum["m/z array"]) < 500:
         # Plot as a histogram
         widget.addItem(
@@ -168,30 +114,11 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
                 width=0.2,
                 pen=mkPen("#3c5488ff", width=2),
                 brush=mkBrush("#3c5488ff"),
->>>>>>> cythonize
             )
         )
     else:
         # Plot as a curve
         widget.plot(
-<<<<<<< HEAD
-            data_matrix[index]["m/z array"],
-            data_matrix[index]["intensity array"],
-            pen=mkPen("b", width=2),
-        )
-    if widget.getPlotItem():
-        widget.getPlotItem().setTitle(
-            f"MS1 full-scan spectrum at {round(rt, 2)} minutes",
-            color="#b8b8b8",
-            size="12pt",
-        )
-    widget.setLabel("left", "Intensity / a.u.")
-    widget.setLabel("bottom", "m/z")
-
-    # Annotate the m/z of the 5 highest peaks
-    mzs = data_matrix[index]["m/z array"]
-    intensities = data_matrix[index]["intensity array"]
-=======
             spectrum["m/z array"],
             spectrum["intensity array"],
             pen=mkPen("#3c5488ff", width=2),
@@ -220,7 +147,6 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
     # Annotate the m/z of the 5 highest peaks
     mzs = spectrum["m/z array"]
     intensities = spectrum["intensity array"]
->>>>>>> cythonize
     peaks, _ = find_peaks(intensities, prominence=10)
     sorted_indices = np.argsort(intensities[peaks])[::-1]
     sorted_mzs = mzs[peaks][sorted_indices][0:10]
@@ -230,19 +156,10 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
         i < len(sorted_mzs) and sorted_mzs[i] in mzs[peaks][sorted_indices] and i < 10
     ):
         text_item = pg.TextItem(
-<<<<<<< HEAD
-            text=f"{sorted_mzs[i]:.4f}", color="#232323", anchor=(0, 0)
-        )
-        text_item.setPos(sorted_mzs[i], sorted_intensities[i])
-        text_item.setFont(
-            pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.ExtraLight)
-        )
-=======
             text=f"{sorted_mzs[i]:.4f}", color="#3c5488ff", anchor=(0, 0)
         )
         text_item.setPos(sorted_mzs[i], sorted_intensities[i])
         text_item.setFont(default_font)
->>>>>>> cythonize
         widget.addItem(text_item)
         i += 1
 
