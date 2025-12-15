@@ -11,13 +11,13 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest, macos-13, ubuntu-22.04]
+        os: [windows-latest, macos-latest, ubuntu-latest, ubuntu-22.04]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           lfs: false
           fetch-depth: 0
@@ -25,7 +25,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
       - name: Upgrade pip tooling
         run: |
@@ -50,17 +50,17 @@ jobs:
         run: |
           curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
           unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
-          mkdir -p lc-inspector/resources
-          mv -f MoNA-export-All_LC-MS-MS_Orbitrap.msp lc-inspector/resources
+          mkdir -p lcmspector/resources
+          mv -f MoNA-export-All_LC-MS-MS_Orbitrap.msp lcmspector/resources
         shell: bash
         if: matrix.os != 'windows-latest'
 
       - name: Download the MSP library from Polybox (Windows)
         run: |
-          New-Item -ItemType Directory -Force -Path lc-inspector\resources | Out-Null
+          New-Item -ItemType Directory -Force -Path lcmspector\resources | Out-Null
           Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap.zip"
           Expand-Archive -Path "MoNA-export-All_LC-MS-MS_Orbitrap.zip" -DestinationPath "." -Force
-          Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lc-inspector\resources" -Force
+          Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lcmspector\resources" -Force
         shell: pwsh
         if: matrix.os == 'windows-latest'
 
@@ -68,16 +68,16 @@ jobs:
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          python -m nuitka lc-inspector/main.py \
+          python -m nuitka lcmspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"="resources" \
-            --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
+            --include-data-dir="lcmspector/resources"="resources" \
+            --include-data-files="lcmspector/config.json"="config.json" \
+            --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
-            --macos-app-icon="lc-inspector/resources/icon.icns" \
+            --macos-app-icon="lcmspector/resources/icon.icns" \
             --output-dir=dist
 
           # Zip the .app bundle for release
@@ -86,41 +86,19 @@ jobs:
           mv main.app LCMSpector.app
           zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
 
-      - name: Build with Nuitka (macOS Intel)
-        if: matrix.os == 'macos-13'
-        shell: bash
-        run: |
-          python -m nuitka lc-inspector/main.py \
-            --standalone \
-            --plugin-enable=pyside6 \
-            --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"="resources" \
-            --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
-            --macos-create-app-bundle \
-            --macos-app-name=LCMSpector \
-            --macos-app-icon="lc-inspector/resources/icon.icns" \
-            --output-dir=dist
-
-          # Zip the .app bundle for release
-          cd dist
-          # Failsafe for if Nuitka still somehow wrongly produces "main.app"
-          mv main.app LCMSpector.app
-          zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip" LCMSpector.app
-
       - name: Build with Nuitka (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          python -m nuitka lc-inspector\main.py `
+          python -m nuitka lcmspector\main.py `
             --standalone `
             --plugin-enable=pyside6 `
             --noinclude-qt-translations `
-            --include-data-dir="lc-inspector/resources"="resources" `
-            --include-data-files="lc-inspector/config.json"="config.json" `
-            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" `
+            --include-data-dir="lcmspector/resources"="resources" `
+            --include-data-files="lcmspector/config.json"="config.json" `
+            --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" `
             --windows-console-mode=disable `
-            --windows-icon-from-ico="lc-inspector/resources/icon.ico" `
+            --windows-icon-from-ico="lcmspector/resources/icon.ico" `
             --output-filename=LCMSpector `
             --output-dir=dist `
             --assume-yes-for-downloads
@@ -134,13 +112,13 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          python -m nuitka lc-inspector/main.py \
+          python -m nuitka lcmspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"="resources" \
-            --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
+            --include-data-dir="lcmspector/resources"="resources" \
+            --include-data-files="lcmspector/config.json"="config.json" \
+            --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
             --output-filename=LCMSpector \
             --output-dir=dist
 
@@ -153,13 +131,13 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         shell: bash
         run: |
-          python -m nuitka lc-inspector/main.py \
+          python -m nuitka lcmspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
-            --include-data-dir="lc-inspector/resources"="resources" \
-            --include-data-files="lc-inspector/config.json"="config.json" \
-            --include-data-files="lc-inspector/ui/logo.png"="ui/logo.png" \
+            --include-data-dir="lcmspector/resources"="resources" \
+            --include-data-files="lcmspector/config.json"="config.json" \
+            --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
             --output-filename=LCMSpector \
             --output-dir=dist
 
@@ -174,14 +152,6 @@ jobs:
         with:
           name: LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
           path: dist/LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-          if-no-files-found: error
-
-      - name: Upload artifact (macOS Intel)
-        if: matrix.os == 'macos-13'
-        uses: actions/upload-artifact@v4
-        with:
-          name: LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
-          path: dist/LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
           if-no-files-found: error
 
       - name: Upload artifact (Windows)
@@ -214,7 +184,7 @@ jobs:
 
       steps:
         - name: Checkout repository
-          uses: actions/checkout@v4
+          uses: actions/checkout@v6
           with:
             lfs: false
 
@@ -235,7 +205,8 @@ jobs:
             prerelease: false
             files: |
               LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-              LCMSpector-${{ github.event.inputs.version }}-macOS-x86_64.zip
               LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
               LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
               LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+            body: "Reformatted file loading to utilize the reader better, deprecated macOS x86-64 builds (not supported by GitHub runners anymore). \nVarious bug fixes and performance improvements." 
+
