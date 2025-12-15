@@ -16,7 +16,7 @@ def _load_fonts():
     if _font_id != -1:
         return
 
-    font_path = Path("resources/Nunito/static/Nunito-Regular.ttf")
+    font_path = Path(__file__).parent.parent / "resources/Nunito/static/Nunito-Regular.ttf"
     if not font_path.is_file():
         raise FileNotFoundError(f"Main font not found at {font_path}.")
 
