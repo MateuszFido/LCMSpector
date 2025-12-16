@@ -1,4 +1,6 @@
 import os
+import subprocess
+import tempfile
 import traceback
 import logging
 import json
@@ -370,6 +372,17 @@ class View(QtWidgets.QMainWindow):
         else:
             self.show_critical_error("Error: Nothing to export.")
             logger.error("Error: Nothing to export.")
+
+    def on_logs(self):
+        """Slot for clicking the menubar Logs action.
+        Opens the log file on the user's system."""
+        log_file = Path(tempfile.gettempdir()) / "lcmspector/lcmspector.log"
+        if os.sys.platform.startswith("win"):
+            os.startfile(log_file)
+        elif os.sys.platform == "darwin":
+            subprocess.run(["open", log_file])
+        else:
+            subprocess.run(["xdg-open", log_file])
 
     def update_lc_file_list(self):
         """
@@ -963,7 +976,7 @@ class View(QtWidgets.QMainWindow):
             self.labelLCdata.setVisible(True)
             self.browseLC.setVisible(True)
             self.listMS = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
+            self.gridLayout.addWidget(self.listMS, 5, 0, 1, 2)
             self.labelMSdata.setVisible(True)
             self.browseMS.setVisible(True)
             self.controller.mode = "LC/GC-MS"
@@ -982,7 +995,7 @@ class View(QtWidgets.QMainWindow):
             self.labelMSdata.setVisible(True)
             self.browseLC.setVisible(False)
             self.listMS = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listMS, 2, 0, 1, 4)
+            self.gridLayout.addWidget(self.listMS, 2, 0, 5, 2)
             self.button_clear_LC.setVisible(False)
             self.controller.mode = "MS Only"
             self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
@@ -1512,31 +1525,27 @@ class View(QtWidgets.QMainWindow):
 
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 864, 37))
-        self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(parent=self.menubar)
-        self.menuFile.setObjectName("menuFile")
         self.menuEdit = QtWidgets.QMenu(parent=self.menubar)
-        self.menuEdit.setObjectName("menuEdit")
         self.menuHelp = QtWidgets.QMenu(parent=self.menubar)
-        self.menuHelp.setObjectName("menuHelp")
-        MainWindow.setMenuBar(self.menubar)
+
+        ###
+        #
+        # Define actions
+        #
+        ###
+
         self.actionSave = QtGui.QAction(parent=MainWindow)
-        self.actionSave.setObjectName("actionSave")
         self.actionExit = QtGui.QAction(parent=MainWindow)
-        self.actionExit.setObjectName("actionExit")
         self.actionPreferences = QtGui.QAction(parent=MainWindow)
-        self.actionPreferences.setObjectName("actionPreferences")
         self.actionReadme = QtGui.QAction(parent=MainWindow)
-        self.actionReadme.setObjectName("actionReadme")
         self.actionFile = QtGui.QAction(parent=MainWindow)
-        self.actionFile.setObjectName("actionFile")
         self.actionExport = QtGui.QAction(parent=MainWindow)
-        self.actionExport.setObjectName("actionExport")
         self.actionExport.setEnabled(False)
         self.actionOpen = QtGui.QAction(parent=MainWindow)
-        self.actionOpen.setObjectName("actionOpen")
         self.actionAbout = QtGui.QAction(parent=MainWindow)
-        self.actionAbout.setObjectName("actionAbout")
+        self.actionLogs = QtGui.QAction(parent=MainWindow)
+
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addAction(self.actionSave)
         self.menuFile.addAction(self.actionExport)
@@ -1544,10 +1553,12 @@ class View(QtWidgets.QMainWindow):
         self.menuEdit.addAction(self.actionPreferences)
         self.menuHelp.addAction(self.actionReadme)
         self.menuHelp.addAction(self.actionAbout)
+        self.menuHelp.addAction(self.actionLogs)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
 
+        MainWindow.setMenuBar(self.menubar)
         ###
         #
         #
@@ -1566,6 +1577,7 @@ class View(QtWidgets.QMainWindow):
         # self.actionSave.triggered.connect(self.on_save)
         self.actionExit.triggered.connect(self.on_exit)
         self.actionExport.triggered.connect(self.on_export)
+        self.actionLogs.triggered.connect(self.on_logs)
         # self.actionPreferences.triggered.connect(self.on_preferences)
         # self.actionReadme.triggered.connect(self.on_readme)
         self.browseLC.clicked.connect(self.on_browseLC)
@@ -1656,6 +1668,8 @@ class View(QtWidgets.QMainWindow):
         self.actionPreferences.setText(_translate("MainWindow", "Preferences"))
         self.actionReadme.setText(_translate("MainWindow", "Readme"))
         self.actionReadme.setShortcut(_translate("MainWindow", "F10"))
+        self.actionLogs.setText(_translate("MainWindow", "Logs"))
+        self.actionLogs.setShortcut(_translate("MainWindow", "F11"))
         self.actionOpen.setText(_translate("MainWindow", "Open"))
         self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
         self.button_clear_LC.setText(_translate("MainWindow", "Clear"))
