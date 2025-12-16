@@ -218,8 +218,12 @@ class Controller:
         # Safeguard to only update what was just loaded
         if lc_results:
             self.model.lc_measurements = lc_results
+            last_loaded_result = list(lc_results.keys())[-1]
+            self.view.plot_raw_chromatography(lc_results[last_loaded_result])
         if ms_results:
             self.model.ms_measurements = ms_results
+            last_loaded_result = list(ms_results.keys())[-1]
+            self.view.plot_raw_MS(ms_results[last_loaded_result])
 
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
@@ -230,12 +234,12 @@ class Controller:
                 5000,
             )
             return
-        elif len(lc_results) == 0:
+        elif len(lc_results) != 0:
             self.view.statusbar.showMessage(
                 f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(ms_results)} MS files.",
                 5000,
             )
-        elif len(ms_results) == 0:
+        elif len(ms_results) != 0:
             self.view.statusbar.showMessage(
                 f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(lc_results)} chromatography files.",
                 5000,

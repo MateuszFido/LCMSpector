@@ -584,3 +584,13 @@ def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.setTitle("No MS2 spectrum found")
     widget.setLabel("left", "Intensity (%)")
     widget.setLabel("bottom", "m/z")
+
+
+def plot_placeholder(widget: pg.PlotWidget, text: str):
+    default_font = fonts.get_main_font(14)
+    widget.setBackground("w")
+    widget.getPlotItem().hideAxis("bottom")
+    widget.getPlotItem().hideAxis("left")
+    text_item = pg.TextItem(text=text, color="#c5c5c5", anchor=(0.5, 0.5))
+    text_item.setFont(default_font)
+    widget.addItem(text_item)

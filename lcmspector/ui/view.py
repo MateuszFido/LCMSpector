@@ -19,6 +19,7 @@ from utils.plotting import (
     plot_library_ms2,
     plot_no_ms2_found,
     plot_ms2_from_file,
+    plot_placeholder,
 )
 from pyqtgraph.dockarea import DockArea
 import numpy as np
@@ -30,6 +31,7 @@ from ui.widgets import (
     UnifiedResultsTable,
     LabelledSlider,
 )
+
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
@@ -553,6 +555,43 @@ class View(QtWidgets.QMainWindow):
         for compound in compounds:
             self.comboBoxChooseCompound.addItem(compound.name)
 
+    def plot_raw_chromatography(self, lc_file):
+        if self.controller.mode == "LC/GC-MS":
+            try:
+                self.canvas_baseline.clear()
+                plot_absorbance_data(
+                    lc_file.path, lc_file.baseline_corrected, self.canvas_baseline
+                )
+                self.canvas_baseline.getPlotItem().addItem(
+                    self.crosshair_v, ignoreBounds=True
+                )
+                self.canvas_baseline.getPlotItem().addItem(
+                    self.crosshair_h, ignoreBounds=True
+                )
+                self.canvas_baseline.getPlotItem().addItem(
+                    self.line_marker, ignoreBounds=True
+                )
+                self.crosshair_v_label = pg.InfLineLabel(
+                    self.crosshair_v, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                )
+                self.crosshair_h_label = pg.InfLineLabel(
+                    self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                )
+            except Exception:
+                logger.error(
+                    f"No baseline chromatogram found: {traceback.format_exc()}"
+                )
+        else:
+            return
+
+    def plot_raw_MS(self, ms_file):
+        self.canvas_avgMS.clear()
+        if ms_file:
+            try:
+                plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
+            except AttributeError:
+                logger.error(f"No average MS found: {traceback.format_exc()}")
+
     def display_plots(self, lc_file, ms_file):
         if self.controller.mode == "LC/GC-MS":
             self.canvas_baseline.clear()
@@ -1049,7 +1088,7 @@ class View(QtWidgets.QMainWindow):
         self.browseAnnotations.setObjectName("browseAnnotations")
         self.gridLayout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
         self.browseAnnotations.setVisible(False)
-        self.gridLayout.addWidget(self.browseMS, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.browseMS, 4, 1, 1, 1)
         self.labelLCdata = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelLCdata.setObjectName("labelLCdata")
         self.gridLayout.addWidget(self.labelLCdata, 1, 0, 1, 1)
@@ -1059,13 +1098,14 @@ class View(QtWidgets.QMainWindow):
         self.labelAnnotations.setObjectName("labelAnnotations")
         self.gridLayout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
         self.labelAnnotations.setVisible(False)
-        self.gridLayout.addWidget(self.labelMSdata, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.labelMSdata, 4, 0, 1, 1)
         self.listLC = DragDropListWidget(parent=self.tabUpload)
         self.listLC.setObjectName("listLC")
         self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
         self.listMS = DragDropListWidget(parent=self.tabUpload)
         self.listMS.setObjectName("listMS")
-        self.gridLayout.addWidget(self.listMS, 2, 2, 1, 2)
+        self.gridLayout.addWidget(self.listMS, 5, 0, 1, 2)
+
         self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
         self.labelIonList.setObjectName("labelIonList")
         self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
@@ -1074,54 +1114,38 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
         self.button_clear_MS = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_clear_MS.setObjectName("button_clear_MS")
-        self.gridLayout.addWidget(self.button_clear_MS, 3, 2, 1, 1)
+        self.gridLayout.addWidget(self.button_clear_MS, 6, 0, 1, 1)
         self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_clear_ion_list.setObjectName("button_clear_ion_list")
-        self.gridLayout.addWidget(self.button_clear_ion_list, 3, 4, 1, 1)
+        self.gridLayout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
         self.button_save_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_save_ion_list.setObjectName("button_save_ion_list")
-        self.gridLayout.addWidget(self.button_save_ion_list, 3, 5, 1, 1)
+        self.gridLayout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
         self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_delete_ion_list.setObjectName("button_delete_ion_list")
         self.mass_accuracy_slider = LabelledSlider(
             "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
         )
-        self.gridLayout.addWidget(self.mass_accuracy_slider, 4, 4, 1, 3)
-        self.gridLayout.addWidget(self.button_delete_ion_list, 3, 6, 1, 1)
+        self.gridLayout.addWidget(self.mass_accuracy_slider, 5, 4, 1, 3)
+        self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
 
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
         self.processButton.setDefault(True)
         self.processButton.setEnabled(False)
-        self.gridLayout.addWidget(self.processButton, 4, 2, 1, 2)
+        self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
         self.tabWidget.addTab(self.tabUpload, "")
-        self.tabResults = QtWidgets.QWidget()
-        self.tabResults.setObjectName("tabResults")
-
-        self.gridLayout_5 = QtWidgets.QGridLayout(self.tabResults)
-        self.gridLayout_5.setObjectName("gridLayout_5")
-        self.label_results_currentfile = QtWidgets.QLabel(parent=self.tabResults)
-        self.label_results_currentfile.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.label_results_currentfile.sizePolicy().hasHeightForWidth()
-        )
-        self.label_results_currentfile.setSizePolicy(sizePolicy)
-        self.label_results_currentfile.setObjectName("label_results_currentfile")
-        self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
-        self.gridLayout_2 = QtWidgets.QGridLayout()
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.canvas_baseline = ChromatogramPlotWidget(parent=self.tabResults)
+        self.canvas_baseline = ChromatogramPlotWidget(parent=self.tabUpload)
         self.canvas_baseline.setObjectName("canvas_baseline")
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
         self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
         self.canvas_baseline.scene().sigMouseClicked.connect(
             lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
         )
+        plot_placeholder(
+            self.canvas_baseline, "Welcome to LCMSpector\n← add files to get started"
+        )
+
         self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
         self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
         self.canvas_baseline.sigKeyPressed.connect(
@@ -1150,10 +1174,10 @@ class View(QtWidgets.QMainWindow):
         )
         self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
 
-        self.gridLayout_2.addWidget(self.canvas_baseline, 0, 0, 1, 1)
-        self.canvas_avgMS = pg.PlotWidget(parent=self.tabResults)
+        self.canvas_avgMS = pg.PlotWidget(parent=self.tabUpload)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.canvas_avgMS.setMouseEnabled(x=True, y=False)
+        plot_placeholder(self.canvas_avgMS, "")
 
         def setYRange(self):
             self.enableAutoRange(axis="y")
@@ -1166,7 +1190,46 @@ class View(QtWidgets.QMainWindow):
             lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
         )
 
-        self.gridLayout_2.addWidget(self.canvas_avgMS, 1, 0, 1, 1)
+        self.resultsPane = QtWidgets.QWidget(parent=self.tabUpload)
+        self.resultsPaneLayout = QtWidgets.QVBoxLayout(self.resultsPane)
+        self.resultsPaneLayout.addWidget(self.canvas_baseline)
+        self.resultsPaneLayout.addWidget(self.canvas_avgMS)
+        self.gridLayout.addWidget(self.resultsPane, 2, 2, 4, 2)
+        self.gridLayout.setColumnStretch(2, 4)
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        #
+        #
+        #
+        #
+        #
+        # Next tab
+        #
+        #
+        #
+        #
+        #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        self.tabResults = QtWidgets.QWidget()
+        self.tabResults.setObjectName("tabResults")
+
+        self.gridLayout_5 = QtWidgets.QGridLayout(self.tabResults)
+        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.label_results_currentfile = QtWidgets.QLabel(parent=self.tabResults)
+        self.label_results_currentfile.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.label_results_currentfile.sizePolicy().hasHeightForWidth()
+        )
+        self.label_results_currentfile.setSizePolicy(sizePolicy)
+        self.label_results_currentfile.setObjectName("label_results_currentfile")
+        self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
+        self.gridLayout_2 = QtWidgets.QGridLayout()
+        self.gridLayout_2.setObjectName("gridLayout_2")
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
@@ -1176,6 +1239,7 @@ class View(QtWidgets.QMainWindow):
         self.scrollArea.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
         )
+
         self.canvas_XICs = DockArea(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.scrollArea.setWidget(self.canvas_XICs)
@@ -1375,7 +1439,6 @@ class View(QtWidgets.QMainWindow):
         self.browseLC.clicked.connect(self.on_browseLC)
         self.browseMS.clicked.connect(self.on_browseMS)
         self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
-        # self.processButton.clicked.connect(self.on_process)
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
         self.comboBox.currentIndexChanged.connect(self.change_mode)
