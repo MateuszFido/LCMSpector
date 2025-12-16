@@ -1,6 +1,5 @@
 import logging
 import numpy as np
-import pandas as pd
 import static_frame as sf
 from typing import Tuple
 from pyteomics.mzml import MzML
