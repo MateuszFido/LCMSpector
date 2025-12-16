@@ -47,6 +47,11 @@ class View(QtWidgets.QMainWindow):
         super().__init__()
         self.setupUi(self)
         self.progress_update.connect(self.update_progressBar)
+        self.resize(1500, 900)
+        qr = self.frameGeometry()
+        cp = self.screen().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
     def show_download_confirmation(self):
         """Displays a confirmation dialog for downloading the MS2 library."""
@@ -950,6 +955,320 @@ class View(QtWidgets.QMainWindow):
         filename = Path(text).name.split(".")[0]
         self.plot_raw_chromatography(self.controller.model.lc_measurements[filename])
 
+    def clear_layout(self, layout):
+        if layout:
+            for i in reversed(range(layout.count())):
+                widget = layout.itemAt(i).widget()
+                if widget is not None:
+                    try:
+                        widget.clear()
+                    except AttributeError:
+                        pass
+                    finally:
+                        widget.deleteLater()
+
+    def setup_MS_only(self, MainWindow):
+        print("switched to MS Only")
+        self.controller.mode = "MS Only"
+        self.clear_layout(self.gridLayout)
+
+        # ---- widgets -------------------------------------------------
+        self.listMS = DragDropListWidget(parent=self.tabUpload)
+
+        self.browseMS = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseAnnotations.setVisible(False)
+
+        self.labelMSdata = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelAnnotations = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelAnnotations.setVisible(False)
+
+        self.button_clear_MS = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_save_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+
+        self.ionTable = IonTable(view=self, parent=self.tabUpload)
+
+        self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
+        self.comboBoxIonLists.addItem("Create new ion list...")
+        self.load_ion_lists_from_config()
+
+        self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.processButton.setObjectName("processButton")
+        self.processButton.setDefault(True)
+        self.processButton.setEnabled(False)
+
+        self.mass_accuracy_slider = LabelledSlider(
+            "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
+        )
+
+        self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
+
+        # ---- layout --------------------------------------------------
+        # file‑list widget (spans more rows because LC widgets are omitted)
+        self.gridLayout.addWidget(self.listMS, 2, 0, 5, 2)
+
+        # browse / label row
+        self.gridLayout.addWidget(self.browseMS, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.labelMSdata, 0, 0, 1, 1)
+
+        self.gridLayout.addWidget(self.browseAnnotations, 0, 3, 1, 1)
+        self.gridLayout.addWidget(self.labelAnnotations, 0, 2, 1, 1)
+
+        # ion‑list controls
+        self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self.gridLayout.addWidget(self.ionTable, 2, 4, 4, 3)
+
+        # clear / save / delete buttons
+        self.gridLayout.addWidget(self.button_clear_MS, 7, 0, 1, 1)
+        self.gridLayout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
+        self.gridLayout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
+        self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
+
+        # mass‑accuracy slider & process button
+        self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
+        self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
+        # ---- stretch -------------------------------------------------
+        self.gridLayout.setRowStretch(2, 3)
+        self.gridLayout.setColumnStretch(2, 4)
+
+        # ---- signal / slot connections -------------------------------
+        self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
+
+        self.browseMS.clicked.connect(self.on_browseMS)
+        self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
+
+        self.button_clear_MS.clicked.connect(self.listMS.clear)
+        self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
+        self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
+        self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
+
+        self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
+
+        self.update_ms_file_list()
+        self.retranslateUi(MainWindow)
+
+    def setup_LCMS(self, MainWindow):
+        print("switched to LC/GC-MS mode")
+        self.controller.mode = "LC/GC-MS"
+        self.clear_layout(self.gridLayout)
+
+        # ---- widgets -------------------------------------------------
+        self.listLC = DragDropListWidget(parent=self.tabUpload)
+        self.listMS = DragDropListWidget(parent=self.tabUpload)
+
+        self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseMS = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseAnnotations.setVisible(False)
+
+        self.labelLCdata = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelMSdata = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelAnnotations = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelAnnotations.setVisible(False)
+
+        self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
+
+        self.button_clear_LC = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_MS = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_save_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+
+        self.ionTable = IonTable(view=self, parent=self.tabUpload)
+
+        self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
+        self.comboBoxIonLists.addItem("Create new ion list...")
+        self.load_ion_lists_from_config()
+
+        self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.processButton.setObjectName("processButton")
+        self.processButton.setDefault(True)
+        self.processButton.setEnabled(False)
+
+        self.mass_accuracy_slider = LabelledSlider(
+            "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
+        )
+
+        # ---- layout --------------------------------------------------
+        # file‑list widgets
+        self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
+        self.gridLayout.addWidget(self.listMS, 5, 0, 1, 2)
+
+        # browse / label rows
+        self.gridLayout.addWidget(self.browseLC, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.labelLCdata, 1, 0, 1, 1)
+
+        self.gridLayout.addWidget(self.browseMS, 4, 1, 1, 1)
+        self.gridLayout.addWidget(self.labelMSdata, 4, 0, 1, 1)
+
+        self.gridLayout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
+
+        # ion‑list controls
+        self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self.gridLayout.addWidget(self.ionTable, 2, 4, 4, 3)
+
+        # clear / save / delete buttons
+        self.gridLayout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.button_clear_MS, 6, 0, 1, 1)
+        self.gridLayout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
+        self.gridLayout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
+        self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
+
+        # mass‑accuracy slider & process button
+        self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
+        self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
+
+        # ---- stretch -------------------------------------------------
+        self.gridLayout.setRowStretch(2, 3)
+        self.gridLayout.setRowStretch(5, 3)
+        self.gridLayout.setColumnStretch(2, 4)
+
+        # ---- signal / slot connections -------------------------------
+        self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
+        self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
+
+        self.browseLC.clicked.connect(self.on_browseLC)
+        self.browseMS.clicked.connect(self.on_browseMS)
+        self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
+
+        self.button_clear_LC.clicked.connect(self.listLC.clear)
+        self.button_clear_MS.clicked.connect(self.listMS.clear)
+        self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
+        self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
+        self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
+
+        self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
+
+        self.update_lc_file_list()
+        self.update_ms_file_list()
+
+        self.retranslateUi(MainWindow)
+
+    def setup_chromatography_only(self, MainWindow):
+        """
+        Switches the UI to “LC/GC‑Only” mode.
+        All MS‑specific widgets are hidden, LC‑specific widgets (including an
+        annotation list) are (re)created and added to the layout, and the
+        appropriate signals are (re)connected.
+        """
+        print("switched to LC Only")
+        self.controller.mode = "LC/GC Only"
+
+        # -----------------------------------------------------------------
+        # 1️⃣  Clear the central grid layout – this removes every widget that
+        #     was previously added (both LC and MS widgets).  The method
+        #     `clear_layout` must delete the widget objects and set the layout
+        #     empty.
+        # -----------------------------------------------------------------
+        self.clear_layout(self.gridLayout)
+
+        # -----------------------------------------------------------------
+        # 2️⃣  Re‑create **all** widgets that belong to the LC‑only view.
+        #     This mirrors the widget set from the original `setupUi` but
+        #     omits any MS‑only elements.
+        # -----------------------------------------------------------------
+        # ----- file‑list widgets ------------------------------------------------
+        self.listLC = DragDropListWidget(parent=self.tabUpload)
+        self.listAnnotations = DragDropListWidget(parent=self.tabUpload)
+
+        # ----- browse / label rows --------------------------------------------
+        self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
+
+        self.labelLCdata = QtWidgets.QLabel(parent=self.tabUpload)
+        self.labelAnnotations = QtWidgets.QLabel(parent=self.tabUpload)
+
+        # ----- ion‑list controls ------------------------------------------------
+        self.ionTable = IonTable(view=self, parent=self.tabUpload)
+
+        self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
+        self.comboBoxIonLists.addItem("Create new ion list...")
+        self.load_ion_lists_from_config()  # populate the combo box
+
+        self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
+
+        self.button_clear_LC = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_save_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
+
+        # ----- processing controls ---------------------------------------------
+        self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
+        self.processButton.setObjectName("processButton")
+        self.processButton.setDefault(True)
+        self.processButton.setEnabled(False)
+
+        self.mass_accuracy_slider = LabelledSlider(
+            "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
+        )
+
+        # -----------------------------------------------------------------
+        # 3️⃣  Add the widgets back to the grid layout using the same
+        #     coordinates that the original UI used (so the visual layout
+        #     stays identical).
+        # -----------------------------------------------------------------
+        # file‑list widgets
+        self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
+        self.gridLayout.addWidget(self.listAnnotations, 2, 2, 1, 2)
+
+        # browse / label rows
+        self.gridLayout.addWidget(self.browseLC, 1, 1, 1, 1)
+        self.gridLayout.addWidget(self.labelLCdata, 1, 0, 1, 1)
+
+        self.gridLayout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
+
+        # ion‑list controls
+        self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self.gridLayout.addWidget(self.ionTable, 2, 4, 4, 3)
+
+        # clear / save / delete buttons
+        self.gridLayout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
+        self.gridLayout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
+        self.gridLayout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
+        self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
+
+        # processing row
+        self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
+        self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
+
+        # stretch factors (kept from original UI)
+        self.gridLayout.setRowStretch(2, 3)
+        self.gridLayout.setColumnStretch(2, 4)
+
+        # -----------------------------------------------------------------
+        # 4️⃣  (Re)connect all signals that belong to the LC‑only view.
+        # -----------------------------------------------------------------
+        self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
+        self.listAnnotations.filesDropped.connect(self.handle_files_dropped_annotations)
+
+        self.browseLC.clicked.connect(self.on_browseLC)
+        self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
+
+        self.button_clear_LC.clicked.connect(self.listLC.clear)
+        self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
+        self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
+        self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
+
+        self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
+
+        # -----------------------------------------------------------------
+        # 5️⃣  Refresh any dynamic content (file lists, annotation list, etc.).
+        # -----------------------------------------------------------------
+        self.update_lc_file_list()
+        self.update_annotation_file()
+
+        # -----------------------------------------------------------------
+        # 6️⃣  Update translatable strings.
+        # -----------------------------------------------------------------
+        self.retranslateUi(MainWindow)
+
     def change_mode(self):
         """
         Update the layout of the Upload tab based on the current selection in the combo box.
@@ -963,74 +1282,14 @@ class View(QtWidgets.QMainWindow):
         :param self: The View instance.
         """
 
-        def clear_layout(layout):
-            if layout:
-                for i in reversed(range(layout.count())):
-                    widget = layout.itemAt(i).widget()
-                    if widget is not None and isinstance(widget, DragDropListWidget):
-                        widget.clear()
-                        widget.deleteLater()
+        if self.comboBoxChangeMode.currentText() == "LC/GC-MS":
+            self.setup_LCMS(self)
 
-        if self.comboBox.currentText() == "LC/GC-MS":
-            print("switched to LC/GC-MS mode")
-            clear_layout(self.gridLayout)
-            self.labelAnnotations.setVisible(False)
-            self.browseAnnotations.setVisible(False)
-            # Replace with LC/GC-MS widgets
-            self.listLC = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
-            self.labelLCdata.setVisible(True)
-            self.browseLC.setVisible(True)
-            self.listMS = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listMS, 5, 0, 1, 2)
-            self.labelMSdata.setVisible(True)
-            self.browseMS.setVisible(True)
-            self.controller.mode = "LC/GC-MS"
-            self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
-            self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
-            self.button_clear_LC.clicked.connect(self.listLC.clear)
-            self.button_clear_MS.clicked.connect(self.listMS.clear)
-            self.update_ms_file_list()
-            self.update_lc_file_list()
-
-        elif self.comboBox.currentText() == "MS Only":
-            print("switched to MS Only")
-            clear_layout(self.gridLayout)
-            self.labelLCdata.setVisible(False)
-            self.labelAnnotations.setVisible(False)
-            self.labelMSdata.setVisible(True)
-            self.browseLC.setVisible(False)
-            self.listMS = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listMS, 2, 0, 5, 2)
-            self.button_clear_LC.setVisible(False)
-            self.controller.mode = "MS Only"
-            self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
-            self.button_clear_MS.clicked.connect(self.listMS.clear)
-            self.update_ms_file_list()
+        elif self.comboBoxChangeMode.currentText() == "MS Only":
+            self.setup_MS_only(self)
 
         else:
-            print("switched to LC Only")
-            clear_layout(self.gridLayout)
-            # Remove MS widgets
-            self.labelMSdata.setVisible(False)
-            self.browseMS.setVisible(False)
-            # Recreate the LC widgets
-            self.listLC = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
-            # Replace with annotations
-            self.listAnnotations = DragDropListWidget(parent=self.tabUpload)
-            self.gridLayout.addWidget(self.listAnnotations, 2, 2, 1, 2)
-            self.labelAnnotations.setVisible(True)
-            self.browseAnnotations.setVisible(True)
-            self.labelLCdata.setVisible(True)
-            self.browseLC.setVisible(True)
-            self.controller.mode = "LC/GC Only"
-            self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
-            self.listAnnotations.filesDropped.connect(
-                self.handle_files_dropped_annotations
-            )
-            self.update_lc_file_list()
-            self.update_annotation_file()
+            self.setup_chromatography_only(self)
 
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
@@ -1150,11 +1409,6 @@ class View(QtWidgets.QMainWindow):
 
         self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
         self.gridLayout.addWidget(self.browseLC, 1, 1, 1, 1)
-        self.comboBox = QtWidgets.QComboBox(parent=self.tabUpload)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.gridLayout.addWidget(self.comboBox, 0, 0, 1, 2)
         self.browseMS = QtWidgets.QPushButton(parent=self.tabUpload)
         self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
         self.gridLayout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
@@ -1188,6 +1442,7 @@ class View(QtWidgets.QMainWindow):
 
         self.gridLayout.setRowStretch(2, 3)
         self.gridLayout.setRowStretch(5, 3)
+
         ###
         #
         #
@@ -1516,7 +1771,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
 
-        self.gridLayoutOuter.addWidget(self.tabWidget, 2, 0, 1, 1)
+        self.gridLayoutOuter.addWidget(self.tabWidget, 3, 0, 1, 4)
         self.logo = QtWidgets.QLabel(parent=self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
@@ -1531,8 +1786,7 @@ class View(QtWidgets.QMainWindow):
         )
         self.logo.setScaledContents(True)
         self.logo.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.logo.setObjectName("logo")
-        self.gridLayoutOuter.addWidget(self.logo, 0, 0, 1, 1)
+        self.gridLayoutOuter.addWidget(self.logo, 0, 0, 2, 4)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
@@ -1601,6 +1855,12 @@ class View(QtWidgets.QMainWindow):
         #
         ###
 
+        self.comboBoxChangeMode = QtWidgets.QComboBox(parent=self.tabUpload)
+        self.comboBoxChangeMode.addItem("")
+        self.comboBoxChangeMode.addItem("")
+        self.comboBoxChangeMode.addItem("")
+        self.gridLayoutOuter.addWidget(self.comboBoxChangeMode, 2, 0, 1, 1)
+
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -1617,7 +1877,7 @@ class View(QtWidgets.QMainWindow):
         self.browseAnnotations.clicked.connect(self.on_browseAnnotations)
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
-        self.comboBox.currentIndexChanged.connect(self.change_mode)
+        self.comboBoxChangeMode.currentIndexChanged.connect(self.change_mode)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
         self.button_clear_LC.clicked.connect(self.listLC.clear)
         self.button_clear_MS.clicked.connect(self.listMS.clear)
@@ -1650,16 +1910,25 @@ class View(QtWidgets.QMainWindow):
                 os.path.join(os.path.dirname(__file__), "resources", "icon.icns")
             )
         )
-        self.browseLC.setText(_translate("MainWindow", "Browse"))
-        self.comboBox.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
-        self.comboBox.setItemText(1, _translate("MainWindow", "MS Only"))
-        self.comboBox.setItemText(2, _translate("MainWindow", "Chromatography Only"))
-        self.browseMS.setText(_translate("MainWindow", "Browse"))
-        self.browseAnnotations.setText(_translate("MainWindow", "Browse"))
-        self.labelAnnotations.setText(_translate("MainWindow", "Annotations (.txt)"))
-        self.labelLCdata.setText(_translate("MainWindow", "Chromatography data (.txt)"))
-        self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
-        self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
+        try:
+            self.browseLC.setText(_translate("MainWindow", "Browse"))
+            self.comboBoxChangeMode.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
+            self.comboBoxChangeMode.setItemText(1, _translate("MainWindow", "MS Only"))
+            self.comboBoxChangeMode.setItemText(
+                2, _translate("MainWindow", "Chromatography Only")
+            )
+            self.browseMS.setText(_translate("MainWindow", "Browse"))
+            self.browseAnnotations.setText(_translate("MainWindow", "Browse"))
+            self.labelAnnotations.setText(
+                _translate("MainWindow", "Annotations (.txt)")
+            )
+            self.labelLCdata.setText(
+                _translate("MainWindow", "Chromatography data (.txt)")
+            )
+            self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
+            self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
+        except RuntimeError:
+            logger.error("Error retranslating ui:", traceback.format_exc())
         self.comboBoxIonLists.setToolTip(
             _translate(
                 "MainWindow",
@@ -1709,9 +1978,3 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
         self.button_save_ion_list.setText(_translate("MainWindow", "Save"))
         self.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
-
-        self.resize(1500, 900)
-        qr = self.frameGeometry()
-        cp = self.screen().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
