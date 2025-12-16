@@ -1028,17 +1028,26 @@ class View(QtWidgets.QMainWindow):
 
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
-        logger.info(f"Clicked the chromatogram at position: {time_x}")
         self.canvas_avgMS.clear()
-        file = self.comboBox_currentfile.currentText()
-        try:
-            plot_average_ms_data(
-                time_x,
-                self.controller.model.ms_measurements[file].data,
-                self.canvas_avgMS,
-            )
-        except Exception as e:
-            logger.error(f"Error displaying average MS for file {file}: {e}")
+        if self.controller.mode == "LC/GC-MS":
+            try:
+                file = Path(self.listLC.currentItem().text()).name.split(".")[0]
+                plot_average_ms_data(
+                    time_x,
+                    self.controller.model.ms_measurements[file].data,
+                    self.canvas_avgMS,
+                )
+            except AttributeError:
+                logger.error("No LC file highlighted.")
+            except Exception as e:
+                logger.error(f"Error displaying average MS: {e}")
+        else:
+            try:
+                file = Path(self.listMS.currentItem().text()).name.split(".")[0]
+            except AttributeError:
+                logger.error("No MS file highlighted.")
+            except Exception:
+                logger.error(f"Error displaying average MS: {traceback.format_exc()}")
 
     def load_ion_lists_from_config(self):
         try:
