@@ -1046,18 +1046,14 @@ class View(QtWidgets.QMainWindow):
         )
         self.centralwidget.setSizePolicy(sizePolicy)
         self.centralwidget.setObjectName("centralwidget")
-        self.gridLayout_4 = QtWidgets.QGridLayout(self.centralwidget)
-        self.gridLayout_4.setObjectName("gridLayout_4")
+        self.gridLayoutOuter = QtWidgets.QGridLayout(self.centralwidget)
         self.tabWidget = QtWidgets.QTabWidget(parent=self.centralwidget)
         self.tabWidget.setTabPosition(QtWidgets.QTabWidget.TabPosition.North)
         self.tabWidget.setElideMode(QtCore.Qt.TextElideMode.ElideMiddle)
         self.tabWidget.setUsesScrollButtons(True)
         self.tabWidget.setTabBarAutoHide(False)
-        self.tabWidget.setObjectName("tabWidget")
         self.tabUpload = QtWidgets.QWidget()
-        self.tabUpload.setObjectName("tabUpload")
         self.gridLayout = QtWidgets.QGridLayout(self.tabUpload)
-        self.gridLayout.setObjectName("gridLayout")
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
         self.comboBoxIonLists.addItem("Create new ion list...")
@@ -1073,32 +1069,47 @@ class View(QtWidgets.QMainWindow):
         self.ionTable = IonTable(view=self, parent=self.tabUpload)
         self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 3)
 
+        ###
+        #
+        #
+        #
+        # Smaller UI elements
+        #
+        #
+        #
+        ###
+
         self.browseLC = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.browseLC.setObjectName("browseLC")
         self.gridLayout.addWidget(self.browseLC, 1, 1, 1, 1)
         self.comboBox = QtWidgets.QComboBox(parent=self.tabUpload)
-        self.comboBox.setObjectName("comboBox")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.comboBox.addItem("")
         self.gridLayout.addWidget(self.comboBox, 0, 0, 1, 2)
         self.browseMS = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.browseMS.setObjectName("browseMS")
         self.browseAnnotations = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.browseAnnotations.setObjectName("browseAnnotations")
         self.gridLayout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
         self.browseAnnotations.setVisible(False)
         self.gridLayout.addWidget(self.browseMS, 4, 1, 1, 1)
         self.labelLCdata = QtWidgets.QLabel(parent=self.tabUpload)
-        self.labelLCdata.setObjectName("labelLCdata")
         self.gridLayout.addWidget(self.labelLCdata, 1, 0, 1, 1)
         self.labelMSdata = QtWidgets.QLabel(parent=self.tabUpload)
-        self.labelMSdata.setObjectName("labelMSdata")
         self.labelAnnotations = QtWidgets.QLabel(parent=self.tabUpload)
-        self.labelAnnotations.setObjectName("labelAnnotations")
         self.gridLayout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
         self.labelAnnotations.setVisible(False)
         self.gridLayout.addWidget(self.labelMSdata, 4, 0, 1, 1)
+        self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
+        self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
+
+        ###
+        #
+        #
+        #
+        # List LC, list MS, ion table
+        #
+        #
+        #
+        ###
         self.listLC = DragDropListWidget(parent=self.tabUpload)
         self.listLC.setObjectName("listLC")
         self.gridLayout.addWidget(self.listLC, 2, 0, 1, 2)
@@ -1106,9 +1117,16 @@ class View(QtWidgets.QMainWindow):
         self.listMS.setObjectName("listMS")
         self.gridLayout.addWidget(self.listMS, 5, 0, 1, 2)
 
-        self.labelIonList = QtWidgets.QLabel(parent=self.tabUpload)
-        self.labelIonList.setObjectName("labelIonList")
-        self.gridLayout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        ###
+        #
+        #
+        #
+        # Clear/Delete buttons below lists
+        #
+        #
+        #
+        ###
+
         self.button_clear_LC = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_clear_LC.setObjectName("button_clear_LC")
         self.gridLayout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
@@ -1123,18 +1141,37 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
         self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
         self.button_delete_ion_list.setObjectName("button_delete_ion_list")
+
+        ###
+        #
+        # Mass accuracy setting
+        #
+        ###
+
         self.mass_accuracy_slider = LabelledSlider(
             "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
         )
         self.gridLayout.addWidget(self.mass_accuracy_slider, 5, 4, 1, 3)
         self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
 
+        ###
+        #
+        # Process button
+        #
+        ###
+
         self.processButton = QtWidgets.QPushButton(parent=self.tabUpload)
         self.processButton.setObjectName("processButton")
         self.processButton.setDefault(True)
         self.processButton.setEnabled(False)
         self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
-        self.tabWidget.addTab(self.tabUpload, "")
+
+        ###
+        #
+        # Canvas baseline: plotting raw LC
+        #
+        ###
+
         self.canvas_baseline = ChromatogramPlotWidget(parent=self.tabUpload)
         self.canvas_baseline.setObjectName("canvas_baseline")
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
@@ -1174,6 +1211,12 @@ class View(QtWidgets.QMainWindow):
         )
         self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
 
+        ###
+        #
+        # Canvas avgMS: plotting raw MS
+        #
+        ###
+
         self.canvas_avgMS = pg.PlotWidget(parent=self.tabUpload)
         self.canvas_avgMS.setObjectName("canvas_avgMS")
         self.canvas_avgMS.setMouseEnabled(x=True, y=False)
@@ -1203,7 +1246,7 @@ class View(QtWidgets.QMainWindow):
         #
         #
         #
-        # Next tab
+        # 2nd tab
         #
         #
         #
@@ -1258,15 +1301,40 @@ class View(QtWidgets.QMainWindow):
         self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
         self.comboBox_currentfile.setObjectName("comboBox_currentfile")
         self.gridLayout_5.addWidget(self.comboBox_currentfile, 0, 2, 1, 1)
+
+        ###
+        #
+        #
+        # Tab setup
+        #
+        ###
+
+        self.tabWidget.addTab(self.tabUpload, "")
         self.tabWidget.addTab(self.tabResults, "")
         self.tabWidget.setTabEnabled(
             self.tabWidget.indexOf(self.tabResults), False
-        )  # Disable the second tab
-
+        )  # Disable the results tab
         self.tabQuantitation = QtWidgets.QWidget()
-        self.tabQuantitation.setObjectName("tabQuantitation")
         self.gridLayout_6 = QtWidgets.QGridLayout(self.tabQuantitation)
-        self.gridLayout_6.setObjectName("gridLayout_6")
+        self.tabWidget.addTab(self.tabQuantitation, "")
+        self.tabWidget.setTabEnabled(
+            self.tabWidget.indexOf(self.tabQuantitation), False
+        )  # Disable the quant tab
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        #
+        #
+        #
+        #
+        #
+        # Quant tab
+        #
+        #
+        #
+        #
+        #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
         self.gridLayout_quant = QtWidgets.QGridLayout()
         self.gridLayout_quant.setSizeConstraint(
             QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
@@ -1280,6 +1348,13 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout_quant.setRowStretch(3, 1)
         self.gridLayout_top_left = QtWidgets.QGridLayout()
         self.gridLayout_top_left.setObjectName("gridLayout_top_left")
+
+        ###
+        #
+        # Quant tab: calibration setup
+        #
+        ###
+
         self.label_calibrate = QtWidgets.QLabel(parent=self.tabQuantitation)
         self.label_calibrate.setWordWrap(True)
         self.label_calibrate.setObjectName("label_calibrate")
@@ -1299,6 +1374,13 @@ class View(QtWidgets.QMainWindow):
         self.unifiedResultsTable = UnifiedResultsTable(parent=self.tabQuantitation)
         self.unifiedResultsTable.setObjectName("unifiedResultsTable")
         self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 3, 2)
+
+        ###
+        #
+        # Quant tab: right column
+        #
+        ###
+
         self.gridLayout_top_right = QtWidgets.QGridLayout()
         self.gridLayout_top_right.setObjectName("gridLayout_top_right")
         self.label_curr_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
@@ -1316,6 +1398,7 @@ class View(QtWidgets.QMainWindow):
         self.label_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
         self.label_compound.setSizePolicy(sizePolicy)
         self.label_compound.setObjectName("label_compound")
+
         self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 1)
         self.comboBoxChooseCompound = QtWidgets.QComboBox(parent=self.tabQuantitation)
         self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
@@ -1326,6 +1409,13 @@ class View(QtWidgets.QMainWindow):
         self.canvas_calibration.setObjectName("canvas_calibration")
         self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 2)
         self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
+
+        ###
+        #
+        # Quant tab: MS2 canvas setup
+        #
+        ###
+
         self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_ms2.setObjectName("canvas_ms2")
         self.canvas_ms2.setMouseEnabled(x=True, y=False)
@@ -1354,12 +1444,8 @@ class View(QtWidgets.QMainWindow):
         )
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
-        self.tabWidget.addTab(self.tabQuantitation, "")
-        self.tabWidget.setTabEnabled(
-            self.tabWidget.indexOf(self.tabQuantitation), False
-        )  # Disable the second tab
 
-        self.gridLayout_4.addWidget(self.tabWidget, 2, 0, 1, 1)
+        self.gridLayoutOuter.addWidget(self.tabWidget, 2, 0, 1, 1)
         self.logo = QtWidgets.QLabel(parent=self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
@@ -1375,7 +1461,7 @@ class View(QtWidgets.QMainWindow):
         self.logo.setScaledContents(True)
         self.logo.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.logo.setObjectName("logo")
-        self.gridLayout_4.addWidget(self.logo, 0, 0, 1, 1)
+        self.gridLayoutOuter.addWidget(self.logo, 0, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
 
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
@@ -1387,6 +1473,16 @@ class View(QtWidgets.QMainWindow):
         self.progressLabel = QtWidgets.QLabel()
         self.statusbar.addPermanentWidget(self.progressLabel)
         self.progressLabel.setVisible(False)  # Initially hidden
+
+        #####
+        #
+        #
+        #
+        # Menu bar setup
+        #
+        #
+        #
+        #####
 
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 864, 37))
@@ -1425,6 +1521,16 @@ class View(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+
+        ###
+        #
+        #
+        #
+        # final UI setup and signal/slot connections
+        #
+        #
+        #
+        ###
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
