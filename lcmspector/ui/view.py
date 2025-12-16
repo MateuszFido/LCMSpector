@@ -1015,6 +1015,16 @@ class View(QtWidgets.QMainWindow):
         except Exception as e:
             logger.error(f"Error displaying average MS for file {file}: {e}")
 
+    def load_ion_lists_from_config(self):
+        try:
+            config_path = Path(__file__).parent.parent / "config.json"
+            with open(config_path, "r") as f:
+                lists = json.load(f)
+            for ionlist in lists:
+                self.comboBoxIonLists.addItem(ionlist)
+        except Exception as e:
+            logger.error(f"Error loading ion lists: {e}")
+
     def setupUi(self, MainWindow):
         """
         Sets up the UI components for the main window.
@@ -1057,17 +1067,19 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxIonLists = QtWidgets.QComboBox(parent=self.tabUpload)
         self.comboBoxIonLists.setObjectName("comboBoxIonLists")
         self.comboBoxIonLists.addItem("Create new ion list...")
-        try:
-            config_path = Path(__file__).parent.parent / "config.json"
-            with open(config_path, "r") as f:
-                lists = json.load(f)
-            for ionlist in lists:
-                self.comboBoxIonLists.addItem(ionlist)
-        except Exception as e:
-            logger.error(f"Error loading ion lists: {e}")
+
+        ###
+        #
+        # Try loading the ion lists
+        # Must be done at this step
+        #
+        ###
+
+        self.load_ion_lists_from_config()
+
         self.gridLayout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self.ionTable = IonTable(view=self, parent=self.tabUpload)
-        self.gridLayout.addWidget(self.ionTable, 2, 4, 1, 3)
+        self.gridLayout.addWidget(self.ionTable, 2, 4, 4, 3)
 
         ###
         #
@@ -1105,7 +1117,7 @@ class View(QtWidgets.QMainWindow):
         #
         #
         #
-        # List LC, list MS, ion table
+        # List LC, list MS
         #
         #
         #
@@ -1117,6 +1129,8 @@ class View(QtWidgets.QMainWindow):
         self.listMS.setObjectName("listMS")
         self.gridLayout.addWidget(self.listMS, 5, 0, 1, 2)
 
+        self.gridLayout.setRowStretch(2, 3)
+        self.gridLayout.setRowStretch(5, 3)
         ###
         #
         #
@@ -1128,19 +1142,15 @@ class View(QtWidgets.QMainWindow):
         ###
 
         self.button_clear_LC = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.button_clear_LC.setObjectName("button_clear_LC")
         self.gridLayout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
         self.button_clear_MS = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.button_clear_MS.setObjectName("button_clear_MS")
         self.gridLayout.addWidget(self.button_clear_MS, 6, 0, 1, 1)
         self.button_clear_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.button_clear_ion_list.setObjectName("button_clear_ion_list")
         self.gridLayout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
         self.button_save_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.button_save_ion_list.setObjectName("button_save_ion_list")
         self.gridLayout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
         self.button_delete_ion_list = QtWidgets.QPushButton(parent=self.tabUpload)
-        self.button_delete_ion_list.setObjectName("button_delete_ion_list")
+        self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
 
         ###
         #
@@ -1151,8 +1161,7 @@ class View(QtWidgets.QMainWindow):
         self.mass_accuracy_slider = LabelledSlider(
             "Mass accuracy", [0.1, 0.01, 0.001, 0.0001], 0.0001
         )
-        self.gridLayout.addWidget(self.mass_accuracy_slider, 5, 4, 1, 3)
-        self.gridLayout.addWidget(self.button_delete_ion_list, 6, 6, 1, 1)
+        self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
 
         ###
         #
@@ -1203,7 +1212,6 @@ class View(QtWidgets.QMainWindow):
             pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1),
             movable=True,
         )
-
         self.proxy = pg.SignalProxy(
             self.canvas_baseline.scene().sigMouseMoved,
             rateLimit=60,
@@ -1232,6 +1240,12 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
             lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
         )
+
+        ###
+        #
+        # Add both canvases to middle layout
+        #
+        ###
 
         self.resultsPane = QtWidgets.QWidget(parent=self.tabUpload)
         self.resultsPaneLayout = QtWidgets.QVBoxLayout(self.resultsPane)
