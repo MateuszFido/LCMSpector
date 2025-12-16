@@ -39,6 +39,7 @@ jobs:
 
       - name: Install runtime dependencies
         run: |
+          pip install numpy
           pip install -r requirements.txt
 
       - name: Install Nuitka and helpers
