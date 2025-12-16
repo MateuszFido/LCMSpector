@@ -601,7 +601,9 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.clear()
         if ms_file:
             try:
-                plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
+                plot_average_ms_data(
+                    ms_file.filename, 0, ms_file.data, self.canvas_avgMS
+                )
             except AttributeError:
                 logger.error(f"No average MS found: {traceback.format_exc()}")
 
@@ -635,7 +637,9 @@ class View(QtWidgets.QMainWindow):
             self.canvas_avgMS.clear()
             if ms_file:
                 try:
-                    plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
+                    plot_average_ms_data(
+                        ms_file.filename, 0, ms_file.data, self.canvas_avgMS
+                    )
                 except AttributeError:
                     logger.error(f"No average MS found: {traceback.format_exc()}")
             self.canvas_XICs.clear()
@@ -706,7 +710,9 @@ class View(QtWidgets.QMainWindow):
                     self.crosshair_h_label = pg.InfLineLabel(
                         self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
                     )
-                    plot_average_ms_data(0, ms_file.data, self.canvas_avgMS)
+                    plot_average_ms_data(
+                        ms_file.filename, 0, ms_file.data, self.canvas_avgMS
+                    )
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError:
                     logger.error(f"No plot found: {traceback.format_exc()}")
@@ -1033,21 +1039,38 @@ class View(QtWidgets.QMainWindow):
             try:
                 file = Path(self.listLC.currentItem().text()).name.split(".")[0]
                 plot_average_ms_data(
+                    file,
                     time_x,
                     self.controller.model.ms_measurements[file].data,
                     self.canvas_avgMS,
                 )
             except AttributeError:
                 logger.error("No LC file highlighted.")
+                file = Path(self.listMS.item(0).text()).name.split(".")[0]
+                plot_average_ms_data(
+                    file,
+                    time_x,
+                    self.controller.model.ms_measurements[file].data,
+                    self.canvas_avgMS,
+                )
             except Exception as e:
                 logger.error(f"Error displaying average MS: {e}")
+                return
         else:
             try:
                 file = Path(self.listMS.currentItem().text()).name.split(".")[0]
             except AttributeError:
                 logger.error("No MS file highlighted.")
+                file = Path(self.listMS.item(0).text()).name.split(".")[0]
+                plot_average_ms_data(
+                    file,
+                    time_x,
+                    self.controller.model.ms_measurements[file].data,
+                    self.canvas_avgMS,
+                )
             except Exception:
                 logger.error(f"Error displaying average MS: {traceback.format_exc()}")
+                return
 
     def load_ion_lists_from_config(self):
         try:

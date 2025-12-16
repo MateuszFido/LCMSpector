@@ -74,7 +74,9 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     widget.setLabel("bottom", "Time (min)", **args)
 
 
-def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
+def plot_average_ms_data(
+    filename: str, rt: float, data_matrix: MzML, widget: pg.PlotWidget
+):
     """
     Plots the average MS data and annotates it with the m/z of the 5 highest peaks.
 
@@ -126,7 +128,7 @@ def plot_average_ms_data(rt: float, data_matrix: MzML, widget: pg.PlotWidget):
         )
     if widget.getPlotItem():
         widget.getPlotItem().setTitle(
-            f"Scan {spectrum['id']} MS{spectrum['ms level']} at {round(rt, 2)} mins",
+            f"{filename}\n{spectrum['id']} MS{spectrum['ms level']} at {round(rt, 2)} mins",
             color="#2C2D2D",
             size="11pt",
         )
