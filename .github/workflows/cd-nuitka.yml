@@ -209,5 +209,5 @@ jobs:
               LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
               LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
               LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
-            body: "Reformatted file loading to utilize the reader better, deprecated macOS x86-64 builds (not supported by GitHub runners anymore). \nVarious bug fixes and performance improvements." 
+            body: "Release notes:\nBreaking: reformatted the UI to provide immediate file viewing upon loading.\nImproved mode switching to be more robust." 
 
