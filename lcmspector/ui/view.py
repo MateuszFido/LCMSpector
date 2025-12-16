@@ -919,6 +919,18 @@ class View(QtWidgets.QMainWindow):
         self.listAnnotatedLC.clear()
         self.controller.model.annotations = []
 
+    def handle_listMS_clicked(self, item):
+        """Slot for handling the click event on a file (path) in MS file list."""
+        text = item.text()
+        filename = Path(text).name.split(".")[0]
+        self.plot_raw_MS(self.controller.model.ms_measurements[filename])
+
+    def handle_listLC_clicked(self, item):
+        """Slot for handling the click event on a file (path) in chromatography file list."""
+        text = item.text()
+        filename = Path(text).name.split(".")[0]
+        self.plot_raw_chromatography(self.controller.model.lc_measurements[filename])
+
     def change_mode(self):
         """
         Update the layout of the Upload tab based on the current selection in the combo box.
@@ -1576,6 +1588,8 @@ class View(QtWidgets.QMainWindow):
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
             self.display_ms2
         )
+        self.listLC.itemClicked.connect(self.handle_listLC_clicked)
+        self.listMS.itemClicked.connect(self.handle_listMS_clicked)
 
     def retranslateUi(self, MainWindow):
         """
