@@ -79,7 +79,8 @@ jobs:
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
             --macos-app-icon="lcmspector/resources/icon.icns" \
-            --output-dir=dist
+            --output-dir=dist \
+            --assume-yes-for-downloads
 
           # Zip the .app bundle for release
           cd dist
@@ -121,7 +122,8 @@ jobs:
             --include-data-files="lcmspector/config.json"="config.json" \
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
             --output-filename=LCMSpector \
-            --output-dir=dist
+            --output-dir=dist \
+            --assume-yes-for-downloads
 
           # Tar.gz the .dist folder
           cd dist
@@ -140,7 +142,8 @@ jobs:
             --include-data-files="lcmspector/config.json"="config.json" \
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
             --output-filename=LCMSpector \
-            --output-dir=dist
+            --output-dir=dist \
+            --assume-yes-for-downloads
 
           # Tar.gz the .dist folder
           cd dist
@@ -180,34 +183,66 @@ jobs:
           if-no-files-found: error
 
   release:
-      needs: build
-      runs-on: ubuntu-latest
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v6
-          with:
-            lfs: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          lfs: false
 
-        - name: Download all build artifacts
-          uses: actions/download-artifact@v4
-          with:
-            merge-multiple: true
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
 
-        - name: List downloaded files (Debugging)
-          run: ls -R
+      - name: List downloaded files (Debugging)
+        run: ls -R
 
-        - name: Create GitHub Release
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: ${{ github.event.inputs.version }}
-            name: Release ${{ github.event.inputs.version }}
-            draft: false
-            prerelease: false
-            files: |
-              LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-              LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
-              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
-            body: "Release notes:\nBreaking: reformatted the UI to provide immediate file viewing upon loading.\nImproved mode switching to be more robust." 
+      - name: Get previous tag
+        id: prev-tag
+        run: |
+          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
 
+      - name: Generate release notes
+        id: notes
+        run: |
+          PREV="${{ steps.prev-tag.outputs.prev_tag }}"
+          if [ -z "$PREV" ]; then
+            RANGE="HEAD"
+          else
+            RANGE="${PREV}..HEAD"
+          fi
+          echo "range=$RANGE" >> $GITHUB_OUTPUT
+          # Use conventional commits format if you follow it
+          NOTES=$(git log $RANGE --pretty=format:"%s" |
+          awk '
+            /^feat:/   {print "- Feature: " substr($0,6)}
+            /^fix:/    {print "- Bugfix: " substr($0,5)}
+            /^docs:/   {print "- Docs: " substr($0,6)}
+            /^refactor:/  {print "- Refactor: " substr($0,7)}
+            /^chore:/  {print "- Chore: " substr($0,7)}
+            {print "- Other: " $0}
+          ')
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+          body: |
+            ${{ steps.notes.outputs.notes }}
