@@ -907,10 +907,13 @@ class View(QtWidgets.QMainWindow):
             mousePoint = (
                 self.canvas_baseline.getPlotItem().getViewBox().mapSceneToView(pos)
             )
-            self.crosshair_v.setPos(mousePoint.x())
-            self.crosshair_h.setPos(mousePoint.y())
-            self.crosshair_v_label.setText(f"{mousePoint.x():.2f} min")
-            self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
+            try:
+                self.crosshair_v.setPos(mousePoint.x())
+                self.crosshair_h.setPos(mousePoint.y())
+                self.crosshair_v_label.setText(f"{mousePoint.x():.2f} min")
+                self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
+            except RuntimeError:
+                pass
 
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
@@ -1034,6 +1037,69 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.setRowStretch(2, 3)
         self.gridLayout.setColumnStretch(2, 4)
 
+        # ----- plotting canvases -------------------------------------------------
+        self.canvas_baseline = ChromatogramPlotWidget(parent=self.tabUpload)
+        self.canvas_baseline.setObjectName("canvas_baseline")
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
+        self.canvas_baseline.scene().sigMouseClicked.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+        plot_placeholder(
+            self.canvas_baseline,
+            "Welcome to LCMSpector\n← add files to get started",
+        )
+
+        self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
+        self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
+        self.canvas_baseline.sigKeyPressed.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+
+        self.crosshair_v = pg.InfiniteLine(
+            angle=90,
+            pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine),
+            movable=False,
+        )
+        self.crosshair_h = pg.InfiniteLine(
+            angle=0,
+            pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1),
+            movable=False,
+        )
+        self.line_marker = pg.InfiniteLine(
+            angle=90,
+            pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1),
+            movable=True,
+        )
+        self.proxy = pg.SignalProxy(
+            self.canvas_baseline.scene().sigMouseMoved,
+            rateLimit=60,
+            slot=self.update_crosshair,
+        )
+        self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
+
+        self.canvas_avgMS = pg.PlotWidget(parent=self.tabUpload)
+        self.canvas_avgMS.setObjectName("canvas_avgMS")
+        self.canvas_avgMS.setMouseEnabled(x=True, y=False)
+        plot_placeholder(self.canvas_avgMS, "")
+
+        def setYRange(self):
+            self.enableAutoRange(axis="y")
+            self.setAutoVisible(y=True)
+
+        self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
+        self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
+        self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+
+        # ----- middle pane -------------------------------------------------------
+        self.resultsPane = QtWidgets.QWidget(parent=self.tabUpload)
+        self.resultsPaneLayout = QtWidgets.QVBoxLayout(self.resultsPane)
+        self.resultsPaneLayout.addWidget(self.canvas_baseline)
+        self.resultsPaneLayout.addWidget(self.canvas_avgMS)
+        self.gridLayout.addWidget(self.resultsPane, 2, 2, 4, 2)
+        self.gridLayout.setColumnStretch(2, 4)
         # ---- signal / slot connections -------------------------------
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
 
@@ -1128,6 +1194,69 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.setRowStretch(5, 3)
         self.gridLayout.setColumnStretch(2, 4)
 
+        # ----- plotting canvases (same as LC/GC‑MS) -----------------------------
+        self.canvas_baseline = ChromatogramPlotWidget(parent=self.tabUpload)
+        self.canvas_baseline.setObjectName("canvas_baseline")
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
+        self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
+        self.canvas_baseline.scene().sigMouseClicked.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+        plot_placeholder(
+            self.canvas_baseline,
+            "Welcome to LCMSpector\n← add files to get started",
+        )
+
+        self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
+        self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
+        self.canvas_baseline.sigKeyPressed.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+
+        self.crosshair_v = pg.InfiniteLine(
+            angle=90,
+            pen=pg.mkPen(color="#b8b8b8", width=1, style=QtCore.Qt.PenStyle.DashLine),
+            movable=False,
+        )
+        self.crosshair_h = pg.InfiniteLine(
+            angle=0,
+            pen=pg.mkPen(color="#b8b8b8", style=QtCore.Qt.PenStyle.DashLine, width=1),
+            movable=False,
+        )
+        self.line_marker = pg.InfiniteLine(
+            angle=90,
+            pen=pg.mkPen(color="#000000", style=QtCore.Qt.PenStyle.SolidLine, width=1),
+            movable=True,
+        )
+        self.proxy = pg.SignalProxy(
+            self.canvas_baseline.scene().sigMouseMoved,
+            rateLimit=60,
+            slot=self.update_crosshair,
+        )
+        self.canvas_baseline.setCursor(Qt.CursorShape.CrossCursor)
+
+        self.canvas_avgMS = pg.PlotWidget(parent=self.tabUpload)
+        self.canvas_avgMS.setObjectName("canvas_avgMS")
+        self.canvas_avgMS.setMouseEnabled(x=True, y=False)
+        plot_placeholder(self.canvas_avgMS, "")
+
+        def setYRange(self):
+            self.enableAutoRange(axis="y")
+            self.setAutoVisible(y=True)
+
+        self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
+        self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
+        self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
+            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+        )
+
+        # ----- middle pane -------------------------------------------------------
+        self.resultsPane = QtWidgets.QWidget(parent=self.tabUpload)
+        self.resultsPaneLayout = QtWidgets.QVBoxLayout(self.resultsPane)
+        self.resultsPaneLayout.addWidget(self.canvas_baseline)
+        self.resultsPaneLayout.addWidget(self.canvas_avgMS)
+        self.gridLayout.addWidget(self.resultsPane, 2, 2, 4, 2)
+        self.gridLayout.setColumnStretch(2, 4)
         # ---- signal / slot connections -------------------------------
         self.listLC.filesDropped.connect(self.handle_files_dropped_LC)
         self.listMS.filesDropped.connect(self.handle_files_dropped_MS)
