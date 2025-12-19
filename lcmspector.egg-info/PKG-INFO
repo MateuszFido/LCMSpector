@@ -1,0 +1,18 @@
+Metadata-Version: 2.4
+Name: lcmspector
+Version: 0.0.0
+Author-email: Mateusz Fido <mafido@ethz.ch>
+Maintainer-email: Mateusz Fido <mafido@ethz.ch>
+Requires-Python: >=3.11
+License-File: LICENSE
+Requires-Dist: numpy==2.3.1
+Requires-Dist: pandas==2.3.1
+Requires-Dist: PySide6==6.8.3
+Requires-Dist: pyqtgraph==0.13.7
+Requires-Dist: pyteomics==4.7.2
+Requires-Dist: pytest==8.4.1
+Requires-Dist: PyYAML==6.0.2
+Requires-Dist: scipy==1.16.0
+Requires-Dist: static_frame
+Requires-Dist: lxml
+Dynamic: license-file

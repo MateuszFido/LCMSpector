@@ -99,7 +99,7 @@ def main():
     # Ensure MS2 library exists locally
     if not ensure_ms2_library():
         if view.show_download_confirmation():
-            view.show_download_progress_bar()
+            view.show_download_progressBar()
 
             # Setup worker and thread for download
             thread = QThread()
@@ -107,9 +107,9 @@ def main():
             worker.moveToThread(thread)
 
             # Connect signals
-            worker.progress.connect(view.update_download_progress_bar)
+            worker.progress.connect(view.update_download_progressBar)
             worker.finished.connect(thread.quit)
-            worker.finished.connect(view.hide_download_progress_bar)
+            worker.finished.connect(view.hide_download_progressBar)
             worker.error.connect(thread.quit)
             thread.started.connect(worker.run)
 
