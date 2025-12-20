@@ -1151,6 +1151,7 @@ class View(QtWidgets.QMainWindow):
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
 
+        self.processButton.clicked.connect(self.controller.process_data)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
         self.update_ms_file_list()
@@ -1310,6 +1311,7 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
+        self.processButton.clicked.connect(self.controller.process_data)
 
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
@@ -1407,7 +1409,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
         self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
 
-        # stretch factors (kept from original UI)
+        # stretch factors 
         self.gridLayout.setRowStretch(2, 3)
         self.gridLayout.setColumnStretch(2, 4)
 
@@ -1425,6 +1427,7 @@ class View(QtWidgets.QMainWindow):
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
 
+        self.processButton.clicked.connect(self.controller.process_data)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
         # -----------------------------------------------------------------
