@@ -15,6 +15,7 @@ dependencies = [
   "scipy==1.16.0",
   "static_frame",
   "lxml",
+  "pydantic>=2.12.5",
 ]
 
 [tool.pytest.ini_option]
