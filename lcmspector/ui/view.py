@@ -32,6 +32,7 @@ from ui.widgets import (
     ChromatogramPlotWidget,
     UnifiedResultsTable,
     LabelledSlider,
+    ReadmeDialog,
 )
 
 
@@ -392,33 +393,7 @@ class View(QtWidgets.QMainWindow):
     def on_readme(self):
         """Slot for clicking the menubar Readme action.
         Opens the Readme window."""
-        readme = QDialog(self)
-        readme.browser = QTextBrowser()
-
-        readme_html = """
-        <h2>LCMSpector</h2>
-        <p style="font-size: 14px;">
-           Copyright (c) 2024 Mateusz Fido.<br> 
-           Distributed under the <a href="https://mit-license.org/">MIT License.</a></li>
-        </p>
-        <h3>References</h3>
-        <ul style="font-size: 14px;">
-            <li><a href="https://github.com/MateuszFido/LCMSpector">LCMSpector on GitHub</a></li>
-            <li>Using PySide6 bindings for Qt6:<br>
-            <a href="https://pypi.org/project/PySide6/">PySide6 on PyPI</a></li>
-            <li>Pyteomics library <a href=https://pypi.org/project/pyteomics/"></a></li>
-        </ul>
-        <p style="font-size: 14px;">
-            For more information, see the <a href="https://github.com/MateuszFido/LCMSpector/wiki">documentation</a>.
-        </p>
-        <h3>Citation</h3>
-        Fido M, Hoesli E, Barazzone EC, Zenobi R, Slack E (2025) LCMSpector: A simple open-source viewer for targeted hyphenated mass spectrometry analysis. <em>PLOS Computational Biology</em> 21(12): e1013095. https://doi.org/10.1371/journal.pcbi.1013095
-        <a href="https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1013095">https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1013095</a>
-        """
-        readme.browser.setHtml(readme_html)
-        readme.resize(500,400)
-        layout = QVBoxLayout(readme)
-        layout.addWidget(readme.browser)
+        readme = ReadmeDialog(self)
         readme.show()
 
     def update_lc_file_list(self):

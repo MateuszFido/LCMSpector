@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import webbrowser
 from pathlib import Path
 import pyqtgraph as pg
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -755,3 +756,31 @@ class LabelledSlider(QtWidgets.QWidget):
 
     def value(self):
         return self.values[self.slider.value()]
+
+class ReadmeDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("README")
+        self.resize(500, 400)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        self.browser = QtWidgets.QTextBrowser()
+        self.browser.setOpenExternalLinks(False)   # we handle links ourselves
+        self.browser.setOpenLinks(False)   
+        layout.addWidget(self.browser)
+        self.browser.anchorClicked.connect(self.open_link)
+        self.load_readme_html(Path(__file__).parent / "README.html")
+
+    def open_link(self, url: QtCore.QUrl):
+        """Open the clicked link in the default web browser."""
+        webbrowser.open(url.toString())
+
+    def load_readme_html(self, filepath):
+        """Load README HTML content from a file."""
+        try:
+            html_content = filepath.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            html_content = "<p><b>README file not found.</b></p>"
+        self.browser.setHtml(html_content)
+
+
