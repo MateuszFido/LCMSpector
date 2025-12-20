@@ -656,8 +656,8 @@ class View(QtWidgets.QMainWindow):
                     logger.error(f"No average MS found: {traceback.format_exc()}")
             self.canvas_XICs.clear()
             if ms_file:
-                self.gridLayout_2.removeWidget(self.scrollArea)
-                self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
+                self.gridLayoutResults.removeWidget(self.scrollArea)
+                self.gridLayoutResults.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError:
@@ -678,7 +678,7 @@ class View(QtWidgets.QMainWindow):
                         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
                         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
                         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-                        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+                        self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
                         self.curve_list = plot_annotated_LC(
                             lc_file.path,
                             lc_file.baseline_corrected,
@@ -694,11 +694,11 @@ class View(QtWidgets.QMainWindow):
                 self.canvas_baseline.clear()
                 self.canvas_avgMS.clear()
                 self.canvas_XICs.clear()
-                self.gridLayout_5.removeWidget(self.canvas_annotatedLC)
+                self.gridLayoutResults.removeWidget(self.canvas_annotatedLC)
                 self.canvas_annotatedLC.deleteLater()
                 # Set scrollArea (holds canvasXIC) to span two rows of the grid
-                self.gridLayout_2.removeWidget(self.scrollArea)
-                self.gridLayout_2.addWidget(self.scrollArea, 0, 1, 2, 1)
+                self.gridLayoutResults.removeWidget(self.scrollArea)
+                self.gridLayoutResults.addWidget(self.scrollArea, 0, 1, 1, 1)
                 self.browseAnnotations.deleteLater()
             except RuntimeError:
                 logger.error(f"Widgets not found: {traceback.format_exc()}")
@@ -1719,8 +1719,7 @@ class View(QtWidgets.QMainWindow):
         self.tabResults = QtWidgets.QWidget()
         self.tabResults.setObjectName("tabResults")
 
-        self.gridLayout_5 = QtWidgets.QGridLayout(self.tabResults)
-        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.gridLayoutResults = QtWidgets.QGridLayout(self.tabResults)
         self.label_results_currentfile = QtWidgets.QLabel(parent=self.tabResults)
         self.label_results_currentfile.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(
@@ -1733,9 +1732,12 @@ class View(QtWidgets.QMainWindow):
         )
         self.label_results_currentfile.setSizePolicy(sizePolicy)
         self.label_results_currentfile.setObjectName("label_results_currentfile")
-        self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
-        self.gridLayout_2 = QtWidgets.QGridLayout()
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.gridLayoutResults.addWidget(self.label_results_currentfile, 0, 0, 1, 1)
+        self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
+        self.comboBox_currentfile.setObjectName("comboBox_currentfile")
+        self.gridLayoutResults.addWidget(self.comboBox_currentfile, 0, 1, 1, 1)
+
+        # XICs
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
@@ -1745,25 +1747,20 @@ class View(QtWidgets.QMainWindow):
         self.scrollArea.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
         )
+        self.gridLayoutResults.addWidget(self.scrollArea, 1, 1, 1, 1)
 
         self.canvas_XICs = DockArea(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
 
-        self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
+        # annotated LC
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+        self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
 
-        self.gridLayout_2.setColumnStretch(0, 2)  # Left column
-        self.gridLayout_2.setColumnStretch(1, 2)  # Right column
 
-        self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
-        self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
-        self.comboBox_currentfile.setObjectName("comboBox_currentfile")
-        self.gridLayout_5.addWidget(self.comboBox_currentfile, 0, 2, 1, 1)
 
         ###
         #
