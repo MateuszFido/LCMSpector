@@ -86,7 +86,7 @@ def main():
     Controller(model, view)
 
     # Set the application style
-    main_font = fonts.get_main_font(11)
+    main_font = fonts.get_main_font(13)
     app.setStyle("Fusion")
     app.setFont(main_font)
 
