@@ -175,72 +175,72 @@ jobs:
           path: dist/LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
           if-no-files-found: error
 
-release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+  release:
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          lfs: false
-          fetch-depth: 0  
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v6
+          with:
+            lfs: false
+            fetch-depth: 0  
 
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
+        - name: Download all build artifacts
+          uses: actions/download-artifact@v4
+          with:
+            merge-multiple: true
 
-      - name: List downloaded files (Debugging)
-        run: ls -R
+        - name: List downloaded files (Debugging)
+          run: ls -R
 
-      - name: Get previous tag
-        id: prev-tag
-        run: |
-          # Finds the most recent tag reachable from the parent of the current commit
-          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          echo "Previous tag found: $PREV"
-          echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
+        - name: Get previous tag
+          id: prev-tag
+          run: |
+            # Finds the most recent tag reachable from the parent of the current commit
+            PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            echo "Previous tag found: $PREV"
+            echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
 
-      - name: Generate release notes
-        id: notes
-        run: |
-          PREV="${{ steps.prev-tag.outputs.prev_tag }}"
-          if [ -z "$PREV" ]; then
-            echo "No previous tag found. Logging from start of history."
-            RANGE="HEAD"
-          else
-            echo "Logging range: ${PREV}..HEAD"
-            RANGE="${PREV}..HEAD"
-          fi
-          
-          NOTES=$(git log $RANGE --pretty=format:"%s" |
-          awk '
-            /^feat:/      {print "- Feature: " substr($0,6); next}
-            /^fix:/       {print "- Bugfix: " substr($0,5); next}
-            /^docs:/      {print "- Docs: " substr($0,6); next}
-            /^refactor:/  {print "- Refactor: " substr($0,7); next}
-            /^chore:/     {print "- Chore: " substr($0,7); next}
-            {print "- Other: " $0}
-          ')
-          
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+        - name: Generate release notes
+          id: notes
+          run: |
+            PREV="${{ steps.prev-tag.outputs.prev_tag }}"
+            if [ -z "$PREV" ]; then
+              echo "No previous tag found. Logging from start of history."
+              RANGE="HEAD"
+            else
+              echo "Logging range: ${PREV}..HEAD"
+              RANGE="${PREV}..HEAD"
+            fi
+            
+            NOTES=$(git log $RANGE --pretty=format:"%s" |
+            awk '
+              /^feat:/      {print "- Feature: " substr($0,6); next}
+              /^fix:/       {print "- Bugfix: " substr($0,5); next}
+              /^docs:/      {print "- Docs: " substr($0,6); next}
+              /^refactor:/  {print "- Refactor: " substr($0,7); next}
+              /^chore:/     {print "- Chore: " substr($0,7); next}
+              {print "- Other: " $0}
+            ')
+            
+            echo "notes<<EOF" >> $GITHUB_OUTPUT
+            echo "$NOTES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-          name: Release ${{ github.event.inputs.version }}
-          draft: false
-          prerelease: false
-          files: |
-            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
-            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
-          body: |
-            ${{ steps.notes.outputs.notes }}
+        - name: Create GitHub Release
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: ${{ github.event.inputs.version }}
+            name: Release ${{ github.event.inputs.version }}
+            draft: false
+            prerelease: false
+            files: |
+              LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+              LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+            body: |
+              ${{ steps.notes.outputs.notes }}
