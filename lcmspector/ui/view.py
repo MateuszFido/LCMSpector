@@ -222,50 +222,83 @@ class View(QtWidgets.QMainWindow):
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
-        config_path = Path(__file__).parent.parent / "config.json"
-        with open(config_path, "r") as f:
-            lists = json.load(f)
-        if (
-            self.comboBoxIonLists.currentText() == "Create new ion list..."
-            or self.comboBoxIonLists.currentText() == ""
-        ):
-            self.ionTable.clearContents()
-            return
-        else:
+            """
+            Loads the selected ion list from config.json into the table.
+            Robustly handles missing keys ('ions' or 'info') by defaulting to empty strings.
+            """
+            config_path = Path(__file__).parent.parent / "config.json"
+            
+            # 1. Safe JSON Loading
             try:
-                ion_list = lists[self.comboBoxIonLists.currentText()]
-            except Exception:
-                logger.error(
-                    f"Could not find ion list: {self.comboBoxIonLists.currentText()}"
-                )
+                if not config_path.exists():
+                    # Handle missing config file gracefully
+                    self.ionTable.clearContents()
+                    self.ionTable.setRowCount(0)
+                    return
+                    
+                with open(config_path, "r") as f:
+                    lists = json.load(f)
+            except (json.JSONDecodeError, OSError) as e:
+                logger.error(f"Error reading config.json: {e}")
+                return
+
+            current_selection = self.comboBoxIonLists.currentText()
+            
+            # 2. Handle "Create new..." or empty selection
+            if current_selection == "Create new ion list..." or current_selection == "":
+                self.ionTable.clearContents()
+                self.ionTable.setRowCount(0) # Reset row count to 0 for clean slate
+                return
+
+            # 3. Retrieve the specific list
+            ion_list = lists.get(current_selection)
+
+            if ion_list is None:
+                logger.error(f"Could not find ion list: {current_selection}")
                 self.statusbar.showMessage(
-                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {self.comboBoxIonLists.currentText()}",
+                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {current_selection}",
                     3000,
                 )
-                ion_list = None
+                self.ionTable.clearContents()
+                self.ionTable.setRowCount(0)
+                return
 
+            # 4. Populate Table
             self.ionTable.clearContents()
-            if ion_list:
-                i = 0
-                self.ionTable.setRowCount(len(ion_list))
-                for compound, keywords in ion_list.items():
-                    self.ionTable.set_item(
-                        i, 0, QtWidgets.QTableWidgetItem(str(compound))
-                    )
-                    for key, value in keywords.items():
-                        if key == "ions":
-                            self.ionTable.set_item(
-                                i,
-                                1,
-                                QtWidgets.QTableWidgetItem(", ".join(map(str, value))),
-                            )
-                        elif key == "info":
-                            self.ionTable.set_item(
-                                i,
-                                2,
-                                QtWidgets.QTableWidgetItem(", ".join(map(str, value))),
-                            )
-                    i += 1
+            self.ionTable.setRowCount(len(ion_list))
+            
+            # Use enumerate for cleaner indexing
+            for row_idx, (compound_name, data_dict) in enumerate(ion_list.items()):
+                # A. Set Name (Column 0)
+                self.ionTable.set_item(
+                    row_idx, 0, QtWidgets.QTableWidgetItem(str(compound_name))
+                )
+
+                # B. Set Ions (Column 1)
+                # Use .get() to safely retrieve data, default to empty list
+                ions_val = data_dict.get("ions", [])
+                # Ensure it's a list before joining (guards against malformed JSON)
+                if isinstance(ions_val, list):
+                    ions_str = ", ".join(map(str, ions_val))
+                else:
+                    ions_str = ""
+                
+                self.ionTable.set_item(
+                    row_idx, 1, QtWidgets.QTableWidgetItem(ions_str)
+                )
+
+                # C. Set Info (Column 2) - THE FIX
+                # We explicitly get "info". If missing, we get [], resulting in "".
+                # Importantly, we ALWAYS set the item, so the cell is never None.
+                info_val = data_dict.get("info", [])
+                if isinstance(info_val, list):
+                    info_str = ", ".join(map(str, info_val))
+                else:
+                    info_str = ""
+
+                self.ionTable.set_item(
+                    row_idx, 2, QtWidgets.QTableWidgetItem(info_str)
+                )
 
     def on_browseLC(self):
         """
