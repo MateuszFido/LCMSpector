@@ -8,12 +8,6 @@ from pathlib import Path
 from abc import abstractmethod
 from utils.loading import load_absorbance_data, load_ms_data
 from utils.preprocessing import baseline_correction
-from ui.plotting import (
-    plot_average_ms_data,
-    plot_absorbance_data,
-    plot_annotated_LC,
-    plot_annotated_XICs,
-)
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -186,9 +180,11 @@ class LCMeasurement(Measurement):
         return None
 
     def plot(self):
+        from ui.plotting import plot_absorbance_data  
         plot_absorbance_data(self.path, self.baseline_corrected)
 
     def plot_annotated(self):
+        from ui.plotting import plot_annotated_LC 
         plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
@@ -215,9 +211,11 @@ class MSMeasurement(Measurement):
         self.xics = []
 
     def plot(self):
+        from ui.plotting import plot_average_ms_data
         self.average_plot = plot_average_ms_data(self.path, self.data)
 
     def plot_annotated(self):
+        from ui.plotting import plot_annotated_XICs
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
 
