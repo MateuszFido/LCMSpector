@@ -311,7 +311,7 @@ class View(QtWidgets.QMainWindow):
         lc_file_paths, _ = QFileDialog.getOpenFileNames(
             self,
             "Select LC Files",
-            "",
+            str(QtCore.QDir.homePath()),
             "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)",
         )
         if lc_file_paths:
@@ -336,7 +336,10 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.show()
         self.processButton.setEnabled(False)
         ms_file_paths, _ = QFileDialog.getOpenFileNames(
-            self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)"
+            self, 
+            "Select MS Files", 
+            str(QtCore.QDir.homePath()),
+            "MzML Files (*.mzML);;All Files (*)"
         )
         if ms_file_paths:
             self.clear_list_ms()
