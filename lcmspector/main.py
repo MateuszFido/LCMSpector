@@ -1,7 +1,6 @@
 """
 Main entry point for the LCMSpector application.
 
-This module provides the main entry point for the LCMSpector application.
 It sets up logging, creates the application, model, view, and controller instances,
 and handles application startup.
 """
@@ -21,12 +20,6 @@ from ui.controller import Controller
 from ui import fonts
 from utils.resources import ensure_ms2_library, DownloadWorker
 
-# Guards for binary building
-if os.sys.stdout is None:
-    os.sys.stdout = open(os.devnull, "w")
-if os.sys.stderr is None:
-    os.sys.stderr = open(os.devnull, "w")
-multiprocessing.freeze_support()
 
 
 def configure_logging():
@@ -141,4 +134,13 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    
+    # Guards for binary building
+    if os.sys.stdout is None:
+        os.sys.stdout = open(os.devnull, "w")
+    if os.sys.stderr is None:
+        os.sys.stderr = open(os.devnull, "w")
+
+    # Run main 
     main()
