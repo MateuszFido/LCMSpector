@@ -11,7 +11,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QApplication, QVBoxLayout, QDialog, QTextBrowser, QFileDialog, QMessageBox
 import pyqtgraph as pg
-from utils.plotting import (
+from ui.plotting import (
     plot_absorbance_data,
     plot_average_ms_data,
     plot_annotated_LC,

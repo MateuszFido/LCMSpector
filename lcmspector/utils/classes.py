@@ -8,7 +8,7 @@ from pathlib import Path
 from abc import abstractmethod
 from utils.loading import load_absorbance_data, load_ms_data
 from utils.preprocessing import baseline_correction
-from utils.plotting import (
+from ui.plotting import (
     plot_average_ms_data,
     plot_absorbance_data,
     plot_annotated_LC,
