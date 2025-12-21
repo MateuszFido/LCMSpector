@@ -193,42 +193,107 @@ jobs:
           with:
             merge-multiple: true
 
-        - name: List downloaded files (Debugging)
-          run: ls -R
-
         - name: Get previous tag
           id: prev-tag
           run: |
-            # Finds the most recent tag reachable from the parent of the current commit
             PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
             echo "Previous tag found: $PREV"
             echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
 
         - name: Generate release notes
           id: notes
+          shell: python
+          env:
+            PREV_TAG: ${{ steps.prev-tag.outputs.prev_tag }}
           run: |
-            PREV="${{ steps.prev-tag.outputs.prev_tag }}"
-            if [ -z "$PREV" ]; then
-              echo "No previous tag found. Logging from start of history."
-              RANGE="HEAD"
-            else
-              echo "Logging range: ${PREV}..HEAD"
-              RANGE="${PREV}..HEAD"
-            fi
+            import os
+            import subprocess
+            import sys
+
+            # 1. Determine git range
+            prev_tag = os.environ.get("PREV_TAG", "").strip()
+            git_range = f"{prev_tag}..HEAD" if prev_tag else "HEAD"
+            print(f"Generating notes for range: {git_range}")
+
+            # 2. Get log with format: "Hash|Subject"
+            cmd = ["git", "log", git_range, "--pretty=format:%h|%s"]
+            try:
+                output = subprocess.check_output(cmd, text=True).strip()
+            except subprocess.CalledProcessError:
+                print("Error reading git log")
+                sys.exit(1)
+
+            if not output:
+                print("No commits found.")
+                # Write empty notes to output to prevent crash
+                with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                    f.write("notes<<EOF\nNo changes detected.\nEOF\n")
+                sys.exit(0)
+
+            # 3. Define Categories and Buckets
+            categories = {
+                "feat":     {"title": "🚀 Features", "items": []},
+                "fix":      {"title": "🐛 Bug Fixes", "items": []},
+                "docs":     {"title": "📚 Documentation", "items": []},
+                "refactor": {"title": "🛠 Refactoring", "items": []},
+                "perf":     {"title": "⚡ Performance", "items": []},
+                "test":     {"title": "🧪 Tests", "items": []},
+                "chore":    {"title": "🧹 Chores & Maintenance", "items": []},
+                "ci":       {"title": "⚙️ CI/CD", "items": []},
+                "other":    {"title": "Other Changes", "items": []}
+            }
+
+            # 4. Parse Lines
+            for line in output.split('\n'):
+                if not line: continue
+                parts = line.split('|', 1)
+                if len(parts) < 2: continue
+                
+                sha, message = parts[0], parts[1]
+                
+                # Parse "type(scope): message" vs "type: message"
+                lower_msg = message.lower()
+                category_key = "other"
+                
+                # Extract the prefix (e.g., "feat", "chore")
+                if ':' in message:
+                    prefix_part = message.split(':', 1)[0]
+                    # Remove scope if exists: feat(ui) -> feat
+                    type_only = prefix_part.split('(')[0].strip().lower()
+                    # Remove breaking change marker: feat! -> feat
+                    type_only = type_only.replace('!', '')
+                    
+                    if type_only in categories:
+                        category_key = type_only
+                        # Clean the message by removing the type prefix
+                        # e.g. "feat: add x" -> "add x"
+                        clean_msg = message.split(':', 1)[1].strip()
+                    else:
+                        clean_msg = message
+                else:
+                    clean_msg = message
+
+                # Format: bullet point with code-blocked hash
+                formatted_item = f"* `{sha}` {clean_msg}"
+                categories[category_key]["items"].append(formatted_item)
+
+            # 5. Build Markdown Output
+            final_md = ""
             
-            NOTES=$(git log $RANGE --pretty=format:"%s" |
-            awk '
-              /^feat:/      {print "- Feature: " substr($0,6); next}
-              /^fix:/       {print "- Bugfix: " substr($0,5); next}
-              /^docs:/      {print "- Docs: " substr($0,6); next}
-              /^refactor:/  {print "- Refactor: " substr($0,7); next}
-              /^chore:/     {print "- Chore: " substr($0,7); next}
-              {print "- Other: " $0}
-            ')
+            # Enforce specific order if desired, otherwise iterate dict
+            order = ["feat", "fix", "refactor", "perf", "docs", "chore", "ci", "test", "other"]
             
-            echo "notes<<EOF" >> $GITHUB_OUTPUT
-            echo "$NOTES" >> $GITHUB_OUTPUT
-            echo "EOF" >> $GITHUB_OUTPUT
+            for key in order:
+                if categories[key]["items"]:
+                    final_md += f"### {categories[key]['title']}\n"
+                    final_md += "\n".join(categories[key]["items"])
+                    final_md += "\n\n"
+
+            # 6. Write to GITHUB_OUTPUT using EOF delimiter
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                f.write("notes<<EOF\n")
+                f.write(final_md)
+                f.write("EOF\n")
 
         - name: Create GitHub Release
           uses: softprops/action-gh-release@v2
