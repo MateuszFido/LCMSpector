@@ -12,7 +12,6 @@ from utils.loading import load_ms2_library
 from PySide6.QtCore import QThread
 
 logger = logging.getLogger(__name__)
-logger.propagate = False
 
 
 class Model(QThread):
@@ -451,3 +450,12 @@ class Model(QThread):
         df = pd.DataFrame(results)
         logger.info(f"Exported {len(df)} rows with peak area information")
         return df
+
+    def shutdown(self):
+        """Gracefully stop any running workers and threads."""
+        logger.debug("Trying to shut down model and workers...")
+        if self.worker:
+            if hasattr(self.worker, "isRunning") and self.worker.isRunning():
+                self.worker.terminate()
+                self.worker.wait()
+        logger.debug("Model shutdown complete.")

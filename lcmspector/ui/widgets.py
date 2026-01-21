@@ -199,7 +199,7 @@ class IonTable(GenericTable):
 
     def get_items(self):
         """
-        Parses the table rows into Compound objects. 
+        Parses the table rows into Compound objects.
         Robustly handles empty cells for m/z or info columns.
         """
         items = []
@@ -257,7 +257,7 @@ class IonTable(GenericTable):
             name = name_item.text().strip()
             if not name:
                 continue
-            
+
             # Initialize dictionary for this compound
             ions_data[name] = {}
 
@@ -265,7 +265,9 @@ class IonTable(GenericTable):
             mz_item = self.item(row, 1)
             mz_text = mz_item.text() if mz_item else ""
             try:
-                ions_data[name]["ions"] = [float(x) for x in mz_text.split(",") if x.strip()]
+                ions_data[name]["ions"] = [
+                    float(x) for x in mz_text.split(",") if x.strip()
+                ]
             except ValueError:
                 ions_data[name]["ions"] = []
 
@@ -273,12 +275,14 @@ class IonTable(GenericTable):
             # Instead of skipping the row if this fails, we default to an empty list.
             info_item = self.item(row, 2)
             info_text = info_item.text() if info_item else ""
-            ions_data[name]["info"] = [x.strip() for x in info_text.split(",") if x.strip()]
+            ions_data[name]["info"] = [
+                x.strip() for x in info_text.split(",") if x.strip()
+            ]
 
         # Save locally in config.json
         try:
             config_path = Path(__file__).parent.parent / "config.json"
-            
+
             # Helper to ensure file exists or create empty dict
             if not config_path.exists():
                 config = {}
@@ -298,8 +302,10 @@ class IonTable(GenericTable):
             # Update View
             self.view.comboBoxIonLists.clear()
             self.view.comboBoxIonLists.addItem("Create new ion list...")
-            self.view.comboBoxIonLists.addItems(list(config.keys())) # Use list() for safety
-            
+            self.view.comboBoxIonLists.addItems(
+                list(config.keys())
+            )  # Use list() for safety
+
             self.view.statusbar.showMessage(
                 f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} -- Saved new ion list: "{ion_list_name}".',
                 5000,
@@ -331,7 +337,7 @@ class IonTable(GenericTable):
                         f.seek(0)
                         json.dump(config, f, indent=4)
                         f.truncate()
-                
+
                 self.view.comboBoxIonLists.clear()
                 self.view.comboBoxIonLists.addItem("Create new ion list...")
                 self.view.comboBoxIonLists.addItems(list(config.keys()))
@@ -805,6 +811,7 @@ class LabelledSlider(QtWidgets.QWidget):
     def value(self):
         return self.values[self.slider.value()]
 
+
 class ReadmeDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -813,8 +820,8 @@ class ReadmeDialog(QtWidgets.QDialog):
 
         layout = QtWidgets.QVBoxLayout(self)
         self.browser = QtWidgets.QTextBrowser()
-        self.browser.setOpenExternalLinks(False)   # we handle links ourselves
-        self.browser.setOpenLinks(False)   
+        self.browser.setOpenExternalLinks(False)  # we handle links ourselves
+        self.browser.setOpenLinks(False)
         layout.addWidget(self.browser)
         self.browser.anchorClicked.connect(self.open_link)
         self.load_readme_html(Path(__file__).parent / "README.html")
@@ -826,9 +833,8 @@ class ReadmeDialog(QtWidgets.QDialog):
     def load_readme_html(self, filepath):
         """Load README HTML content from a file."""
         try:
+            print("Reading from", filepath)
             html_content = filepath.read_text(encoding="utf-8")
         except FileNotFoundError:
             html_content = "<p><b>README file not found.</b></p>"
         self.browser.setHtml(html_content)
-
-

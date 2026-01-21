@@ -22,19 +22,18 @@ from ui import fonts
 from utils.resources import ensure_ms2_library, DownloadWorker
 
 
-
 def configure_logging():
     """Configure logging with rotation to keep the last 5 sessions."""
     log_dir = Path(tempfile.gettempdir()) / "lcmspector"
     log_dir.mkdir(parents=True, exist_ok=True)
-    
+
     log_file = log_dir / "lcmspector.log"
 
     # backupCount=5: Keeps the current file + 5 previous copies (app.log, app.log.1, ... app.log.5)
-    # maxBytes=10MB: Safety net. If a SINGLE session exceeds 10MB, it will rotate automatically 
+    # maxBytes=10MB: Safety net. If a SINGLE session exceeds 10MB, it will rotate automatically
     # to prevent disk filling even if the app never restarts.
     file_handler = logging.handlers.RotatingFileHandler(
-        log_file, mode='a', maxBytes=10*1024*1024, backupCount=5, encoding='utf-8'
+        log_file, mode="a", maxBytes=10 * 1024 * 1024, backupCount=5, encoding="utf-8"
     )
 
     # Force a rollover on startup
@@ -43,7 +42,7 @@ def configure_logging():
 
     # We set the ROOT level to INFO to avoid spam from third-party libraries (like urllib3, matplotlib, etc.)
     logging.basicConfig(
-        level=logging.INFO, 
+        level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
             file_handler,
@@ -52,8 +51,8 @@ def configure_logging():
     )
 
     logger = logging.getLogger("lc_inspector")
-    logger.setLevel(logging.DEBUG) 
-    
+    logger.setLevel(logging.DEBUG)
+
     logger.info("Logging configured. New session started.")
     return logger
 
@@ -101,6 +100,7 @@ def main():
     view.show()
 
     # Start the event loop
+    app.aboutToQuit.connect(model.shutdown)
     logger.info("Application initialized, starting event loop")
 
     # Ensure MS2 library exists locally
@@ -144,17 +144,20 @@ def main():
                 "MS2 library not found. The MS2 functionality will be disabled."
             )
 
-    os.sys.exit(app.exec())
+    return_code = app.exec()
+    logger.debug(f"App exited with return code {return_code}.")
+    os._exit(0)
 
 
 if __name__ == "__main__":
+    multiprocessing.set_start_method("spawn", force=True)
     multiprocessing.freeze_support()
-    
+
     # Guards for binary building
     if os.sys.stdout is None:
         os.sys.stdout = open(os.devnull, "w")
     if os.sys.stderr is None:
         os.sys.stderr = open(os.devnull, "w")
 
-    # Run main 
+    # Run main
     main()
