@@ -7,7 +7,6 @@ and handles application startup.
 
 import os
 import sys
-import yaml
 import logging
 import logging.handlers
 import multiprocessing
