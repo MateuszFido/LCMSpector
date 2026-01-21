@@ -198,7 +198,7 @@ def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
         pen=mkPen("#dddddd", width=1),
     )
     start_time = time.time()
-    lc_peaks = find_peaks(chromatogram["Value (mAU)"], distance=10, prominence=10)
+    lc_peaks = find_peaks(chromatogram["Value (mAU)"], prominence=5)
     widths, width_heights, left, right = peak_widths(
         chromatogram["Value (mAU)"], lc_peaks[0], rel_height=0.9
     )
@@ -596,3 +596,87 @@ def plot_placeholder(widget: pg.PlotWidget, text: str):
     text_item = pg.TextItem(text=text, color="#c5c5c5", anchor=(0.5, 0.5))
     text_item.setFont(default_font)
     widget.addItem(text_item)
+
+
+def highlight_peak(selected_curve: pg.PlotCurveItem, curve_list: dict, canvas: pg.PlotWidget, xics: dict):
+    # Clear previous annotations
+    for curve in curve_list:
+        if selected_curve != curve:
+            color = QtGui.QColor(curve_list[curve])
+            color.setAlpha(50)
+            curve.setBrush(color)
+            curve.setPen(color)
+    for item in canvas.items():
+        if isinstance(item, pg.TextItem):
+            canvas.removeItem(item)
+    # Annotate the selected peak with every compound
+    text_items = []
+    for compound in xics:
+        for j, ion in enumerate(compound.ions.keys()):
+            if np.any(
+                np.isclose(
+                    compound.ions[ion]["RT"], selected_curve.getData()[0], atol=0.1
+                )
+            ):  # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
+                text_item = pg.TextItem(
+                    text=f"{compound.name} ({ion})", color="#242526", anchor=(0, 0)
+                )
+                text_item.setFont(
+                    pg.QtGui.QFont(
+                        "Helvetica", 12, weight=pg.QtGui.QFont.Weight.ExtraLight
+                    )
+                )
+                text_items.append(text_item)
+                canvas.addItem(text_item)
+    selected_curve.setBrush(pg.mkBrush("#ee6677"))
+    selected_curve.setPen(pg.mkPen("#ee6677"))
+    positions = np.linspace(
+        np.max(selected_curve.getData()[1]) / 2,
+        np.max(selected_curve.getData()[1]) + 400,
+        20,
+    )
+    for i, text_item in enumerate(text_items):
+        text_item.setPos(
+            float(np.median(selected_curve.getData()[0] + i // 20)),
+            float(positions[i % len(positions)]),
+        )
+
+def update_labels_avgMS(canvas):
+    # Remove all the previous labels
+    for item in canvas.items():
+        if isinstance(item, pg.TextItem):
+            canvas.removeItem(item)
+    if canvas.getPlotItem().listDataItems():
+        try:
+            data = canvas.getPlotItem().listDataItems()[0].getData()
+        except IndexError:
+            logger.error(
+                f"Error getting data items for MS viewing. {traceback.format_exc()}"
+            )
+            return
+    else:
+        return
+    current_view_range = canvas.getViewBox().viewRange()
+    # Get the intensity range within the current view range
+    mz_range = data[0][
+        np.logical_and(
+            data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
+        )
+    ]
+    indices = [i for i, x in enumerate(data[0]) if x in mz_range]
+    intensity_range = data[1][indices]
+    peaks, _ = find_peaks(intensity_range, prominence=10)
+    if len(peaks) < 5:
+        peaks, _ = find_peaks(intensity_range)
+    # Get the 10 highest peaks within the current view range
+    sorted_indices = np.argsort(intensity_range[peaks])[::-1]
+    # Get their mz values
+    mzs = mz_range[peaks][sorted_indices][0:10]
+    intensities = intensity_range[peaks][sorted_indices][0:10]
+    for mz, intensity in zip(mzs, intensities):
+        text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))
+        text_item.setFont(
+            pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.Normal)
+        )
+        text_item.setPos(mz, intensity)
+        canvas.addItem(text_item)

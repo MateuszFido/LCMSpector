@@ -75,8 +75,8 @@ class Model(QThread):
         logger.info("Current thread: %s", threading.current_thread().name)
         logger.info("Current process: %d", os.getpid())
 
-    def load(self, mode, file_type):
-        self.worker = LoadingWorker(self, mode, file_type)
+    def load(self, mode, file_paths, file_type):
+        self.worker = LoadingWorker(self, mode, file_paths, file_type)
         self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
         self.worker.progressUpdated.connect(
             self.controller.view.update_statusbar_with_loaded_file

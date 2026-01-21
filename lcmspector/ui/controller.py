@@ -12,7 +12,6 @@ import traceback
 from datetime import datetime
 
 logger = logging.getLogger(__name__)
-logger.propagate = False
 
 
 class Controller:
@@ -51,6 +50,7 @@ class Controller:
         pass
 
     def process_data(self):
+        logger.info("Process data button clicked.")
         self.view.statusbar.showMessage(f"Processing data in {self.mode} mode ...")
         self.model.compounds = self.view.ionTable.get_items()
         self.model.mass_accuracy = self.view.mass_accuracy_slider.value()
@@ -214,34 +214,34 @@ class Controller:
         self.view.processButton.setEnabled(False)
         self.view.statusbar.showMessage(f"Error: {error_message}", 5000)
 
-    def on_loading_finished(self, lc_results, ms_results):
+    def on_loading_finished(self, results):
         # Safeguard to only update what was just loaded
-        if lc_results:
-            self.model.lc_measurements = lc_results
-            last_loaded_result = list(lc_results.keys())[-1]
-            self.view.plot_raw_chromatography(lc_results[last_loaded_result])
-        if ms_results:
-            self.model.ms_measurements = ms_results
-            last_loaded_result = list(ms_results.keys())[-1]
-            self.view.plot_raw_MS(ms_results[last_loaded_result])
+        if results is not None and len(results) > 0:
+            try:
+                last_loaded_result = list(results.keys())[-1]
+                logger.debug(f"Received results with file type: {results[last_loaded_result].file_type}")
+            except AttributeError:
+                logger.error("Invalid results format received.")
+            if results[last_loaded_result].file_type == "LC":
+                self.model.lc_measurements = results
+                self.view.plot_raw_chromatography(results[last_loaded_result])
+            elif results[last_loaded_result].file_type == "MS":
+                self.model.ms_measurements = results
+                self.view.plot_raw_MS(results[last_loaded_result])
+            else:
+                logger.error("Unknown file type in results.")
 
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
-        self.view.processButton.setEnabled(True)
-        if len(lc_results) == 0 and len(ms_results) == 0:
+        if len(results) == 0:
             self.view.statusbar.showMessage(
                 f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- No files loaded.",
                 5000,
             )
             return
-        elif len(lc_results) != 0:
+        else: 
             self.view.statusbar.showMessage(
-                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(ms_results)} MS files.",
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(results)} files.",
                 5000,
             )
-        elif len(ms_results) != 0:
-            self.view.statusbar.showMessage(
-                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(lc_results)} chromatography files.",
-                5000,
-            )
-        self.view.processButton.setEnabled(True)
+            self.view.processButton.setEnabled(True)

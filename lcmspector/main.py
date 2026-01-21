@@ -7,8 +7,10 @@ and handles application startup.
 """
 
 import os
+import sys
 import yaml
 import logging
+import logging.handlers
 import multiprocessing
 import tempfile
 from pathlib import Path
@@ -30,24 +32,37 @@ multiprocessing.freeze_support()
 
 
 def configure_logging():
-    """Configure logging for the application."""
+    """Configure logging with rotation to keep the last 5 sessions."""
     log_dir = Path(tempfile.gettempdir()) / "lcmspector"
-    os.makedirs(log_dir, exist_ok=True)
-
+    log_dir.mkdir(parents=True, exist_ok=True)
+    
     log_file = log_dir / "lcmspector.log"
-    # Configure the root logger
+
+    # backupCount=5: Keeps the current file + 5 previous copies (app.log, app.log.1, ... app.log.5)
+    # maxBytes=10MB: Safety net. If a SINGLE session exceeds 10MB, it will rotate automatically 
+    # to prevent disk filling even if the app never restarts.
+    file_handler = logging.handlers.RotatingFileHandler(
+        log_file, mode='a', maxBytes=10*1024*1024, backupCount=5, encoding='utf-8'
+    )
+
+    # Force a rollover on startup
+    if log_file.exists() and log_file.stat().st_size > 0:
+        file_handler.doRollover()
+
+    # We set the ROOT level to INFO to avoid spam from third-party libraries (like urllib3, matplotlib, etc.)
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO, 
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         handlers=[
-            logging.FileHandler(log_file, mode="w+"),
-            logging.StreamHandler(os.sys.stdout),
+            file_handler,
+            logging.StreamHandler(sys.stdout),
         ],
     )
 
-    # Set up package-specific loggers
     logger = logging.getLogger("lc_inspector")
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG) 
+    
+    logger.info("Logging configured. New session started.")
     return logger
 
 
@@ -86,7 +101,7 @@ def main():
     Controller(model, view)
 
     # Set the application style
-    main_font = fonts.get_main_font(11)
+    main_font = fonts.get_main_font(13)
     app.setStyle("Fusion")
     app.setFont(main_font)
 

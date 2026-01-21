@@ -22,6 +22,8 @@ from utils.plotting import (
     plot_no_ms2_found,
     plot_ms2_from_file,
     plot_placeholder,
+    highlight_peak,
+    update_labels_avgMS
 )
 from pyqtgraph.dockarea import DockArea
 import numpy as np
@@ -37,7 +39,6 @@ from ui.widgets import (
 
 pg.setConfigOptions(antialias=True)
 logger = logging.getLogger(__name__)
-logger.propagate = False
 
 
 class View(QtWidgets.QMainWindow):
@@ -101,8 +102,8 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.setValue(0)
         self.progressBar.show()
         self.processButton.setEnabled(False)
-        count_ok = 0
         error_shown = False  # Safeguard to show error message only once
+        ok_file_paths = []
         for file_path in file_paths:
             # Check if the dropped file is a folder; if yes, check if it contains .txt files
             if os.path.isdir(file_path):
@@ -112,18 +113,9 @@ class View(QtWidgets.QMainWindow):
                     if f.lower().endswith(".txt") or f.lower().endswith(".csv")
                 ]
                 if len(txt_files) > 0:
-                    for txt_file in txt_files:
-                        count_ok += 1
-                        self.listLC.addItem(
-                            os.path.join(file_path, txt_file)
-                        )  # Add each file path to the listLC widget
-                else:
-                    continue
-            if file_path.lower().endswith(".txt") or file_path.lower().endswith(".csv"):
-                count_ok += 1
-                self.listLC.addItem(
-                    file_path
-                )  # Add each file path to the listLC widget
+                    ok_file_paths.extend(file_path + "/" + txt_file for txt_file in txt_files)
+            elif file_path.lower().endswith(".txt") or file_path.lower().endswith(".csv"):
+                ok_file_paths.append(file_path)
             elif not error_shown:
                 self.show_critical_error(
                     f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .csv and .txt files are supported."
@@ -132,16 +124,7 @@ class View(QtWidgets.QMainWindow):
                 error_shown = True
             else:
                 continue
-        if count_ok > 0:
-            self.statusbar.showMessage(
-                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} LC files loaded successfully.",
-                3000,
-            )
-        self.update_lc_file_list()  # Update the model with the new LC files
-        # Trigger loading process
-        self.progressBar.setVisible(True)
-        self.progressLabel.setVisible(True)
-        self.controller.model.load(self.controller.mode, "LC")
+        self.add_files(ok_file_paths, "LC")
 
     def handle_files_dropped_MS(self, file_paths):
         """
@@ -151,8 +134,8 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.setValue(0)
         self.progressBar.show()
         self.processButton.setEnabled(False)
-        count_ok = 0
         error_shown = False  # Safeguard to show error message only once
+        ok_file_paths = []
         for file_path in file_paths:
             # Check if the dropped file is a folder; if yes, check if it contains .mzML files
             if os.path.isdir(file_path):
@@ -160,17 +143,9 @@ class View(QtWidgets.QMainWindow):
                     f for f in os.listdir(file_path) if f.lower().endswith(".mzml")
                 ]
                 if len(mzml_files) > 0:
-                    count_ok += len(mzml_files)
-                    for mzml_file in mzml_files:
-                        self.listMS.addItem(
-                            os.path.join(file_path, mzml_file)
-                        )  # Add each file path to the listLC widget
-                    continue
-            if file_path.lower().endswith(".mzml"):
-                count_ok += 1
-                self.listMS.addItem(
-                    file_path
-                )  # Add each file path to the listLC widget
+                    ok_file_paths.extend(file_path + "/" + mzml_file for mzml_file in mzml_files)
+            elif file_path.lower().endswith(".mzml"):
+                ok_file_paths.append(file_path)
             elif not error_shown:
                 self.show_critical_error(
                     f"Invalid file type: {file_path.split('/')[-1]}\nCurrently only .mzML files are supported."
@@ -179,17 +154,7 @@ class View(QtWidgets.QMainWindow):
                 error_shown = True
             else:
                 continue
-        if count_ok > 0:
-            self.statusbar.showMessage(
-                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- {count_ok} MS files loaded successfully.",
-                3000,
-            )
-        self.update_ms_file_list()  # Update the model with the new LC files
-
-        # Trigger loading process
-        self.progressBar.setVisible(True)
-        self.progressLabel.setVisible(True)
-        self.controller.model.load(self.controller.mode, "MS")
+        self.add_files(ok_file_paths, "MS")
 
     def handle_files_dropped_annotations(self, file_paths):
         """
@@ -266,11 +231,38 @@ class View(QtWidgets.QMainWindow):
                             )
                     i += 1
 
+    def add_files(self, file_paths, file_type):
+        if file_type == "LC":
+            self.clear_list_lc()
+            for file_path in file_paths:
+                self.listLC.addItem(
+                    Path(file_path).name
+                )  # Add each LC file path to the listLC widget
+                logger.info(f"Adding LC file: {file_path}.")
+            self.update_lc_file_list()  # Update the model with the new LC files
+        elif file_type == "MS":
+            self.clear_list_ms()
+            for file_path in file_paths:
+                self.listMS.addItem(
+                    Path(file_path).name
+                )  # Add each MS file path to the listMS widget
+                logger.info(f"Adding MS file: {file_path}.")
+            self.update_ms_file_list()  # Update the model with the new LC files
+        else:
+            logger.error(f"Unknown file type: {type(file_type)} {file_type}.")
+        # Trigger loading process
+        self.progressBar.setVisible(True)
+        self.progressLabel.setVisible(True)
+        logger.debug(f"Calling model.load() with following arguments: {self.controller.mode}, {file_type}, {file_paths}")
+        self.controller.model.load(self.controller.mode, file_paths, file_type)
+
+
     def on_browseLC(self):
         """
         Slot for the browseLC button. Opens a file dialog for selecting LC files,
         which are then added to the listLC widget and the model is updated.
         """
+        logger.info("Clicked the Browse LC button.")
         self.progressBar.setValue(0)
         self.progressBar.show()
         self.processButton.setEnabled(False)
@@ -281,23 +273,16 @@ class View(QtWidgets.QMainWindow):
             "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)",
         )
         if lc_file_paths:
-            self.clear_list_lc()
-            for lc_file_path in lc_file_paths:
-                self.listLC.addItem(
-                    lc_file_path
-                )  # Add each LC file path to the listLC widget
-            self.update_lc_file_list()  # Update the model with the new LC files
-
-            # Trigger loading process
-            self.progressBar.setVisible(True)
-            self.progressLabel.setVisible(True)
-            self.controller.model.load(self.controller.mode, "LC")
+            self.add_files(lc_file_paths, "LC")
+        else:
+            logger.info("No LC files selected.")
 
     def on_browseMS(self):
         """
         Slot for the browseMS button. Opens a file dialog for selecting MS files,
         which are then added to the listMS widget and the model is updated.
         """
+        logger.info("Clicked the Browse MS button.")
         self.progressBar.setValue(0)
         self.progressBar.show()
         self.processButton.setEnabled(False)
@@ -305,26 +290,9 @@ class View(QtWidgets.QMainWindow):
             self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)"
         )
         if ms_file_paths:
-            self.clear_list_ms()
-            for ms_file_path in ms_file_paths:
-                if ms_file_path.lower().endswith(".mzml") and os.path.isfile(
-                    ms_file_path
-                ):
-                    self.listMS.addItem(
-                        ms_file_path
-                    )  # Add each MS file path to the listMS widget
-                else:
-                    self.show_critical_error(
-                        f"Invalid file type: {ms_file_path.split('/')[-1]}\nCurrently only .mzML files are supported."
-                    )
-                    logger.error(f"Invalid file type: {ms_file_path.split('/')[-1]}")
-                    return
-            self.update_ms_file_list()  # Update the model with the new MS files
-
-            # Trigger loading process
-            self.progressBar.setVisible(True)
-            self.progressLabel.setVisible(True)
-            self.controller.model.load(self.controller.mode, "MS")
+            self.add_files(ms_file_paths, "MS")
+        else:
+            logger.info("No MS files selected.")
 
     def on_browseAnnotations(self):
         """
@@ -341,10 +309,6 @@ class View(QtWidgets.QMainWindow):
                     annotation_file_path
                 )  # Add each annotation file path to the listAnnotations widget
             self.update_annotation_file()  # Update the model with the new annotation files
-            self.statusbar.showMessage(
-                f"Files added, {len(annotation_file_paths)} annotation files loaded successfully.",
-                3000,
-            )
 
     def on_process(self):
         # Trigger the processing action in the controller
@@ -357,6 +321,7 @@ class View(QtWidgets.QMainWindow):
         QApplication.instance().quit()
 
     def on_export(self):
+        logger.info("Export action triggered.")
         results = self.controller.model.export()
         if not results.empty:
             file_name, _ = QFileDialog.getSaveFileName(
@@ -372,22 +337,34 @@ class View(QtWidgets.QMainWindow):
                     f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Saved results to output folder {output_folder}",
                     5000,
                 )
+                logger.info(f"Exported results to {output_folder}.")
             except UnboundLocalError:
+                logger.error("Output folder not defined.")
                 return
         else:
             self.show_critical_error("Error: Nothing to export.")
-            logger.error("Error: Nothing to export.")
+            logger.error("Nothing to export.")
 
     def on_logs(self):
         """Slot for clicking the menubar Logs action.
         Opens the log file on the user's system."""
+        logger.info("Log file action triggered.")
         log_file = Path(tempfile.gettempdir()) / "lcmspector/lcmspector.log"
         if os.sys.platform.startswith("win"):
-            os.startfile(log_file)
+            try:
+                os.startfile(log_file)
+            except Exception:
+                logger.error(f"Could not open log file: {traceback.format_exc()}.")
         elif os.sys.platform == "darwin":
-            subprocess.run(["open", log_file])
+            try:
+                subprocess.run(["open", log_file])
+            except Exception:
+                logger.error(f"Could not open log file: {traceback.format_exc()}.")
         else:
-            subprocess.run(["xdg-open", log_file])
+            try:
+                subprocess.run(["xdg-open", log_file])
+            except Exception:
+                logger.error(f"Could not open log file: {traceback.format_exc()}.")
 
     def update_lc_file_list(self):
         """
@@ -404,14 +381,15 @@ class View(QtWidgets.QMainWindow):
         try:
             self.listLC
         except AttributeError:
-            logger.error("listLC is not defined!")
+            logger.error("listLC is not present in the view.")
             return
         try:
             lc_files = [self.listLC.item(i).text() for i in range(self.listLC.count())]
         except RuntimeError:
-            logger.error("listLC has been deleted!")
+            logger.error("listLC is not present in the view.")
         finally:
             self.controller.model.lc_measurements = dict.fromkeys(lc_files)
+            logger.debug(f"Setting controller.model.lc_measurements with {lc_files}.")
 
     def update_ms_file_list(self):
         # Update the model with the MS file paths
@@ -429,12 +407,12 @@ class View(QtWidgets.QMainWindow):
         try:
             self.listMS
         except AttributeError:
-            logger.error("listMS is not defined!")
+            logger.error("listMS is not present in the view.")
             return
         try:
             ms_files = [self.listMS.item(i).text() for i in range(self.listMS.count())]
         except RuntimeError:
-            logger.error("listMS has been deleted!")
+            logger.error("listMS is not present in the view.")
         except AttributeError:
             logger.warning("One of QWidgetItem is None, retrying...")
             try:
@@ -448,6 +426,7 @@ class View(QtWidgets.QMainWindow):
                 )
         finally:
             self.controller.model.ms_measurements = dict.fromkeys(ms_files)
+            logger.debug(f"Setting controller.model.lc_measurements with {ms_files}.")
 
     def update_annotation_file(self):
         # Update the model with the annotation file paths
@@ -478,21 +457,30 @@ class View(QtWidgets.QMainWindow):
             self.controller.model.annotations = dict.fromkeys(annotation_files)
 
     def update_progressBar(self, value):
-        self.progressBar.setValue(value)
-        self.progressLabel.setText(f"{value}%")
+        try:
+            self.progressBar.setValue(value)
+            self.progressLabel.setText(f"{value}%")
+        except AttributeError:
+            logger.error("Progress bar not found in the view.")
 
     def update_statusbar_with_loaded_file(self, progress, message):
-        self.statusbar.showMessage(
-            f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Loaded file {message} ({progress}%)",
-            1000,
-        )
+        try:
+            self.statusbar.showMessage(
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Loaded file {message} ({progress}%)",
+                1000,
+            )
+        except AttributeError:
+            logger.error("Status bar not found in the view.")
 
     def show_critical_error(self, message):
         QtWidgets.QMessageBox.critical(self, "Error", message)
 
     def update_combo_box(self, filenames):
-        self.comboBox_currentfile.clear()
-        self.comboBox_currentfile.addItems(filenames)
+        try:
+            self.comboBox_currentfile.clear()
+            self.comboBox_currentfile.addItems(filenames)
+        except AttributeError:
+            logger.error("Combo box not found in the view.")
 
     def update_table_quantitation(self, concentrations):
         """
@@ -679,7 +667,7 @@ class View(QtWidgets.QMainWindow):
                         )
                     for curve in self.curve_list.keys():
                         curve.sigClicked.connect(
-                            lambda c: self.highlight_peak(c, ms_file.xics)
+                            lambda c: highlight_peak(c, self.curve_list, self.canvas_annotatedLC, ms_file.xics)
                         )
 
         elif self.controller.mode == "MS Only":
@@ -807,91 +795,6 @@ class View(QtWidgets.QMainWindow):
             )
             plot_no_ms2_found(self.canvas_ms2)
 
-    def highlight_peak(self, selected_curve, xics):
-        # Clear previous annotations
-        for curve in self.curve_list:
-            if curve != selected_curve:
-                color = QtGui.QColor(self.curve_list[curve])
-                color.setAlpha(50)
-                curve.setBrush(color)
-                curve.setPen(color)
-        for item in self.canvas_annotatedLC.items():
-            if isinstance(item, pg.TextItem):
-                self.canvas_annotatedLC.removeItem(item)
-        # Annotate the selected peak with every compound
-        text_items = []
-        for compound in xics:
-            for j, ion in enumerate(compound.ions.keys()):
-                if np.any(
-                    np.isclose(
-                        compound.ions[ion]["RT"], selected_curve.getData()[0], atol=0.1
-                    )
-                ):  # If the ion's RT overlaps with the RT of selected peak +/- 6 seconds
-                    logger.info(
-                        f"Compound: {compound.name}, Ion: {ion} at {round(compound.ions[ion]['RT'], 2)} mins, overlaps with the time range {selected_curve.getData()[0][0]}-{selected_curve.getData()[0][-1]}."
-                    )
-                    text_item = pg.TextItem(
-                        text=f"{compound.name} ({ion})", color="#242526", anchor=(0, 0)
-                    )
-                    text_item.setFont(
-                        pg.QtGui.QFont(
-                            "Helvetica", 10, weight=pg.QtGui.QFont.Weight.ExtraLight
-                        )
-                    )
-                    text_items.append(text_item)
-                    self.canvas_annotatedLC.addItem(text_item)
-        selected_curve.setBrush(pg.mkBrush("#ee6677"))
-        selected_curve.setPen(pg.mkPen("#ee6677"))
-        positions = np.linspace(
-            np.max(selected_curve.getData()[1]) / 2,
-            np.max(selected_curve.getData()[1]) + 400,
-            20,
-        )
-        for i, text_item in enumerate(text_items):
-            text_item.setPos(
-                float(np.median(selected_curve.getData()[0] + i // 20)),
-                float(positions[i % len(positions)]),
-            )
-
-    def update_labels_avgMS(self, canvas):
-        # Remove all the previous labels
-        for item in canvas.items():
-            if isinstance(item, pg.TextItem):
-                canvas.removeItem(item)
-        if canvas.getPlotItem().listDataItems():
-            try:
-                data = canvas.getPlotItem().listDataItems()[0].getData()
-            except IndexError:
-                logger.error(
-                    f"Error getting data items for MS viewing. {traceback.format_exc()}"
-                )
-                return
-        else:
-            return
-        current_view_range = canvas.getViewBox().viewRange()
-        # Get the intensity range within the current view range
-        mz_range = data[0][
-            np.logical_and(
-                data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
-            )
-        ]
-        indices = [i for i, x in enumerate(data[0]) if x in mz_range]
-        intensity_range = data[1][indices]
-        peaks, _ = find_peaks(intensity_range, prominence=10)
-        if len(peaks) < 5:
-            peaks, _ = find_peaks(intensity_range)
-        # Get the 10 highest peaks within the current view range
-        sorted_indices = np.argsort(intensity_range[peaks])[::-1]
-        # Get their mz values
-        mzs = mz_range[peaks][sorted_indices][0:10]
-        intensities = intensity_range[peaks][sorted_indices][0:10]
-        for mz, intensity in zip(mzs, intensities):
-            text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))
-            text_item.setFont(
-                pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.Normal)
-            )
-            text_item.setPos(mz, intensity)
-            canvas.addItem(text_item)
 
     def update_crosshair(self, e):
         """
@@ -1043,7 +946,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
         self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
         self.canvas_baseline.scene().sigMouseClicked.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
         plot_placeholder(
             self.canvas_baseline,
@@ -1053,7 +956,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
         self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
         self.canvas_baseline.sigKeyPressed.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
         self.crosshair_v = pg.InfiniteLine(
@@ -1090,7 +993,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
         self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
         self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
         # ----- middle pane -------------------------------------------------------
@@ -1200,7 +1103,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
         self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
         self.canvas_baseline.scene().sigMouseClicked.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
         plot_placeholder(
             self.canvas_baseline,
@@ -1210,7 +1113,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
         self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
         self.canvas_baseline.sigKeyPressed.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
         self.crosshair_v = pg.InfiniteLine(
@@ -1247,7 +1150,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
         self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
         self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
         # ----- middle pane -------------------------------------------------------
@@ -1420,36 +1323,35 @@ class View(QtWidgets.QMainWindow):
         else:
             self.setup_chromatography_only(self)
 
+    # BUG: Not syncing LC and MS files properly
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
         self.canvas_avgMS.clear()
-        if self.controller.mode == "LC/GC-MS":
+        if self.controller.mode == "LC/GC-MS" and self.listLC.count() > 0 and self.listMS.count() > 0:
             try:
-                file = Path(self.listLC.currentItem().text()).name.split(".")[0]
-                plot_average_ms_data(
-                    file,
-                    time_x,
-                    self.controller.model.ms_measurements[file].data,
-                    self.canvas_avgMS,
-                )
+                file = self.listLC.currentItem().text().split(".")[0]
             except AttributeError:
-                logger.error("No LC file highlighted.")
-                file = Path(self.listMS.item(0).text()).name.split(".")[0]
-                plot_average_ms_data(
-                    file,
-                    time_x,
-                    self.controller.model.ms_measurements[file].data,
-                    self.canvas_avgMS,
-                )
-            except Exception as e:
-                logger.error(f"Error displaying average MS: {e}")
+                file = self.listLC.item(0).text().split(".")[0]
+            try:
+                self.controller.model.ms_measurements[file]
+            except KeyError:
+                file = self.listMS.currentItem().text().split(".")[0]
+            except Exception:
+                logger.error(f"Error displaying average MS: {traceback.format_exc()}")
                 return
         else:
+            logger.debug("No MS files loaded, skipping showing scan at time X.")
+            return
+        if self.controller.mode == "MS Only" and self.listMS.count() > 0:
             try:
                 file = Path(self.listMS.currentItem().text()).name.split(".")[0]
             except AttributeError:
                 logger.error("No MS file highlighted.")
                 file = Path(self.listMS.item(0).text()).name.split(".")[0]
+            except Exception:
+                logger.error(f"Error displaying average MS: {traceback.format_exc()}")
+        if file:
+            try:
                 plot_average_ms_data(
                     file,
                     time_x,
@@ -1627,7 +1529,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.scene().sigMouseClicked.connect(self.show_scan_at_time_x)
         self.canvas_baseline.scene().sigMouseClicked.connect(self.update_line_marker)
         self.canvas_baseline.scene().sigMouseClicked.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
         plot_placeholder(
             self.canvas_baseline, "Welcome to LCMSpector\n← add files to get started"
@@ -1636,7 +1538,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_baseline.sigKeyPressed.connect(self.update_line_marker_with_key)
         self.canvas_baseline.sigKeyPressed.connect(self.show_scan_at_time_x)
         self.canvas_baseline.sigKeyPressed.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
         self.crosshair_v = pg.InfiniteLine(
             angle=90,
@@ -1679,7 +1581,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
         # NOTE: only works on actual RESIZING which means that moving the window doesn't update labels
         self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_avgMS)
+            lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
         ###
@@ -1877,7 +1779,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
         self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_ms2)
+            lambda ev: update_labels_avgMS(self.canvas_ms2)
         )
 
         self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 1)
@@ -1895,7 +1797,7 @@ class View(QtWidgets.QMainWindow):
         self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
         self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
-            lambda ev: self.update_labels_avgMS(self.canvas_library_ms2)
+            lambda ev: update_labels_avgMS(self.canvas_library_ms2)
         )
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)

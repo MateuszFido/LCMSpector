@@ -52,29 +52,29 @@ class WorkerSignals(QObject):
 
 class LoadingWorker(QThread):
     progressUpdated = Signal(int, str)
-    finished = Signal(dict, dict)
+    finished = Signal(dict)
     error = Signal(str)
 
-    def __init__(self, model, mode, file_type):
+    def __init__(self, model, mode, file_paths, file_type):
         super().__init__()
         self.model = model
         self.mode = mode
+        self.file_paths = file_paths
         self.file_type = file_type
+        self.file_count = len(file_paths)
 
     def run(self):
         st = time.time()
-        lc_results = {}
-        ms_results = {}
+        results = {}
 
         try:
-            total_files = len(self.model.lc_measurements) + len(
-                self.model.ms_measurements
-            )
-            if total_files == 0:
-                logger.warning("No files to process.")
-                return
+            self.file_count
         except AttributeError:
-            logger.error("Model attributes are not properly initialized.")
+            logger.error("File count attribute not properly initialized.")
+            return
+
+        if self.file_count == 0:
+            logger.warning("No files to process.")
             return
 
         progress = 0
@@ -82,57 +82,48 @@ class LoadingWorker(QThread):
         def update_progress(filename):
             nonlocal progress
             progress += 1
-            self.progressUpdated.emit(int(progress / total_files * 200), filename)
+            self.progressUpdated.emit(int(progress / self.file_count * 100), filename)
 
         if self.mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error("ERROR: Invalid argument for load_data(mode): %s", self.mode)
+            logger.error(f"Invalid argument for load(): {self.mode}, currently supported modes are LC/GC-MS, LC/GC Only, MS Only.")
             return
 
         try:
             with ProcessPoolExecutor(
-                max_workers=max(1, multiprocessing.cpu_count() - 3)
+                max_workers=max(1, multiprocessing.cpu_count() - 1)
             ) as executor:
                 # Conditional loading based on mode and what is being uploaded
-                if self.mode in ("LC/GC-MS", "LC/GC Only") and self.file_type == "LC":
-                    lc_futures = {
+                if self.file_type == "LC":
+                    futures = {
                         executor.submit(LCMeasurement, lc_file): lc_file
-                        for lc_file in self.model.lc_measurements
+                        for lc_file in self.file_paths
                     }
-                else:
-                    lc_futures = {}
-
-                if self.mode in {"LC/GC-MS", "MS Only"} and self.file_type == "MS":
-                    ms_futures = {
+                elif self.file_type == "MS":
+                    futures = {
                         executor.submit(MSMeasurement, ms_file): ms_file
-                        for ms_file in self.model.ms_measurements
+                        for ms_file in self.file_paths
                     }
                 else:
-                    ms_futures = {}
+                    logger.error(f"Invalid file type for load(): {self.file_type}, currently supported types are LC and MS.")
+                    futures = {}
 
-                for future in as_completed(list(lc_futures) + list(ms_futures)):
+                for future in as_completed(futures):
                     try:
                         result = future.result()
-                        if future in lc_futures:
-                            lc_results[result.filename] = result
-                        else:
-                            ms_results[result.filename] = result
+                        results[result.filename] = result
+                        update_progress(result.filename)
                     except Exception as e:
                         logger.error("Error loading file: %s", traceback.format_exc())
                         self.error.emit(str(e))
-                    update_progress(result.filename)
         except Exception as e:
             logger.error("Error in loading pool: %s", traceback.format_exc())
             self.error.emit(str(e))
             return
 
-        logger.info(
-            "Loaded %d LC files and %d MS files for %s in %.2f seconds.",
-            len(lc_results),
-            len(ms_results),
-            self.mode,
-            time.time() - st,
+        logger.debug(
+            f"Loaded {len(results)} {self.file_type} files in {time.time() - st} seconds.",
         )
-        self.finished.emit(lc_results, ms_results)
+        self.finished.emit(results)
 
 
 class ProcessingWorker(QThread):
@@ -178,7 +169,7 @@ class ProcessingWorker(QThread):
                 # Only process MS files if in MS or LC/GC-MS mode
                 if self.mode in {"LC/GC-MS", "MS Only"}:
                     # for every MS file, call construct_xics on its data and store the result
-                    ms_futures = {
+                    futures = {
                         executor.submit(
                             construct_xics,
                             ms_file.filename,
@@ -189,9 +180,9 @@ class ProcessingWorker(QThread):
                         for ms_file in self.model.ms_measurements.values()
                     }
                 else:
-                    ms_futures = {}
+                    futures = {}
 
-                for future in as_completed(list(ms_futures)):
+                for future in as_completed(list(futures)):
                     try:
                         result = future.result()
                         results.append(result)

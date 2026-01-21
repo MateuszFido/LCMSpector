@@ -78,6 +78,7 @@ class LCMeasurement(Measurement):
         self.data = load_absorbance_data(path)
         self.annotations = None
         self.baseline_corrected = baseline_correction(self.data)
+        self.file_type = "LC"
 
         self.peak_areas = self._calculate_lc_peak_areas()
         logger.info(
@@ -211,6 +212,7 @@ class MSMeasurement(Measurement):
         self.mass_accuracy = mass_accuracy
         self.data = load_ms_data(path)
         self.xics = []
+        self.file_type = "MS"
 
     def plot(self):
         self.average_plot = plot_average_ms_data(self.path, self.data)
@@ -221,11 +223,9 @@ class MSMeasurement(Measurement):
 
 class Compound:
     """
-    <<<<<<< HEAD
         Class representing a targeted result for a single measurement pair (LC + MS).
     =======
         Class representing a targeted result for a compound.
-    >>>>>>> cythonize
         Parameters
         ----------
         name : str
