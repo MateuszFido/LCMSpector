@@ -4,7 +4,7 @@ import logging
 import itertools
 from typing import Optional, List, Any
 
-from PySide6.QtGui import QFont, QColor, QtGui
+from PySide6.QtGui import QFont, QColor
 from PySide6.QtCore import Qt, QSize
 import numpy as np
 import pandas as pd
@@ -21,7 +21,7 @@ from ui import fonts
 logger = logging.getLogger(__name__)
 logger.propagate = False
 
-# --- Configuration & Styles ---
+# --- Global style config ---
 class PlotStyle:
     """Centralized configuration for plot styling."""
     BACKGROUND = "w"
@@ -29,7 +29,7 @@ class PlotStyle:
     AXIS_PEN = mkPen("#2C2D2D", width=2)
     GRID_ALPHA = 0.3
     
-    # Color palette for multi-line plots (XICs, Peaks)
+    # Color palette for multi-line plots (XICs, annotatedlC)
     PALETTE = [
         "#e25759", "#0b81a2", "#7e4794", "#59a89c", "#9d2c00", 
         "#36b700", "#f0c571", "#c8c8c8", "#cc6677", "#332288", 
@@ -40,9 +40,9 @@ class PlotStyle:
     def apply_standard_style(widget: pg.PlotWidget, title: str = "", x_label: str = "", y_label: str = ""):
         """Applies standard formatting to a PlotWidget."""
         widget.setBackground(PlotStyle.BACKGROUND)
-        widget.setTitle(title, color=PlotStyle.TEXT_COLOR, size="11pt")
+        widget.setTitle(title, color=PlotStyle.TEXT_COLOR, size="12pt")
         
-        label_style = {"color": PlotStyle.TEXT_COLOR, "font-size": "10pt"}
+        label_style = {"color": PlotStyle.TEXT_COLOR, "font-size": "12pt"}
         widget.setLabel("bottom", x_label, **label_style)
         widget.setLabel("left", y_label, **label_style)
         
@@ -62,7 +62,7 @@ def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidg
     # Clear previous content just in case
     widget.clear()
     PlotStyle.apply_standard_style(widget, title=filename, x_label="Time (min)", y_label="Absorbance (mAU)")
-    widget.addLegend()
+    widget.addLegend(labelTextSize = "12pt")
 
     # Plot Uncorrected
     widget.plot(
@@ -456,7 +456,7 @@ def highlight_peak(selected_curve: pg.PlotCurveItem, curve_list: dict, canvas: p
     # Clear previous annotations
     for curve in curve_list:
         if selected_curve != curve:
-            color = QtGui.QColor(curve_list[curve])
+            color = QColor(curve_list[curve])
             color.setAlpha(50)
             curve.setBrush(color)
             curve.setPen(color)
@@ -476,8 +476,8 @@ def highlight_peak(selected_curve: pg.PlotCurveItem, curve_list: dict, canvas: p
                     text=f"{compound.name} ({ion})", color="#242526", anchor=(0, 0)
                 )
                 text_item.setFont(
-                    pg.QtGui.QFont(
-                        "Helvetica", 12, weight=pg.QtGui.QFont.Weight.ExtraLight
+                    QFont(
+                        "Helvetica", 12, weight=QFont.Weight.ExtraLight
                     )
                 )
                 text_items.append(text_item)

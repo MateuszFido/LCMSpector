@@ -235,6 +235,7 @@ class Compound(BaseModel):
     _ions: Dict = PrivateAttr(default_factory=dict)
     _ms2: List = PrivateAttr(default_factory=list)
     _calibration_curve: Dict = PrivateAttr(default_factory=dict)
+    _calibration_parameters: Dict = PrivateAttr(default_factory=dict)
 
     def model_post_init(self, __context):
         """
@@ -271,6 +272,14 @@ class Compound(BaseModel):
     @property
     def calibration_curve(self):
         return self._calibration_curve
+    
+    @property
+    def calibration_parameters(self):
+        return self._calibration_parameters
+
+    @calibration_parameters.setter
+    def calibration_parameters(self, value):
+        self._calibration_parameters = value
 
     def __str__(self):
         return f"Compound: {self.name}, ions: {self.target_list}, ion info: {self.ion_info}"

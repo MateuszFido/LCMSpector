@@ -1381,7 +1381,10 @@ class View(QtWidgets.QMainWindow):
             try:
                 self.controller.model.ms_measurements[file]
             except KeyError:
-                file = self.listMS.currentItem().text().split(".")[0]
+                try:
+                    file = self.listMS.currentItem().text().split(".")[0]
+                except AttributeError:
+                    file = self.listMS.item(0).text().split(".")[0]
             except Exception:
                 logger.error(f"Error displaying average MS: {traceback.format_exc()}")
                 return
