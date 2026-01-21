@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import webbrowser
 from pathlib import Path
 import pyqtgraph as pg
 from PySide6 import QtCore, QtGui, QtWidgets
@@ -197,75 +198,118 @@ class IonTable(GenericTable):
         self.view = view
 
     def get_items(self):
+        """
+        Parses the table rows into Compound objects. 
+        Robustly handles empty cells for m/z or info columns.
+        """
         items = []
         for row in range(self.rowCount()):
-            if self.item(row, 0) is None:
+            # 1. Get Name (Required)
+            name_item = self.item(row, 0)
+            if name_item is None:
                 continue
-            name = self.item(row, 0).text()
-            if name == "":
+            name = name_item.text().strip()
+            if not name:
                 continue
+
+            # 2. Get Ions (Optional-ish, usually required but handled safely)
+            mz_item = self.item(row, 1)
+            mz_text = mz_item.text() if mz_item else ""
             try:
-                ions = [float(x) for x in self.item(row, 1).text().split(",")]
+                # Split by comma and filter out empty strings to prevent conversion errors
+                ions = [float(x) for x in mz_text.split(",") if x.strip()]
             except ValueError:
                 ions = []
+
+            # 3. Get Info (Strictly Optional)
+            info_item = self.item(row, 2)
+            info_text = info_item.text() if info_item else ""
+            # Create list, filtering out empty strings
+            ion_info = [x.strip() for x in info_text.split(",") if x.strip()]
+
             try:
-                ion_info = self.item(row, 2).text().split(",")
-            except AttributeError:
-                ion_info = []
-            try:
-                compound = Compound(name, ions, ion_info)
+                compound = Compound(name=name, target_list=ions, ion_info=ion_info)
                 items.append(compound)
-            except UnboundLocalError:
-                # HACK: for now fails silently
+            except Exception as e:
+                print(f"Error creating compound '{name}': {e}")
                 continue
+
         return items
 
     def save_ion_list(self):
+        """
+        Saves the current table state to config.json.
+        Ensures 'info' key is always present (even if empty) to prevent KeyErrors on load.
+        """
         # Prompt the user how they want to name the list
         ion_list_name, okPressed = QtWidgets.QInputDialog.getText(
             self, "New ion list", "Name the new ion list:"
         )
-        if not okPressed:
+        if not okPressed or not ion_list_name.strip():
             return
-        ions = {}
+
+        ions_data = {}
         for row in range(self.rowCount()):
-            if self.item(row, 0) is None:
+            # 1. Get Name
+            name_item = self.item(row, 0)
+            if name_item is None:
                 continue
-            name = self.item(row, 0).text()
-            if name == "":
+            name = name_item.text().strip()
+            if not name:
                 continue
-            else:
-                ions[name] = {}
+            
+            # Initialize dictionary for this compound
+            ions_data[name] = {}
+
+            # 2. Get Ions
+            mz_item = self.item(row, 1)
+            mz_text = mz_item.text() if mz_item else ""
             try:
-                ions[name]["ions"] = [
-                    float(x) for x in self.item(row, 1).text().split(",")
-                ]
+                ions_data[name]["ions"] = [float(x) for x in mz_text.split(",") if x.strip()]
             except ValueError:
-                continue
-            try:
-                ions[name]["info"] = self.item(row, 2).text().split(",")
-            except AttributeError:
-                continue
+                ions_data[name]["ions"] = []
+
+            # 3. Get Info - THE FIX
+            # Instead of skipping the row if this fails, we default to an empty list.
+            info_item = self.item(row, 2)
+            info_text = info_item.text() if info_item else ""
+            ions_data[name]["info"] = [x.strip() for x in info_text.split(",") if x.strip()]
+
         # Save locally in config.json
         try:
             config_path = Path(__file__).parent.parent / "config.json"
-            with open(config_path, "r") as f:
-                config = json.load(f)
-            config[ion_list_name] = {name: ions[name] for name in ions}
+            
+            # Helper to ensure file exists or create empty dict
+            if not config_path.exists():
+                config = {}
+            else:
+                with open(config_path, "r") as f:
+                    try:
+                        config = json.load(f)
+                    except json.JSONDecodeError:
+                        config = {}
+
+            # Update config with new data
+            config[ion_list_name] = ions_data
+
             with open(config_path, "w") as f:
                 json.dump(config, f, indent=4)
+
+            # Update View
             self.view.comboBoxIonLists.clear()
             self.view.comboBoxIonLists.addItem("Create new ion list...")
-            self.view.comboBoxIonLists.addItems(config.keys())
+            self.view.comboBoxIonLists.addItems(list(config.keys())) # Use list() for safety
+            
             self.view.statusbar.showMessage(
                 f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} -- Saved new ion list: "{ion_list_name}".',
                 5000,
             )
         except Exception as e:
             print(f"Could not save ions to config.json: {e}")
+            # Optional: Show an error message box here so the user knows save failed
 
     def delete_ion_list(self):
-        # Slot for the delete button, prompt the user and if they confirm, delete the currently selected ion list
+        # ... (Your existing delete logic is fine, keep it as is) ...
         ion_list_name = self.view.comboBoxIonLists.currentText()
         msgBox = QtWidgets.QMessageBox()
         msgBox.setIcon(QtWidgets.QMessageBox.Icon.Warning)
@@ -278,20 +322,25 @@ class IonTable(GenericTable):
         )
         msgBox.setDefaultButton(QtWidgets.QMessageBox.StandardButton.No)
         if msgBox.exec() == QtWidgets.QMessageBox.StandardButton.Yes:
-            config_path = Path(__file__).parent.parent / "config.json"
-            with open(config_path, "r+") as f:
-                config = json.load(f)
-                config.pop(ion_list_name)
-                f.seek(0)
-                json.dump(config, f, indent=4)
-                f.truncate()
-            self.view.comboBoxIonLists.clear()
-            self.view.comboBoxIonLists.addItem("Create new ion list...")
-            self.view.comboBoxIonLists.addItems(config.keys())
-            self.view.statusbar.showMessage(
-                f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} -- Deleted ion list: "{ion_list_name}".',
-                5000,
-            )
+            try:
+                config_path = Path(__file__).parent.parent / "config.json"
+                with open(config_path, "r+") as f:
+                    config = json.load(f)
+                    if ion_list_name in config:
+                        config.pop(ion_list_name)
+                        f.seek(0)
+                        json.dump(config, f, indent=4)
+                        f.truncate()
+                
+                self.view.comboBoxIonLists.clear()
+                self.view.comboBoxIonLists.addItem("Create new ion list...")
+                self.view.comboBoxIonLists.addItems(list(config.keys()))
+                self.view.statusbar.showMessage(
+                    f'{datetime.now().strftime("%d/%m/%Y %H:%M:%S")} -- Deleted ion list: "{ion_list_name}".',
+                    5000,
+                )
+            except Exception as e:
+                print(f"Error deleting ion list: {e}")
 
 
 class ClearSelectionCommand(QtGui.QUndoCommand):
@@ -755,3 +804,31 @@ class LabelledSlider(QtWidgets.QWidget):
 
     def value(self):
         return self.values[self.slider.value()]
+
+class ReadmeDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("README")
+        self.resize(500, 400)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        self.browser = QtWidgets.QTextBrowser()
+        self.browser.setOpenExternalLinks(False)   # we handle links ourselves
+        self.browser.setOpenLinks(False)   
+        layout.addWidget(self.browser)
+        self.browser.anchorClicked.connect(self.open_link)
+        self.load_readme_html(Path(__file__).parent / "README.html")
+
+    def open_link(self, url: QtCore.QUrl):
+        """Open the clicked link in the default web browser."""
+        webbrowser.open(url.toString())
+
+    def load_readme_html(self, filepath):
+        """Load README HTML content from a file."""
+        try:
+            html_content = filepath.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            html_content = "<p><b>README file not found.</b></p>"
+        self.browser.setHtml(html_content)
+
+

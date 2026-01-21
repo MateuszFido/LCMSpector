@@ -22,14 +22,15 @@ jobs:
           lfs: false
           fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # This is much faster than setup-python and handles caching automatically
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.13"
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-      - name: Upgrade pip tooling
-        run: |
-          python -m pip install --upgrade pip setuptools wheel
+      - name: Set up Python 3.13
+        run: uv python install 3.13
 
       - name: Install system deps (Linux)
         if: contains(matrix.os, 'ubuntu')
@@ -37,39 +38,34 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y patchelf zip unzip
 
-      - name: Install runtime dependencies
-        run: |
-          pip install numpy
-          pip install -r requirements.txt
+      - name: Install dependencies
+        run: uv sync --frozen
 
-      - name: Install Nuitka and helpers
-        run: |
-          pip install --upgrade nuitka zstandard
-
-      # Keep MSP external and present at build time (so it's included as data in one-folder)
+      # Keep MSP external download steps exactly as they were
       - name: Download the MSP library from Polybox (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        shell: bash
         run: |
           curl -L -o MoNA-export-All_LC-MS-MS_Orbitrap.zip "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download"
           unzip -o MoNA-export-All_LC-MS-MS_Orbitrap.zip
           mkdir -p lcmspector/resources
           mv -f MoNA-export-All_LC-MS-MS_Orbitrap.msp lcmspector/resources
-        shell: bash
-        if: matrix.os != 'windows-latest'
 
       - name: Download the MSP library from Polybox (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path lcmspector\resources | Out-Null
           Invoke-WebRequest -Uri "https://polybox.ethz.ch/index.php/s/CrnWdgwX5canNxL/download" -OutFile "MoNA-export-All_LC-MS-MS_Orbitrap.zip"
           Expand-Archive -Path "MoNA-export-All_LC-MS-MS_Orbitrap.zip" -DestinationPath "." -Force
           Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lcmspector\resources" -Force
-        shell: pwsh
-        if: matrix.os == 'windows-latest'
 
+      # "uv run" automatically executes the command inside the .venv created by "uv sync"
       - name: Build with Nuitka (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
         run: |
-          python -m nuitka lcmspector/main.py \
+          uv run python -m nuitka lcmspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
@@ -82,9 +78,7 @@ jobs:
             --output-dir=dist \
             --assume-yes-for-downloads
 
-          # Zip the .app bundle for release
           cd dist
-          # Failsafe for if Nuitka still somehow wrongly produces "main.app" 
           mv main.app LCMSpector.app
           zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
 
@@ -92,7 +86,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          python -m nuitka lcmspector\main.py `
+          # Note: uv run works perfectly in PowerShell too
+          uv run python -m nuitka lcmspector\main.py `
             --standalone `
             --plugin-enable=pyside6 `
             --noinclude-qt-translations `
@@ -105,7 +100,6 @@ jobs:
             --output-dir=dist `
             --assume-yes-for-downloads
 
-          # Zip the .dist folder (contains LCMSpector.exe and libs)
           Get-ChildItem dist\ -Recurse -Force
           Rename-Item "dist\main.dist" "LCMSpector.dist"
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
@@ -114,7 +108,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         shell: bash
         run: |
-          python -m nuitka lcmspector/main.py \
+          uv run python -m nuitka lcmspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
@@ -125,7 +119,6 @@ jobs:
             --output-dir=dist \
             --assume-yes-for-downloads
 
-          # Tar.gz the .dist folder
           cd dist
           mv main.dist LCMSpector.dist
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz" LCMSpector.dist
@@ -134,7 +127,7 @@ jobs:
         if: matrix.os == 'ubuntu-22.04'
         shell: bash
         run: |
-          python -m nuitka lcmspector/main.py \
+          uv run python -m nuitka lcmspector/main.py \
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
@@ -145,11 +138,11 @@ jobs:
             --output-dir=dist \
             --assume-yes-for-downloads
 
-          # Tar.gz the .dist folder
           cd dist
           mv main.dist LCMSpector.dist
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz" LCMSpector.dist
 
+      # Upload steps remain unchanged
       - name: Upload artifact (macOS ARM)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
@@ -183,66 +176,136 @@ jobs:
           if-no-files-found: error
 
   release:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
+      needs: build
+      runs-on: ubuntu-latest
+      permissions:
+        contents: write
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-        with:
-          lfs: false
+      steps:
+        - name: Checkout repository
+          uses: actions/checkout@v6
+          with:
+            lfs: false
+            fetch-depth: 0  
 
-      - name: Download all build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          merge-multiple: true
+        - name: Download all build artifacts
+          uses: actions/download-artifact@v4
+          with:
+            merge-multiple: true
 
-      - name: List downloaded files (Debugging)
-        run: ls -R
+        - name: Get previous tag
+          id: prev-tag
+          run: |
+            PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+            echo "Previous tag found: $PREV"
+            echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
 
-      - name: Get previous tag
-        id: prev-tag
-        run: |
-          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
+        - name: Generate release notes
+          id: notes
+          shell: python
+          env:
+            PREV_TAG: ${{ steps.prev-tag.outputs.prev_tag }}
+          run: |
+            import os
+            import subprocess
+            import sys
 
-      - name: Generate release notes
-        id: notes
-        run: |
-          PREV="${{ steps.prev-tag.outputs.prev_tag }}"
-          if [ -z "$PREV" ]; then
-            RANGE="HEAD"
-          else
-            RANGE="${PREV}..HEAD"
-          fi
-          echo "range=$RANGE" >> $GITHUB_OUTPUT
-          # Use conventional commits format if you follow it
-          NOTES=$(git log $RANGE --pretty=format:"%s" |
-          awk '
-            /^feat:/   {print "- Feature: " substr($0,6)}
-            /^fix:/    {print "- Bugfix: " substr($0,5)}
-            /^docs:/   {print "- Docs: " substr($0,6)}
-            /^refactor:/  {print "- Refactor: " substr($0,7)}
-            /^chore:/  {print "- Chore: " substr($0,7)}
-            {print "- Other: " $0}
-          ')
-          echo "notes<<EOF" >> $GITHUB_OUTPUT
-          echo "$NOTES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+            # 1. Determine git range
+            prev_tag = os.environ.get("PREV_TAG", "").strip()
+            git_range = f"{prev_tag}..HEAD" if prev_tag else "HEAD"
+            print(f"Generating notes for range: {git_range}")
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.event.inputs.version }}
-          name: Release ${{ github.event.inputs.version }}
-          draft: false
-          prerelease: false
-          files: |
-            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
-            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
-          body: |
-            ${{ steps.notes.outputs.notes }}
+            # 2. Get log with format: "Hash|Subject"
+            cmd = ["git", "log", git_range, "--pretty=format:%h|%s"]
+            try:
+                output = subprocess.check_output(cmd, text=True).strip()
+            except subprocess.CalledProcessError:
+                print("Error reading git log")
+                sys.exit(1)
+
+            if not output:
+                print("No commits found.")
+                # Write empty notes to output to prevent crash
+                with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                    f.write("notes<<EOF\nNo changes detected.\nEOF\n")
+                sys.exit(0)
+
+            # 3. Define Categories and Buckets
+            categories = {
+                "feat":     {"title": "🚀 Features", "items": []},
+                "fix":      {"title": "🐛 Bug Fixes", "items": []},
+                "docs":     {"title": "📚 Documentation", "items": []},
+                "refactor": {"title": "🛠 Refactoring", "items": []},
+                "perf":     {"title": "⚡ Performance", "items": []},
+                "test":     {"title": "🧪 Tests", "items": []},
+                "chore":    {"title": "🧹 Chores & Maintenance", "items": []},
+                "ci":       {"title": "⚙️ CI/CD", "items": []},
+                "other":    {"title": "Other Changes", "items": []}
+            }
+
+            # 4. Parse Lines
+            for line in output.split('\n'):
+                if not line: continue
+                parts = line.split('|', 1)
+                if len(parts) < 2: continue
+                
+                sha, message = parts[0], parts[1]
+                
+                # Parse "type(scope): message" vs "type: message"
+                lower_msg = message.lower()
+                category_key = "other"
+                
+                # Extract the prefix (e.g., "feat", "chore")
+                if ':' in message:
+                    prefix_part = message.split(':', 1)[0]
+                    # Remove scope if exists: feat(ui) -> feat
+                    type_only = prefix_part.split('(')[0].strip().lower()
+                    # Remove breaking change marker: feat! -> feat
+                    type_only = type_only.replace('!', '')
+                    
+                    if type_only in categories:
+                        category_key = type_only
+                        # Clean the message by removing the type prefix
+                        # e.g. "feat: add x" -> "add x"
+                        clean_msg = message.split(':', 1)[1].strip()
+                    else:
+                        clean_msg = message
+                else:
+                    clean_msg = message
+
+                # Format: bullet point with code-blocked hash
+                formatted_item = f"* `{sha}` {clean_msg}"
+                categories[category_key]["items"].append(formatted_item)
+
+            # 5. Build Markdown Output
+            final_md = ""
+            
+            # Enforce specific order if desired, otherwise iterate dict
+            order = ["feat", "fix", "refactor", "perf", "docs", "chore", "ci", "test", "other"]
+            
+            for key in order:
+                if categories[key]["items"]:
+                    final_md += f"### {categories[key]['title']}\n"
+                    final_md += "\n".join(categories[key]["items"])
+                    final_md += "\n\n"
+
+            # 6. Write to GITHUB_OUTPUT using EOF delimiter
+            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                f.write("notes<<EOF\n")
+                f.write(final_md)
+                f.write("EOF\n")
+
+        - name: Create GitHub Release
+          uses: softprops/action-gh-release@v2
+          with:
+            tag_name: ${{ github.event.inputs.version }}
+            name: Release ${{ github.event.inputs.version }}
+            draft: false
+            prerelease: false
+            files: |
+              LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+              LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+            body: |
+              ${{ steps.notes.outputs.notes }}

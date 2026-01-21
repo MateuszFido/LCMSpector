@@ -1,3 +1,5 @@
+from typing import List, Dict, Optional, Any
+from pydantic import BaseModel, Field, PrivateAttr
 import os
 import logging
 import re
@@ -6,12 +8,6 @@ from pathlib import Path
 from abc import abstractmethod
 from utils.loading import load_absorbance_data, load_ms_data
 from utils.preprocessing import baseline_correction
-from utils.plotting import (
-    plot_average_ms_data,
-    plot_absorbance_data,
-    plot_annotated_LC,
-    plot_annotated_XICs,
-)
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -185,9 +181,11 @@ class LCMeasurement(Measurement):
         return None
 
     def plot(self):
+        from ui.plotting import plot_absorbance_data  
         plot_absorbance_data(self.path, self.baseline_corrected)
 
     def plot_annotated(self):
+        from ui.plotting import plot_annotated_LC 
         plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
@@ -215,41 +213,64 @@ class MSMeasurement(Measurement):
         self.file_type = "MS"
 
     def plot(self):
+        from ui.plotting import plot_average_ms_data
         self.average_plot = plot_average_ms_data(self.path, self.data)
 
     def plot_annotated(self):
+        from ui.plotting import plot_annotated_XICs
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
 
-class Compound:
+class Compound(BaseModel):
     """
-        Class representing a targeted result for a single measurement pair (LC + MS).
-    =======
-        Class representing a targeted result for a compound.
-        Parameters
-        ----------
-        name : str
-            The name of the compound.
-        ions : list
-            A list of ion types.
-        ms_area : float
-            The MS area of the compound.
-        lc_area : float
-            The LC area of the compound.
-        rt : float
-            The retention time of the compound.
+    Pydantic model representing a targeted result for a compound.
+    Validates inputs and safely initializes internal state.
     """
+    name: str
+    target_list: List[float] = Field(..., description="List of expected m/z values")
+    ion_info: List[str] = Field(default_factory=list, description="Optional list of additional info strings")
 
-    def __init__(self, name: str, ions: list, ion_info: list):
-        self.file = None
-        self.name = str(name)
-        self.ions = {
+    # Internal state attributes (Excluded from __init__ arguments and validation)
+    _file: Optional[Any] = PrivateAttr(default=None)
+    _ions: Dict = PrivateAttr(default_factory=dict)
+    _ms2: List = PrivateAttr(default_factory=list)
+    _calibration_curve: Dict = PrivateAttr(default_factory=dict)
+
+    def model_post_init(self, __context):
+        """
+        Post-initialization hook (Pydantic V2). 
+        Constructs the internal dictionary structure from the input list.
+        """
+        self._ions = {
             ion: {"RT": None, "MS Intensity": None, "LC Intensity": None}
-            for ion in ions
+            for ion in self.target_list
         }
-        self.ms2 = list()
-        self.ion_info = ion_info
-        self.calibration_curve = {}
+
+    @property
+    def ions(self) -> Dict:
+        """Access the internal dictionary state."""
+        return self._ions
+
+    @ions.setter
+    def ions(self, value: Dict):
+        self._ions = value
+
+    @property
+    def file(self):
+        return self._file
+
+    @file.setter
+    def file(self, value):
+        self._file = value
+
+    # Expose other internal attributes similarly if direct access is needed
+    @property
+    def ms2(self):
+        return self._ms2
+
+    @property
+    def calibration_curve(self):
+        return self._calibration_curve
 
     def __str__(self):
-        return f"Compound: {self.name}, ions: {self.ions}, ion info: {self.ion_info}"
+        return f"Compound: {self.name}, ions: {self.target_list}, ion info: {self.ion_info}"

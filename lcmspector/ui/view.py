@@ -9,9 +9,9 @@ from datetime import datetime
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QFileDialog, QMessageBox
+from PySide6.QtWidgets import QApplication, QVBoxLayout, QDialog, QTextBrowser, QFileDialog, QMessageBox
 import pyqtgraph as pg
-from utils.plotting import (
+from ui.plotting import (
     plot_absorbance_data,
     plot_average_ms_data,
     plot_annotated_LC,
@@ -34,6 +34,7 @@ from ui.widgets import (
     ChromatogramPlotWidget,
     UnifiedResultsTable,
     LabelledSlider,
+    ReadmeDialog,
 )
 
 
@@ -186,50 +187,83 @@ class View(QtWidgets.QMainWindow):
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
-        config_path = Path(__file__).parent.parent / "config.json"
-        with open(config_path, "r") as f:
-            lists = json.load(f)
-        if (
-            self.comboBoxIonLists.currentText() == "Create new ion list..."
-            or self.comboBoxIonLists.currentText() == ""
-        ):
-            self.ionTable.clearContents()
-            return
-        else:
+            """
+            Loads the selected ion list from config.json into the table.
+            Robustly handles missing keys ('ions' or 'info') by defaulting to empty strings.
+            """
+            config_path = Path(__file__).parent.parent / "config.json"
+            
+            # 1. Safe JSON Loading
             try:
-                ion_list = lists[self.comboBoxIonLists.currentText()]
-            except Exception:
-                logger.error(
-                    f"Could not find ion list: {self.comboBoxIonLists.currentText()}"
-                )
+                if not config_path.exists():
+                    # Handle missing config file gracefully
+                    self.ionTable.clearContents()
+                    self.ionTable.setRowCount(0)
+                    return
+                    
+                with open(config_path, "r") as f:
+                    lists = json.load(f)
+            except (json.JSONDecodeError, OSError) as e:
+                logger.error(f"Error reading config.json: {e}")
+                return
+
+            current_selection = self.comboBoxIonLists.currentText()
+            
+            # 2. Handle "Create new..." or empty selection
+            if current_selection == "Create new ion list..." or current_selection == "":
+                self.ionTable.clearContents()
+                self.ionTable.setRowCount(0) # Reset row count to 0 for clean slate
+                return
+
+            # 3. Retrieve the specific list
+            ion_list = lists.get(current_selection)
+
+            if ion_list is None:
+                logger.error(f"Could not find ion list: {current_selection}")
                 self.statusbar.showMessage(
-                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {self.comboBoxIonLists.currentText()}",
+                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {current_selection}",
                     3000,
                 )
-                ion_list = None
+                self.ionTable.clearContents()
+                self.ionTable.setRowCount(0)
+                return
 
+            # 4. Populate Table
             self.ionTable.clearContents()
-            if ion_list:
-                i = 0
-                self.ionTable.setRowCount(len(ion_list))
-                for compound, keywords in ion_list.items():
-                    self.ionTable.set_item(
-                        i, 0, QtWidgets.QTableWidgetItem(str(compound))
-                    )
-                    for key, value in keywords.items():
-                        if key == "ions":
-                            self.ionTable.set_item(
-                                i,
-                                1,
-                                QtWidgets.QTableWidgetItem(", ".join(map(str, value))),
-                            )
-                        elif key == "info":
-                            self.ionTable.set_item(
-                                i,
-                                2,
-                                QtWidgets.QTableWidgetItem(", ".join(map(str, value))),
-                            )
-                    i += 1
+            self.ionTable.setRowCount(len(ion_list))
+            
+            # Use enumerate for cleaner indexing
+            for row_idx, (compound_name, data_dict) in enumerate(ion_list.items()):
+                # A. Set Name (Column 0)
+                self.ionTable.set_item(
+                    row_idx, 0, QtWidgets.QTableWidgetItem(str(compound_name))
+                )
+
+                # B. Set Ions (Column 1)
+                # Use .get() to safely retrieve data, default to empty list
+                ions_val = data_dict.get("ions", [])
+                # Ensure it's a list before joining (guards against malformed JSON)
+                if isinstance(ions_val, list):
+                    ions_str = ", ".join(map(str, ions_val))
+                else:
+                    ions_str = ""
+                
+                self.ionTable.set_item(
+                    row_idx, 1, QtWidgets.QTableWidgetItem(ions_str)
+                )
+
+                # C. Set Info (Column 2) - THE FIX
+                # We explicitly get "info". If missing, we get [], resulting in "".
+                # Importantly, we ALWAYS set the item, so the cell is never None.
+                info_val = data_dict.get("info", [])
+                if isinstance(info_val, list):
+                    info_str = ", ".join(map(str, info_val))
+                else:
+                    info_str = ""
+
+                self.ionTable.set_item(
+                    row_idx, 2, QtWidgets.QTableWidgetItem(info_str)
+                )
 
     def add_files(self, file_paths, file_type):
         if file_type == "LC":
@@ -269,7 +303,7 @@ class View(QtWidgets.QMainWindow):
         lc_file_paths, _ = QFileDialog.getOpenFileNames(
             self,
             "Select LC Files",
-            "",
+            str(QtCore.QDir.homePath()),
             "Text Files (*.txt);;CSV Files (*.csv);;All Files (*)",
         )
         if lc_file_paths:
@@ -287,7 +321,10 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.show()
         self.processButton.setEnabled(False)
         ms_file_paths, _ = QFileDialog.getOpenFileNames(
-            self, "Select MS Files", "", "MzML Files (*.mzML);;All Files (*)"
+            self, 
+            "Select MS Files", 
+            str(QtCore.QDir.homePath()),
+            "MzML Files (*.mzML);;All Files (*)"
         )
         if ms_file_paths:
             self.add_files(ms_file_paths, "MS")
@@ -365,6 +402,12 @@ class View(QtWidgets.QMainWindow):
                 subprocess.run(["xdg-open", log_file])
             except Exception:
                 logger.error(f"Could not open log file: {traceback.format_exc()}.")
+
+    def on_readme(self):
+        """Slot for clicking the menubar Readme action.
+        Opens the Readme window."""
+        readme = ReadmeDialog(self)
+        readme.show()
 
     def update_lc_file_list(self):
         """
@@ -637,8 +680,8 @@ class View(QtWidgets.QMainWindow):
                     logger.error(f"No average MS found: {traceback.format_exc()}")
             self.canvas_XICs.clear()
             if ms_file:
-                self.gridLayout_2.removeWidget(self.scrollArea)
-                self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
+                self.gridLayoutResults.removeWidget(self.scrollArea)
+                self.gridLayoutResults.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
                     plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
                 except AttributeError:
@@ -659,7 +702,7 @@ class View(QtWidgets.QMainWindow):
                         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
                         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
                         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-                        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+                        self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
                         self.curve_list = plot_annotated_LC(
                             lc_file.path,
                             lc_file.baseline_corrected,
@@ -675,11 +718,11 @@ class View(QtWidgets.QMainWindow):
                 self.canvas_baseline.clear()
                 self.canvas_avgMS.clear()
                 self.canvas_XICs.clear()
-                self.gridLayout_5.removeWidget(self.canvas_annotatedLC)
+                self.gridLayoutResults.removeWidget(self.canvas_annotatedLC)
                 self.canvas_annotatedLC.deleteLater()
                 # Set scrollArea (holds canvasXIC) to span two rows of the grid
-                self.gridLayout_2.removeWidget(self.scrollArea)
-                self.gridLayout_2.addWidget(self.scrollArea, 0, 1, 2, 1)
+                self.gridLayoutResults.removeWidget(self.scrollArea)
+                self.gridLayoutResults.addWidget(self.scrollArea, 0, 1, 1, 1)
                 self.browseAnnotations.deleteLater()
             except RuntimeError:
                 logger.error(f"Widgets not found: {traceback.format_exc()}")
@@ -1014,6 +1057,7 @@ class View(QtWidgets.QMainWindow):
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
 
+        self.processButton.clicked.connect(self.controller.process_data)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
         self.update_ms_file_list()
@@ -1173,6 +1217,7 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
+        self.processButton.clicked.connect(self.controller.process_data)
 
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
@@ -1270,7 +1315,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
         self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
 
-        # stretch factors (kept from original UI)
+        # stretch factors 
         self.gridLayout.setRowStretch(2, 3)
         self.gridLayout.setColumnStretch(2, 4)
 
@@ -1288,6 +1333,7 @@ class View(QtWidgets.QMainWindow):
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
 
+        self.processButton.clicked.connect(self.controller.process_data)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
         # -----------------------------------------------------------------
@@ -1371,6 +1417,7 @@ class View(QtWidgets.QMainWindow):
                 self.comboBoxIonLists.addItem(ionlist)
         except Exception as e:
             logger.error(f"Error loading ion lists: {e}")
+
 
     def setupUi(self, MainWindow):
         """
@@ -1613,8 +1660,7 @@ class View(QtWidgets.QMainWindow):
         self.tabResults = QtWidgets.QWidget()
         self.tabResults.setObjectName("tabResults")
 
-        self.gridLayout_5 = QtWidgets.QGridLayout(self.tabResults)
-        self.gridLayout_5.setObjectName("gridLayout_5")
+        self.gridLayoutResults = QtWidgets.QGridLayout(self.tabResults)
         self.label_results_currentfile = QtWidgets.QLabel(parent=self.tabResults)
         self.label_results_currentfile.setEnabled(True)
         sizePolicy = QtWidgets.QSizePolicy(
@@ -1627,9 +1673,12 @@ class View(QtWidgets.QMainWindow):
         )
         self.label_results_currentfile.setSizePolicy(sizePolicy)
         self.label_results_currentfile.setObjectName("label_results_currentfile")
-        self.gridLayout_5.addWidget(self.label_results_currentfile, 0, 1, 1, 1)
-        self.gridLayout_2 = QtWidgets.QGridLayout()
-        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.gridLayoutResults.addWidget(self.label_results_currentfile, 0, 0, 1, 1)
+        self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
+        self.comboBox_currentfile.setObjectName("comboBox_currentfile")
+        self.gridLayoutResults.addWidget(self.comboBox_currentfile, 0, 1, 1, 1)
+
+        # XICs
         self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
         self.scrollArea.setWidgetResizable(True)
         self.scrollArea.setObjectName("scrollArea")
@@ -1639,25 +1688,20 @@ class View(QtWidgets.QMainWindow):
         self.scrollArea.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
         )
+        self.gridLayoutResults.addWidget(self.scrollArea, 1, 1, 1, 1)
 
         self.canvas_XICs = DockArea(parent=self.tabResults)
         self.canvas_XICs.setObjectName("canvas_XICs")
         self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
 
-        self.gridLayout_2.addWidget(self.scrollArea, 1, 1, 1, 1)
+        # annotated LC
         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-        self.gridLayout_2.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+        self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
 
-        self.gridLayout_2.setColumnStretch(0, 2)  # Left column
-        self.gridLayout_2.setColumnStretch(1, 2)  # Right column
 
-        self.gridLayout_5.addLayout(self.gridLayout_2, 1, 0, 1, 4)
-        self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
-        self.comboBox_currentfile.setObjectName("comboBox_currentfile")
-        self.gridLayout_5.addWidget(self.comboBox_currentfile, 0, 2, 1, 1)
 
         ###
         #
@@ -1902,7 +1946,7 @@ class View(QtWidgets.QMainWindow):
         self.actionExport.triggered.connect(self.on_export)
         self.actionLogs.triggered.connect(self.on_logs)
         # self.actionPreferences.triggered.connect(self.on_preferences)
-        # self.actionReadme.triggered.connect(self.on_readme)
+        self.actionReadme.triggered.connect(self.on_readme)
         self.browseLC.clicked.connect(self.on_browseLC)
         self.browseMS.clicked.connect(self.on_browseMS)
         self.browseAnnotations.clicked.connect(self.on_browseAnnotations)

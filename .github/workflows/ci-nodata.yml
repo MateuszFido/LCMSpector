@@ -1,6 +1,3 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-
 name: Tests
 
 on:
@@ -13,50 +10,47 @@ permissions:
   contents: read
 
 jobs:
-  build:
-    runs-on: ${{matrix.os}}
+  test:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [ubuntu-latest, ubuntu-22.04, windows-latest, macos-latest]
+
+    # Set environment variables globally for the job
+    env:
+      # Keeps Windows encoding behavior consistent with your old script
+      PYTHONUTF8: "1"
 
     steps:
       - uses: actions/checkout@v4
         with:
           lfs: false
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v3
+
+      # 1. Install uv
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: "3.12"
-      - name: Install dependencies (macOS)
-        run: |
-          pip install pytest
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-        shell: bash
-        if: matrix.os == 'macOS-latest'
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
-      - name: Install dependencies (Ubuntu)
-        run: |
-          pip install pytest
-          if [ -f requirements.txt ]; then
-            pip install -r requirements.txt
-          fi
-          sudo apt update
-          sudo apt install libgl1 libegl1 -y
-        shell: bash
-        if: matrix.os == 'ubuntu-latest'
+      # 2. Set up Python 3.12 (Managed by uv)
+      - name: Set up Python 3.12
+        run: uv python install 3.12
 
-      - name: Install dependencies (Windows)
+      # 3. Install System Dependencies (Ubuntu Only)
+      - name: Install system libraries (Ubuntu)
+        if: contains(matrix.os, 'ubuntu')
         run: |
-          set PYTHONUTF8=1
-          pip install pytest 
-          if exist requirements.txt (
-            pip install -r requirements.txt
-          )
-        shell: cmd
-        if: matrix.os == 'windows-latest'
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libegl1
 
+      # 4. Install Project Dependencies
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      # 5. Run Tests
+      # 'uv run' executes pytest inside the environment created by 'uv sync'
       - name: Test with pytest
-        run: |
-          pytest -s
+        run: uv run pytest -s

@@ -1,7 +1,6 @@
 """
 Main entry point for the LCMSpector application.
 
-This module provides the main entry point for the LCMSpector application.
 It sets up logging, creates the application, model, view, and controller instances,
 and handles application startup.
 """
@@ -23,12 +22,6 @@ from ui.controller import Controller
 from ui import fonts
 from utils.resources import ensure_ms2_library, DownloadWorker
 
-# Guards for binary building
-if os.sys.stdout is None:
-    os.sys.stdout = open(os.devnull, "w")
-if os.sys.stderr is None:
-    os.sys.stderr = open(os.devnull, "w")
-multiprocessing.freeze_support()
 
 
 def configure_logging():
@@ -114,7 +107,7 @@ def main():
     # Ensure MS2 library exists locally
     if not ensure_ms2_library():
         if view.show_download_confirmation():
-            view.show_download_progress_bar()
+            view.show_download_progressBar()
 
             # Setup worker and thread for download
             thread = QThread()
@@ -122,9 +115,9 @@ def main():
             worker.moveToThread(thread)
 
             # Connect signals
-            worker.progress.connect(view.update_download_progress_bar)
+            worker.progress.connect(view.update_download_progressBar)
             worker.finished.connect(thread.quit)
-            worker.finished.connect(view.hide_download_progress_bar)
+            worker.finished.connect(view.hide_download_progressBar)
             worker.error.connect(thread.quit)
             thread.started.connect(worker.run)
 
@@ -156,4 +149,13 @@ def main():
 
 
 if __name__ == "__main__":
+    multiprocessing.freeze_support()
+    
+    # Guards for binary building
+    if os.sys.stdout is None:
+        os.sys.stdout = open(os.devnull, "w")
+    if os.sys.stderr is None:
+        os.sys.stderr = open(os.devnull, "w")
+
+    # Run main 
     main()
