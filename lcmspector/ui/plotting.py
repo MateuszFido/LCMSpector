@@ -4,7 +4,7 @@ import logging
 import itertools
 from typing import Optional, List, Any
 
-from PySide6.QtGui import QFont, QColor
+from PySide6.QtGui import QFont, QColor, QtGui
 from PySide6.QtCore import Qt, QSize
 import numpy as np
 import pandas as pd
