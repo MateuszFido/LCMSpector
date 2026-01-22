@@ -2,18 +2,11 @@ import logging
 import numpy as np
 import pandas as pd
 import static_frame as sf
+from pathlib import Path
 from typing import Tuple
 from pyteomics.mzml import MzML
 
 logger = logging.getLogger(__name__)
-try:
-    from utils.peak_integration import (
-        safe_peak_integration,
-        integrate_ms_xic_peak,
-        create_fallback_peak_area,
-    )
-except ImportError:
-    logger.warning("Peak integration module not found, using simple sum.")
 
 
 def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
@@ -36,8 +29,8 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
     The baseline is estimated using the LLS algorithm.
     """
     # Extract Time (min) and Value (mAU) columns
-    retention_time = dataframe.copy()["Time (min)"].values
-    absorbance = dataframe.copy()["Value (mAU)"].values
+    retention_time = dataframe["Time (min)"].values
+    absorbance = dataframe["Value (mAU)"].values.copy()
     if (absorbance < 0).any():
         shift = np.median(absorbance[absorbance < 0])
     else:
@@ -104,7 +97,7 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 
 
 def build_xics(
-    data: MzML, ion_list: np.typing.NDArray[np.float32], mass_accuracy: np.float64
+    filepath: str, ion_list: np.typing.NDArray[np.float32], mass_accuracy: np.float64
 ) -> Tuple[np.typing.NDArray[np.float32], np.typing.NDArray[np.float32]]:
     """
     Creates XICs (extracted ion chromatograms) for a list of ions and Scan objects for a given data file.
@@ -127,6 +120,8 @@ def build_xics(
     """
 
     # turn target_mzs into numpy array and pre-allocate result containers
+    data = MzML(filepath)
+
     target_mzs = np.asarray(ion_list, dtype=np.float32)
     xic_intensities = np.zeros((len(data), len(target_mzs)), dtype=np.float32)
     scan_times = np.zeros(len(data), dtype=np.float32)
@@ -153,21 +148,20 @@ def build_xics(
 
 
 def construct_xics(
-    filename: str,
-    data: MzML,
+    filepath: str,
     compounds: tuple,
     mass_accuracy: np.float64 = np.float64(0.0001),
 ):
     """Wrapper around build_xics for calling from ProcessPoolExecutor.
     Returns a list of *filled* Compound objects."""
     target_mzs = _extract_target_mzs(compounds)
-    intensities, rts = build_xics(data, target_mzs, mass_accuracy)
+    intensities, rts = build_xics(filepath, target_mzs, mass_accuracy)
 
     # Map results onto Compound objects
     mz_to_column = {mz: idx for idx, mz in enumerate(target_mzs)}  # lookup index
 
     for compound in compounds:
-        compound.file = filename
+        compound.file = Path(filepath).name
         for ion in compound.ions:
             col = mz_to_column[ion]
             xic = np.array((rts, intensities[:, col]), dtype=np.float32)

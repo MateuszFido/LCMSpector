@@ -114,7 +114,7 @@ class Controller:
     def on_processing_finished(self, compound_results):
         # iterate over the compound results and match them with their respective MS file
         for compound in compound_results:
-            self.model.ms_measurements[compound[0].file].xics = compound
+            self.model.ms_measurements[compound[0].file.split(".")[0]].xics = compound
 
         self.view.progressBar.setVisible(False)
         self.view.progressLabel.setVisible(False)
@@ -219,7 +219,9 @@ class Controller:
         if results is not None and len(results) > 0:
             try:
                 last_loaded_result = list(results.keys())[-1]
-                logger.debug(f"Received results with file type: {results[last_loaded_result].file_type}")
+                logger.debug(
+                    f"Received results with file type: {results[last_loaded_result].file_type}"
+                )
             except AttributeError:
                 logger.error("Invalid results format received.")
             if results[last_loaded_result].file_type == "LC":
@@ -239,7 +241,7 @@ class Controller:
                 5000,
             )
             return
-        else: 
+        else:
             self.view.statusbar.showMessage(
                 f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Finished loading {len(results)} files.",
                 5000,

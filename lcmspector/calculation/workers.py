@@ -27,21 +27,15 @@ logger = logging.getLogger(__name__)
 class WorkerSignals(QObject):
     """
     Defines the signals available from a running worker thread.
-
     Supported signals are:
-
     finished
         No data
-
     error
         tuple (exctype, value, traceback.format_exc() )
-
     result
         object data returned from processing, anything
-
     progress
         int indicating % progress
-
     """
 
     finished = Signal()
@@ -82,38 +76,41 @@ class LoadingWorker(QThread):
         def update_progress(filename):
             nonlocal progress
             progress += 1
-            self.progressUpdated.emit(int(progress / self.file_count * 100), filename)
+            pct = int((progress / self.file_count) * 100)
+            self.progressUpdated.emit(pct, filename)
 
         if self.mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error(f"Invalid argument for load(): {self.mode}, currently supported modes are LC/GC-MS, LC/GC Only, MS Only.")
+            logger.error(f"Invalid mode: {self.mode}")
             return
 
+        ctx = multiprocessing.get_context("spawn")
         try:
-            with ProcessPoolExecutor(
-                max_workers=max(1, multiprocessing.cpu_count() - 1)
-            ) as executor:
-                # Conditional loading based on mode and what is being uploaded
+            with ProcessPoolExecutor(mp_context=ctx) as executor:
+                futures = {}
+
                 if self.file_type == "LC":
-                    futures = {
-                        executor.submit(LCMeasurement, lc_file): lc_file
-                        for lc_file in self.file_paths
-                    }
+                    for lc_file in self.file_paths:
+                        future = executor.submit(LCMeasurement, lc_file)
+                        futures[future] = lc_file
                 elif self.file_type == "MS":
-                    futures = {
-                        executor.submit(MSMeasurement, ms_file): ms_file
-                        for ms_file in self.file_paths
-                    }
+                    for ms_file in self.file_paths:
+                        future = executor.submit(MSMeasurement, ms_file)
+                        futures[future] = ms_file
                 else:
-                    logger.error(f"Invalid file type for load(): {self.file_type}, currently supported types are LC and MS.")
-                    futures = {}
+                    logger.error(f"Invalid file type: {self.file_type}")
+                    return
 
                 for future in as_completed(futures):
+                    filename = futures[future]
                     try:
-                        result = future.result()
-                        results[result.filename] = result
-                        update_progress(result.filename)
+                        result_obj = future.result()
+                        # Unpickle from the worker process
+                        results[result_obj.filename] = result_obj
+                        update_progress(result_obj.filename)
                     except Exception as e:
-                        logger.error("Error loading file: %s", traceback.format_exc())
+                        logger.error(
+                            f"Error loading {filename}", traceback.format_exc()
+                        )
                         self.error.emit(str(e))
         except Exception as e:
             logger.error("Error in loading pool: %s", traceback.format_exc())
@@ -121,7 +118,7 @@ class LoadingWorker(QThread):
             return
 
         logger.debug(
-            f"Loaded {len(results)} {self.file_type} files in {time.time() - st} seconds.",
+            f"Loaded {len(results)} {self.file_type} files in {time.time() - st:.2f} s.",
         )
         self.finished.emit(results)
 
@@ -141,12 +138,13 @@ class ProcessingWorker(QThread):
         st = time.time()
 
         try:
-            total_files = len(self.model.ms_measurements)
-            if total_files == 0:
-                logger.warning("No files to process.")
-                return
+            ms_measurements = list(self.model.ms_measurements.values())
+            total_files = len(ms_measurements)
         except AttributeError:
-            logger.error("Model attributes are not properly initialized.")
+            logger.error("Model attributes not initialized properly.")
+            return
+        if total_files == 0:
+            logger.warning("No files to process.")
             return
 
         progress = 0
@@ -157,47 +155,39 @@ class ProcessingWorker(QThread):
             self.progressUpdated.emit(int(progress / total_files * 100))
 
         if self.mode not in {"LC/GC-MS", "LC/GC Only", "MS Only"}:
-            logger.error(
-                "ERROR: Invalid argument for process_data(mode): %s", self.mode
-            )
+            logger.error(f"Invalid mode: {self.mode}")
             return
         results = []
+        ctx = multiprocessing.get_context("spawn")
+        max_workers = max(1, multiprocessing.cpu_count() - 1)
         try:
             with ProcessPoolExecutor(
-                max_workers=max(1, multiprocessing.cpu_count() - 3)
+                max_workers=max_workers, mp_context=ctx
             ) as executor:
-                # Only process MS files if in MS or LC/GC-MS mode
+                futures = {}
                 if self.mode in {"LC/GC-MS", "MS Only"}:
-                    # for every MS file, call construct_xics on its data and store the result
-                    futures = {
-                        executor.submit(
+                    for ms_file in ms_measurements:
+                        future = executor.submit(
                             construct_xics,
-                            ms_file.filename,
-                            ms_file.data,
+                            ms_file.path,
                             self.model.compounds,
                             self.mass_accuracy,
-                        ): ms_file
-                        for ms_file in self.model.ms_measurements.values()
-                    }
-                else:
-                    futures = {}
-
-                for future in as_completed(list(futures)):
+                        )
+                        futures[future] = ms_file.filename
+                for future in as_completed(futures):
                     try:
                         result = future.result()
                         results.append(result)
-                    except AttributeError as e:
+                    except Exception as e:
                         logger.error(
-                            "Error in processing pool: %s", traceback.format_exc()
+                            f"Error in processing pool: {traceback.format_exc()}"
                         )
                         self.error.emit(str(e))
                     update_progress()
         except Exception as e:
-            logger.error("Error in processing pool: %s", traceback.format_exc())
+            logger.error(f"Error in processing pool: {traceback.format_exc()}")
             self.error.emit(str(e))
             return
 
-        logger.info(
-            "Processed %d MS files in %.2f seconds.", len(results), time.time() - st
-        )
+        logger.info(f"Processed {len(results)} MS files in {time.time() - st:.2f} s.")
         self.finished.emit(results)
