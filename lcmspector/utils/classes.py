@@ -7,7 +7,7 @@ import numpy as np
 from pathlib import Path
 from abc import abstractmethod
 from utils.loading import load_absorbance_data, load_ms_data
-from utils.preprocessing import baseline_correction
+from calculation.preprocessing import baseline_correction
 
 logger = logging.getLogger(__name__)
 logger.propagate = False
@@ -84,7 +84,10 @@ class LCMeasurement(Measurement):
     def _calculate_lc_peak_areas(self):
         """Calculate peak areas for all detected peaks in LC chromatogram."""
         try:
-            from utils.peak_integration import integrate_lc_peak, safe_peak_integration
+            from calculation.peak_integration import (
+                integrate_lc_peak,
+                safe_peak_integration,
+            )
             from scipy.signal import find_peaks
 
             peak_areas = []
@@ -181,11 +184,13 @@ class LCMeasurement(Measurement):
         return None
 
     def plot(self):
-        from ui.plotting import plot_absorbance_data  
+        from ui.plotting import plot_absorbance_data
+
         plot_absorbance_data(self.path, self.baseline_corrected)
 
     def plot_annotated(self):
-        from ui.plotting import plot_annotated_LC 
+        from ui.plotting import plot_annotated_LC
+
         plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
@@ -214,10 +219,12 @@ class MSMeasurement(Measurement):
 
     def plot(self):
         from ui.plotting import plot_average_ms_data
+
         self.average_plot = plot_average_ms_data(self.path, self.data)
 
     def plot_annotated(self):
         from ui.plotting import plot_annotated_XICs
+
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
 
@@ -226,9 +233,12 @@ class Compound(BaseModel):
     Pydantic model representing a targeted result for a compound.
     Validates inputs and safely initializes internal state.
     """
+
     name: str
     target_list: List[float] = Field(..., description="List of expected m/z values")
-    ion_info: List[str] = Field(default_factory=list, description="Optional list of additional info strings")
+    ion_info: List[str] = Field(
+        default_factory=list, description="Optional list of additional info strings"
+    )
 
     # Internal state attributes (Excluded from __init__ arguments and validation)
     _file: Optional[Any] = PrivateAttr(default=None)
@@ -239,7 +249,7 @@ class Compound(BaseModel):
 
     def model_post_init(self, __context):
         """
-        Post-initialization hook (Pydantic V2). 
+        Post-initialization hook (Pydantic V2).
         Constructs the internal dictionary structure from the input list.
         """
         self._ions = {
@@ -272,7 +282,7 @@ class Compound(BaseModel):
     @property
     def calibration_curve(self):
         return self._calibration_curve
-    
+
     @property
     def calibration_parameters(self):
         return self._calibration_parameters

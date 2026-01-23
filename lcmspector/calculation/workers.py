@@ -19,7 +19,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from PySide6.QtCore import QThread, QObject, Signal
 from utils.classes import LCMeasurement, MSMeasurement
-from utils.preprocessing import construct_xics
+from calculation.preprocessing import construct_xics
 
 logger = logging.getLogger(__name__)
 

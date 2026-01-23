@@ -1,4 +1,4 @@
-# utils/plot_payloads.py
+# calculation/plot_payloads.py
 import os
 import time
 import numpy as np
@@ -6,7 +6,6 @@ import logging
 from dataclasses import dataclass
 from typing import List, Tuple
 from scipy.signal import find_peaks, peak_widths
-import pyqtgraph as pg
 
 
 # ----------------------------------------------------------------------
