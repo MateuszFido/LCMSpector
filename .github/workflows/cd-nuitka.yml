@@ -11,7 +11,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest, ubuntu-22.04]
+        os: [windows-latest, macos-latest, ubuntu-latest] #, ubuntu-22.04]
 
     runs-on: ${{ matrix.os }}
 
@@ -36,7 +36,8 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install -y patchelf zip unzip
+          # Added xvfb here to allow GUI launch testing on headless Linux
+          sudo apt-get install -y patchelf zip unzip xvfb
 
       - name: Install dependencies
         run: uv sync
@@ -60,7 +61,9 @@ jobs:
           Expand-Archive -Path "MoNA-export-All_LC-MS-MS_Orbitrap.zip" -DestinationPath "." -Force
           Move-Item -Path "MoNA-export-All_LC-MS-MS_Orbitrap.msp" -Destination "lcmspector\resources" -Force
 
-      # "uv run" automatically executes the command inside the .venv created by "uv sync"
+      # ----------------------------------------------------------------
+      # macOS Build & Verify
+      # ----------------------------------------------------------------
       - name: Build with Nuitka (macOS)
         if: matrix.os == 'macos-latest'
         shell: bash
@@ -79,15 +82,45 @@ jobs:
             --output-dir=dist \
             --assume-yes-for-downloads
 
+      - name: Verify Executable (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          # 1. Force Ad-Hoc Signature to bypass "Unidentified Developer" / ARM64 checks
+          codesign --force --deep --sign - dist/LCMSpector.app
+          
+          # 2. Launch in background
+          ./dist/LCMSpector.app/Contents/MacOS/LCMSpector & 
+          PID=$!
+          echo "Launched PID $PID. Waiting 30s..."
+          sleep 30
+          
+          # 3. Check if still running
+          if kill -0 $PID 2>/dev/null; then
+            echo "App seems healthy and running. Killing the process now."
+            kill $PID
+            exit 0
+          else
+            echo "App crashed or exited prematurely."
+            wait $PID
+            exit 1
+          fi
+
+      - name: Package macOS
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
           cd dist
           mv main.app LCMSpector.app
           zip -r "LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip" LCMSpector.app
 
+      # ----------------------------------------------------------------
+      # Windows Build & Verify
+      # ----------------------------------------------------------------
       - name: Build with Nuitka (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          # Note: uv run works perfectly in PowerShell too
           uv run python -m nuitka lcmspector\main.py `
             --standalone `
             --plugin-enable=pyside6 `
@@ -102,10 +135,43 @@ jobs:
             --output-dir=dist `
             --assume-yes-for-downloads
 
+      - name: Verify Executable (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $path = "dist\LCMSpector.dist\LCMSpector.exe"
+          
+          # 1. Unblock the file to prevent "Open File - Security Warning" dialogs
+          Write-Host "Unblocking $path to bypass SmartScreen/Zone checks..."
+          Unblock-File -Path $path
+          
+          # 2. Start process
+          Write-Host "Launching $path for smoke test..."
+          $p = Start-Process -FilePath $path -PassThru -NoNewWindow
+          
+          # 3. Wait and Verify
+          Start-Sleep -Seconds 30
+          
+          if ($p.HasExited) {
+              Write-Error "App crashed! Exit Code: $($p.ExitCode)"
+              exit 1
+          } else {
+              Write-Host "App seems to be running successfully. Terminating..."
+              Stop-Process -Id $p.Id -Force
+              exit 0
+          }
+
+      - name: Package Windows
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
           Get-ChildItem dist\ -Recurse -Force
           Rename-Item "dist\main.dist" "LCMSpector.dist"
           Compress-Archive -Path dist\LCMSpector.dist\* -DestinationPath "dist\LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip" -Force
 
+      # ----------------------------------------------------------------
+      # Linux Latest Build & Verify
+      # ----------------------------------------------------------------
       - name: Build with Nuitka (Linux Latest)
         if: matrix.os == 'ubuntu-latest'
         shell: bash
@@ -122,10 +188,35 @@ jobs:
             --output-dir=dist \
             --assume-yes-for-downloads
 
+      - name: Verify Executable (Linux Latest)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          # Use xvfb-run to provide a fake display for the GUI
+          # timeout returns 124 if it kills the process (success for us)
+          # returns other codes if the app crashed
+          xvfb-run --auto-servernum timeout 10s ./dist/main.dist/LCMSpector || {
+            RET=$?
+            if [ $RET -eq 124 ]; then
+              echo "App ran successfully (timed out as expected)."
+              exit 0
+            else
+              echo "App failed with exit code $RET"
+              exit 1
+            fi
+          }
+
+      - name: Package Linux Latest
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
           cd dist
           mv main.dist LCMSpector.dist
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz" LCMSpector.dist
 
+      # ----------------------------------------------------------------
+      # Linux Compat Build & Verify
+      # ----------------------------------------------------------------
       - name: Build with Nuitka (Linux Compat)
         if: matrix.os == 'ubuntu-22.04'
         shell: bash
@@ -141,11 +232,32 @@ jobs:
             --output-dir=dist \
             --assume-yes-for-downloads
 
+      - name: Verify Executable (Linux Compat)
+        if: matrix.os == 'ubuntu-22.04'
+        shell: bash
+        run: |
+          xvfb-run --auto-servernum timeout 10s ./dist/main.dist/LCMSpector || {
+            RET=$?
+            if [ $RET -eq 124 ]; then
+              echo "App ran successfully (timed out as expected)."
+              exit 0
+            else
+              echo "App failed with exit code $RET"
+              exit 1
+            fi
+          }
+
+      - name: Package Linux Compat
+        if: matrix.os == 'ubuntu-22.04'
+        shell: bash
+        run: |
           cd dist
           mv main.dist LCMSpector.dist
           tar -czf "LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz" LCMSpector.dist
 
-      # Upload steps remain unchanged
+      # ----------------------------------------------------------------
+      # Upload Artifacts
+      # ----------------------------------------------------------------
       - name: Upload artifact (macOS ARM)
         if: matrix.os == 'macos-latest'
         uses: actions/upload-artifact@v4
@@ -179,136 +291,116 @@ jobs:
           if-no-files-found: error
 
   release:
-      needs: build
-      runs-on: ubuntu-latest
-      permissions:
-        contents: write
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
-      steps:
-        - name: Checkout repository
-          uses: actions/checkout@v6
-          with:
-            lfs: false
-            fetch-depth: 0  
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          lfs: false
+          fetch-depth: 0
 
-        - name: Download all build artifacts
-          uses: actions/download-artifact@v4
-          with:
-            merge-multiple: true
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
 
-        - name: Get previous tag
-          id: prev-tag
-          run: |
-            PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-            echo "Previous tag found: $PREV"
-            echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
+      - name: Get previous tag
+        id: prev-tag
+        run: |
+          PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          echo "Previous tag found: $PREV"
+          echo "prev_tag=$PREV" >> $GITHUB_OUTPUT
 
-        - name: Generate release notes
-          id: notes
-          shell: python
-          env:
-            PREV_TAG: ${{ steps.prev-tag.outputs.prev_tag }}
-          run: |
-            import os
-            import subprocess
-            import sys
+      - name: Generate release notes
+        id: notes
+        shell: python
+        env:
+          PREV_TAG: ${{ steps.prev-tag.outputs.prev_tag }}
+        run: |
+          import os
+          import subprocess
+          import sys
 
-            # 1. Determine git range
-            prev_tag = os.environ.get("PREV_TAG", "").strip()
-            git_range = f"{prev_tag}..HEAD" if prev_tag else "HEAD"
-            print(f"Generating notes for range: {git_range}")
+          prev_tag = os.environ.get("PREV_TAG", "").strip()
+          git_range = f"{prev_tag}..HEAD" if prev_tag else "HEAD"
+          print(f"Generating notes for range: {git_range}")
 
-            # 2. Get log with format: "Hash|Subject"
-            cmd = ["git", "log", git_range, "--pretty=format:%h|%s"]
-            try:
-                output = subprocess.check_output(cmd, text=True).strip()
-            except subprocess.CalledProcessError:
-                print("Error reading git log")
-                sys.exit(1)
+          cmd = ["git", "log", git_range, "--pretty=format:%h|%s"]
+          try:
+              output = subprocess.check_output(cmd, text=True).strip()
+          except subprocess.CalledProcessError:
+              sys.exit(1)
 
-            if not output:
-                print("No commits found.")
-                # Write empty notes to output to prevent crash
-                with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                    f.write("notes<<EOF\nNo changes detected.\nEOF\n")
-                sys.exit(0)
+          if not output:
+              with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+                  f.write("notes<<EOF\nNo changes detected.\nEOF\n")
+              sys.exit(0)
 
-            # 3. Define Categories and Buckets
-            categories = {
-                "feat":     {"title": "🚀 Features", "items": []},
-                "fix":      {"title": "🐛 Bug Fixes", "items": []},
-                "docs":     {"title": "📚 Documentation", "items": []},
-                "refactor": {"title": "🛠 Refactoring", "items": []},
-                "perf":     {"title": "⚡ Performance", "items": []},
-                "test":     {"title": "🧪 Tests", "items": []},
-                "chore":    {"title": "🧹 Chores & Maintenance", "items": []},
-                "ci":       {"title": "⚙️ CI/CD", "items": []},
-                "other":    {"title": "Other Changes", "items": []}
-            }
+          categories = {
+              "feat":     {"title": "🚀 Features", "items": []},
+              "fix":      {"title": "🐛 Bug Fixes", "items": []},
+              "docs":     {"title": "📚 Documentation", "items": []},
+              "refactor": {"title": "🛠 Refactoring", "items": []},
+              "perf":     {"title": "⚡ Performance", "items": []},
+              "test":     {"title": "🧪 Tests", "items": []},
+              "chore":    {"title": "🧹 Chores & Maintenance", "items": []},
+              "ci":       {"title": "⚙️ CI/CD", "items": []},
+              "other":    {"title": "Other Changes", "items": []}
+          }
 
-            # 4. Parse Lines
-            for line in output.split('\n'):
-                if not line: continue
-                parts = line.split('|', 1)
-                if len(parts) < 2: continue
-                
-                sha, message = parts[0], parts[1]
-                
-                # Parse "type(scope): message" vs "type: message"
-                lower_msg = message.lower()
-                category_key = "other"
-                
-                # Extract the prefix (e.g., "feat", "chore")
-                if ':' in message:
-                    prefix_part = message.split(':', 1)[0]
-                    # Remove scope if exists: feat(ui) -> feat
-                    type_only = prefix_part.split('(')[0].strip().lower()
-                    # Remove breaking change marker: feat! -> feat
-                    type_only = type_only.replace('!', '')
-                    
-                    if type_only in categories:
-                        category_key = type_only
-                        # Clean the message by removing the type prefix
-                        # e.g. "feat: add x" -> "add x"
-                        clean_msg = message.split(':', 1)[1].strip()
-                    else:
-                        clean_msg = message
-                else:
-                    clean_msg = message
+          for line in output.split('\n'):
+              if not line: continue
+              parts = line.split('|', 1)
+              if len(parts) < 2: continue
+              
+              sha, message = parts[0], parts[1]
+              lower_msg = message.lower()
+              category_key = "other"
+              
+              if ':' in message:
+                  prefix_part = message.split(':', 1)[0]
+                  type_only = prefix_part.split('(')[0].strip().lower().replace('!', '')
+                  
+                  if type_only in categories:
+                      category_key = type_only
+                      clean_msg = message.split(':', 1)[1].strip()
+                  else:
+                      clean_msg = message
+              else:
+                  clean_msg = message
 
-                # Format: bullet point with code-blocked hash
-                formatted_item = f"* `{sha}` {clean_msg}"
-                categories[category_key]["items"].append(formatted_item)
+              formatted_item = f"* `{sha}` {clean_msg}"
+              categories[category_key]["items"].append(formatted_item)
 
-            # 5. Build Markdown Output
-            final_md = ""
-            
-            # Enforce specific order if desired, otherwise iterate dict
-            order = ["feat", "fix", "refactor", "perf", "docs", "chore", "ci", "test", "other"]
-            
-            for key in order:
-                if categories[key]["items"]:
-                    final_md += f"### {categories[key]['title']}\n"
-                    final_md += "\n".join(categories[key]["items"])
-                    final_md += "\n\n"
+          final_md = ""
+          order = ["feat", "fix", "refactor", "perf", "docs", "chore", "ci", "test", "other"]
+          
+          for key in order:
+              if categories[key]["items"]:
+                  final_md += f"### {categories[key]['title']}\n"
+                  final_md += "\n".join(categories[key]["items"])
+                  final_md += "\n\n"
 
-            # 6. Write to GITHUB_OUTPUT using EOF delimiter
-            with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-                f.write("notes<<EOF\n")
-                f.write(final_md)
-                f.write("EOF\n")
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+              f.write("notes<<EOF\n")
+              f.write(final_md)
+              f.write("EOF\n")
 
-        - name: Create GitHub Release
-          uses: softprops/action-gh-release@v2
-          with:
-            tag_name: ${{ github.event.inputs.version }}
-            name: Release ${{ github.event.inputs.version }}
-            draft: false
-            prerelease: false
-            files: |
-              LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
-              LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
-              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
-              LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
-            body: |
-              ${{ steps.notes.outputs.notes }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: Release ${{ github.event.inputs.version }}
+          draft: false
+          prerelease: false
+          files: |
+            LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
+            LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
+         #   LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+          body: |
+            ${{ steps.notes.outputs.notes }}
