@@ -1,5 +1,5 @@
 """
-Module for handling background workers in LC-Inspector application.
+Module for handling background workers.
 
 This module provides QThread-based worker classes for asynchronous loading and
 processing of LC/GC-MS measurement data. It supports:
