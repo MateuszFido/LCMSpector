@@ -29,8 +29,8 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Set up Python 3.13
-        run: uv python install 3.13
+      - name: Set up Python 3.14
+        run: uv python install 3.14
 
       - name: Install system deps (Linux)
         if: contains(matrix.os, 'ubuntu')
@@ -39,7 +39,7 @@ jobs:
           sudo apt-get install -y patchelf zip unzip
 
       - name: Install dependencies
-        run: uv sync --frozen
+        run: uv sync
 
       # Keep MSP external download steps exactly as they were
       - name: Download the MSP library from Polybox (Linux/macOS)
@@ -72,6 +72,7 @@ jobs:
             --include-data-dir="lcmspector/resources"="resources" \
             --include-data-files="lcmspector/config.json"="config.json" \
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
+            --include-data-files="lcmspector/ui/README.html"="ui/README.html" \
             --macos-create-app-bundle \
             --macos-app-name=LCMSpector \
             --macos-app-icon="lcmspector/resources/icon.icns" \
@@ -94,6 +95,7 @@ jobs:
             --include-data-dir="lcmspector/resources"="resources" `
             --include-data-files="lcmspector/config.json"="config.json" `
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" `
+            --include-data-files="lcmspector/ui/README.html"="ui/README.html" `
             --windows-console-mode=disable `
             --windows-icon-from-ico="lcmspector/resources/icon.ico" `
             --output-filename=LCMSpector `
@@ -115,6 +117,7 @@ jobs:
             --include-data-dir="lcmspector/resources"="resources" \
             --include-data-files="lcmspector/config.json"="config.json" \
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
+            --include-data-files="lcmspector/ui/README.html"="ui/README.html" \
             --output-filename=LCMSpector \
             --output-dir=dist \
             --assume-yes-for-downloads
