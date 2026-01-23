@@ -29,8 +29,8 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - name: Set up Python 3.14
-        run: uv python install 3.14
+      - name: Set up Python 3.13
+        run: uv python install 3.13
 
       - name: Install system deps (Linux)
         if: contains(matrix.os, 'ubuntu')
@@ -88,13 +88,13 @@ jobs:
         run: |
           # 1. Force Ad-Hoc Signature to bypass "Unidentified Developer" / ARM64 checks
           codesign --force --deep --sign - dist/LCMSpector.app
-          
+
           # 2. Launch in background
           ./dist/LCMSpector.app/Contents/MacOS/LCMSpector & 
           PID=$!
           echo "Launched PID $PID. Waiting 30s..."
           sleep 30
-          
+
           # 3. Check if still running
           if kill -0 $PID 2>/dev/null; then
             echo "App seems healthy and running. Killing the process now."
@@ -140,18 +140,18 @@ jobs:
         shell: pwsh
         run: |
           $path = "dist\LCMSpector.dist\LCMSpector.exe"
-          
+
           # 1. Unblock the file to prevent "Open File - Security Warning" dialogs
           Write-Host "Unblocking $path to bypass SmartScreen/Zone checks..."
           Unblock-File -Path $path
-          
+
           # 2. Start process
           Write-Host "Launching $path for smoke test..."
           $p = Start-Process -FilePath $path -PassThru -NoNewWindow
-          
+
           # 3. Wait and Verify
           Start-Sleep -Seconds 30
-          
+
           if ($p.HasExited) {
               Write-Error "App crashed! Exit Code: $($p.ExitCode)"
               exit 1
@@ -378,7 +378,7 @@ jobs:
 
           final_md = ""
           order = ["feat", "fix", "refactor", "perf", "docs", "chore", "ci", "test", "other"]
-          
+
           for key in order:
               if categories[key]["items"]:
                   final_md += f"### {categories[key]['title']}\n"
@@ -401,6 +401,6 @@ jobs:
             LCMSpector-${{ github.event.inputs.version }}-macOS-arm64.zip
             LCMSpector-${{ github.event.inputs.version }}-Win11-x86_64.zip
             LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-modern-x86_64.tar.gz
-         #   LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
+          #   LCMSpector-${{ github.event.inputs.version }}-Linux-glibc-compat-x86_64.tar.gz
           body: |
             ${{ steps.notes.outputs.notes }}
