@@ -181,3 +181,26 @@ def _extract_target_mzs(compounds: tuple) -> np.ndarray:
         for ion in cmpd.ions:  # ion_info is a list of (ion_name, mz) tuples
             mzs.append(ion)  # info holds the exact m/z value
     return np.unique(np.asarray(mzs, dtype=np.float64))
+
+
+def integrate_chromatogram(
+    xic_data: np.ndarray, start_time: float, end_time: float
+) -> float:
+    """
+    Parameters
+    ----------
+    xic_data : np.ndarray
+        Shape (2, N). Row 0 is Time, Row 1 is Intensity.
+    """
+    times = xic_data[0]
+    intensities = xic_data[1]
+
+    # Boolean mask for the region of interest
+    mask = (times >= start_time) & (times <= end_time)
+
+    if not np.any(mask):
+        return 0.0
+
+    area = np.trapezoid(intensities[mask], times[mask])
+
+    return float(area)
