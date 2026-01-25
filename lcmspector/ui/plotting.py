@@ -524,7 +524,11 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
                     text_item.setPos(max_time, max_val)
                     widget.addItem(text_item)
 
-            widget.plot()
+            widget.addItem(
+                pg.InfiniteLine(
+                    angle=90, pen=pg.mkPen(color="red", width=1), movable=True
+                )
+            )
 
         except Exception as e:
             logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
