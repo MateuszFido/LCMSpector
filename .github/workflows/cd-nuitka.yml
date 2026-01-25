@@ -72,6 +72,9 @@ jobs:
             --standalone \
             --plugin-enable=pyside6 \
             --noinclude-qt-translations \
+            --include-module=pandas._libs._cyutility \
+            --include-module=PySide6.QtOpenGL \
+            --include-module=PySide6.QtOpenGLWidgets \
             --include-data-dir="lcmspector/resources"="resources" \
             --include-data-files="lcmspector/config.json"="config.json" \
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
@@ -125,6 +128,9 @@ jobs:
             --standalone `
             --plugin-enable=pyside6 `
             --noinclude-qt-translations `
+            --include-module=pandas._libs._cyutility `
+            --include-module=PySide6.QtOpenGL `
+            --include-module=PySide6.QtOpenGLWidgets `
             --include-data-dir="lcmspector/resources"="resources" `
             --include-data-files="lcmspector/config.json"="config.json" `
             --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" `
@@ -177,16 +183,19 @@ jobs:
         shell: bash
         run: |
           uv run python -m nuitka lcmspector/main.py \
-            --standalone \
-            --plugin-enable=pyside6 \
-            --noinclude-qt-translations \
-            --include-data-dir="lcmspector/resources"="resources" \
-            --include-data-files="lcmspector/config.json"="config.json" \
-            --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
-            --include-data-files="lcmspector/ui/README.html"="ui/README.html" \
-            --output-filename=LCMSpector \
-            --output-dir=dist \
-            --assume-yes-for-downloads
+          --standalone \
+          --plugin-enable=pyside6 \
+          --noinclude-qt-translations \
+          --include-module=pandas._libs._cyutility \
+          --include-module=PySide6.QtOpenGL \
+          --include-module=PySide6.QtOpenGLWidgets \
+          --include-data-dir="lcmspector/resources"="resources" \
+          --include-data-files="lcmspector/config.json"="config.json" \
+          --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
+          --include-data-files="lcmspector/ui/README.html"="ui/README.html" \
+          --output-filename=LCMSpector \
+          --output-dir=dist \
+          --assume-yes-for-downloads
 
       - name: Verify Executable (Linux Latest)
         if: matrix.os == 'ubuntu-latest'
@@ -222,15 +231,19 @@ jobs:
         shell: bash
         run: |
           uv run python -m nuitka lcmspector/main.py \
-            --standalone \
-            --plugin-enable=pyside6 \
-            --noinclude-qt-translations \
-            --include-data-dir="lcmspector/resources"="resources" \
-            --include-data-files="lcmspector/config.json"="config.json" \
-            --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
-            --output-filename=LCMSpector \
-            --output-dir=dist \
-            --assume-yes-for-downloads
+          --standalone \
+          --plugin-enable=pyside6 \
+          --noinclude-qt-translations \
+          --include-module=pandas._libs._cyutility \
+          --include-module=PySide6.QtOpenGL \
+          --include-module=PySide6.QtOpenGLWidgets \
+          --include-data-dir="lcmspector/resources"="resources" \
+          --include-data-files="lcmspector/config.json"="config.json" \
+          --include-data-files="lcmspector/ui/logo.png"="ui/logo.png" \
+          --include-data-files="lcmspector/ui/README.html"="ui/README.html" \
+          --output-filename=LCMSpector \
+          --output-dir=dist \
+          --assume-yes-for-downloads
 
       - name: Verify Executable (Linux Compat)
         if: matrix.os == 'ubuntu-22.04'
