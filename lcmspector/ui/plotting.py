@@ -521,17 +521,31 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
                     x=integration_data["start_time"],
                     pen=mkPen(current_color, width=2),
                     hoverPen=mkPen("red", width=2),
+                    label=f"{ion_key} (LEFT)",
+                    labelOpts={
+                        "position": 0.7,
+                        "color": current_color,
+                        "rotateAxis": (1, 0),
+                    },
                     movable=True,
                     bounds=[0, x_data[-1]],
                     markers=[("|>", 0.5, 10.0)],
+                    name=f"{ion_key}_left",
                 )
                 widget.getPlotItem().addLine(
                     x=integration_data["end_time"],
                     pen=mkPen(current_color, width=2),
                     hoverPen=mkPen("red", width=2),
+                    label=f"{ion_key} (RIGHT)",
+                    labelOpts={
+                        "position": 0.7,
+                        "color": current_color,
+                        "rotateAxis": (1, 0),
+                    },
                     movable=True,
                     bounds=[0, x_data[-1]],
                     markers=[("<|", 0.5, 10.0)],
+                    name=f"{ion_key}_right",
                 )
 
                 if info_str:

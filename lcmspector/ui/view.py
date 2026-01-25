@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
+    QPushButton,
     QVBoxLayout,
     QDialog,
     QTextBrowser,
@@ -924,6 +925,12 @@ class View(QtWidgets.QMainWindow):
                 self.crosshair_h_label.setText(f"{mousePoint.y():.0f} a.u.")
             except RuntimeError:
                 pass
+
+    def reset_line_markers_integration(self):
+        """
+        Move integration line markers to ends of file.
+        """
+        self.canvas_library_ms2.getPlotItem()
 
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
@@ -1839,10 +1846,10 @@ class View(QtWidgets.QMainWindow):
             QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
-        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 4, 1)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 3, 1)
         self.unifiedResultsTable = UnifiedResultsTable(parent=self.tabQuantitation)
         self.unifiedResultsTable.setObjectName("unifiedResultsTable")
-        self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 3, 2)
+        self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 2, 2)
 
         ###
         #
@@ -1863,21 +1870,21 @@ class View(QtWidgets.QMainWindow):
         )
         self.label_curr_compound.setSizePolicy(sizePolicy)
         self.label_curr_compound.setObjectName("label_curr_compound")
-        self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 1)
+        self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 2)
         self.label_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
         self.label_compound.setSizePolicy(sizePolicy)
         self.label_compound.setObjectName("label_compound")
 
-        self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 1)
+        self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 2)
         self.comboBoxChooseCompound = QtWidgets.QComboBox(parent=self.tabQuantitation)
         self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
         self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
         self.comboBoxChooseCompound.setEnabled(False)
-        self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 1)
+        self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 2)
         self.canvas_calibration = pg.PlotWidget()
         self.canvas_calibration.setObjectName("canvas_calibration")
         self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 2)
-        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 1)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 2)
 
         ###
         #
@@ -1894,11 +1901,11 @@ class View(QtWidgets.QMainWindow):
             lambda ev: update_labels_avgMS(self.canvas_ms2)
         )
 
-        self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 1)
+        self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 2)
         self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation)
         self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
         self.gridLayout_quant.addWidget(
-            self.comboBoxChooseMS2File, 1, 1, 1, 1
+            self.comboBoxChooseMS2File, 1, 1, 1, 2
         )  # Above canvas_ms2
         self.canvas_library_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
@@ -1913,6 +1920,18 @@ class View(QtWidgets.QMainWindow):
         # )
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 0, 1, 3)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
+        self.button_reset_integration = QtWidgets.QPushButton(
+            parent=self.tabQuantitation
+        )
+        self.button_recalculate_integration = QtWidgets.QPushButton(
+            parent=self.tabQuantitation
+        )
+        self.button_apply_integration = QtWidgets.QPushButton(
+            parent=self.tabQuantitation
+        )
+        self.gridLayout_quant.addWidget(self.button_apply_integration, 4, 0, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 4, 1, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_reset_integration, 4, 2, 1, 1)
 
         self.gridLayoutOuter.addWidget(self.tabWidget, 3, 0, 1, 4)
         self.logo = QtWidgets.QLabel(parent=self.centralwidget)
@@ -2114,3 +2133,8 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
         self.button_save_ion_list.setText(_translate("MainWindow", "Save"))
         self.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
+        self.button_apply_integration.setText(_translate("MainWindow", "Apply"))
+        self.button_reset_integration.setText(_translate("MainWindow", "Reset"))
+        self.button_recalculate_integration.setText(
+            _translate("MainWindow", "Apply to all files")
+        )
