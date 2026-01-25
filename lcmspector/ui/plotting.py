@@ -481,6 +481,7 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
     color_cycle = itertools.cycle(PlotStyle.PALETTE)
     for j, (ion_key, ion_data) in enumerate(ions_dict.items()):
         ms_intensity = ion_data.get("MS Intensity")
+        integration_data = ion_data.get("Integration Data")
 
         if ms_intensity is None:
             continue
@@ -515,6 +516,18 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
                     symbolSize=5,
                     brush=mkBrush(current_color),
                 )
+                widget.getPlotItem().addLine(
+                    x=integration_data["start_time"],
+                    pen=mkPen(current_color, width=2),
+                    movable=True,
+                    hoverPen=mkPen("red", width=2),
+                )
+                widget.getPlotItem().addLine(
+                    x=integration_data["end_time"],
+                    pen=mkPen(current_color, width=2),
+                    movable=True,
+                    hoverPen=mkPen("red", width=2),
+                )
 
                 if info_str:
                     text_item = pg.TextItem(
@@ -523,12 +536,6 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
                     text_item.setFont(QFont("Helvetica", 12))
                     text_item.setPos(max_time, max_val)
                     widget.addItem(text_item)
-
-            widget.addItem(
-                pg.InfiniteLine(
-                    angle=90, pen=pg.mkPen(color="red", width=1), movable=True
-                )
-            )
 
         except Exception as e:
             logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
