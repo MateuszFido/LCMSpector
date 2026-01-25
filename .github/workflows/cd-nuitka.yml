@@ -162,7 +162,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          $path = "dist\main.dist\main.exe"
+          $path = "dist\main.dist\LCMSpector.exe"
 
           # 1. Unblock the file to prevent "Open File - Security Warning" dialogs
           Write-Host "Unblocking $path to bypass SmartScreen/Zone checks..."
