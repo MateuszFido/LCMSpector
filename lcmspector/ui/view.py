@@ -25,7 +25,7 @@ from ui.plotting import (
     plot_annotated_XICs,
     plot_calibration_curve,
     plot_total_ion_current,
-    plot_library_ms2,
+    plot_compound_integration,
     plot_no_ms2_found,
     plot_ms2_from_file,
     plot_placeholder,
@@ -822,28 +822,47 @@ class View(QtWidgets.QMainWindow):
         # No separate method needed as this is handled in update_table_quantitation
         pass
 
-    def display_library_ms2(self):
-        try:
-            library_entries = self.controller.model.find_ms2_precursors()
-        except Exception as e:
-            logger.error(f"Error finding MS2 precursors: {e}")
-        self.canvas_library_ms2.clear()
-        self.canvas_library_ms2.setBackground("w")
-        # Plot the library entry which is currently selected in comboBoxChooseMS2File
-        try:
-            library_entry = library_entries[self.comboBoxChooseMS2File.currentText()]
-            plot_library_ms2(library_entry, self.canvas_library_ms2)
-            self.comboBoxChooseMS2File.currentIndexChanged.connect(
-                lambda: plot_library_ms2(
-                    library_entries[self.comboBoxChooseMS2File.currentText()],
-                    self.canvas_library_ms2,
-                )
-            )
-        except IndexError:
-            logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
-            plot_no_ms2_found(self.canvas_library_ms2)
-        except KeyError:
-            logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
+    ### Unused for now
+    # def display_library_ms2(self):
+    #    try:
+    #        library_entries = self.controller.model.find_ms2_precursors()
+    #    except Exception as e:
+    #        logger.error(f"Error finding MS2 precursors: {e}")
+    #    self.canvas_library_ms2.clear()
+    #    self.canvas_library_ms2.setBackground("w")
+    #    # Plot the library entry which is currently selected in comboBoxChooseMS2File
+    #    try:
+    #        library_entry = library_entries[self.comboBoxChooseMS2File.currentText()]
+    #        plot_library_ms2(library_entry, self.canvas_library_ms2)
+    #        self.comboBoxChooseMS2File.currentIndexChanged.connect(
+    #            lambda: plot_library_ms2(
+    #                library_entries[self.comboBoxChooseMS2File.currentText()],
+    #                self.canvas_library_ms2,
+    #            )
+    #        )
+    #    except IndexError:
+    #        logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
+    #        plot_no_ms2_found(self.canvas_library_ms2)
+    #    except KeyError:
+    #        logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
+
+    def display_compound_integration(self):
+        """
+        Method displaying compound integration boundaries and letting the user manually change the boundaries.
+        """
+        selected_file = self.unifiedResultsTable.get_selected_file()
+        if not selected_file:
+            try:
+                selected_file = self.unifiedResultsTable.itemAt(0, 0)
+            except Exception as e:
+                logger.error(e)
+        ms_file = self.controller.model.ms_measurements.get(selected_file)
+        ms_compound = next(
+            xic
+            for xic in ms_file.xics
+            if xic.name == self.comboBoxChooseCompound.currentText()
+        )
+        plot_compound_integration(self.canvas_library_ms2, ms_compound)
 
     def display_ms2(self):
         """

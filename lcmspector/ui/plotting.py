@@ -466,8 +466,69 @@ def plot_placeholder(widget: pg.PlotWidget, text: str):
     widget.addItem(text_item)
 
 
-def plot_library_ms2():
-    pass
+def plot_compound_integration(widget: pg.PlotWidget, compound):
+    widget.clear()
+    PlotStyle.apply_standard_style(
+        widget,
+        title=f"Integration of {compound.name}",
+        x_label="Time (min)",
+        y_label="Intensity / a.u.",
+    )
+    # Safely access compound data
+    ions_dict = getattr(compound, "ions", {})
+    ion_info_list = getattr(compound, "ion_info", [])
+
+    color_cycle = itertools.cycle(PlotStyle.PALETTE)
+    for j, (ion_key, ion_data) in enumerate(ions_dict.items()):
+        ms_intensity = ion_data.get("MS Intensity")
+
+        if ms_intensity is None:
+            continue
+
+        # Safe info string retrieval
+        info_str = ion_info_list[j] if j < len(ion_info_list) else ""
+        current_color = next(color_cycle)
+
+        try:
+            x_data = ms_intensity[0]
+            y_data = ms_intensity[1]
+
+            # Plot trace
+            widget.plot(
+                x_data,
+                y_data,
+                pen=mkPen(current_color, width=1),
+                name=f"{ion_key} {info_str}",
+            )
+
+            # Annotate Max
+            if len(y_data) > 0:
+                max_idx = np.argmax(y_data)
+                max_time = x_data[max_idx]
+                max_val = y_data[max_idx]
+
+                widget.plot(
+                    [max_time],
+                    [max_val],
+                    pen=mkPen(current_color, width=1),
+                    symbol="o",
+                    symbolSize=5,
+                    brush=mkBrush(current_color),
+                )
+
+                if info_str:
+                    text_item = pg.TextItem(
+                        text=info_str, color=current_color, anchor=(0, 0)
+                    )
+                    text_item.setFont(QFont("Helvetica", 12))
+                    text_item.setPos(max_time, max_val)
+                    widget.addItem(text_item)
+
+            widget.plot()
+
+        except Exception as e:
+            logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
+            continue
 
 
 # --- Helper Functions ---

@@ -36,7 +36,7 @@ class Controller:
             self.view.display_ms2
         )
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(
-            self.view.display_library_ms2
+            self.view.display_compound_integration
         )
         self.mode = "LC/GC-MS"
         logger.info("Controller initialized.")
