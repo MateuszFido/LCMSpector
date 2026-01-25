@@ -468,6 +468,7 @@ def plot_placeholder(widget: pg.PlotWidget, text: str):
 
 def plot_compound_integration(widget: pg.PlotWidget, compound):
     widget.clear()
+    widget.addLegend(labelTextSize="12pt")
     PlotStyle.apply_standard_style(
         widget,
         title=f"Integration of {compound.name}",
@@ -519,14 +520,18 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
                 widget.getPlotItem().addLine(
                     x=integration_data["start_time"],
                     pen=mkPen(current_color, width=2),
-                    movable=True,
                     hoverPen=mkPen("red", width=2),
+                    movable=True,
+                    bounds=[0, x_data[-1]],
+                    markers=[("|>", 0.5, 10.0)],
                 )
                 widget.getPlotItem().addLine(
                     x=integration_data["end_time"],
                     pen=mkPen(current_color, width=2),
-                    movable=True,
                     hoverPen=mkPen("red", width=2),
+                    movable=True,
+                    bounds=[0, x_data[-1]],
+                    markers=[("<|", 0.5, 10.0)],
                 )
 
                 if info_str:

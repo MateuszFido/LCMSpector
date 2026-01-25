@@ -1911,7 +1911,7 @@ class View(QtWidgets.QMainWindow):
         # self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
         #    lambda ev: update_labels_avgMS(self.canvas_library_ms2)
         # )
-        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)
+        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 0, 1, 3)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
 
         self.gridLayoutOuter.addWidget(self.tabWidget, 3, 0, 1, 4)
@@ -1944,16 +1944,12 @@ class View(QtWidgets.QMainWindow):
 
         #####
         #
-        #
-        #
         # Menu bar setup
-        #
-        #
         #
         #####
 
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 864, 37))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 860, 40))
         self.menuFile = QtWidgets.QMenu(parent=self.menubar)
         self.menuEdit = QtWidgets.QMenu(parent=self.menubar)
         self.menuHelp = QtWidgets.QMenu(parent=self.menubar)
@@ -1991,9 +1987,7 @@ class View(QtWidgets.QMainWindow):
 
         ###
         #
-        #
         # final UI setup and signal/slot connections
-        #
         #
         ###
 
