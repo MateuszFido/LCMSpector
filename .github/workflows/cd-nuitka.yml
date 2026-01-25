@@ -107,10 +107,10 @@ jobs:
         shell: bash
         run: |
           # 1. Force Ad-Hoc Signature to bypass "Unidentified Developer" / ARM64 checks
-          codesign --force --deep --sign - dist/LCMSpector.app
+          codesign --force --deep --sign - dist/main.app
 
           # 2. Launch in background
-          ./dist/LCMSpector.app/Contents/MacOS/LCMSpector & 
+          ./dist/main.app/Contents/MacOS/main & 
           PID=$!
           echo "Launched PID $PID. Waiting 30s..."
           sleep 30
@@ -162,7 +162,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          $path = "dist\LCMSpector.dist\LCMSpector.exe"
+          $path = "dist\main.dist\main.exe"
 
           # 1. Unblock the file to prevent "Open File - Security Warning" dialogs
           Write-Host "Unblocking $path to bypass SmartScreen/Zone checks..."
