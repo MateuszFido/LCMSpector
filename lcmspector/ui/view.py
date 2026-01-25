@@ -1908,9 +1908,9 @@ class View(QtWidgets.QMainWindow):
         self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
         self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
-            lambda ev: update_labels_avgMS(self.canvas_library_ms2)
-        )
+        # self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
+        #    lambda ev: update_labels_avgMS(self.canvas_library_ms2)
+        # )
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 1, 1, 1)
         self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
 
