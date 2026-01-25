@@ -73,7 +73,9 @@ def main():
     """Main entry point for the application."""
     # Configure logging
     logger = configure_logging()
-    logger.info("Starting LCMSpector with temp dir: " + tempfile.gettempdir() + "...")
+    logger.info(
+        f"Starting LCMSpector with temp dir: {tempfile.gettempdir()}/lcmspector..."
+    )
 
     # Create the application
     app = QApplication(os.sys.argv)
@@ -150,7 +152,6 @@ def main():
 
 
 if __name__ == "__main__":
-    multiprocessing.set_start_method("spawn", force=True)
     multiprocessing.freeze_support()
 
     # Guards for binary building

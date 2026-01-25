@@ -133,7 +133,9 @@ class Controller:
         self.view.tabWidget.setTabEnabled(
             self.view.tabWidget.indexOf(self.view.tabQuantitation), True
         )
-
+        self.view.setup_dock_area(
+            next(iter(self.model.ms_measurements.values())).xics, self.view.canvas_XICs
+        )
         self.update_filenames()
         self.view.actionExport.setEnabled(True)
 

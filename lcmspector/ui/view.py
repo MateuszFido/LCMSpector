@@ -9,7 +9,14 @@ from datetime import datetime
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QDialog, QTextBrowser, QFileDialog, QMessageBox
+from PySide6.QtWidgets import (
+    QApplication,
+    QVBoxLayout,
+    QDialog,
+    QTextBrowser,
+    QFileDialog,
+    QMessageBox,
+)
 import pyqtgraph as pg
 from ui.plotting import (
     plot_absorbance_data,
@@ -23,7 +30,7 @@ from ui.plotting import (
     plot_ms2_from_file,
     plot_placeholder,
     highlight_peak,
-    update_labels_avgMS
+    update_labels_avgMS,
 )
 from pyqtgraph.dockarea import DockArea
 import numpy as np
@@ -114,8 +121,12 @@ class View(QtWidgets.QMainWindow):
                     if f.lower().endswith(".txt") or f.lower().endswith(".csv")
                 ]
                 if len(txt_files) > 0:
-                    ok_file_paths.extend(file_path + "/" + txt_file for txt_file in txt_files)
-            elif file_path.lower().endswith(".txt") or file_path.lower().endswith(".csv"):
+                    ok_file_paths.extend(
+                        file_path + "/" + txt_file for txt_file in txt_files
+                    )
+            elif file_path.lower().endswith(".txt") or file_path.lower().endswith(
+                ".csv"
+            ):
                 ok_file_paths.append(file_path)
             elif not error_shown:
                 self.show_critical_error(
@@ -144,7 +155,9 @@ class View(QtWidgets.QMainWindow):
                     f for f in os.listdir(file_path) if f.lower().endswith(".mzml")
                 ]
                 if len(mzml_files) > 0:
-                    ok_file_paths.extend(file_path + "/" + mzml_file for mzml_file in mzml_files)
+                    ok_file_paths.extend(
+                        file_path + "/" + mzml_file for mzml_file in mzml_files
+                    )
             elif file_path.lower().endswith(".mzml"):
                 ok_file_paths.append(file_path)
             elif not error_shown:
@@ -187,83 +200,79 @@ class View(QtWidgets.QMainWindow):
         self.update_annotation_file()  # Update the model with the new LC files
 
     def update_ion_list(self):
-            """
-            Loads the selected ion list from config.json into the table.
-            Robustly handles missing keys ('ions' or 'info') by defaulting to empty strings.
-            """
-            config_path = Path(__file__).parent.parent / "config.json"
-            
-            # 1. Safe JSON Loading
-            try:
-                if not config_path.exists():
-                    # Handle missing config file gracefully
-                    self.ionTable.clearContents()
-                    self.ionTable.setRowCount(0)
-                    return
-                    
-                with open(config_path, "r") as f:
-                    lists = json.load(f)
-            except (json.JSONDecodeError, OSError) as e:
-                logger.error(f"Error reading config.json: {e}")
-                return
+        """
+        Loads the selected ion list from config.json into the table.
+        Robustly handles missing keys ('ions' or 'info') by defaulting to empty strings.
+        """
+        config_path = Path(__file__).parent.parent / "config.json"
 
-            current_selection = self.comboBoxIonLists.currentText()
-            
-            # 2. Handle "Create new..." or empty selection
-            if current_selection == "Create new ion list..." or current_selection == "":
-                self.ionTable.clearContents()
-                self.ionTable.setRowCount(0) # Reset row count to 0 for clean slate
-                return
-
-            # 3. Retrieve the specific list
-            ion_list = lists.get(current_selection)
-
-            if ion_list is None:
-                logger.error(f"Could not find ion list: {current_selection}")
-                self.statusbar.showMessage(
-                    f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {current_selection}",
-                    3000,
-                )
+        # 1. Safe JSON Loading
+        try:
+            if not config_path.exists():
+                # Handle missing config file gracefully
                 self.ionTable.clearContents()
                 self.ionTable.setRowCount(0)
                 return
 
-            # 4. Populate Table
+            with open(config_path, "r") as f:
+                lists = json.load(f)
+        except (json.JSONDecodeError, OSError) as e:
+            logger.error(f"Error reading config.json: {e}")
+            return
+
+        current_selection = self.comboBoxIonLists.currentText()
+
+        # 2. Handle "Create new..." or empty selection
+        if current_selection == "Create new ion list..." or current_selection == "":
             self.ionTable.clearContents()
-            self.ionTable.setRowCount(len(ion_list))
-            
-            # Use enumerate for cleaner indexing
-            for row_idx, (compound_name, data_dict) in enumerate(ion_list.items()):
-                # A. Set Name (Column 0)
-                self.ionTable.set_item(
-                    row_idx, 0, QtWidgets.QTableWidgetItem(str(compound_name))
-                )
+            self.ionTable.setRowCount(0)  # Reset row count to 0 for clean slate
+            return
 
-                # B. Set Ions (Column 1)
-                # Use .get() to safely retrieve data, default to empty list
-                ions_val = data_dict.get("ions", [])
-                # Ensure it's a list before joining (guards against malformed JSON)
-                if isinstance(ions_val, list):
-                    ions_str = ", ".join(map(str, ions_val))
-                else:
-                    ions_str = ""
-                
-                self.ionTable.set_item(
-                    row_idx, 1, QtWidgets.QTableWidgetItem(ions_str)
-                )
+        # 3. Retrieve the specific list
+        ion_list = lists.get(current_selection)
 
-                # C. Set Info (Column 2) - THE FIX
-                # We explicitly get "info". If missing, we get [], resulting in "".
-                # Importantly, we ALWAYS set the item, so the cell is never None.
-                info_val = data_dict.get("info", [])
-                if isinstance(info_val, list):
-                    info_str = ", ".join(map(str, info_val))
-                else:
-                    info_str = ""
+        if ion_list is None:
+            logger.error(f"Could not find ion list: {current_selection}")
+            self.statusbar.showMessage(
+                f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')} -- Could not find ion list: {current_selection}",
+                3000,
+            )
+            self.ionTable.clearContents()
+            self.ionTable.setRowCount(0)
+            return
 
-                self.ionTable.set_item(
-                    row_idx, 2, QtWidgets.QTableWidgetItem(info_str)
-                )
+        # 4. Populate Table
+        self.ionTable.clearContents()
+        self.ionTable.setRowCount(len(ion_list))
+
+        # Use enumerate for cleaner indexing
+        for row_idx, (compound_name, data_dict) in enumerate(ion_list.items()):
+            # A. Set Name (Column 0)
+            self.ionTable.set_item(
+                row_idx, 0, QtWidgets.QTableWidgetItem(str(compound_name))
+            )
+
+            # B. Set Ions (Column 1)
+            # Use .get() to safely retrieve data, default to empty list
+            ions_val = data_dict.get("ions", [])
+            # Ensure it's a list before joining (guards against malformed JSON)
+            if isinstance(ions_val, list):
+                ions_str = ", ".join(map(str, ions_val))
+            else:
+                ions_str = ""
+
+            self.ionTable.set_item(row_idx, 1, QtWidgets.QTableWidgetItem(ions_str))
+
+            # C. Set Info (Column 2) - THE FIX
+            # We explicitly get "info". If missing, we get [], resulting in "".
+            # Importantly, we ALWAYS set the item, so the cell is never None.
+            info_val = data_dict.get("info", [])
+            if isinstance(info_val, list):
+                info_str = ", ".join(map(str, info_val))
+            else:
+                info_str = ""
+
+            self.ionTable.set_item(row_idx, 2, QtWidgets.QTableWidgetItem(info_str))
 
     def add_files(self, file_paths, file_type):
         if file_type == "LC":
@@ -287,9 +296,10 @@ class View(QtWidgets.QMainWindow):
         # Trigger loading process
         self.progressBar.setVisible(True)
         self.progressLabel.setVisible(True)
-        logger.debug(f"Calling model.load() with following arguments: {self.controller.mode}, {file_type}, {file_paths}")
+        logger.debug(
+            f"Calling model.load() with following arguments: {self.controller.mode}, {file_type}, {file_paths}"
+        )
         self.controller.model.load(self.controller.mode, file_paths, file_type)
-
 
     def on_browseLC(self):
         """
@@ -321,10 +331,10 @@ class View(QtWidgets.QMainWindow):
         self.progressBar.show()
         self.processButton.setEnabled(False)
         ms_file_paths, _ = QFileDialog.getOpenFileNames(
-            self, 
-            "Select MS Files", 
+            self,
+            "Select MS Files",
             str(QtCore.QDir.homePath()),
-            "MzML Files (*.mzML);;All Files (*)"
+            "MzML Files (*.mzML);;All Files (*)",
         )
         if ms_file_paths:
             self.add_files(ms_file_paths, "MS")
@@ -678,13 +688,10 @@ class View(QtWidgets.QMainWindow):
                     )
                 except AttributeError:
                     logger.error(f"No average MS found: {traceback.format_exc()}")
-            self.canvas_XICs.clear()
             if ms_file:
-                self.gridLayoutResults.removeWidget(self.scrollArea)
-                self.gridLayoutResults.addWidget(self.scrollArea, 1, 1, 1, 1)
                 try:
-                    plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
-                except AttributeError:
+                    plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
+                except Exception:
                     logger.error(f"No XIC plot found: {traceback.format_exc()}")
             if lc_file and ms_file:
                 if lc_file.filename == ms_file.filename:
@@ -702,7 +709,9 @@ class View(QtWidgets.QMainWindow):
                         self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
                         self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
                         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-                        self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 0, 1, 1, 1)
+                        self.gridLayoutResults.addWidget(
+                            self.canvas_annotatedLC, 0, 1, 1, 1
+                        )
                         self.curve_list = plot_annotated_LC(
                             lc_file.path,
                             lc_file.baseline_corrected,
@@ -710,7 +719,12 @@ class View(QtWidgets.QMainWindow):
                         )
                     for curve in self.curve_list.keys():
                         curve.sigClicked.connect(
-                            lambda c: highlight_peak(c, self.curve_list, self.canvas_annotatedLC, ms_file.xics)
+                            lambda c: highlight_peak(
+                                c,
+                                self.curve_list,
+                                self.canvas_annotatedLC,
+                                ms_file.xics,
+                            )
                         )
 
         elif self.controller.mode == "MS Only":
@@ -749,9 +763,41 @@ class View(QtWidgets.QMainWindow):
                     plot_average_ms_data(
                         ms_file.filename, 0, ms_file.data, self.canvas_avgMS
                     )
-                    plot_annotated_XICs(ms_file.path, ms_file.xics, self.canvas_XICs)
+                    plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
                 except AttributeError:
                     logger.error(f"No plot found: {traceback.format_exc()}")
+
+    def setup_dock_area(self, xics: tuple, widget: DockArea):
+        cols = 5
+        row_anchor_dock = None
+
+        for i, compound in enumerate(xics):
+            if i % cols == 0:
+                position = "bottom"
+                relative_to = None
+            else:
+                position = "right"
+                relative_to = row_anchor_dock
+
+            dock = widget.addDock(
+                position=position,
+                relativeTo=relative_to,
+                name=f"{compound.name}",
+                widget=pg.PlotWidget(),
+                size=(100, 100),
+            )
+
+            # If this was a new row (or first item), update the anchor
+            if i % cols == 0:
+                row_anchor_dock = dock
+
+            plot_widget = dock.widgets[0]
+            plot_widget.setMouseEnabled(x=True, y=False)
+            plot_widget.addLegend(offset=(0, 0))
+            plot_widget.getViewBox().enableAutoRange(axis="y", enable=True)
+
+        # Resize logic to ensure docks aren't squashed
+        widget.setMinimumSize(QtCore.QSize(cols * 150, (len(xics) // cols + 1) * 200))
 
     def display_calibration_curve(self):
         self.canvas_calibration.clear()
@@ -837,7 +883,6 @@ class View(QtWidgets.QMainWindow):
                 f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}"
             )
             plot_no_ms2_found(self.canvas_ms2)
-
 
     def update_crosshair(self, e):
         """
@@ -1315,7 +1360,7 @@ class View(QtWidgets.QMainWindow):
         self.gridLayout.addWidget(self.mass_accuracy_slider, 7, 4, 1, 3)
         self.gridLayout.addWidget(self.processButton, 7, 2, 1, 2)
 
-        # stretch factors 
+        # stretch factors
         self.gridLayout.setRowStretch(2, 3)
         self.gridLayout.setColumnStretch(2, 4)
 
@@ -1373,7 +1418,11 @@ class View(QtWidgets.QMainWindow):
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
         self.canvas_avgMS.clear()
-        if self.controller.mode == "LC/GC-MS" and self.listLC.count() > 0 and self.listMS.count() > 0:
+        if (
+            self.controller.mode == "LC/GC-MS"
+            and self.listLC.count() > 0
+            and self.listMS.count() > 0
+        ):
             try:
                 file = self.listLC.currentItem().text().split(".")[0]
             except AttributeError:
@@ -1420,7 +1469,6 @@ class View(QtWidgets.QMainWindow):
                 self.comboBoxIonLists.addItem(ionlist)
         except Exception as e:
             logger.error(f"Error loading ion lists: {e}")
-
 
     def setupUi(self, MainWindow):
         """
@@ -1704,8 +1752,6 @@ class View(QtWidgets.QMainWindow):
         self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
         self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
 
-
-
         ###
         #
         #
@@ -1923,12 +1969,11 @@ class View(QtWidgets.QMainWindow):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         MainWindow.setMenuBar(self.menubar)
+
         ###
         #
         #
-        #
         # final UI setup and signal/slot connections
-        #
         #
         #
         ###

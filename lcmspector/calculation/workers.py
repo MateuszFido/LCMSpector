@@ -13,7 +13,6 @@ leverages PyQt6's signal-slot mechanism for thread communication.
 
 import time
 import traceback
-import multiprocessing
 import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
@@ -83,9 +82,8 @@ class LoadingWorker(QThread):
             logger.error(f"Invalid mode: {self.mode}")
             return
 
-        ctx = multiprocessing.get_context("spawn")
         try:
-            with ProcessPoolExecutor(mp_context=ctx) as executor:
+            with ProcessPoolExecutor() as executor:
                 futures = {}
 
                 if self.file_type == "LC":
@@ -158,12 +156,8 @@ class ProcessingWorker(QThread):
             logger.error(f"Invalid mode: {self.mode}")
             return
         results = []
-        ctx = multiprocessing.get_context("spawn")
-        max_workers = max(1, multiprocessing.cpu_count() - 1)
         try:
-            with ProcessPoolExecutor(
-                max_workers=max_workers, mp_context=ctx
-            ) as executor:
+            with ProcessPoolExecutor() as executor:
                 futures = {}
                 if self.mode in {"LC/GC-MS", "MS Only"}:
                     for ms_file in ms_measurements:
