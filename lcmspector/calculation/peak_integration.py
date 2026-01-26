@@ -777,3 +777,96 @@ def process_compound_peak_areas(compound, mass_accuracy, file_name):
             compound.ions[ion]['MS Peak Area'] = create_fallback_peak_area()
     
     return compound
+
+
+def integrate_peak_manual_boundaries(
+    times: np.ndarray,
+    intensities: np.ndarray,
+    start_time: float,
+    end_time: float
+) -> Dict[str, Union[float, int, str]]:
+    """
+    Re-integrate a peak using user-defined start and end boundaries.
+    
+    This function forces a linear baseline between the selected start and end times,
+    re-calculates the area, and updates quality metrics based on the new window.
+
+    Parameters
+    ----------
+    times : np.ndarray
+        Array of scan/retention times (must be same length as intensities)
+    intensities : np.ndarray
+        Array of signal intensities (or absorbances)
+    start_time : float
+        User-selected start time for integration
+    end_time : float
+        User-selected end time for integration
+
+    Returns
+    -------
+    Dict[str, Union[float, int, str]]
+        Dictionary containing updated peak area and quality metrics.
+    """
+    
+    if len(times) != len(intensities):
+        raise ValueError("times and intensities arrays must have the same length")
+    
+    if start_time >= end_time:
+        raise ValueError(f"Start time ({start_time}) must be less than end time ({end_time})")
+        
+    if start_time < np.min(times) or end_time > np.max(times):
+        logger.warning("Manual boundaries are outside the data range. Constraining to available data.")
+
+    start_idx = int(np.argmin(np.abs(times - start_time)))
+    end_idx = int(np.argmin(np.abs(times - end_time)))
+
+    # Ensure indices are ordered and distinct
+    if start_idx == end_idx:
+        # If points are too close, force a 1-point width if possible
+        if end_idx < len(times) - 1:
+            end_idx += 1
+        elif start_idx > 0:
+            start_idx -= 1
+        else:
+            raise InsufficientDataError("Selected time range contains insufficient data points.")
+
+    if start_idx > end_idx:
+        start_idx, end_idx = end_idx, start_idx
+
+    peak_region_intensities = intensities[start_idx:end_idx+1]
+    
+    if len(peak_region_intensities) == 0:
+         raise InsufficientDataError("No data points found in the requested time interval")
+
+    # The index returned is relative to the slice; convert to global index
+    relative_peak_idx = np.argmax(peak_region_intensities)
+    peak_index = start_idx + relative_peak_idx
+
+    # Calculate new baseline (linear between manual points)
+    baseline = calculate_baseline_linear(intensities, start_idx, end_idx)
+
+    
+    total_area, baseline_corrected_area = integrate_peak_area_trapezoidal(
+        times, intensities, baseline, start_idx, end_idx
+    )
+
+    snr, quality_score = calculate_peak_quality_metrics(
+        times, intensities, baseline, start_idx, end_idx, peak_index
+    )
+
+    peak_height = intensities[peak_index] - baseline[peak_index - start_idx]
+
+    return {
+        "total_area": float(total_area),
+        "baseline_corrected_area": float(baseline_corrected_area),
+        "start_time": float(times[start_idx]),
+        "end_time": float(times[end_idx]),
+        "start_index": int(start_idx),
+        "end_index": int(end_idx),
+        "baseline_start": float(baseline[0]),
+        "baseline_end": float(baseline[-1]),
+        "peak_height": float(peak_height),
+        "integration_method": "manual_linear",
+        "snr": float(snr),
+        "quality_score": float(quality_score)
+    }

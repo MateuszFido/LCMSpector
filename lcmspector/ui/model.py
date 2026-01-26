@@ -7,6 +7,7 @@ import numpy as np
 from scipy.stats import linregress
 import pandas as pd
 from calculation.calc_conc import calculate_concentration
+from calculation.peak_integration import integrate_peak_manual_boundaries
 from calculation.workers import LoadingWorker, ProcessingWorker
 from utils.loading import load_ms2_library
 from PySide6.QtCore import QThread
@@ -459,3 +460,46 @@ class Model(QThread):
                 self.worker.terminate()
                 self.worker.wait()
         logger.debug("Model shutdown complete.")
+
+
+    def apply_integration_changes(self):
+        ''' 
+        Retrieves the current boundaries, computes the peak area, and updates the quantitation table.
+        '''
+        current_compound_text = self.controller.view.comboBoxChooseCompound.currentText()
+        current_file_text = self.controller.view.unifiedResultsTable.get_selected_file()
+
+        current_compound = self.ms_measurements[current_file_text].get_compound_by_name(current_compound_text)
+
+        integration_bounds = self.controller.view.get_integration_bounds(self.controller.view.canvas_library_ms2)
+
+        for ion in current_compound.ions:
+            try:
+                ion_data = current_compound.ions[ion]
+            except Exception:
+                logger.error(f"Problem retrieving integration data. Skipping {ion}...")
+                continue
+            try:
+                ion_data["Integration Data"]["start_time"] = integration_bounds[0]
+                ion_data["Integration Data"]["end_time"] = integration_bounds[1]
+            except AttributeError:
+                logger.error(f"Problem setting integration bounds. Skipping {ion}...")
+                continue
+            try:
+                ion_data["Integration Data"] = integrate_peak_manual_boundaries(
+                    ion_data["MS Intensity"][0], ion_data["MS Intensity"][1], ion_data["Integration Data"]["start_time"], ion_data["Integration Data"]["end_time"]
+                )
+            except Exception: 
+                logger.error(traceback.format_exc())
+
+        self.controller.view.unifiedResultsTable.update_ion_values(current_file_text, )
+
+
+
+    def recalculate_integration_all_files(self):
+        pass
+
+    def reset_integration(self):
+        pass
+
+

@@ -227,6 +227,25 @@ class MSMeasurement(Measurement):
 
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
+    def get_compound_by_name(self, name: str):
+        """
+        Get a compound by its name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the compound.
+
+        Returns
+        -------
+        Compound or None
+            The Compound object if found, None otherwise.
+        """
+        for compound in self.xics:
+            if compound.name == name:
+                return compound
+        return None
+
 
 class Compound(BaseModel):
     """

@@ -38,6 +38,10 @@ class Controller:
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(
             self.view.display_compound_integration
         )
+        self.view.button_apply_integration.clicked.connect(self.model.apply_integration_changes)
+        self.view.button_recalculate_integration.clicked.connect(self.model.recalculate_integration_all_files)
+        self.view.button_reset_integration.clicked.connect(self.model.reset_integration)
+
         self.mode = "LC/GC-MS"
         logger.info("Controller initialized.")
         logger.info("Current thread: %s", threading.current_thread().name)

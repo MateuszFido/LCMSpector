@@ -207,7 +207,6 @@ class View(QtWidgets.QMainWindow):
         """
         config_path = Path(__file__).parent.parent / "config.json"
 
-        # 1. Safe JSON Loading
         try:
             if not config_path.exists():
                 # Handle missing config file gracefully
@@ -223,13 +222,11 @@ class View(QtWidgets.QMainWindow):
 
         current_selection = self.comboBoxIonLists.currentText()
 
-        # 2. Handle "Create new..." or empty selection
         if current_selection == "Create new ion list..." or current_selection == "":
             self.ionTable.clearContents()
             self.ionTable.setRowCount(0)  # Reset row count to 0 for clean slate
             return
 
-        # 3. Retrieve the specific list
         ion_list = lists.get(current_selection)
 
         if ion_list is None:
@@ -242,19 +239,14 @@ class View(QtWidgets.QMainWindow):
             self.ionTable.setRowCount(0)
             return
 
-        # 4. Populate Table
         self.ionTable.clearContents()
         self.ionTable.setRowCount(len(ion_list))
 
-        # Use enumerate for cleaner indexing
         for row_idx, (compound_name, data_dict) in enumerate(ion_list.items()):
-            # A. Set Name (Column 0)
             self.ionTable.set_item(
                 row_idx, 0, QtWidgets.QTableWidgetItem(str(compound_name))
             )
 
-            # B. Set Ions (Column 1)
-            # Use .get() to safely retrieve data, default to empty list
             ions_val = data_dict.get("ions", [])
             # Ensure it's a list before joining (guards against malformed JSON)
             if isinstance(ions_val, list):
@@ -264,9 +256,6 @@ class View(QtWidgets.QMainWindow):
 
             self.ionTable.set_item(row_idx, 1, QtWidgets.QTableWidgetItem(ions_str))
 
-            # C. Set Info (Column 2) - THE FIX
-            # We explicitly get "info". If missing, we get [], resulting in "".
-            # Importantly, we ALWAYS set the item, so the cell is never None.
             info_val = data_dict.get("info", [])
             if isinstance(info_val, list):
                 info_str = ", ".join(map(str, info_val))
@@ -858,11 +847,14 @@ class View(QtWidgets.QMainWindow):
             except Exception as e:
                 logger.error(e)
         ms_file = self.controller.model.ms_measurements.get(selected_file)
-        ms_compound = next(
-            xic
-            for xic in ms_file.xics
-            if xic.name == self.comboBoxChooseCompound.currentText()
-        )
+        try:
+            ms_compound = next(
+                xic
+                for xic in ms_file.xics
+                if xic.name == self.comboBoxChooseCompound.currentText()
+            )
+        except AttributeError:
+            logger.warning(f"No MS data found for {selected_file}.")
         plot_compound_integration(self.canvas_library_ms2, ms_compound)
 
     def display_ms2(self):
@@ -926,11 +918,14 @@ class View(QtWidgets.QMainWindow):
             except RuntimeError:
                 pass
 
-    def reset_line_markers_integration(self):
-        """
-        Move integration line markers to ends of file.
-        """
-        self.canvas_library_ms2.getPlotItem()
+
+    def get_integration_bounds(self, canvas) -> (float, float):
+        items = canvas.getPlotItem().listDataItems()
+        for item in items:
+            print(item)
+        return 0.0, 1.0  # Placeholder return
+
+
 
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
@@ -1135,7 +1130,7 @@ class View(QtWidgets.QMainWindow):
         self.retranslateUi(MainWindow)
 
     def setup_LCMS(self, MainWindow):
-        print("switched to LC/GC-MS mode")
+        logger.info("Switched to LC/GC-MS mode.")
         self.controller.mode = "LC/GC-MS"
         self.clear_layout(self.gridLayout)
 
@@ -2049,6 +2044,10 @@ class View(QtWidgets.QMainWindow):
         )
         self.listLC.itemClicked.connect(self.handle_listLC_clicked)
         self.listMS.itemClicked.connect(self.handle_listMS_clicked)
+
+
+
+
 
     def retranslateUi(self, MainWindow):
         """
