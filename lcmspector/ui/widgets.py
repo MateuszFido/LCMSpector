@@ -761,89 +761,96 @@ class UnifiedResultsTable(GenericTable):
         # after calibration calculations are complete
         pass
 
-    def update_ion_values(self, filename, ion_name, ms_area=None, lc_intensity=None):
+    def update_ion_values(self, filename, compound):
         """
-        Update the displayed MS and LC values for a specific file and ion 
-        after recalculation (e.g., manual integration).
+        Update all ion columns for a specific file based on a Compound object.
+        Applies a temporary visual highlight to changed cells.
 
         Parameters
         ----------
         filename : str
             The name of the file to update (must match the File column).
-        ion_name : str
-            The name of the ion to update (must exist in current_compound).
-        ms_area : float, optional
-            The new MS Peak Area to display.
-        lc_intensity : float, optional
-            The new LC Intensity to display.
+        compound : Compound
+            The compound object containing updated peak area data.
         """
-        # 1. Find the row index for the given filename
-        # We use findItems for an exact match on the text in column 0
+
         matching_items = self.findItems(filename, Qt.MatchFlag.MatchExactly)
-        
         if not matching_items:
-            # Check column 0 specifically to avoid false positives in other columns
-            target_row = -1
-            for item in matching_items:
-                if item.column() == 0:
-                    target_row = item.row()
-                    break
-            
-            if target_row == -1:
-                print(f"Error: Filename '{filename}' not found in table.")
-                return
-        else:
-            target_row = matching_items[0].row()
+            raise AttributeError(
+                "No matching entries for filename in UnifiedResultsTable."
+            )
 
-        # 2. Determine the column indices for the specific ion
-        if not self.current_compound or not hasattr(self.current_compound, "ions"):
-            return
+        # Ensure we found the item in column 0 (File Name)
+        target_row = -1
+        for item in matching_items:
+            if item.column() == 0:
+                target_row = item.row()
+                break
 
-        try:
-            # Get the list of ions to determine the index order
-            # This must match the order used in setup_columns
-            ion_list = list(self.current_compound.ions.keys())
-            ion_index = ion_list.index(ion_name)
-        except ValueError:
-            print(f"Error: Ion '{ion_name}' not found in current compound.")
-            return
+        if target_row == -1:
+            raise AttributeError(
+                "No matching entries for filename in UnifiedResultsTable."
+            )
 
-        # Calculate column offsets
-        # Base columns are: [0:File, 1:Cal, 2:Conc] -> Total 3
-        # Then each ion has 2 columns: [MS, LC]
-        base_offset = 3
-        ms_col_index = base_offset + (ion_index * 2)
-        lc_col_index = ms_col_index + 1
+        # 2. Iterate through all ions in the compound and update table
+        ion_names = list(compound.ions.keys())
 
-        
-        # 3. Update MS Value
-        if ms_area is not None:
-            # Replicate the formatting logic from populate_data for consistency
-            # Using standard python scientific notation which mimics the numpy format used previously
-            formatted_ms = f"{ms_area:.2e}"
-            
-            item = self.item(target_row, ms_col_index)
-            if item:
-                item.setText(formatted_ms)
-                # Optional: Visual cue that value changed (e.g., bold text momentarily)
-                # item.setFont(QFont("Arial", 10, QFont.Bold))
-            else:
-                # Create item if it was previously None/Empty
-                new_item = QtWidgets.QTableWidgetItem(formatted_ms)
-                new_item.setFlags(new_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.setItem(target_row, ms_col_index, new_item)
+        for i, ion_name in enumerate(ion_names):
+            ion_data = compound.ions[ion_name]
 
-        # 4. Update LC Value
-        if lc_intensity is not None:
-            formatted_lc = str(lc_intensity)
-            
-            item = self.item(target_row, lc_col_index)
-            if item:
-                item.setText(formatted_lc)
-            else:
-                new_item = QtWidgets.QTableWidgetItem(formatted_lc)
-                new_item.setFlags(new_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.setItem(target_row, lc_col_index, new_item)
+            # Calculate column indices:
+            # Base offset is 3 (File, Cal, Conc). Each ion has 2 columns (MS, LC).
+            ms_col = 3 + (i * 2)
+            lc_col = ms_col + 1
+
+            # --- Update MS Column ---
+            # Extract baseline_corrected_area from the nested dictionary
+            ms_area_data = ion_data.get("Integration Data")
+            if isinstance(ms_area_data, dict):
+                ms_val = ms_area_data.get("baseline_corrected_area")
+                if ms_val is not None:
+                    # Format: Scientific notation with 2 decimal places
+                    new_text = f"{ms_val:.2e}"
+                    self._update_and_highlight_cell(target_row, ms_col, new_text)
+
+            # --- Update LC Column ---
+            lc_val = ion_data.get("LC Intensity")
+            if lc_val is not None:
+                new_text = str(lc_val)
+                self._update_and_highlight_cell(target_row, lc_col, new_text)
+
+    def _update_and_highlight_cell(self, row, col, new_text):
+        """
+        Helper to update cell text and apply a temporary background color.
+        """
+        item = self.item(row, col)
+
+        # Create item if it doesn't exist (e.g., if cell was previously empty)
+        if not item:
+            item = QtWidgets.QTableWidgetItem()
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.setItem(row, col, item)
+
+        # Only update and highlight if the text actually changed or if it's a forced update
+        # (Optional: remove the check if you want to highlight even if values are identical)
+        if item.text() != new_text:
+            item.setText(new_text)
+
+            # --- Visual Cue Implementation ---
+            # 1. Define highlight color (Soft Green)
+            highlight_color = QtGui.QColor(200, 255, 200)
+
+            # 2. Store original background to revert later
+            # We use the table's default palette base color usually, or white
+            original_brush = item.background()
+
+            # 3. Apply highlight
+            item.setBackground(highlight_color)
+
+            # 4. Set timer to revert after 10 seconds (10000 ms)
+            # We use a lambda to capture the specific item and original background
+            # Note: We check if the item still exists/is valid implicitly by Python's object handling
+            QtCore.QTimer.singleShot(10000, lambda: item.setBackground(original_brush))
 
 
 class ChromatogramPlotWidget(pg.PlotWidget):

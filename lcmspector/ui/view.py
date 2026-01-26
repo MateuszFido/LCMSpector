@@ -918,14 +918,25 @@ class View(QtWidgets.QMainWindow):
             except RuntimeError:
                 pass
 
+    def get_integration_bounds(self, canvas) -> tuple[float, float]:
+        """Retrieve the current positions of the left and right integration boundary lines."""
+        plot_item = canvas.getPlotItem()
+        left_bound = None
+        right_bound = None
 
-    def get_integration_bounds(self, canvas) -> (float, float):
-        items = canvas.getPlotItem().listDataItems()
-        for item in items:
-            print(item)
-        return 0.0, 1.0  # Placeholder return
+        for item in plot_item.items:
+            if isinstance(item, pg.InfiniteLine):
+                name = item.name()
+                if name and name.endswith("_left"):
+                    left_bound = item.value()
+                elif name and name.endswith("_right"):
+                    right_bound = item.value()
 
+        # Return bounds sorted (left < right)
+        if left_bound is not None and right_bound is not None:
+            return (min(left_bound, right_bound), max(left_bound, right_bound))
 
+        return 0.0, 1.0  # Fallback if lines not found
 
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
@@ -2044,10 +2055,6 @@ class View(QtWidgets.QMainWindow):
         )
         self.listLC.itemClicked.connect(self.handle_listLC_clicked)
         self.listMS.itemClicked.connect(self.handle_listMS_clicked)
-
-
-
-
 
     def retranslateUi(self, MainWindow):
         """

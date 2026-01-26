@@ -461,17 +461,22 @@ class Model(QThread):
                 self.worker.wait()
         logger.debug("Model shutdown complete.")
 
-
     def apply_integration_changes(self):
-        ''' 
+        """
         Retrieves the current boundaries, computes the peak area, and updates the quantitation table.
-        '''
-        current_compound_text = self.controller.view.comboBoxChooseCompound.currentText()
+        """
+        current_compound_text = (
+            self.controller.view.comboBoxChooseCompound.currentText()
+        )
         current_file_text = self.controller.view.unifiedResultsTable.get_selected_file()
 
-        current_compound = self.ms_measurements[current_file_text].get_compound_by_name(current_compound_text)
+        current_compound = self.ms_measurements[current_file_text].get_compound_by_name(
+            current_compound_text
+        )
 
-        integration_bounds = self.controller.view.get_integration_bounds(self.controller.view.canvas_library_ms2)
+        integration_bounds = self.controller.view.get_integration_bounds(
+            self.controller.view.canvas_library_ms2
+        )
 
         for ion in current_compound.ions:
             try:
@@ -487,19 +492,20 @@ class Model(QThread):
                 continue
             try:
                 ion_data["Integration Data"] = integrate_peak_manual_boundaries(
-                    ion_data["MS Intensity"][0], ion_data["MS Intensity"][1], ion_data["Integration Data"]["start_time"], ion_data["Integration Data"]["end_time"]
+                    ion_data["MS Intensity"][0],
+                    ion_data["MS Intensity"][1],
+                    ion_data["Integration Data"]["start_time"],
+                    ion_data["Integration Data"]["end_time"],
                 )
-            except Exception: 
+            except Exception:
                 logger.error(traceback.format_exc())
 
-        self.controller.view.unifiedResultsTable.update_ion_values(current_file_text, )
-
-
+        self.controller.view.unifiedResultsTable.update_ion_values(
+            current_file_text, current_compound
+        )
 
     def recalculate_integration_all_files(self):
         pass
 
     def reset_integration(self):
         pass
-
-
