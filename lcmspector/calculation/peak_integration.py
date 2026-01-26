@@ -615,12 +615,12 @@ def integrate_peak_area_trapezoidal(
     
     # Calculate baseline-corrected area
     if len(baseline) > 0 and len(baseline) == len(peak_intensities):
-        corrected_intensities = peak_intensities - baseline
+        corrected_intensities = np.maximum(peak_intensities - baseline, 0)
         baseline_corrected_area = trapz(corrected_intensities, peak_times)
     else:
         # Fallback: use linear baseline
         baseline_linear = np.linspace(peak_intensities[0], peak_intensities[-1], len(peak_intensities))
-        corrected_intensities = peak_intensities - baseline_linear
+        corrected_intensities = np.maximum(peak_intensities - baseline_linear, 0)
         baseline_corrected_area = trapz(corrected_intensities, peak_times)
     
     return total_area, baseline_corrected_area

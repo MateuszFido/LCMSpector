@@ -476,17 +476,24 @@ class Model(QThread):
 
         integration_bounds = self.controller.view.get_integration_bounds(
             self.controller.view.canvas_library_ms2
-        )
+        )  # Returns dict[ion_key, (left, right)]
 
+        print(integration_bounds)
         for ion in current_compound.ions:
+            if str(ion) not in integration_bounds:
+                logger.warning(f"No bounds found for {ion}, skipping.")
+                continue
+
+            left, right = integration_bounds[str(ion)]
+
             try:
                 ion_data = current_compound.ions[ion]
             except Exception:
                 logger.error(f"Problem retrieving integration data. Skipping {ion}...")
                 continue
             try:
-                ion_data["Integration Data"]["start_time"] = integration_bounds[0]
-                ion_data["Integration Data"]["end_time"] = integration_bounds[1]
+                ion_data["Integration Data"]["start_time"] = left
+                ion_data["Integration Data"]["end_time"] = right
             except AttributeError:
                 logger.error(f"Problem setting integration bounds. Skipping {ion}...")
                 continue

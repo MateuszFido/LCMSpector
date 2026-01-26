@@ -918,25 +918,35 @@ class View(QtWidgets.QMainWindow):
             except RuntimeError:
                 pass
 
-    def get_integration_bounds(self, canvas) -> tuple[float, float]:
-        """Retrieve the current positions of the left and right integration boundary lines."""
+    def get_integration_bounds(self, canvas) -> dict[str, tuple[float, float]]:
+        """Retrieve integration bounds for each ion.
+
+        Returns a dictionary mapping ion_key to (left, right) bounds tuple.
+        """
         plot_item = canvas.getPlotItem()
-        left_bound = None
-        right_bound = None
+        bounds = {}  # ion_key -> {"left": val, "right": val}
 
         for item in plot_item.items:
             if isinstance(item, pg.InfiniteLine):
                 name = item.name()
                 if name and name.endswith("_left"):
-                    left_bound = item.value()
+                    ion_key = name[:-5]  # Remove "_left"
+                    if ion_key not in bounds:
+                        bounds[ion_key] = {}
+                    bounds[ion_key]["left"] = item.value()
                 elif name and name.endswith("_right"):
-                    right_bound = item.value()
+                    ion_key = name[:-6]  # Remove "_right"
+                    if ion_key not in bounds:
+                        bounds[ion_key] = {}
+                    bounds[ion_key]["right"] = item.value()
 
-        # Return bounds sorted (left < right)
-        if left_bound is not None and right_bound is not None:
-            return (min(left_bound, right_bound), max(left_bound, right_bound))
-
-        return 0.0, 1.0  # Fallback if lines not found
+        # Convert to sorted tuples
+        result = {}
+        for ion_key, b in bounds.items():
+            if "left" in b and "right" in b:
+                result[ion_key] = (min(b["left"], b["right"]),
+                                   max(b["left"], b["right"]))
+        return result
 
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
