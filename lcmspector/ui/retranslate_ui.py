@@ -1,7 +1,10 @@
 from PySide6 import QtCore, QtGui
-import os, logging, traceback
+import os
+import logging
+import traceback
 
 logger = logging.getLogger(__name__)
+
 
 def retranslateUi(MainWindow):
     """
@@ -14,14 +17,16 @@ def retranslateUi(MainWindow):
     _translate = QtCore.QCoreApplication.translate
     MainWindow.setWindowTitle(_translate("MainWindow", "LCMSpector"))
     MainWindow.setWindowIcon(
-        QtGui.QIcon(
-            os.path.join(os.path.dirname(__file__), "resources", "icon.icns")
-        )
+        QtGui.QIcon(os.path.join(os.path.dirname(__file__), "resources", "icon.icns"))
     )
     try:
         MainWindow.browseLC.setText(_translate("MainWindow", "Browse"))
-        MainWindow.comboBoxChangeMode.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
-        MainWindow.comboBoxChangeMode.setItemText(1, _translate("MainWindow", "MS Only"))
+        MainWindow.comboBoxChangeMode.setItemText(
+            0, _translate("MainWindow", "LC/GC-MS")
+        )
+        MainWindow.comboBoxChangeMode.setItemText(
+            1, _translate("MainWindow", "MS Only")
+        )
         MainWindow.comboBoxChangeMode.setItemText(
             2, _translate("MainWindow", "Chromatography Only")
         )
@@ -34,7 +39,9 @@ def retranslateUi(MainWindow):
             _translate("MainWindow", "Chromatography data (.txt)")
         )
         MainWindow.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
-        MainWindow.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
+        MainWindow.labelIonList.setText(
+            _translate("MainWindow", "Targeted m/z values:")
+        )
         MainWindow.comboBoxIonLists.setToolTip(
             _translate(
                 "MainWindow",
@@ -43,13 +50,15 @@ def retranslateUi(MainWindow):
         )
         MainWindow.processButton.setText(_translate("MainWindow", "Process"))
         MainWindow.tabWidget.setTabText(
-            MainWindow.tabWidget.indexOf(MainWindow.tabUpload), _translate("MainWindow", "Upload")
+            MainWindow.tabWidget.indexOf(MainWindow.tabUpload),
+            _translate("MainWindow", "Upload"),
         )
         MainWindow.tabResults.label_results_currentfile.setText(
             _translate("MainWindow", "Current file:")
         )
         MainWindow.tabWidget.setTabText(
-            MainWindow.tabWidget.indexOf(MainWindow.tabResults), _translate("MainWindow", "Results")
+            MainWindow.tabWidget.indexOf(MainWindow.tabResults),
+            _translate("MainWindow", "Results"),
         )
         MainWindow.label_curr_compound.setText(_translate("MainWindow", "Compound:"))
         MainWindow.label_calibrate.setText(

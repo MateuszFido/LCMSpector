@@ -355,8 +355,8 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
         logger.warning(f"No calibration parameters found for {compound.name}")
 
 
-def plot_total_ion_current(widget: pg.PlotWidget, ms_data: List[dict], filename: str):
-    """Plots TIC."""
+def plot_total_ion_current(widget: pg.PlotWidget, ms_measurement, filename: str):
+    """Plots TIC using pre-extracted data from MSMeasurement."""
     widget.clear()
     PlotStyle.apply_standard_style(
         widget,
@@ -365,24 +365,13 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: List[dict], filename:
         y_label="Intensity (cps)",
     )
 
-    tic = []
-    times = []
-
-    for scan in ms_data:
-        try:
-            curr_tic = scan.get("total ion current", 0)
-
-            # Scan start time extraction can be tricky depending on parser
-            scan_list = scan.get("scanList", {}).get("scan", [{}])[0]
-            curr_time = scan_list.get("scan start time", 0)
-
-            tic.append(curr_tic)
-            times.append(curr_time)
-        except (KeyError, IndexError):
-            continue
-
-    if times and tic:
-        widget.plot(times, tic, pen=mkPen("#3c5488ff", width=1))
+    # Use pre-extracted TIC data (no iteration needed - instant)
+    if ms_measurement.tic_times is not None and len(ms_measurement.tic_times) > 0:
+        widget.plot(
+            ms_measurement.tic_times,
+            ms_measurement.tic_values,
+            pen=mkPen("#3c5488ff", width=1)
+        )
 
 
 def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):

@@ -44,6 +44,8 @@ from ui.widgets import (
     LabelledSlider,
     ReadmeDialog,
 )
+from ui.tabs.upload_tab import UploadTab
+from ui.retranslate_ui import retranslateUi
 
 
 pg.setConfigOptions(antialias=True)
@@ -634,8 +636,31 @@ class View(QtWidgets.QMainWindow):
             return
 
     def plot_raw_MS(self, ms_file):
+        self.canvas_baseline.clear()
         self.canvas_avgMS.clear()
         if ms_file:
+            # Plot TIC to canvas_baseline
+            try:
+                plot_total_ion_current(self.canvas_baseline, ms_file, ms_file.filename)
+                self.canvas_baseline.getPlotItem().addItem(
+                    self.crosshair_v, ignoreBounds=True
+                )
+                self.canvas_baseline.getPlotItem().addItem(
+                    self.crosshair_h, ignoreBounds=True
+                )
+                self.canvas_baseline.getPlotItem().addItem(
+                    self.line_marker, ignoreBounds=True
+                )
+                self.crosshair_v_label = pg.InfLineLabel(
+                    self.crosshair_v, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                )
+                self.crosshair_h_label = pg.InfLineLabel(
+                    self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
+                )
+            except AttributeError:
+                logger.error(f"No TIC found: {traceback.format_exc()}")
+
+            # Plot avgMS to canvas_avgMS
             try:
                 plot_average_ms_data(
                     ms_file.filename, 0, ms_file.data, self.canvas_avgMS
@@ -733,7 +758,7 @@ class View(QtWidgets.QMainWindow):
             if ms_file:
                 try:
                     plot_total_ion_current(
-                        self.canvas_baseline, ms_file.data, ms_file.filename
+                        self.canvas_baseline, ms_file, ms_file.filename
                     )
                     self.canvas_baseline.getPlotItem().addItem(
                         self.crosshair_v, ignoreBounds=True
@@ -944,8 +969,10 @@ class View(QtWidgets.QMainWindow):
         result = {}
         for ion_key, b in bounds.items():
             if "left" in b and "right" in b:
-                result[ion_key] = (min(b["left"], b["right"]),
-                                   max(b["left"], b["right"]))
+                result[ion_key] = (
+                    min(b["left"], b["right"]),
+                    max(b["left"], b["right"]),
+                )
         return result
 
     def update_line_marker(self, event):
@@ -963,9 +990,9 @@ class View(QtWidgets.QMainWindow):
         self.line_marker.setVisible(True)
         # Change the position by one scan to the left or right
         if event.key() == QtCore.Qt.Key.Key_Left:
-            self.line_marker.setPos(self.line_marker.pos() - 0.01)
+            self.line_marker.setPos(self.line_marker.pos().x() - 0.01)
         elif event.key() == QtCore.Qt.Key.Key_Right:
-            self.line_marker.setPos(self.line_marker.pos() + 0.01)
+            self.line_marker.setPos(self.line_marker.pos().x() + 0.01)
 
     def clear_list_lc(self):
         self.listLC.clear()
@@ -1460,6 +1487,7 @@ class View(QtWidgets.QMainWindow):
     def show_scan_at_time_x(self, event):
         time_x = float(self.line_marker.pos().x())
         self.canvas_avgMS.clear()
+        file = None
         if (
             self.controller.mode == "LC/GC-MS"
             and self.listLC.count() > 0
@@ -1479,17 +1507,16 @@ class View(QtWidgets.QMainWindow):
             except Exception:
                 logger.error(f"Error displaying average MS: {traceback.format_exc()}")
                 return
-        else:
-            logger.debug("No MS files loaded, skipping showing scan at time X.")
-            return
-        if self.controller.mode == "MS Only" and self.listMS.count() > 0:
+        elif self.controller.mode == "MS Only" and self.listMS.count() > 0:
             try:
                 file = Path(self.listMS.currentItem().text()).name.split(".")[0]
             except AttributeError:
-                logger.error("No MS file highlighted.")
                 file = Path(self.listMS.item(0).text()).name.split(".")[0]
             except Exception:
                 logger.error(f"Error displaying average MS: {traceback.format_exc()}")
+        else:
+            logger.debug("No MS files loaded, skipping showing scan at time X.")
+            return
         if file:
             try:
                 plot_average_ms_data(
@@ -2032,9 +2059,10 @@ class View(QtWidgets.QMainWindow):
         self.comboBoxChangeMode.addItem("")
         self.gridLayoutOuter.addWidget(self.comboBoxChangeMode, 2, 0, 1, 1)
 
-        self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
+        retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
         # Connect signals
         # TODO: Implement the rest of the menu items
         # self.actionSave.triggered.connect(self.on_save)
@@ -2065,92 +2093,3 @@ class View(QtWidgets.QMainWindow):
         )
         self.listLC.itemClicked.connect(self.handle_listLC_clicked)
         self.listMS.itemClicked.connect(self.handle_listMS_clicked)
-
-    def retranslateUi(self, MainWindow):
-        """
-        Set the text of the UI elements according to the current locale.
-
-        Parameters
-        ----------
-            MainWindow: The main window object for which the UI is being set up.
-        """
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "LCMSpector"))
-        MainWindow.setWindowIcon(
-            QtGui.QIcon(
-                os.path.join(os.path.dirname(__file__), "resources", "icon.icns")
-            )
-        )
-        try:
-            self.browseLC.setText(_translate("MainWindow", "Browse"))
-            self.comboBoxChangeMode.setItemText(0, _translate("MainWindow", "LC/GC-MS"))
-            self.comboBoxChangeMode.setItemText(1, _translate("MainWindow", "MS Only"))
-            self.comboBoxChangeMode.setItemText(
-                2, _translate("MainWindow", "Chromatography Only")
-            )
-            self.browseMS.setText(_translate("MainWindow", "Browse"))
-            self.browseAnnotations.setText(_translate("MainWindow", "Browse"))
-            self.labelAnnotations.setText(
-                _translate("MainWindow", "Annotations (.txt)")
-            )
-            self.labelLCdata.setText(
-                _translate("MainWindow", "Chromatography data (.txt)")
-            )
-            self.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
-            self.labelIonList.setText(_translate("MainWindow", "Targeted m/z values:"))
-        except RuntimeError:
-            logger.error("Error retranslating ui:", traceback.format_exc())
-        self.comboBoxIonLists.setToolTip(
-            _translate(
-                "MainWindow",
-                "Choose an ion list from the list of ion lists provided with the software",
-            )
-        )
-        self.processButton.setText(_translate("MainWindow", "Process"))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tabUpload), _translate("MainWindow", "Upload")
-        )
-        self.label_results_currentfile.setText(
-            _translate("MainWindow", "Current file:")
-        )
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tabResults), _translate("MainWindow", "Results")
-        )
-        self.label_curr_compound.setText(_translate("MainWindow", "Compound:"))
-        self.label_calibrate.setText(
-            _translate("MainWindow", "Select the files to be used for calibration.")
-        )
-        self.calibrateButton.setText(_translate("MainWindow", "Calculate"))
-        self.tabWidget.setTabText(
-            self.tabWidget.indexOf(self.tabQuantitation),
-            _translate("MainWindow", "Quantitation"),
-        )
-        self.menuFile.setTitle(_translate("MainWindow", "File"))
-        self.actionFile.setText(_translate("MainWindow", "File"))
-        self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
-        self.menuHelp.setTitle(_translate("MainWindow", "Help"))
-        self.actionSave.setText(_translate("MainWindow", "Save"))
-        self.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
-        self.actionExit.setText(_translate("MainWindow", "Exit"))
-        self.actionExit.setShortcut(_translate("MainWindow", "Ctrl+W"))
-        self.actionExport.setText(_translate("MainWindow", "Export"))
-        self.actionExport.setShortcut(_translate("MainWindow", "Ctrl+E"))
-        self.actionAbout.setText(_translate("MainWindow", "About"))
-        self.actionAbout.setShortcut(_translate("MainWindow", "F1"))
-        self.actionPreferences.setText(_translate("MainWindow", "Preferences"))
-        self.actionReadme.setText(_translate("MainWindow", "Readme"))
-        self.actionReadme.setShortcut(_translate("MainWindow", "F10"))
-        self.actionLogs.setText(_translate("MainWindow", "Logs"))
-        self.actionLogs.setShortcut(_translate("MainWindow", "F11"))
-        self.actionOpen.setText(_translate("MainWindow", "Open"))
-        self.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
-        self.button_clear_LC.setText(_translate("MainWindow", "Clear"))
-        self.button_clear_MS.setText(_translate("MainWindow", "Clear"))
-        self.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
-        self.button_save_ion_list.setText(_translate("MainWindow", "Save"))
-        self.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
-        self.button_apply_integration.setText(_translate("MainWindow", "Apply"))
-        self.button_reset_integration.setText(_translate("MainWindow", "Reset"))
-        self.button_recalculate_integration.setText(
-            _translate("MainWindow", "Apply to all files")
-        )
