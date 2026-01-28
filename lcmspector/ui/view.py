@@ -45,6 +45,8 @@ from ui.widgets import (
     ReadmeDialog,
 )
 from ui.tabs.upload_tab import UploadTab
+from ui.tabs.results_tab import ResultsTab
+from ui.tabs.quantitation_tab import QuantitationTab
 from ui.retranslate_ui import retranslateUi
 
 
@@ -64,6 +66,85 @@ class View(QtWidgets.QMainWindow):
         cp = self.screen().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+    # --- Widget Delegation Properties for Controller Access ---
+    # These properties provide backward-compatible access to widgets that
+    # are now managed by the tab modules.
+
+    @property
+    def calibrateButton(self):
+        """Access calibrate button from QuantitationTab."""
+        return self.quantitation_tab.calibrateButton
+
+    @property
+    def comboBoxChooseCompound(self):
+        """Access compound combo box from QuantitationTab."""
+        return self.quantitation_tab.comboBoxChooseCompound
+
+    @property
+    def comboBoxChooseMS2File(self):
+        """Access MS2 file combo box from QuantitationTab."""
+        return self.quantitation_tab.comboBoxChooseMS2File
+
+    @property
+    def unifiedResultsTable(self):
+        """Access unified results table from QuantitationTab."""
+        return self.quantitation_tab.unifiedResultsTable
+
+    @property
+    def canvas_calibration(self):
+        """Access calibration canvas from QuantitationTab."""
+        return self.quantitation_tab.canvas_calibration
+
+    @property
+    def canvas_ms2(self):
+        """Access MS2 canvas from QuantitationTab."""
+        return self.quantitation_tab.canvas_ms2
+
+    @property
+    def canvas_library_ms2(self):
+        """Access library MS2 canvas from QuantitationTab."""
+        return self.quantitation_tab.canvas_library_ms2
+
+    @property
+    def button_apply_integration(self):
+        """Access apply integration button from QuantitationTab."""
+        return self.quantitation_tab.button_apply_integration
+
+    @property
+    def button_recalculate_integration(self):
+        """Access recalculate integration button from QuantitationTab."""
+        return self.quantitation_tab.button_recalculate_integration
+
+    @property
+    def button_reset_integration(self):
+        """Access reset integration button from QuantitationTab."""
+        return self.quantitation_tab.button_reset_integration
+
+    @property
+    def comboBox_currentfile(self):
+        """Access current file combo box from ResultsTab."""
+        return self.results_tab.comboBox_currentfile
+
+    @property
+    def canvas_XICs(self):
+        """Access XICs dock area from ResultsTab."""
+        return self.results_tab.canvas_XICs
+
+    @property
+    def canvas_annotatedLC(self):
+        """Access annotated LC canvas from ResultsTab."""
+        return self.results_tab.canvas_annotatedLC
+
+    @property
+    def scrollArea(self):
+        """Access scroll area from ResultsTab."""
+        return self.results_tab.scrollArea
+
+    @property
+    def gridLayoutResults(self):
+        """Access results grid layout from ResultsTab."""
+        return self.results_tab._main_layout
 
     def show_download_confirmation(self):
         """Displays a confirmation dialog for downloading the MS2 library."""
@@ -521,90 +602,39 @@ class View(QtWidgets.QMainWindow):
         QtWidgets.QMessageBox.critical(self, "Error", message)
 
     def update_combo_box(self, filenames):
+        """Update the file selection combo box in the results tab."""
         try:
-            self.comboBox_currentfile.clear()
-            self.comboBox_currentfile.addItems(filenames)
+            self.results_tab.update_combo_box(filenames)
         except AttributeError:
-            logger.error("Combo box not found in the view.")
+            logger.error("Results tab combo box not found in the view.")
 
     def update_table_quantitation(self, concentrations):
         """
         Update the unified results table with file concentrations and setup columns.
-        This replaces the old separate tableWidget_files functionality.
+        Delegates to QuantitationTab.
         """
-        # Store concentrations for later use
-        self.file_concentrations = concentrations
-
-        # Setup columns and populate data based on current compound selection
-        self.update_unified_table_for_compound()
+        self.quantitation_tab.update_table_quantitation(concentrations)
 
     def update_unified_table_for_compound(self):
         """
         Update the unified table based on the currently selected compound.
+        Delegates to QuantitationTab.
         """
-        if not hasattr(self, "file_concentrations"):
-            return
-
-        # Get the currently selected compound
-        current_compound = None
-        if (
-            hasattr(self.controller, "model")
-            and hasattr(self.controller.model, "compounds")
-            and self.controller.model.compounds
-            and self.comboBoxChooseCompound.currentIndex() >= 0
-        ):
-            current_compound = self.controller.model.compounds[
-                self.comboBoxChooseCompound.currentIndex()
-            ]
-
-            # Setup columns for the current compound
-            self.unifiedResultsTable.setup_columns(current_compound)
-
-            # Get MS measurements if available
-            ms_measurements = getattr(self.controller.model, "ms_measurements", {})
-
-            # Populate the table with data for the current compound
-            self.unifiedResultsTable.populate_data(
-                self.file_concentrations, ms_measurements, current_compound
-            )
-        else:
-            # Fallback: just setup basic columns without compound data
-            self.unifiedResultsTable.setColumnCount(3)
-            self.unifiedResultsTable.setHorizontalHeaderLabels(
-                ["File", "Calibration", "Concentration"]
-            )
-            self.unifiedResultsTable.setRowCount(len(self.file_concentrations))
-
-            for row, (filename, concentration) in enumerate(self.file_concentrations):
-                # File name
-                file_item = QtWidgets.QTableWidgetItem(filename)
-                file_item.setFlags(file_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
-                self.unifiedResultsTable.setItem(row, 0, file_item)
-
-                # Calibration checkbox
-                checkbox_widget = QtWidgets.QWidget()
-                checkbox = QtWidgets.QCheckBox()
-                checkbox.setChecked(False)
-                layout = QtWidgets.QHBoxLayout(checkbox_widget)
-                layout.addWidget(checkbox)
-                layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                layout.setContentsMargins(0, 0, 0, 0)
-                self.unifiedResultsTable.setCellWidget(row, 1, checkbox_widget)
-
-                # Concentration
-                conc_item = QtWidgets.QTableWidgetItem(concentration or "")
-                self.unifiedResultsTable.setItem(row, 2, conc_item)
+        self.quantitation_tab.update_unified_table_for_compound()
 
     def get_calibration_files(self):
         """
         Get calibration files from the unified results table.
+        Delegates to QuantitationTab.
         """
-        return self.unifiedResultsTable.get_calibration_files()
+        return self.quantitation_tab.get_calibration_files()
 
     def update_choose_compound(self, compounds):
-        self.comboBoxChooseCompound.clear()
-        for compound in compounds:
-            self.comboBoxChooseCompound.addItem(compound.name)
+        """
+        Update the compound selection combo box.
+        Delegates to QuantitationTab.
+        """
+        self.quantitation_tab.update_choose_compound(compounds)
 
     def plot_raw_chromatography(self, lc_file):
         if self.controller.mode == "LC/GC-MS":
@@ -669,6 +699,9 @@ class View(QtWidgets.QMainWindow):
                 logger.error(f"No average MS found: {traceback.format_exc()}")
 
     def display_plots(self, lc_file, ms_file):
+        """
+        Display plots for the given files in both upload and results tabs.
+        """
         if self.controller.mode == "LC/GC-MS":
             self.canvas_baseline.clear()
             if lc_file:
@@ -703,58 +736,13 @@ class View(QtWidgets.QMainWindow):
                     )
                 except AttributeError:
                     logger.error(f"No average MS found: {traceback.format_exc()}")
-            if ms_file:
-                try:
-                    plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
-                except Exception:
-                    logger.error(f"No XIC plot found: {traceback.format_exc()}")
-            if lc_file and ms_file:
-                if lc_file.filename == ms_file.filename:
-                    try:
-                        self.canvas_annotatedLC.clear()
-                        self.curve_list = plot_annotated_LC(
-                            lc_file.path,
-                            lc_file.baseline_corrected,
-                            self.canvas_annotatedLC,
-                        )
-                    except RuntimeError:
-                        logger.error(
-                            "Canvas was deleted, reacreating canvas_annotatedLC."
-                        )
-                        self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
-                        self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
-                        self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-                        self.gridLayoutResults.addWidget(
-                            self.canvas_annotatedLC, 0, 1, 1, 1
-                        )
-                        self.curve_list = plot_annotated_LC(
-                            lc_file.path,
-                            lc_file.baseline_corrected,
-                            self.canvas_annotatedLC,
-                        )
-                    for curve in self.curve_list.keys():
-                        curve.sigClicked.connect(
-                            lambda c: highlight_peak(
-                                c,
-                                self.curve_list,
-                                self.canvas_annotatedLC,
-                                ms_file.xics,
-                            )
-                        )
+
+            # Delegate results tab plotting to ResultsTab
+            self.results_tab.display_plots(lc_file, ms_file)
 
         elif self.controller.mode == "MS Only":
-            try:
-                self.canvas_baseline.clear()
-                self.canvas_avgMS.clear()
-                self.canvas_XICs.clear()
-                self.gridLayoutResults.removeWidget(self.canvas_annotatedLC)
-                self.canvas_annotatedLC.deleteLater()
-                # Set scrollArea (holds canvasXIC) to span two rows of the grid
-                self.gridLayoutResults.removeWidget(self.scrollArea)
-                self.gridLayoutResults.addWidget(self.scrollArea, 0, 1, 1, 1)
-                self.browseAnnotations.deleteLater()
-            except RuntimeError:
-                logger.error(f"Widgets not found: {traceback.format_exc()}")
+            self.canvas_baseline.clear()
+            self.canvas_avgMS.clear()
             if ms_file:
                 try:
                     plot_total_ion_current(
@@ -778,148 +766,48 @@ class View(QtWidgets.QMainWindow):
                     plot_average_ms_data(
                         ms_file.filename, 0, ms_file.data, self.canvas_avgMS
                     )
-                    plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
                 except AttributeError:
                     logger.error(f"No plot found: {traceback.format_exc()}")
 
-    def setup_dock_area(self, xics: tuple, widget: DockArea):
-        cols = 5
-        row_anchor_dock = None
+            # Delegate results tab plotting to ResultsTab
+            self.results_tab.display_plots(None, ms_file)
 
-        for i, compound in enumerate(xics):
-            if i % cols == 0:
-                position = "bottom"
-                relative_to = None
-            else:
-                position = "right"
-                relative_to = row_anchor_dock
-
-            dock = widget.addDock(
-                position=position,
-                relativeTo=relative_to,
-                name=f"{compound.name}",
-                widget=pg.PlotWidget(),
-                size=(100, 100),
-            )
-
-            # If this was a new row (or first item), update the anchor
-            if i % cols == 0:
-                row_anchor_dock = dock
-
-            plot_widget = dock.widgets[0]
-            plot_widget.setMouseEnabled(x=True, y=False)
-            plot_widget.addLegend(offset=(0, 0))
-            plot_widget.getViewBox().enableAutoRange(axis="y", enable=True)
-
-        # Resize logic to ensure docks aren't squashed
-        widget.setMinimumSize(QtCore.QSize(cols * 150, (len(xics) // cols + 1) * 200))
+    def setup_dock_area(self, xics: tuple, widget: DockArea = None):
+        """
+        Setup the dock area with XIC plots.
+        Delegates to ResultsTab.
+        """
+        if widget is None:
+            widget = self.results_tab.canvas_XICs
+        self.results_tab.setup_dock_area(xics, widget)
 
     def display_calibration_curve(self):
-        self.canvas_calibration.clear()
-        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis="y", enable=True)
-        self.canvas_calibration.getPlotItem().vb.enableAutoRange(axis="x", enable=True)
-        self.canvas_calibration.getPlotItem().vb.setAutoVisible(x=True, y=True)
-        for compound in self.controller.model.compounds:
-            if compound.name == self.comboBoxChooseCompound.currentText():
-                try:
-                    plot_calibration_curve(compound, self.canvas_calibration)
-                except TypeError:
-                    logger.error(
-                        f"No calibration curve found for {compound.name}: {traceback.format_exc()}"
-                    )
+        """
+        Display calibration curve for selected compound.
+        Delegates to QuantitationTab.
+        """
+        self.quantitation_tab.display_calibration_curve()
 
     def display_concentrations(self):
         """
-        This method is now handled by the unified results table.
-        The concentration display is automatically updated when the table is populated.
+        Display concentrations.
+        Delegates to QuantitationTab.
         """
-        # The unified table automatically shows concentrations and ion intensities
-        # No separate method needed as this is handled in update_table_quantitation
-        pass
-
-    ### Unused for now
-    # def display_library_ms2(self):
-    #    try:
-    #        library_entries = self.controller.model.find_ms2_precursors()
-    #    except Exception as e:
-    #        logger.error(f"Error finding MS2 precursors: {e}")
-    #    self.canvas_library_ms2.clear()
-    #    self.canvas_library_ms2.setBackground("w")
-    #    # Plot the library entry which is currently selected in comboBoxChooseMS2File
-    #    try:
-    #        library_entry = library_entries[self.comboBoxChooseMS2File.currentText()]
-    #        plot_library_ms2(library_entry, self.canvas_library_ms2)
-    #        self.comboBoxChooseMS2File.currentIndexChanged.connect(
-    #            lambda: plot_library_ms2(
-    #                library_entries[self.comboBoxChooseMS2File.currentText()],
-    #                self.canvas_library_ms2,
-    #            )
-    #        )
-    #    except IndexError:
-    #        logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
-    #        plot_no_ms2_found(self.canvas_library_ms2)
-    #    except KeyError:
-    #        logger.error(f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}")
+        self.quantitation_tab.display_concentrations()
 
     def display_compound_integration(self):
         """
-        Method displaying compound integration boundaries and letting the user manually change the boundaries.
+        Display compound integration boundaries.
+        Delegates to QuantitationTab.
         """
-        selected_file = self.unifiedResultsTable.get_selected_file()
-        if not selected_file:
-            try:
-                selected_file = self.unifiedResultsTable.itemAt(0, 0)
-            except Exception as e:
-                logger.error(e)
-        ms_file = self.controller.model.ms_measurements.get(selected_file)
-        try:
-            ms_compound = next(
-                xic
-                for xic in ms_file.xics
-                if xic.name == self.comboBoxChooseCompound.currentText()
-            )
-        except AttributeError:
-            logger.warning(f"No MS data found for {selected_file}.")
-        plot_compound_integration(self.canvas_library_ms2, ms_compound)
+        self.quantitation_tab.display_compound_integration()
 
     def display_ms2(self):
         """
-        Display MS2 data for the selected file in the unified results table.
+        Display MS2 data for the selected file.
+        Delegates to QuantitationTab.
         """
-        selected_file = self.unifiedResultsTable.get_selected_file()
-        if not selected_file:
-            logger.error("No file selected for MS2 display")
-            plot_no_ms2_found(self.canvas_ms2)
-            return
-
-        ms_file = self.controller.model.ms_measurements.get(selected_file)
-        if ms_file is None:
-            logger.error(f"No MS file found for {selected_file}")
-            plot_no_ms2_found(self.canvas_ms2)
-            return
-
-        try:
-            self.controller.model.find_ms2_in_file(ms_file)
-            compound = next(
-                (
-                    xic
-                    for xic in ms_file.xics
-                    if xic.name == self.comboBoxChooseCompound.currentText()
-                ),
-                None,
-            )
-            precursor = float(
-                self.comboBoxChooseMS2File.currentText()
-                .split("m/z ")[1]
-                .replace("(", "")
-                .replace(")", "")
-            )
-            plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
-        except Exception:
-            logger.error(
-                f"No MS2 found for {self.comboBoxChooseMS2File.currentText()} in {ms_file.filename}: {traceback.format_exc()}"
-            )
-            plot_no_ms2_found(self.canvas_ms2)
+        self.quantitation_tab.display_ms2()
 
     def update_crosshair(self, e):
         """
@@ -943,37 +831,14 @@ class View(QtWidgets.QMainWindow):
             except RuntimeError:
                 pass
 
-    def get_integration_bounds(self, canvas) -> dict[str, tuple[float, float]]:
+    def get_integration_bounds(self, canvas=None) -> dict[str, tuple[float, float]]:
         """Retrieve integration bounds for each ion.
+
+        Delegates to QuantitationTab.
 
         Returns a dictionary mapping ion_key to (left, right) bounds tuple.
         """
-        plot_item = canvas.getPlotItem()
-        bounds = {}  # ion_key -> {"left": val, "right": val}
-
-        for item in plot_item.items:
-            if isinstance(item, pg.InfiniteLine):
-                name = item.name()
-                if name and name.endswith("_left"):
-                    ion_key = name[:-5]  # Remove "_left"
-                    if ion_key not in bounds:
-                        bounds[ion_key] = {}
-                    bounds[ion_key]["left"] = item.value()
-                elif name and name.endswith("_right"):
-                    ion_key = name[:-6]  # Remove "_right"
-                    if ion_key not in bounds:
-                        bounds[ion_key] = {}
-                    bounds[ion_key]["right"] = item.value()
-
-        # Convert to sorted tuples
-        result = {}
-        for ion_key, b in bounds.items():
-            if "left" in b and "right" in b:
-                result[ion_key] = (
-                    min(b["left"], b["right"]),
-                    max(b["left"], b["right"]),
-                )
-        return result
+        return self.quantitation_tab.get_integration_bounds(canvas)
 
     def update_line_marker(self, event):
         # Update the position of the vertical line marker every time the user clicks on the canvas
@@ -1766,215 +1631,35 @@ class View(QtWidgets.QMainWindow):
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         #
-        #
-        #
-        #
-        #
-        # 2nd tab
-        #
-        #
-        #
-        #
+        # Results Tab (2nd tab) - Uses ResultsTab module
         #
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        self.tabResults = QtWidgets.QWidget()
-        self.tabResults.setObjectName("tabResults")
+        self.results_tab = ResultsTab(parent=self.tabWidget)
+        self.tabResults = self.results_tab  # Alias for backward compatibility
 
-        self.gridLayoutResults = QtWidgets.QGridLayout(self.tabResults)
-        self.label_results_currentfile = QtWidgets.QLabel(parent=self.tabResults)
-        self.label_results_currentfile.setEnabled(True)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.label_results_currentfile.sizePolicy().hasHeightForWidth()
-        )
-        self.label_results_currentfile.setSizePolicy(sizePolicy)
-        self.label_results_currentfile.setObjectName("label_results_currentfile")
-        self.gridLayoutResults.addWidget(self.label_results_currentfile, 0, 0, 1, 1)
-        self.comboBox_currentfile = QtWidgets.QComboBox(parent=self.tabResults)
-        self.comboBox_currentfile.setObjectName("comboBox_currentfile")
-        self.gridLayoutResults.addWidget(self.comboBox_currentfile, 0, 1, 1, 1)
-
-        # XICs
-        self.scrollArea = QtWidgets.QScrollArea(parent=self.tabResults)
-        self.scrollArea.setWidgetResizable(True)
-        self.scrollArea.setObjectName("scrollArea")
-        self.scrollArea.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
-        )
-        self.scrollArea.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
-        )
-        self.gridLayoutResults.addWidget(self.scrollArea, 1, 1, 1, 1)
-
-        self.canvas_XICs = DockArea(parent=self.tabResults)
-        self.canvas_XICs.setObjectName("canvas_XICs")
-        self.scrollArea.setWidget(self.canvas_XICs)
-        self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
-
-        # annotated LC
-        self.canvas_annotatedLC = pg.PlotWidget(parent=self.tabResults)
-        self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
-        self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-        self.gridLayoutResults.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        #
+        # Quantitation Tab (3rd tab) - Uses QuantitationTab module
+        #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        self.quantitation_tab = QuantitationTab(parent=self.tabWidget)
+        self.tabQuantitation = self.quantitation_tab  # Alias for backward compatibility
 
         ###
-        #
         #
         # Tab setup
         #
         ###
 
         self.tabWidget.addTab(self.tabUpload, "")
-        self.tabWidget.addTab(self.tabResults, "")
+        self.tabWidget.addTab(self.results_tab, "")
         self.tabWidget.setTabEnabled(
-            self.tabWidget.indexOf(self.tabResults), False
+            self.tabWidget.indexOf(self.results_tab), False
         )  # Disable the results tab
-        self.tabQuantitation = QtWidgets.QWidget()
-        self.gridLayout_6 = QtWidgets.QGridLayout(self.tabQuantitation)
-        self.tabWidget.addTab(self.tabQuantitation, "")
+        self.tabWidget.addTab(self.quantitation_tab, "")
         self.tabWidget.setTabEnabled(
-            self.tabWidget.indexOf(self.tabQuantitation), False
+            self.tabWidget.indexOf(self.quantitation_tab), False
         )  # Disable the quant tab
-
-        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-        #
-        #
-        #
-        #
-        #
-        # Quant tab
-        #
-        #
-        #
-        #
-        #
-        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-        self.gridLayout_quant = QtWidgets.QGridLayout()
-        self.gridLayout_quant.setSizeConstraint(
-            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
-        )
-        self.gridLayout_quant.setObjectName("gridLayout_quant")
-        self.gridLayout_quant.setColumnStretch(0, 1)
-        self.gridLayout_quant.setColumnStretch(1, 1)
-        self.gridLayout_quant.setRowStretch(0, 1)
-        self.gridLayout_quant.setRowStretch(1, 1)
-        self.gridLayout_quant.setRowStretch(2, 1)
-        self.gridLayout_quant.setRowStretch(3, 1)
-        self.gridLayout_top_left = QtWidgets.QGridLayout()
-        self.gridLayout_top_left.setObjectName("gridLayout_top_left")
-
-        ###
-        #
-        # Quant tab: calibration setup
-        #
-        ###
-
-        self.label_calibrate = QtWidgets.QLabel(parent=self.tabQuantitation)
-        self.label_calibrate.setWordWrap(True)
-        self.label_calibrate.setObjectName("label_calibrate")
-        # Set size policy to prevent unnecessary expansion
-        self.label_calibrate.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
-        )
-        self.gridLayout_top_left.addWidget(self.label_calibrate, 0, 0, 1, 1)
-        self.calibrateButton = QtWidgets.QPushButton(parent=self.tabQuantitation)
-        self.calibrateButton.setObjectName("calibrateButton")
-        # Set size policy for the button to prevent expansion
-        self.calibrateButton.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
-        )
-        self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
-        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 3, 1)
-        self.unifiedResultsTable = UnifiedResultsTable(parent=self.tabQuantitation)
-        self.unifiedResultsTable.setObjectName("unifiedResultsTable")
-        self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 2, 2)
-
-        ###
-        #
-        # Quant tab: right column
-        #
-        ###
-
-        self.gridLayout_top_right = QtWidgets.QGridLayout()
-        self.gridLayout_top_right.setObjectName("gridLayout_top_right")
-        self.label_curr_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
-        )
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.label_curr_compound.sizePolicy().hasHeightForWidth()
-        )
-        self.label_curr_compound.setSizePolicy(sizePolicy)
-        self.label_curr_compound.setObjectName("label_curr_compound")
-        self.gridLayout_top_right.addWidget(self.label_curr_compound, 0, 0, 1, 2)
-        self.label_compound = QtWidgets.QLabel(parent=self.tabQuantitation)
-        self.label_compound.setSizePolicy(sizePolicy)
-        self.label_compound.setObjectName("label_compound")
-
-        self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 2)
-        self.comboBoxChooseCompound = QtWidgets.QComboBox(parent=self.tabQuantitation)
-        self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
-        self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
-        self.comboBoxChooseCompound.setEnabled(False)
-        self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 2)
-        self.canvas_calibration = pg.PlotWidget()
-        self.canvas_calibration.setObjectName("canvas_calibration")
-        self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 2)
-        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 2)
-
-        ###
-        #
-        # Quant tab: MS2 canvas setup
-        #
-        ###
-
-        self.canvas_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
-        self.canvas_ms2.setObjectName("canvas_ms2")
-        self.canvas_ms2.setMouseEnabled(x=True, y=False)
-        self.canvas_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
-        self.canvas_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
-            lambda ev: update_labels_avgMS(self.canvas_ms2)
-        )
-
-        self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 2)
-        self.comboBoxChooseMS2File = QtWidgets.QComboBox(parent=self.tabQuantitation)
-        self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
-        self.gridLayout_quant.addWidget(
-            self.comboBoxChooseMS2File, 1, 1, 1, 2
-        )  # Above canvas_ms2
-        self.canvas_library_ms2 = pg.PlotWidget(parent=self.tabQuantitation)
-        self.canvas_library_ms2.setObjectName("canvas_library_ms2")
-        self.canvas_library_ms2.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
-        )
-        self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
-        self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
-        self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        # self.canvas_library_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
-        #    lambda ev: update_labels_avgMS(self.canvas_library_ms2)
-        # )
-        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 0, 1, 3)
-        self.gridLayout_6.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
-        self.button_reset_integration = QtWidgets.QPushButton(
-            parent=self.tabQuantitation
-        )
-        self.button_recalculate_integration = QtWidgets.QPushButton(
-            parent=self.tabQuantitation
-        )
-        self.button_apply_integration = QtWidgets.QPushButton(
-            parent=self.tabQuantitation
-        )
-        self.gridLayout_quant.addWidget(self.button_apply_integration, 4, 0, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 4, 1, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_reset_integration, 4, 2, 1, 1)
 
         self.gridLayoutOuter.addWidget(self.tabWidget, 3, 0, 1, 4)
         self.logo = QtWidgets.QLabel(parent=self.centralwidget)
@@ -2083,13 +1768,8 @@ class View(QtWidgets.QMainWindow):
         self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
-        # Connect compound selection change to update the unified table
-        self.comboBoxChooseCompound.currentIndexChanged.connect(
-            self.update_unified_table_for_compound
-        )
-        # Connect unified table selection change to display MS2 data
-        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
-            self.display_ms2
-        )
         self.listLC.itemClicked.connect(self.handle_listLC_clicked)
         self.listMS.itemClicked.connect(self.handle_listMS_clicked)
+
+        # Note: Compound selection and unified table signals are handled
+        # internally by QuantitationTab

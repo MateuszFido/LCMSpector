@@ -1,200 +1,282 @@
-from PySide6 import QtWidgets, QtCore, QtGui
+"""
+Results Tab for displaying processed data visualizations.
+"""
+from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
+from pyqtgraph.dockarea import DockArea
 import logging
 import traceback
-import numpy as np
 
-from ui.widgets import (
-    UnifiedResultsTable,
-    ChromatogramPlotWidget,
-)
+from ui.tabs.base_tab import TabBase
+from ui.widgets import ChromatogramPlotWidget
 from ui.plotting import (
-    plot_average_ms_data,
     plot_annotated_LC,
     plot_annotated_XICs,
-    plot_ms2_from_file,
-    plot_no_ms2_found,
-    plot_calibration_curve,
-    plot_library_ms2,
+    highlight_peak,
 )
 
 logger = logging.getLogger(__name__)
 
-class ResultsTab(QtWidgets.QWidget):
+
+class ResultsTab(TabBase):
     """
-    Handles the visualization of results: tables, chromatograms, and MS spectra.
-    Reconstructs functionality from the legacy view_original.py module.
+    Handles the visualization of results: chromatograms and XICs.
+
+    Displays annotated LC chromatograms and extracted ion chromatograms (XICs)
+    after processing is complete.
     """
-    # Signals to communicate back to the controller or other widgets
+
+    # Signals to communicate back to the controller
     file_changed = QtCore.Signal(int)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, mode="LC/GC-MS"):
         super().__init__(parent)
-        self.layout = QtWidgets.QGridLayout(self)
-        
+        self._current_mode = mode
+
         # Internal State
-        self.curve_list = {} 
-        
+        self.curve_list = {}
+
         # State tracking for data
-        self.mode = "LC/GC-MS"
         self.current_lc_file = None
         self.current_ms_file = None
 
-        self.setup_ui()
+        # Initialize the main layout
+        self._main_layout = QtWidgets.QGridLayout(self)
 
-    def setup_ui(self):
-        self.control_layout = QtWidgets.QHBoxLayout()
+        # Setup initial UI
+        self.setup_layout(mode)
+
+    @property
+    def mode(self):
+        """Current mode."""
+        return self._current_mode
+
+    # --- TabBase Implementation ---
+
+    def _connect_controller_signals(self):
+        """Connect signals to controller after injection."""
+        if self._controller is None:
+            return
+        # File selection change is handled via signal emission
+        # Controller connects to file_changed signal externally
+
+    def clear(self):
+        """Clear all data from the tab."""
+        if hasattr(self, 'canvas_annotatedLC'):
+            self.canvas_annotatedLC.clear()
+        if hasattr(self, 'canvas_XICs'):
+            # DockArea doesn't have a clear method, need to remove all docks
+            try:
+                for dock in list(self.canvas_XICs.docks.values()):
+                    dock.close()
+            except (AttributeError, RuntimeError):
+                pass
+        self.curve_list = {}
+        self.current_lc_file = None
+        self.current_ms_file = None
+
+    def setup_layout(self, mode: str = None):
+        """
+        Build or rebuild the layout for the given mode.
+
+        Parameters
+        ----------
+        mode : str, optional
+            The application mode (e.g., "LC/GC-MS", "MS Only", "LC/GC Only")
+        """
+        if mode is not None:
+            self._current_mode = mode
+
+        # Clear existing layout
+        self._clear_layout()
+
+        # Build the UI
+        self._build_ui()
+
+        # Connect widget signals
+        self._connect_widget_signals()
+
+    def _clear_layout(self):
+        """Clear all widgets from the layout."""
+        for i in reversed(range(self._main_layout.count())):
+            item = self._main_layout.itemAt(i)
+            if item is None:
+                continue
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                nested_layout = item.layout()
+                if nested_layout is not None:
+                    self._clear_nested_layout(nested_layout)
+
+    def _clear_nested_layout(self, layout):
+        """Recursively clear a nested layout."""
+        for i in reversed(range(layout.count())):
+            item = layout.itemAt(i)
+            if item is None:
+                continue
+            widget = item.widget()
+            if widget is not None:
+                widget.deleteLater()
+            else:
+                nested = item.layout()
+                if nested is not None:
+                    self._clear_nested_layout(nested)
+
+    def _build_ui(self):
+        """Build the results tab UI."""
+        # Control row with file selection
+        self.label_results_currentfile = QtWidgets.QLabel("Current file:")
+        self.label_results_currentfile.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Preferred
+        )
+
         self.comboBox_currentfile = QtWidgets.QComboBox()
+        self.comboBox_currentfile.setObjectName("comboBox_currentfile")
+
+        self._main_layout.addWidget(self.label_results_currentfile, 0, 0, 1, 1)
+        self._main_layout.addWidget(self.comboBox_currentfile, 0, 1, 1, 1)
+
+        # XICs in scroll area
+        self.scrollArea = QtWidgets.QScrollArea()
+        self.scrollArea.setWidgetResizable(True)
+        self.scrollArea.setObjectName("scrollArea")
+        self.scrollArea.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+        )
+        self.scrollArea.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+        )
+
+        self.canvas_XICs = DockArea()
+        self.canvas_XICs.setObjectName("canvas_XICs")
+        self.scrollArea.setWidget(self.canvas_XICs)
+        self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
+
+        self._main_layout.addWidget(self.scrollArea, 1, 1, 1, 1)
+
+        # Annotated LC chromatogram
+        self.canvas_annotatedLC = pg.PlotWidget()
+        self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+        self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
+        self._main_layout.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
+
+    def _connect_widget_signals(self):
+        """Connect widget signals."""
         self.comboBox_currentfile.currentIndexChanged.connect(self._on_file_selected)
-        
-        self.control_layout.addWidget(QtWidgets.QLabel("Compound:"))
-        self.control_layout.addWidget(self.comboBox_currentfile)
-        self.control_layout.addStretch()
-        
-        self.layout.addLayout(self.control_layout, 0, 0, 1, 2)
-
-        self.plot_layout = QtWidgets.QGridLayout()
-        self.canvas_annotatedLC = ChromatogramPlotWidget(title="Annotated LC Chromatogram")
-        self.plot_layout.addWidget(self.canvas_annotatedLC, 0, 0)
-        
-        self.canvas_xics = pg.PlotWidget(title="Extracted Ion Chromatograms (XICs)")
-        self.plot_layout.addWidget(self.canvas_xics, 1, 0)
-        
-        # Avg MS
-        self.canvas_avg_ms = pg.PlotWidget(title="Average MS Spectrum")
-        self.plot_layout.addWidget(self.canvas_avg_ms, 2, 0)
-        
-        # MS2 or Calibration Curve (Dynamic based on context)
-        # In the original, this slot was often used for MS2 or Calibration
-        self.canvas_bottom = pg.PlotWidget(title="MS2 / Calibration")
-        self.plot_layout.addWidget(self.canvas_bottom, 3, 0)
-
-        # Add plot layout to main grid
-        self.layout.addLayout(self.plot_layout, 1, 1, 2, 1)
-        
-        # Sizing
-        self.layout.setColumnStretch(0, 2) # Table
-        self.layout.setColumnStretch(1, 3) # Plots
 
     def _on_file_selected(self, index):
         """Internal handler to emit signal."""
-        if index != None:
+        if index is not None:
             self.file_changed.emit(index)
 
-    def display_plots(self, mode, lc_file, ms_file, selected_compound=None):
+    def update_combo_box(self, filenames):
+        """Update the file selection combo box."""
+        self.comboBox_currentfile.clear()
+        self.comboBox_currentfile.addItems(filenames)
+
+    def display_plots(self, lc_file, ms_file):
         """
-        Orchestrates plotting logic. Called by Controller after processing.
-        Replaces the scattered plot calls in legacy `on_process`.
+        Display plots for the given LC and MS files.
+
+        Parameters
+        ----------
+        lc_file : LCMeasurement or None
+            The LC measurement data
+        ms_file : MSMeasurement or None
+            The MS measurement data
         """
-        self.current_mode = mode
         self.current_lc_file = lc_file
         self.current_ms_file = ms_file
-        
+
         try:
-            # 1. Clear old plots
+            # Clear old plots
             self.canvas_annotatedLC.clear()
-            self.canvas_xics.clear()
-            self.canvas_avg_ms.clear()
-            self.canvas_bottom.clear()
 
-            # 2. Plot LC Data (Only in LC/GC-MS mode)
-            if mode == "LC/GC-MS" and lc_file:
-                # We expect lc_file to have .path, .df (dataframe) or .time/.absorbance arrays
-                # Adhering to the original signature of plot_annotated_LC
-                # Assuming lc_file wrapper exposes these properties
-                path_str = str(lc_file.path) if hasattr(lc_file, 'path') else "LC File"
-                
-                # Check if baseline corrected data exists, otherwise use raw
-                # This depends on the specific structure of the 'lc_file' object passed from controller
-                data_source = getattr(lc_file, 'baseline_corrected', getattr(lc_file, 'data', None))
-                
-                if data_source is not None:
-                    self.curve_list = plot_annotated_LC(
-                        path_str, 
-                        data_source, 
-                        self.canvas_annotatedLC
-                    )
-                
-                # Re-add crosshairs cleared by .clear()
-                self.canvas_annotatedLC.addItem(self.crosshair_v)
-                self.canvas_annotatedLC.addItem(self.crosshair_h)
-
-            # 3. Plot MS Data
-            if ms_file:
-                filename = ms_file.filename if hasattr(ms_file, 'filename') else "MS File"
-                
-                # Plot Average MS
-                # Assuming ms_file has .data (mz, intensity) or similar structure expected by helper
-                if hasattr(ms_file, 'data'):
-                     # plot_average_ms_data(filename, scan_number/time, data, widget)
-                     # Passing 0 as placeholder for scan number if not applicable
-                    plot_average_ms_data(filename, 0, ms_file.data, self.canvas_avg_ms)
-
-                # Plot XICs if available
-                if hasattr(ms_file, 'xics') and ms_file.xics:
-                     plot_annotated_XICs(filename, ms_file.xics, self.canvas_xics)
-
-            # 4. Handle MS2 or Calibration Curve (Context dependent)
-            # This logic was typically triggered by selection changes in the original view
-            if selected_compound:
-                self.update_compound_plots(selected_compound)
+            if self._current_mode == "LC/GC-MS":
+                self._display_lcms_plots(lc_file, ms_file)
+            elif self._current_mode == "MS Only":
+                self._display_ms_only_plots(ms_file)
+            # LC/GC Only mode doesn't show XICs
 
         except Exception as e:
             logger.error(f"Error displaying plots: {traceback.format_exc()}")
-            QtWidgets.QMessageBox.warning(self, "Plotting Error", f"An error occurred while plotting: {e}")
 
-    def update_unified_table(self, concentrations, ms_measurements, compounds, selected_idx):
-        """Updates the UnifiedResultsTable."""
-        # Update Compound Combo Box if it's different
-        if compounds:
-            current_items = [self.combo_compound.itemText(i) for i in range(self.combo_compound.count())]
-            if current_items != compounds:
-                self.combo_compound.blockSignals(True)
-                self.combo_compound.clear()
-                self.combo_compound.addItems(compounds)
-                if 0 <= selected_idx < len(compounds):
-                     self.combo_compound.setCurrentIndex(selected_idx)
-                self.combo_compound.blockSignals(False)
+    def _display_lcms_plots(self, lc_file, ms_file):
+        """Display plots for LC/GC-MS mode."""
+        if lc_file and ms_file:
+            if lc_file.filename == ms_file.filename:
+                try:
+                    self.curve_list = plot_annotated_LC(
+                        lc_file.path,
+                        lc_file.baseline_corrected,
+                        self.canvas_annotatedLC,
+                    )
+                    # Connect curve click handlers
+                    for curve in self.curve_list.keys():
+                        curve.sigClicked.connect(
+                            lambda c, xics=ms_file.xics: highlight_peak(
+                                c,
+                                self.curve_list,
+                                self.canvas_annotatedLC,
+                                xics,
+                            )
+                        )
+                except RuntimeError:
+                    logger.error("Canvas was deleted, skipping LC plot")
 
-        current_compound = None
-        if compounds and 0 <= selected_idx < len(compounds):
-            current_compound = compounds[selected_idx]
-            
-        self.unifiedResultsTable.setup_columns(current_compound)
-        self.unifiedResultsTable.populate_data(concentrations, ms_measurements, current_compound)
+            # Plot XICs
+            if ms_file and hasattr(ms_file, 'xics') and ms_file.xics:
+                plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
 
-    def update_compound_plots(self, compound_data):
+    def _display_ms_only_plots(self, ms_file):
+        """Display plots for MS Only mode."""
+        if ms_file and hasattr(ms_file, 'xics') and ms_file.xics:
+            plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
+
+    def setup_dock_area(self, xics, widget=None):
         """
-        Updates the specific plots that depend on the selected compound
-        (e.g., Calibration Curve or Library MS2).
+        Setup the dock area with XIC plots.
+
+        Parameters
+        ----------
+        xics : tuple
+            Tuple of compound XIC data
+        widget : DockArea, optional
+            The dock area widget to use. If None, uses self.canvas_XICs
         """
-        self.canvas_bottom.clear()
-        
-        # Logic derived from legacy view:
-        # If calibration data exists, plot it. Else if MS2 exists, plot it.
-        
-        # Check for calibration data
-        if compound_data and "calibration" in compound_data:
-             plot_calibration_curve(compound_data["calibration"], self.canvas_bottom)
-             self.canvas_bottom.setTitle("Calibration Curve")
-             return
+        if widget is None:
+            widget = self.canvas_XICs
 
-        # Check for MS2 Library Match
-        if compound_data and "library_ms2" in compound_data:
-            plot_library_ms2(compound_data["library_ms2"], self.canvas_bottom)
-            self.canvas_bottom.setTitle("Library MS2 Spectrum")
-            return
-            
-        # Fallback
-        self.canvas_bottom.setTitle("No details available")
+        cols = 5
+        row_anchor_dock = None
 
-    def clear_all(self):
-        """Resets the tab to initial state."""
-        self.canvas_annotatedLC.clear()
-        self.canvas_xics.clear()
-        self.canvas_avg_ms.clear()
-        self.canvas_bottom.clear()
-        self.unifiedResultsTable.clearContents()
-        self.unifiedResultsTable.setRowCount(0)
-        self.combo_compound.clear()
-        self.curve_list = {}
+        for i, compound in enumerate(xics):
+            if i % cols == 0:
+                position = "bottom"
+                relative_to = None
+            else:
+                position = "right"
+                relative_to = row_anchor_dock
+
+            dock = widget.addDock(
+                position=position,
+                relativeTo=relative_to,
+                name=f"{compound.name}",
+                widget=pg.PlotWidget(),
+                size=(100, 100),
+            )
+
+            # If this was a new row (or first item), update the anchor
+            if i % cols == 0:
+                row_anchor_dock = dock
+
+            plot_widget = dock.widgets[0]
+            plot_widget.setMouseEnabled(x=True, y=False)
+            plot_widget.addLegend(offset=(0, 0))
+            plot_widget.getViewBox().enableAutoRange(axis="y", enable=True)
+
+        # Resize logic to ensure docks aren't squashed
+        widget.setMinimumSize(QtCore.QSize(cols * 150, (len(xics) // cols + 1) * 200))

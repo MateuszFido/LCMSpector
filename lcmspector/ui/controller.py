@@ -20,6 +20,13 @@ class Controller:
         self.view = view
         self.view.controller = self
         self.model.controller = self
+
+        # Inject controller into tab modules
+        if hasattr(self.view, 'results_tab'):
+            self.view.results_tab.set_controller(self)
+        if hasattr(self.view, 'quantitation_tab'):
+            self.view.quantitation_tab.set_controller(self)
+
         self.view.processButton.clicked.connect(self.process_data)
         self.view.comboBox_currentfile.currentIndexChanged.connect(
             self.display_selected_plots
