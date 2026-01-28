@@ -63,13 +63,21 @@ class ResultsTab(TabBase):
     def clear(self):
         """Clear all data from the tab."""
         if hasattr(self, 'canvas_annotatedLC'):
-            self.canvas_annotatedLC.clear()
+            try:
+                self.canvas_annotatedLC.clear()
+            except RuntimeError:
+                pass
         if hasattr(self, 'canvas_XICs'):
             # DockArea doesn't have a clear method, need to remove all docks
             try:
                 for dock in list(self.canvas_XICs.docks.values()):
                     dock.close()
             except (AttributeError, RuntimeError):
+                pass
+        if hasattr(self, 'comboBox_currentfile'):
+            try:
+                self.comboBox_currentfile.clear()
+            except RuntimeError:
                 pass
         self.curve_list = {}
         self.current_lc_file = None
@@ -125,7 +133,7 @@ class ResultsTab(TabBase):
                     self._clear_nested_layout(nested)
 
     def _build_ui(self):
-        """Build the results tab UI."""
+        """Build the results tab UI based on current mode."""
         # Control row with file selection
         self.label_results_currentfile = QtWidgets.QLabel("Current file:")
         self.label_results_currentfile.setSizePolicy(
@@ -155,13 +163,30 @@ class ResultsTab(TabBase):
         self.scrollArea.setWidget(self.canvas_XICs)
         self.canvas_XICs.setContentsMargins(0, 0, 0, 0)
 
-        self._main_layout.addWidget(self.scrollArea, 1, 1, 1, 1)
+        if self._current_mode == "LC/GC-MS":
+            # Show both annotated LC and XICs side by side
+            self._main_layout.addWidget(self.scrollArea, 1, 1, 1, 1)
 
-        # Annotated LC chromatogram
-        self.canvas_annotatedLC = pg.PlotWidget()
-        self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
-        self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-        self._main_layout.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
+            # Annotated LC chromatogram
+            self.canvas_annotatedLC = pg.PlotWidget()
+            self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+            self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
+            self._main_layout.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
+        elif self._current_mode == "MS Only":
+            # Only show XICs spanning the full width
+            self._main_layout.addWidget(self.scrollArea, 1, 0, 1, 2)
+            # Create a hidden annotated LC widget for compatibility
+            self.canvas_annotatedLC = pg.PlotWidget()
+            self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+            self.canvas_annotatedLC.setVisible(False)
+        else:  # LC/GC Only
+            # Show only annotated LC spanning full width
+            self.canvas_annotatedLC = pg.PlotWidget()
+            self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
+            self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
+            self._main_layout.addWidget(self.canvas_annotatedLC, 1, 0, 1, 2)
+            # Hide scroll area for XICs
+            self.scrollArea.setVisible(False)
 
     def _connect_widget_signals(self):
         """Connect widget signals."""

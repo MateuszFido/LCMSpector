@@ -20,7 +20,9 @@ def retranslateUi(MainWindow):
         QtGui.QIcon(os.path.join(os.path.dirname(__file__), "resources", "icon.icns"))
     )
     try:
-        MainWindow.browseLC.setText(_translate("MainWindow", "Browse"))
+        # Upload tab widgets
+        if hasattr(MainWindow, 'browseLC'):
+            MainWindow.browseLC.setText(_translate("MainWindow", "Browse"))
         MainWindow.comboBoxChangeMode.setItemText(
             0, _translate("MainWindow", "LC/GC-MS")
         )
@@ -30,79 +32,112 @@ def retranslateUi(MainWindow):
         MainWindow.comboBoxChangeMode.setItemText(
             2, _translate("MainWindow", "Chromatography Only")
         )
-        MainWindow.browseMS.setText(_translate("MainWindow", "Browse"))
-        MainWindow.browseAnnotations.setText(_translate("MainWindow", "Browse"))
-        MainWindow.labelAnnotations.setText(
-            _translate("MainWindow", "Annotations (.txt)")
-        )
-        MainWindow.labelLCdata.setText(
-            _translate("MainWindow", "Chromatography data (.txt)")
-        )
-        MainWindow.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
-        MainWindow.labelIonList.setText(
-            _translate("MainWindow", "Targeted m/z values:")
-        )
-        MainWindow.comboBoxIonLists.setToolTip(
-            _translate(
-                "MainWindow",
-                "Choose an ion list from the list of ion lists provided with the software",
+        if hasattr(MainWindow, 'browseMS'):
+            MainWindow.browseMS.setText(_translate("MainWindow", "Browse"))
+        if hasattr(MainWindow, 'browseAnnotations'):
+            MainWindow.browseAnnotations.setText(_translate("MainWindow", "Browse"))
+        if hasattr(MainWindow, 'labelAnnotations'):
+            MainWindow.labelAnnotations.setText(
+                _translate("MainWindow", "Annotations (.txt)")
             )
-        )
+        if hasattr(MainWindow, 'labelLCdata'):
+            MainWindow.labelLCdata.setText(
+                _translate("MainWindow", "Chromatography data (.txt)")
+            )
+        if hasattr(MainWindow, 'labelMSdata'):
+            MainWindow.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
+        if hasattr(MainWindow, 'labelIonList'):
+            MainWindow.labelIonList.setText(
+                _translate("MainWindow", "Targeted m/z values:")
+            )
+        if hasattr(MainWindow, 'comboBoxIonLists'):
+            MainWindow.comboBoxIonLists.setToolTip(
+                _translate(
+                    "MainWindow",
+                    "Choose an ion list from the list of ion lists provided with the software",
+                )
+            )
         MainWindow.processButton.setText(_translate("MainWindow", "Process"))
+
+        # Tab titles
         MainWindow.tabWidget.setTabText(
             MainWindow.tabWidget.indexOf(MainWindow.tabUpload),
             _translate("MainWindow", "Upload"),
-        )
-        MainWindow.tabResults.label_results_currentfile.setText(
-            _translate("MainWindow", "Current file:")
         )
         MainWindow.tabWidget.setTabText(
             MainWindow.tabWidget.indexOf(MainWindow.tabResults),
             _translate("MainWindow", "Results"),
         )
-        MainWindow.label_curr_compound.setText(_translate("MainWindow", "Compound:"))
-        MainWindow.label_calibrate.setText(
-            _translate("MainWindow", "Select the files to be used for calibration.")
-        )
-        MainWindow.calibrateButton.setText(_translate("MainWindow", "Calculate"))
         MainWindow.tabWidget.setTabText(
             MainWindow.tabWidget.indexOf(MainWindow.tabQuantitation),
             _translate("MainWindow", "Quantitation"),
         )
-        MainWindow.menubar.file_menu.setTitle(_translate("MainWindow", "File"))
-        MainWindow.menubar.view_menu.setTitle(_translate("MainWindow", "View"))
-        MainWindow.menubar.help_menu.setTitle(_translate("MainWindow", "Help"))
 
-        MainWindow.menubar.action_open.setText(_translate("MainWindow", "Open"))
-        MainWindow.menubar.action_open.setShortcut(_translate("MainWindow", "Ctrl+O"))
+        # Results tab widgets - access through results_tab
+        if hasattr(MainWindow, 'results_tab') and hasattr(MainWindow.results_tab, 'label_results_currentfile'):
+            MainWindow.results_tab.label_results_currentfile.setText(
+                _translate("MainWindow", "Current file:")
+            )
 
-        MainWindow.menubar.action_save.setText(_translate("MainWindow", "Save"))
-        MainWindow.menubar.action_save.setShortcut(_translate("MainWindow", "Ctrl+S"))
+        # Quantitation tab widgets - access through quantitation_tab
+        if hasattr(MainWindow, 'quantitation_tab'):
+            quant = MainWindow.quantitation_tab
+            if hasattr(quant, 'label_compound'):
+                quant.label_compound.setText(_translate("MainWindow", "Compound:"))
+            if hasattr(quant, 'label_calibrate'):
+                quant.label_calibrate.setText(
+                    _translate("MainWindow", "Select the files to be used for calibration.")
+                )
+            if hasattr(quant, 'calibrateButton'):
+                quant.calibrateButton.setText(_translate("MainWindow", "Calculate"))
+            if hasattr(quant, 'button_apply_integration'):
+                quant.button_apply_integration.setText(_translate("MainWindow", "Apply"))
+            if hasattr(quant, 'button_recalculate_integration'):
+                quant.button_recalculate_integration.setText(_translate("MainWindow", "Recalculate"))
+            if hasattr(quant, 'button_reset_integration'):
+                quant.button_reset_integration.setText(_translate("MainWindow", "Reset"))
 
-        MainWindow.menubar.action_exit.setText(_translate("MainWindow", "Exit"))
-        MainWindow.menubar.action_exit.setShortcut(_translate("MainWindow", "Ctrl+W"))
+        # Menu bar
+        MainWindow.menuFile.setTitle(_translate("MainWindow", "File"))
+        MainWindow.menuEdit.setTitle(_translate("MainWindow", "View"))
+        MainWindow.menuHelp.setTitle(_translate("MainWindow", "Help"))
 
-        MainWindow.menubar.action_export.setText(_translate("MainWindow", "Export"))
-        MainWindow.menubar.action_export.setShortcut(_translate("MainWindow", "Ctrl+E"))
+        MainWindow.actionOpen.setText(_translate("MainWindow", "Open"))
+        MainWindow.actionOpen.setShortcut(_translate("MainWindow", "Ctrl+O"))
 
-        MainWindow.menubar.action_about.setText(_translate("MainWindow", "About"))
-        MainWindow.menubar.action_about.setShortcut(_translate("MainWindow", "F1"))
+        MainWindow.actionSave.setText(_translate("MainWindow", "Save"))
+        MainWindow.actionSave.setShortcut(_translate("MainWindow", "Ctrl+S"))
 
-        MainWindow.menubar.action_prefs.setText(_translate("MainWindow", "Preferences"))
+        MainWindow.actionExit.setText(_translate("MainWindow", "Exit"))
+        MainWindow.actionExit.setShortcut(_translate("MainWindow", "Ctrl+W"))
 
-        MainWindow.menubar.action_readme.setText(_translate("MainWindow", "Readme"))
-        MainWindow.menubar.action_readme.setShortcut(_translate("MainWindow", "F10"))
+        MainWindow.actionExport.setText(_translate("MainWindow", "Export"))
+        MainWindow.actionExport.setShortcut(_translate("MainWindow", "Ctrl+E"))
 
-        MainWindow.menubar.action_logs.setText(_translate("MainWindow", "Logs"))
-        MainWindow.menubar.action_logs.setShortcut(_translate("MainWindow", "F11"))
+        MainWindow.actionAbout.setText(_translate("MainWindow", "About"))
+        MainWindow.actionAbout.setShortcut(_translate("MainWindow", "F1"))
 
-        MainWindow.button_clear_LC.setText(_translate("MainWindow", "Clear"))
-        MainWindow.button_clear_MS.setText(_translate("MainWindow", "Clear"))
-        MainWindow.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
-        MainWindow.button_save_ion_list.setText(_translate("MainWindow", "Save"))
-        MainWindow.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
+        MainWindow.actionPreferences.setText(_translate("MainWindow", "Preferences"))
+
+        MainWindow.actionReadme.setText(_translate("MainWindow", "Readme"))
+        MainWindow.actionReadme.setShortcut(_translate("MainWindow", "F10"))
+
+        MainWindow.actionLogs.setText(_translate("MainWindow", "Logs"))
+        MainWindow.actionLogs.setShortcut(_translate("MainWindow", "F11"))
+
+        # Clear/Save/Delete buttons (if they exist)
+        if hasattr(MainWindow, 'button_clear_LC'):
+            MainWindow.button_clear_LC.setText(_translate("MainWindow", "Clear"))
+        if hasattr(MainWindow, 'button_clear_MS'):
+            MainWindow.button_clear_MS.setText(_translate("MainWindow", "Clear"))
+        if hasattr(MainWindow, 'button_clear_ion_list'):
+            MainWindow.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
+        if hasattr(MainWindow, 'button_save_ion_list'):
+            MainWindow.button_save_ion_list.setText(_translate("MainWindow", "Save"))
+        if hasattr(MainWindow, 'button_delete_ion_list'):
+            MainWindow.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
 
     except RuntimeError:
-        logger.error("Error retranslating ui:", traceback.format_exc())
+        logger.error("Error retranslating ui: %s", traceback.format_exc())
     except AttributeError:
-        logger.error("Error retranslating ui:", traceback.format_exc())
+        logger.error("Error retranslating ui: %s", traceback.format_exc())
