@@ -55,57 +55,51 @@ class PlotStyle:
         widget: pg.PlotWidget, title: str = "", x_label: str = "", y_label: str = ""
     ):
         """Applies standard formatting to a PlotWidget."""
+        default_font = fonts.get_main_font(12)
         widget.setBackground(PlotStyle.BACKGROUND)
-        widget.setTitle(title, color=PlotStyle.TEXT_COLOR, size="12pt")
+        widget.setTitle(title, color=PlotStyle.TEXT_COLOR, size="12pt", family="Nunito")
 
-        label_style = {"color": PlotStyle.TEXT_COLOR, "font-size": "12pt"}
+        label_style = {
+            "color": PlotStyle.TEXT_COLOR,
+            "font-size": "13pt",
+            "font-family": "Nunito",
+        }
         widget.setLabel("bottom", x_label, **label_style)
         widget.setLabel("left", y_label, **label_style)
 
         # Axis styling
         for axis_name in ["left", "bottom"]:
             axis = widget.getAxis(axis_name)
-            axis.setTextPen(PlotStyle.TEXT_COLOR)
+            axis.setTextPen(PlotStyle.TEXT_COLOR, size="12pt")
             axis.setTickPen(PlotStyle.AXIS_PEN)
-            axis.setStyle(tickFont=fonts.get_main_font(12))
+            axis.setStyle(tickFont=default_font)
 
 
 # --- Plotting Functions ---
 
 
-def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
-    """Generates plots of absorbance data before and after background correction."""
+def plot_absorbance_data(
+    path: str,
+    dataframe: pd.DataFrame,
+    widget: pg.PlotWidget,
+    color: str = "#2EC4B6",
+    pen_width: int = 1,
+):
+    """Plots baseline-corrected chromatography data with filename in legend."""
     filename = os.path.basename(path).split(".")[0]
 
-    # Clear previous content just in case
-    widget.clear()
     PlotStyle.apply_standard_style(
-        widget, title=filename, x_label="Time (min)", y_label="Absorbance (mAU)"
+        widget,
+        title="Chromatography Data",
+        x_label="Retention time (min)",
+        y_label="Absorbance (mAU)",
     )
-    widget.addLegend(labelTextSize="12pt")
-
-    # Plot Uncorrected
-    widget.plot(
-        dataframe["Time (min)"],
-        dataframe["Uncorrected"],
-        pen=mkPen("#333333", width=2),
-        name="Before correction",
-    )
-
-    # Plot Baseline
-    widget.plot(
-        dataframe["Time (min)"],
-        dataframe["Baseline"],
-        pen=mkPen("#FF5C5C", width=2, style=Qt.PenStyle.DashLine),
-        name="Baseline",
-    )
-
-    # Plot Corrected
+    # Plot Corrected trace only, using filename as legend entry
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Value (mAU)"],
-        pen=mkPen("#2EC4B6", width=2),
-        name="After correction",
+        pen=mkPen(color, width=pen_width),
+        name=filename,
     )
 
 
@@ -115,6 +109,14 @@ def plot_average_ms_data(
     """Plots the average MS data and annotates peaks."""
     try:
         spectrum = data_matrix.time[rt]
+        if spectrum["ms level"] > 1:
+            # DDA shield
+            spec_range = data_matrix.time[rt - 0.1 : rt + 0.1]
+            for spec in spec_range:
+                if spec["ms level"] == 1:
+                    spectrum = spec
+                    break
+
     except (ValueError, IndexError):
         # Fallback to first scan or fail gracefully
         try:
@@ -123,10 +125,11 @@ def plot_average_ms_data(
             logger.error("MzML file is empty.")
             return
 
-    widget.clear()
-    title = f"{filename}\n{spectrum.get('id', 'Scan')} MS{spectrum.get('ms level', '')} at {round(rt, 2)} mins"
     PlotStyle.apply_standard_style(
-        widget, title=title, x_label="m/z", y_label="Intensity / a.u."
+        widget,
+        title="Mass Spectrometry Data",
+        x_label="m/z",
+        y_label="Intensity / a.u.",
     )
 
     mzs = spectrum["m/z array"]
@@ -355,9 +358,12 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
         logger.warning(f"No calibration parameters found for {compound.name}")
 
 
-def plot_total_ion_current(widget: pg.PlotWidget, ms_measurement, filename: str):
+def plot_total_ion_current(
+    widget: pg.PlotWidget, ms_measurement, filename: str, clear: bool = True
+):
     """Plots TIC using pre-extracted data from MSMeasurement."""
-    widget.clear()
+    if clear:
+        widget.clear()
     PlotStyle.apply_standard_style(
         widget,
         title=f"Total Ion Current (TIC): {filename}",
@@ -370,7 +376,7 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_measurement, filename: str)
         widget.plot(
             ms_measurement.tic_times,
             ms_measurement.tic_values,
-            pen=mkPen("#3c5488ff", width=1)
+            pen=mkPen("#3c5488ff", width=1),
         )
 
 

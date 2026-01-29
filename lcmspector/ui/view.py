@@ -5,6 +5,7 @@ This module provides the main application window and orchestrates the tab module
 It handles global UI elements (menu bar, status bar, progress bar) and delegates
 tab-specific functionality to the respective tab modules.
 """
+
 import os
 import subprocess
 import tempfile
@@ -88,17 +89,17 @@ class View(QtWidgets.QMainWindow):
     @property
     def listLC(self):
         """Access LC file list from UploadTab."""
-        return getattr(self.upload_tab, 'listLC', None)
+        return getattr(self.upload_tab, "listLC", None)
 
     @property
     def listMS(self):
         """Access MS file list from UploadTab."""
-        return getattr(self.upload_tab, 'listMS', None)
+        return getattr(self.upload_tab, "listMS", None)
 
     @property
     def listAnnotations(self):
         """Access annotations list from UploadTab."""
-        return getattr(self.upload_tab, 'listAnnotations', None)
+        return getattr(self.upload_tab, "listAnnotations", None)
 
     @property
     def comboBoxIonLists(self):
@@ -420,7 +421,7 @@ class View(QtWidgets.QMainWindow):
         self._clear_all_data()
 
         # Update controller mode
-        if hasattr(self, 'controller'):
+        if hasattr(self, "controller"):
             self.controller.mode = new_mode
 
         # Update all tabs for the new mode
@@ -430,7 +431,9 @@ class View(QtWidgets.QMainWindow):
 
         # Disable results and quantitation tabs
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.results_tab), False)
-        self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.quantitation_tab), False)
+        self.tabWidget.setTabEnabled(
+            self.tabWidget.indexOf(self.quantitation_tab), False
+        )
 
         # Switch to upload tab
         self.tabWidget.setCurrentIndex(0)
@@ -443,17 +446,17 @@ class View(QtWidgets.QMainWindow):
 
     def _has_loaded_data(self):
         """Check if any data is currently loaded."""
-        if not hasattr(self, 'controller') or not hasattr(self.controller, 'model'):
+        if not hasattr(self, "controller") or not hasattr(self.controller, "model"):
             return False
         model = self.controller.model
-        has_lc = hasattr(model, 'lc_measurements') and model.lc_measurements
-        has_ms = hasattr(model, 'ms_measurements') and model.ms_measurements
-        has_compounds = hasattr(model, 'compounds') and model.compounds
+        has_lc = hasattr(model, "lc_measurements") and model.lc_measurements
+        has_ms = hasattr(model, "ms_measurements") and model.ms_measurements
+        has_compounds = hasattr(model, "compounds") and model.compounds
         return has_lc or has_ms or has_compounds
 
     def _restore_mode_combo(self):
         """Restore combo box to the current mode without triggering change."""
-        if not hasattr(self, 'controller'):
+        if not hasattr(self, "controller"):
             return
         mode = self.controller.mode
         self.comboBoxChangeMode.blockSignals(True)
@@ -464,15 +467,15 @@ class View(QtWidgets.QMainWindow):
 
     def _clear_all_data(self):
         """Clear all loaded data from the model and view."""
-        if hasattr(self, 'controller') and hasattr(self.controller, 'model'):
+        if hasattr(self, "controller") and hasattr(self.controller, "model"):
             model = self.controller.model
-            if hasattr(model, 'lc_measurements'):
+            if hasattr(model, "lc_measurements"):
                 model.lc_measurements = {}
-            if hasattr(model, 'ms_measurements'):
+            if hasattr(model, "ms_measurements"):
                 model.ms_measurements = {}
-            if hasattr(model, 'annotations'):
+            if hasattr(model, "annotations"):
                 model.annotations = {}
-            if hasattr(model, 'compounds'):
+            if hasattr(model, "compounds"):
                 model.compounds = []
 
         # Clear all tabs
@@ -523,7 +526,9 @@ class View(QtWidgets.QMainWindow):
         self.tabWidget.addTab(self.results_tab, "Results")
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.results_tab), False)
         self.tabWidget.addTab(self.quantitation_tab, "Quantitation")
-        self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.quantitation_tab), False)
+        self.tabWidget.setTabEnabled(
+            self.tabWidget.indexOf(self.quantitation_tab), False
+        )
 
         # =====================================================================
         # Mode Selection Combo Box
@@ -639,7 +644,7 @@ class View(QtWidgets.QMainWindow):
 
     def _on_files_loaded(self, file_type, file_paths):
         """Handle files loaded from UploadTab."""
-        if not hasattr(self, 'controller'):
+        if not hasattr(self, "controller"):
             return
 
         # Show progress bar

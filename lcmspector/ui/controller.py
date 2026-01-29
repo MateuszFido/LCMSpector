@@ -22,6 +22,8 @@ class Controller:
         self.model.controller = self
 
         # Inject controller into tab modules
+        if hasattr(self.view, 'upload_tab'):
+            self.view.upload_tab.set_controller(self)
         if hasattr(self.view, 'results_tab'):
             self.view.results_tab.set_controller(self)
         if hasattr(self.view, 'quantitation_tab'):
@@ -260,3 +262,7 @@ class Controller:
                 5000,
             )
             self.view.processButton.setEnabled(True)
+
+            # Re-plot any files that were checked before loading completed
+            if hasattr(self.view, 'upload_tab'):
+                self.view.upload_tab.refresh_checkbox_plots()

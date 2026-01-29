@@ -60,6 +60,61 @@ class DragDropListWidget(QtWidgets.QListWidget):
             event.ignore()
 
 
+class CheckableDragDropListWidget(DragDropListWidget):
+    """DragDropListWidget with checkboxes for each item."""
+
+    itemCheckStateChanged = QtCore.Signal(str, bool)  # (filename, is_checked)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.itemChanged.connect(self._on_item_changed)
+        self._checkbox_click_pending = False  # Track if last click was on checkbox
+
+    def mousePressEvent(self, event):
+        """Detect if click is on checkbox area."""
+        # Use position() for Qt6 compatibility (pos() is deprecated)
+        pos = event.position().toPoint()
+        item = self.itemAt(pos)
+        if item:
+            # Get the checkbox rect for this item
+            rect = self.visualItemRect(item)
+            # Checkbox is typically in the left ~20-30 pixels
+            checkbox_width = 24  # Approximate checkbox click area
+            checkbox_rect = QtCore.QRect(
+                rect.left(), rect.top(), checkbox_width, rect.height()
+            )
+            self._checkbox_click_pending = checkbox_rect.contains(pos)
+        else:
+            self._checkbox_click_pending = False
+        super().mousePressEvent(event)
+
+    def was_checkbox_click(self):
+        """Return True if the last click was on the checkbox area."""
+        return self._checkbox_click_pending
+
+    def addItem(self, item):
+        """Override to add checkbox functionality."""
+        if isinstance(item, str):
+            list_item = QtWidgets.QListWidgetItem(item)
+        else:
+            list_item = item
+        list_item.setFlags(list_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        list_item.setCheckState(Qt.CheckState.Unchecked)
+        super().addItem(list_item)
+
+    def _on_item_changed(self, item):
+        """Emit signal when checkbox state changes."""
+        is_checked = item.checkState() == Qt.CheckState.Checked
+        self.itemCheckStateChanged.emit(item.text(), is_checked)
+
+    def takeItem(self, row):
+        """Override to emit uncheck signal for checked items being removed."""
+        item = self.item(row)
+        if item and item.checkState() == Qt.CheckState.Checked:
+            self.itemCheckStateChanged.emit(item.text(), False)
+        return super().takeItem(row)
+
+
 class GenericTable(QtWidgets.QTableWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
