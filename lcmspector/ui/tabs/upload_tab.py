@@ -616,12 +616,16 @@ class UploadTab(TabBase):
 
         # Unhighlight previous selection
         if self._selected_ms_file and self._selected_ms_file in self._ms_active_plots:
-            self._set_plot_pen_width(self._ms_active_plots[self._selected_ms_file], 1)
+            plot_item, _ = self._ms_active_plots[self._selected_ms_file]
+            if plot_item is not None:
+                self._set_plot_pen_width(plot_item, 1)
 
         # Update selection and highlight new (if plotted)
         self._selected_ms_file = filename
         if filename in self._ms_active_plots:
-            self._set_plot_pen_width(self._ms_active_plots[filename], 2)
+            plot_item, _ = self._ms_active_plots[filename]
+            if plot_item is not None:
+                self._set_plot_pen_width(plot_item, 2)
 
     # --- Checkbox Plotting Handlers ---
 
@@ -683,6 +687,8 @@ class UploadTab(TabBase):
 
     def _on_ms_checkbox_changed(self, filename: str, is_checked: bool):
         """Handle MS file checkbox state change."""
+        from ui.plotting import plot_average_ms_data
+
         logger.debug(f"MS checkbox changed: {filename} -> {is_checked}")
 
         if not hasattr(self, "canvas_avgMS"):
@@ -694,21 +700,36 @@ class UploadTab(TabBase):
         if is_checked:
             if self._controller and hasattr(self._controller.model, "ms_measurements"):
                 ms_data = self._controller.model.ms_measurements.get(stem_filename)
-                if ms_data and ms_data.tic_times is not None:
+                if ms_data is not None:
                     logger.debug(
                         f"Found MS data for {stem_filename}, plotting mass spectrum"
                     )
-                    from pyqtgraph import mkPen
-
                     color = self._get_next_color("MS")
-                    # Set pen width to 2 if this file is currently selected, else 1
-                    pen_width = 2 if filename == self._selected_ms_file else 1
-                    plot_item = self._show_scan_at_time_x(event=None)
-                    self._ms_active_plots[filename] = plot_item
+
+                    # Get retention time from line_marker (default 0)
+                    time_x = 0.0
+                    if hasattr(self, "line_marker") and self.line_marker.isVisible():
+                        time_x = float(self.line_marker.pos().x())
+
+                    # Only clear canvas on first plot
+                    should_clear = len(self._ms_active_plots) == 0
+
+                    plot_item = plot_average_ms_data(
+                        stem_filename,
+                        time_x,
+                        ms_data.data,
+                        self.canvas_avgMS,
+                        color=color,
+                        name=filename,
+                        clear=should_clear,
+                    )
+                    # Store tuple of (plot_item, color) to preserve color for time updates
+                    self._ms_active_plots[filename] = (plot_item, color)
         else:
             if filename in self._ms_active_plots:
-                plot_item = self._ms_active_plots.pop(filename)
-                self.canvas_avgMS.removeItem(plot_item)
+                plot_item, _ = self._ms_active_plots.pop(filename)
+                if plot_item is not None:
+                    self.canvas_avgMS.removeItem(plot_item)
             # Clear selection if this was the selected file
             if filename == self._selected_ms_file:
                 self._selected_ms_file = None
@@ -846,8 +867,6 @@ class UploadTab(TabBase):
             return
 
         try:
-            self.canvas_avgMS.clear()
-
             if ms_file:
                 # ONLY plot TIC in MS Only mode - don't replace LC data in LC/GC-MS mode
                 if self._current_mode == "MS Only":
@@ -920,17 +939,52 @@ class UploadTab(TabBase):
             self.line_marker.setPos(self.line_marker.pos().x() + 0.01)
 
     def _show_scan_at_time_x(self, event):
-        """Show MS scan at the selected time point."""
+        """Show MS scan at the selected time point for all checked MS files."""
         from ui.plotting import plot_average_ms_data
 
         if not hasattr(self, "canvas_avgMS") or not self._controller:
             return
 
         time_x = float(self.line_marker.pos().x())
-        self.canvas_avgMS.clear()
-
-        file = None
         model = self._controller.model
+
+        # If there are checked MS files, update all of them
+        if self._ms_active_plots and hasattr(model, "ms_measurements"):
+            # Update all checked MS files with their preserved colors
+            is_first = True
+            updated_plots = {}
+
+            for filename, (old_plot_item, color) in list(self._ms_active_plots.items()):
+                stem_filename = Path(filename).stem
+
+                if stem_filename in model.ms_measurements:
+                    try:
+                        # Remove old plot item
+                        if old_plot_item is not None:
+                            self.canvas_avgMS.removeItem(old_plot_item)
+
+                        # Create new plot at new time, preserving color
+                        new_plot_item = plot_average_ms_data(
+                            stem_filename,
+                            time_x,
+                            model.ms_measurements[stem_filename].data,
+                            self.canvas_avgMS,
+                            color=color,
+                            name=filename,
+                            clear=is_first,
+                        )
+                        updated_plots[filename] = (new_plot_item, color)
+                        is_first = False
+                    except Exception as e:
+                        logger.error(f"Error updating MS plot for {filename}: {e}")
+                        # Keep old entry if update fails
+                        updated_plots[filename] = (old_plot_item, color)
+
+            self._ms_active_plots = updated_plots
+            return
+
+        # Fallback: no checked files, use legacy single-file behavior
+        file = None
 
         if self._current_mode == "LC/GC-MS":
             if hasattr(self, "listLC") and self.listLC.count() > 0:

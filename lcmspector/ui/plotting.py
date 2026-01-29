@@ -104,9 +104,39 @@ def plot_absorbance_data(
 
 
 def plot_average_ms_data(
-    filename: str, rt: float, data_matrix: MzML, widget: pg.PlotWidget
+    filename: str,
+    rt: float,
+    data_matrix: MzML,
+    widget: pg.PlotWidget,
+    color: str = "#3c5488ff",
+    name: str | None = None,
+    clear: bool = True,
 ):
-    """Plots the average MS data and annotates peaks."""
+    """
+    Plots the average MS data and annotates peaks.
+
+    Parameters
+    ----------
+    filename : str
+        The filename (used for logging/identification)
+    rt : float
+        Retention time to extract spectrum at
+    data_matrix : MzML
+        The MzML data object
+    widget : pg.PlotWidget
+        Target plot widget
+    color : str
+        Color for the spectrum (default: blue)
+    name : str | None
+        Legend name for the plot item. If None, no legend entry.
+    clear : bool
+        If True, applies standard style (clears widget). If False, overlays.
+
+    Returns
+    -------
+    plot_item
+        The created BarGraphItem or PlotDataItem, or None on error
+    """
     try:
         spectrum = data_matrix.time[rt]
         if spectrum["ms level"] > 1:
@@ -123,14 +153,15 @@ def plot_average_ms_data(
             spectrum = data_matrix.time[0]
         except IndexError:
             logger.error("MzML file is empty.")
-            return
+            return None
 
-    PlotStyle.apply_standard_style(
-        widget,
-        title="Mass Spectrometry Data",
-        x_label="m/z",
-        y_label="Intensity / a.u.",
-    )
+    if clear:
+        PlotStyle.apply_standard_style(
+            widget,
+            title="Mass Spectrometry Data",
+            x_label="m/z",
+            y_label="Intensity / a.u.",
+        )
 
     mzs = spectrum["m/z array"]
     intensities = spectrum["intensity array"]
@@ -141,20 +172,25 @@ def plot_average_ms_data(
             x=mzs,
             height=intensities,
             width=0.2,
-            pen=mkPen("#3c5488ff", width=2),
-            brush=mkBrush("#3c5488ff"),
+            pen=mkPen(color, width=2),
+            brush=mkBrush(color),
+            name=name,
         )
         widget.addItem(graph_item)
+        plot_item = graph_item
     else:
-        widget.plot(
+        plot_item = widget.plot(
             mzs,
             intensities,
-            pen=mkPen("#3c5488ff", width=2),
-            brush=mkBrush("#3c5488ff"),
+            pen=mkPen(color, width=2),
+            brush=mkBrush(color),
+            name=name,
         )
 
     # Peak Annotation
     _annotate_peaks(widget, mzs, intensities, count=5)
+
+    return plot_item
 
 
 def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
