@@ -242,7 +242,7 @@ class ResultsTab(TabBase):
                     # Connect curve click handlers
                     for curve in self.curve_list.keys():
                         curve.sigClicked.connect(
-                            lambda c, xics=ms_file.xics: highlight_peak(
+                            lambda c, _event, xics=ms_file.xics: highlight_peak(
                                 c,
                                 self.curve_list,
                                 self.canvas_annotatedLC,
