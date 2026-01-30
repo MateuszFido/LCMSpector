@@ -5,6 +5,7 @@ import static_frame as sf
 from pathlib import Path
 from typing import Tuple
 from pyteomics.mzml import MzML
+from calculation.peak_integration import integrate_ms_xic_peak
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +170,16 @@ def construct_xics(
             max_idx = np.argmax(xic[1])
             compound.ions[ion]["RT"] = rts[max_idx]
 
-            # TODO: additional integration logic
+            try:
+                compound.ions[ion]["Integration Data"] = integrate_ms_xic_peak(
+                    scan_times=xic[0],
+                    intensities=xic[1],
+                    rt_target=float(rts[max_idx]),
+                    mass_accuracy=mass_accuracy,
+                )
+            except Exception as e:
+                logger.error(e)
+                continue
 
     return compounds
 

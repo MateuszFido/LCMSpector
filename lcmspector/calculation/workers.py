@@ -55,6 +55,11 @@ class LoadingWorker(QThread):
         self.file_paths = file_paths
         self.file_type = file_type
         self.file_count = len(file_paths)
+        self._cancelled = False
+
+    def cancel(self):
+        """Request cancellation of the worker."""
+        self._cancelled = True
 
     def run(self):
         st = time.time()
@@ -99,6 +104,12 @@ class LoadingWorker(QThread):
                     return
 
                 for future in as_completed(futures):
+                    # Check for cancellation
+                    if self._cancelled:
+                        logger.info("Loading worker cancelled")
+                        executor.shutdown(wait=False, cancel_futures=True)
+                        return
+
                     filename = futures[future]
                     try:
                         result_obj = future.result()
@@ -131,6 +142,11 @@ class ProcessingWorker(QThread):
         self.model = model
         self.mode = mode
         self.mass_accuracy = mass_accuracy
+        self._cancelled = False
+
+    def cancel(self):
+        """Request cancellation of the worker."""
+        self._cancelled = True
 
     def run(self):
         st = time.time()
@@ -169,6 +185,12 @@ class ProcessingWorker(QThread):
                         )
                         futures[future] = ms_file.filename
                 for future in as_completed(futures):
+                    # Check for cancellation
+                    if self._cancelled:
+                        logger.info("Processing worker cancelled")
+                        executor.shutdown(wait=False, cancel_futures=True)
+                        return
+
                     try:
                         result = future.result()
                         results.append(result)

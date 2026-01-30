@@ -6,6 +6,7 @@ import itertools
 import time
 from typing import Tuple
 from pathlib import Path
+import numpy as np
 import pandas as pd
 from pyteomics import mzml
 
@@ -144,6 +145,39 @@ def load_ms_data(path: str) -> mzml.MzML:
 
     logger.info(f"Loaded {len(f)} MSn scans in {time.time() - start_time:.2f} seconds.")
     return f
+
+
+def extract_tic_data(path: str) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Extract Total Ion Current data from an mzML file.
+
+    Runs in worker process during loading - no UI blocking.
+
+    Parameters
+    ----------
+    path : str
+        The path to the .mzML file.
+
+    Returns
+    -------
+    tuple[np.ndarray, np.ndarray]
+        (times, tic_values) arrays
+    """
+    times = []
+    tic_values = []
+
+    with mzml.MzML(path) as reader:
+        for scan in reader:
+            try:
+                tic = scan.get("total ion current", 0)
+                scan_list = scan.get("scanList", {}).get("scan", [{}])[0]
+                time_val = scan_list.get("scan start time", 0)
+                times.append(time_val)
+                tic_values.append(tic)
+            except (KeyError, IndexError):
+                continue
+
+    return np.array(times, dtype=np.float64), np.array(tic_values, dtype=np.float64)
 
 
 def load_ms2_library() -> dict:

@@ -60,6 +60,65 @@ class DragDropListWidget(QtWidgets.QListWidget):
             event.ignore()
 
 
+class CheckableDragDropListWidget(DragDropListWidget):
+    """DragDropListWidget with checkboxes for each item."""
+
+    itemCheckStateChanged = QtCore.Signal(str, bool)  # (filename, is_checked)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.itemChanged.connect(self._on_item_changed)
+        self._checkbox_click_pending = False  # Track if last click was on checkbox
+
+    def mousePressEvent(self, event):
+        """Detect if click is on checkbox area."""
+        # Use position() for Qt6 compatibility (pos() is deprecated)
+        pos = event.position().toPoint()
+        item = self.itemAt(pos)
+        if item:
+            # Get the checkbox rect for this item
+            rect = self.visualItemRect(item)
+            # Checkbox is typically in the left ~20-30 pixels
+            checkbox_width = 24  # Approximate checkbox click area
+            checkbox_rect = QtCore.QRect(
+                rect.left(), rect.top(), checkbox_width, rect.height()
+            )
+            self._checkbox_click_pending = checkbox_rect.contains(pos)
+        else:
+            self._checkbox_click_pending = False
+        super().mousePressEvent(event)
+
+    def was_checkbox_click(self):
+        """Return True if the last click was on the checkbox area."""
+        return self._checkbox_click_pending
+
+    def addItem(self, item):
+        """Override to add checkbox functionality."""
+        if isinstance(item, str):
+            list_item = QtWidgets.QListWidgetItem(item)
+        else:
+            list_item = item
+        list_item.setFlags(list_item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+        list_item.setCheckState(Qt.CheckState.Unchecked)
+        super().addItem(list_item)
+
+    def checkItem(self, row):
+        """Programmatically check a box next to the item."""
+        self.item(row).setCheckState(Qt.CheckState.Checked)
+
+    def _on_item_changed(self, item):
+        """Emit signal when checkbox state changes."""
+        is_checked = item.checkState() == Qt.CheckState.Checked
+        self.itemCheckStateChanged.emit(item.text(), is_checked)
+
+    def takeItem(self, row):
+        """Override to emit uncheck signal for checked items being removed."""
+        item = self.item(row)
+        if item and item.checkState() == Qt.CheckState.Checked:
+            self.itemCheckStateChanged.emit(item.text(), False)
+        return super().takeItem(row)
+
+
 class GenericTable(QtWidgets.QTableWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -760,6 +819,116 @@ class UnifiedResultsTable(GenericTable):
         # This method can be called to refresh concentration displays
         # after calibration calculations are complete
         pass
+
+    def update_ion_values(self, filename, compound):
+        """
+        Update all ion columns for a specific file based on a Compound object.
+        Applies a temporary visual highlight to changed cells.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to update (must match the File column).
+        compound : Compound
+            The compound object containing updated peak area data.
+        """
+
+        matching_items = self.findItems(filename, Qt.MatchFlag.MatchExactly)
+        if not matching_items:
+            raise AttributeError(
+                "No matching entries for filename in UnifiedResultsTable."
+            )
+
+        # Ensure we found the item in column 0 (File Name)
+        target_row = -1
+        for item in matching_items:
+            if item.column() == 0:
+                target_row = item.row()
+                break
+
+        if target_row == -1:
+            raise AttributeError(
+                "No matching entries for filename in UnifiedResultsTable."
+            )
+
+        # 2. Iterate through all ions in the compound and update table
+        ion_names = list(compound.ions.keys())
+
+        for i, ion_name in enumerate(ion_names):
+            ion_data = compound.ions[ion_name]
+
+            # Calculate column indices:
+            # Base offset is 3 (File, Cal, Conc). Each ion has 2 columns (MS, LC).
+            ms_col = 3 + (i * 2)
+            lc_col = ms_col + 1
+
+            # --- Update MS Column ---
+            # Extract baseline_corrected_area from the nested dictionary
+            ms_area_data = ion_data.get("Integration Data")
+            if isinstance(ms_area_data, dict):
+                ms_val = ms_area_data.get("baseline_corrected_area")
+                if ms_val is not None:
+                    # Format: Scientific notation with 2 decimal places
+                    new_text = f"{ms_val:.2e}"
+                    self._update_and_highlight_cell(target_row, ms_col, new_text)
+
+            # --- Update LC Column ---
+            lc_val = ion_data.get("LC Intensity")
+            if lc_val is not None:
+                new_text = str(lc_val)
+                self._update_and_highlight_cell(target_row, lc_col, new_text)
+
+    def _update_and_highlight_cell(self, row, col, new_text):
+        """
+        Helper to update cell text and apply a temporary background color.
+        """
+        item = self.item(row, col)
+
+        # Create item if it doesn't exist (e.g., if cell was previously empty)
+        if not item:
+            item = QtWidgets.QTableWidgetItem()
+            item.setFlags(item.flags() & ~Qt.ItemFlag.ItemIsEditable)
+            self.setItem(row, col, item)
+
+        # Only update and highlight if the text actually changed or if it's a forced update
+        # (Optional: remove the check if you want to highlight even if values are identical)
+        if item.text() != new_text:
+            item.setText(new_text)
+
+            # --- Visual Cue Implementation ---
+            # 1. Define highlight color (Soft Green)
+            highlight_color = QtGui.QColor(200, 255, 200)
+
+            # 2. Store original background to revert later
+            # We use the table's default palette base color usually, or white
+            original_brush = item.background()
+
+            # 3. Apply highlight
+            item.setBackground(highlight_color)
+
+            # 4. Set timer to revert after 10 seconds (10000 ms)
+            # IMPORTANT: Store row/col coordinates instead of item reference
+            # to handle cases where the table may be cleared during the delay
+            target_row, target_col = row, col
+            table_ref = self  # Capture table reference
+
+            def revert_background():
+                """Safely revert background color, handling deleted items."""
+                try:
+                    # Verify table still exists and has this cell
+                    if (
+                        table_ref.rowCount() > target_row
+                        and table_ref.columnCount() > target_col
+                    ):
+                        current_item = table_ref.item(target_row, target_col)
+                        # Only revert if item exists and text matches (same item)
+                        if current_item is not None and current_item.text() == new_text:
+                            current_item.setBackground(original_brush)
+                except (RuntimeError, AttributeError):
+                    # Table or item was deleted, ignore
+                    pass
+
+            QtCore.QTimer.singleShot(10000, revert_background)
 
 
 class ChromatogramPlotWidget(pg.PlotWidget):

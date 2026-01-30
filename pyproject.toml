@@ -23,4 +23,10 @@ pythonpath = "lcmspector"
 addopts = ["--import-mode=importlib"]
 
 [dependency-groups]
-dev = ["nuitka>=2.8.10", "zstandard>=0.25.0"]
+dev = [
+    "jurigged>=0.6.0",
+    "nuitka>=2.8.10",
+    "zstandard>=0.25.0",
+    "pytest-qt>=4.4.0",
+    "pytest-env>=1.1.0",
+]

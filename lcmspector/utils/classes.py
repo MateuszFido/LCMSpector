@@ -6,7 +6,7 @@ import re
 import numpy as np
 from pathlib import Path
 from abc import abstractmethod
-from utils.loading import load_absorbance_data, load_ms_data
+from utils.loading import load_absorbance_data, load_ms_data, extract_tic_data
 from calculation.preprocessing import baseline_correction
 
 logger = logging.getLogger(__name__)
@@ -213,9 +213,14 @@ class MSMeasurement(Measurement):
     def __init__(self, path, mass_accuracy=0.001):
         super().__init__(path)
         self.mass_accuracy = mass_accuracy
-        self.data = load_ms_data(path)
         self.xics = []
         self.file_type = "MS"
+
+        # Extract TIC data first (runs in worker process during loading)
+        self.tic_times, self.tic_values = extract_tic_data(path)
+
+        # Keep lazy reader for indexed scan access (used by show_scan_at_time_x)
+        self.data = load_ms_data(path)
 
     def plot(self):
         from ui.plotting import plot_average_ms_data
@@ -226,6 +231,25 @@ class MSMeasurement(Measurement):
         from ui.plotting import plot_annotated_XICs
 
         self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
+
+    def get_compound_by_name(self, name: str):
+        """
+        Get a compound by its name.
+
+        Parameters
+        ----------
+        name : str
+            The name of the compound.
+
+        Returns
+        -------
+        Compound or None
+            The Compound object if found, None otherwise.
+        """
+        for compound in self.xics:
+            if compound.name == name:
+                return compound
+        return None
 
 
 class Compound(BaseModel):

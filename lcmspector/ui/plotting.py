@@ -55,79 +55,113 @@ class PlotStyle:
         widget: pg.PlotWidget, title: str = "", x_label: str = "", y_label: str = ""
     ):
         """Applies standard formatting to a PlotWidget."""
+        default_font = fonts.get_main_font(12)
         widget.setBackground(PlotStyle.BACKGROUND)
-        widget.setTitle(title, color=PlotStyle.TEXT_COLOR, size="12pt")
+        widget.setTitle(title, color=PlotStyle.TEXT_COLOR, size="12pt", family="Nunito")
 
-        label_style = {"color": PlotStyle.TEXT_COLOR, "font-size": "12pt"}
+        label_style = {
+            "color": PlotStyle.TEXT_COLOR,
+            "font-size": "13pt",
+            "font-family": "Nunito",
+        }
         widget.setLabel("bottom", x_label, **label_style)
         widget.setLabel("left", y_label, **label_style)
 
         # Axis styling
         for axis_name in ["left", "bottom"]:
             axis = widget.getAxis(axis_name)
-            axis.setTextPen(PlotStyle.TEXT_COLOR)
+            axis.setTextPen(PlotStyle.TEXT_COLOR, size="12pt")
             axis.setTickPen(PlotStyle.AXIS_PEN)
-            axis.setStyle(tickFont=fonts.get_main_font(12))
+            axis.setStyle(tickFont=default_font)
 
 
 # --- Plotting Functions ---
 
 
-def plot_absorbance_data(path: str, dataframe: pd.DataFrame, widget: pg.PlotWidget):
-    """Generates plots of absorbance data before and after background correction."""
+def plot_absorbance_data(
+    path: str,
+    dataframe: pd.DataFrame,
+    widget: pg.PlotWidget,
+    color: str = "#2EC4B6",
+    pen_width: int = 1,
+):
+    """Plots baseline-corrected chromatography data with filename in legend."""
     filename = os.path.basename(path).split(".")[0]
 
-    # Clear previous content just in case
-    widget.clear()
     PlotStyle.apply_standard_style(
-        widget, title=filename, x_label="Time (min)", y_label="Absorbance (mAU)"
+        widget,
+        title="Chromatography Data",
+        x_label="Retention time (min)",
+        y_label="Absorbance (mAU)",
     )
-    widget.addLegend(labelTextSize="12pt")
-
-    # Plot Uncorrected
-    widget.plot(
-        dataframe["Time (min)"],
-        dataframe["Uncorrected"],
-        pen=mkPen("#333333", width=2),
-        name="Before correction",
-    )
-
-    # Plot Baseline
-    widget.plot(
-        dataframe["Time (min)"],
-        dataframe["Baseline"],
-        pen=mkPen("#FF5C5C", width=2, style=Qt.PenStyle.DashLine),
-        name="Baseline",
-    )
-
-    # Plot Corrected
+    # Plot Corrected trace only, using filename as legend entry
     widget.plot(
         dataframe["Time (min)"],
         dataframe["Value (mAU)"],
-        pen=mkPen("#2EC4B6", width=2),
-        name="After correction",
+        pen=mkPen(color, width=pen_width),
+        name=filename,
     )
 
 
 def plot_average_ms_data(
-    filename: str, rt: float, data_matrix: MzML, widget: pg.PlotWidget
+    filename: str,
+    rt: float,
+    data_matrix: MzML,
+    widget: pg.PlotWidget,
+    color: str = "#3c5488ff",
+    name: str | None = None,
+    clear: bool = True,
 ):
-    """Plots the average MS data and annotates peaks."""
+    """
+    Plots the average MS data and annotates peaks.
+
+    Parameters
+    ----------
+    filename : str
+        The filename (used for logging/identification)
+    rt : float
+        Retention time to extract spectrum at
+    data_matrix : MzML
+        The MzML data object
+    widget : pg.PlotWidget
+        Target plot widget
+    color : str
+        Color for the spectrum (default: blue)
+    name : str | None
+        Legend name for the plot item. If None, no legend entry.
+    clear : bool
+        If True, applies standard style (clears widget). If False, overlays.
+
+    Returns
+    -------
+    plot_item
+        The created BarGraphItem or PlotDataItem, or None on error
+    """
     try:
         spectrum = data_matrix.time[rt]
+        if spectrum["ms level"] > 1:
+            # DDA shield
+            spec_range = data_matrix.time[rt - 0.1 : rt + 0.1]
+            for spec in spec_range:
+                if spec["ms level"] == 1:
+                    spectrum = spec
+                    break
+
     except (ValueError, IndexError):
         # Fallback to first scan or fail gracefully
         try:
             spectrum = data_matrix.time[0]
         except IndexError:
             logger.error("MzML file is empty.")
-            return
+            return None
 
-    widget.clear()
-    title = f"{filename}\n{spectrum.get('id', 'Scan')} MS{spectrum.get('ms level', '')} at {round(rt, 2)} mins"
-    PlotStyle.apply_standard_style(
-        widget, title=title, x_label="m/z", y_label="Intensity / a.u."
-    )
+    if clear:
+        PlotStyle.apply_standard_style(
+            widget,
+            title="Mass Spectrometry Data",
+            x_label="m/z",
+            y_label="Intensity / a.u.",
+        )
 
     mzs = spectrum["m/z array"]
     intensities = spectrum["intensity array"]
@@ -138,20 +172,25 @@ def plot_average_ms_data(
             x=mzs,
             height=intensities,
             width=0.2,
-            pen=mkPen("#3c5488ff", width=2),
-            brush=mkBrush("#3c5488ff"),
+            pen=mkPen(color, width=2),
+            brush=mkBrush(color),
+            name=name,
         )
         widget.addItem(graph_item)
+        plot_item = graph_item
     else:
-        widget.plot(
+        plot_item = widget.plot(
             mzs,
             intensities,
-            pen=mkPen("#3c5488ff", width=2),
-            brush=mkBrush("#3c5488ff"),
+            pen=mkPen(color, width=2),
+            brush=mkBrush(color),
+            name=name,
         )
 
     # Peak Annotation
     _annotate_peaks(widget, mzs, intensities, count=5)
+
+    return plot_item
 
 
 def plot_annotated_LC(path: str, chromatogram: FrameHE, widget: pg.PlotWidget):
@@ -355,9 +394,12 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
         logger.warning(f"No calibration parameters found for {compound.name}")
 
 
-def plot_total_ion_current(widget: pg.PlotWidget, ms_data: List[dict], filename: str):
-    """Plots TIC."""
-    widget.clear()
+def plot_total_ion_current(
+    widget: pg.PlotWidget, ms_measurement, filename: str, clear: bool = True
+):
+    """Plots TIC using pre-extracted data from MSMeasurement."""
+    if clear:
+        widget.clear()
     PlotStyle.apply_standard_style(
         widget,
         title=f"Total Ion Current (TIC): {filename}",
@@ -365,24 +407,13 @@ def plot_total_ion_current(widget: pg.PlotWidget, ms_data: List[dict], filename:
         y_label="Intensity (cps)",
     )
 
-    tic = []
-    times = []
-
-    for scan in ms_data:
-        try:
-            curr_tic = scan.get("total ion current", 0)
-
-            # Scan start time extraction can be tricky depending on parser
-            scan_list = scan.get("scanList", {}).get("scan", [{}])[0]
-            curr_time = scan_list.get("scan start time", 0)
-
-            tic.append(curr_tic)
-            times.append(curr_time)
-        except (KeyError, IndexError):
-            continue
-
-    if times and tic:
-        widget.plot(times, tic, pen=mkPen("#3c5488ff", width=1))
+    # Use pre-extracted TIC data (no iteration needed - instant)
+    if ms_measurement.tic_times is not None and len(ms_measurement.tic_times) > 0:
+        widget.plot(
+            ms_measurement.tic_times,
+            ms_measurement.tic_values,
+            pen=mkPen("#3c5488ff", width=1),
+        )
 
 
 def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):
@@ -466,8 +497,99 @@ def plot_placeholder(widget: pg.PlotWidget, text: str):
     widget.addItem(text_item)
 
 
-def plot_library_ms2():
-    pass
+def plot_compound_integration(widget: pg.PlotWidget, compound):
+    widget.clear()
+    widget.addLegend(labelTextSize="12pt")
+    PlotStyle.apply_standard_style(
+        widget,
+        title=f"Integration of {compound.name}",
+        x_label="Time (min)",
+        y_label="Intensity / a.u.",
+    )
+    # Safely access compound data
+    ions_dict = getattr(compound, "ions", {})
+    ion_info_list = getattr(compound, "ion_info", [])
+
+    color_cycle = itertools.cycle(PlotStyle.PALETTE)
+    for j, (ion_key, ion_data) in enumerate(ions_dict.items()):
+        ms_intensity = ion_data.get("MS Intensity")
+        integration_data = ion_data.get("Integration Data")
+
+        if ms_intensity is None:
+            continue
+
+        # Safe info string retrieval
+        info_str = ion_info_list[j] if j < len(ion_info_list) else ""
+        current_color = next(color_cycle)
+
+        try:
+            x_data = ms_intensity[0]
+            y_data = ms_intensity[1]
+
+            # Plot trace
+            widget.plot(
+                x_data,
+                y_data,
+                pen=mkPen(current_color, width=1),
+                name=f"{ion_key} {info_str}",
+            )
+
+            # Annotate Max
+            if len(y_data) > 0:
+                max_idx = np.argmax(y_data)
+                max_time = x_data[max_idx]
+                max_val = y_data[max_idx]
+
+                widget.plot(
+                    [max_time],
+                    [max_val],
+                    pen=mkPen(current_color, width=1),
+                    symbol="o",
+                    symbolSize=5,
+                    brush=mkBrush(current_color),
+                )
+                widget.getPlotItem().addLine(
+                    x=integration_data["start_time"],
+                    pen=mkPen(current_color, width=2),
+                    hoverPen=mkPen("red", width=2),
+                    label=f"{ion_key} (LEFT)",
+                    labelOpts={
+                        "position": 0.7,
+                        "color": current_color,
+                        "rotateAxis": (1, 0),
+                    },
+                    movable=True,
+                    bounds=[0, x_data[-1]],
+                    markers=[("|>", 0.5, 10.0)],
+                    name=f"{ion_key}_left",
+                )
+                widget.getPlotItem().addLine(
+                    x=integration_data["end_time"],
+                    pen=mkPen(current_color, width=2),
+                    hoverPen=mkPen("red", width=2),
+                    label=f"{ion_key} (RIGHT)",
+                    labelOpts={
+                        "position": 0.7,
+                        "color": current_color,
+                        "rotateAxis": (1, 0),
+                    },
+                    movable=True,
+                    bounds=[0, x_data[-1]],
+                    markers=[("<|", 0.5, 10.0)],
+                    name=f"{ion_key}_right",
+                )
+
+                if info_str:
+                    text_item = pg.TextItem(
+                        text=info_str, color=current_color, anchor=(0, 0)
+                    )
+                    text_item.setFont(QFont("Helvetica", 12))
+                    text_item.setPos(max_time, max_val)
+                    widget.addItem(text_item)
+
+        except Exception as e:
+            logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
+            continue
 
 
 # --- Helper Functions ---
