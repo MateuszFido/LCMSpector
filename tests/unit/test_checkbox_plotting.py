@@ -153,6 +153,16 @@ class TestUploadTabCheckboxPlotting:
         mock_ms = MagicMock()
         mock_ms.tic_times = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         mock_ms.tic_values = np.array([1000.0, 1500.0, 2000.0, 1500.0, 1000.0])
+
+        # Create a mock spectrum for the .data.time[rt] accessor
+        mock_spectrum = {
+            "ms level": 1,
+            "m/z array": np.array([100.0, 200.0, 300.0]),
+            "intensity array": np.array([1000.0, 2000.0, 1500.0])
+        }
+        # Mock the .data.time accessor to return the spectrum
+        mock_ms.data = MagicMock()
+        mock_ms.data.time.__getitem__ = MagicMock(return_value=mock_spectrum)
         return mock_ms
 
     @pytest.fixture
@@ -402,6 +412,15 @@ class TestRefreshCheckboxPlots:
         mock_ms = MagicMock()
         mock_ms.tic_times = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         mock_ms.tic_values = np.array([1000.0, 1500.0, 2000.0, 1500.0, 1000.0])
+
+        # Create a mock spectrum for the .data.time[rt] accessor
+        mock_spectrum = {
+            "ms level": 1,
+            "m/z array": np.array([100.0, 200.0, 300.0]),
+            "intensity array": np.array([1000.0, 2000.0, 1500.0])
+        }
+        mock_ms.data = MagicMock()
+        mock_ms.data.time.__getitem__ = MagicMock(return_value=mock_spectrum)
         return mock_ms
 
     def test_refresh_plots_checked_lc_files_after_load(self, upload_tab, mock_controller, mock_lc_data):
@@ -538,7 +557,15 @@ class TestPlotPreservation:
         mock_ms.tic_times = np.array([0.0, 1.0, 2.0, 3.0, 4.0])
         mock_ms.tic_values = np.array([1000.0, 1500.0, 2000.0, 1500.0, 1000.0])
         mock_ms.filename = "test_file"
-        mock_ms.data = []  # Mock MS scan data
+
+        # Create a mock spectrum for the .data.time[rt] accessor
+        mock_spectrum = {
+            "ms level": 1,
+            "m/z array": np.array([100.0, 200.0, 300.0]),
+            "intensity array": np.array([1000.0, 2000.0, 1500.0])
+        }
+        mock_ms.data = MagicMock()
+        mock_ms.data.time.__getitem__ = MagicMock(return_value=mock_spectrum)
         return mock_ms
 
     def test_clicking_ms_file_preserves_lc_checkbox_plots(self, upload_tab, mock_controller, mock_lc_data, mock_ms_data):
@@ -705,10 +732,17 @@ class TestColorCycling:
         })
         mock_controller.model.lc_measurements = {"lc_file": mock_lc}
 
-        # Setup MS data
+        # Setup MS data with proper .data.time[rt] accessor
         mock_ms = MagicMock()
         mock_ms.tic_times = np.array([0.0, 1.0, 2.0])
         mock_ms.tic_values = np.array([1000.0, 1500.0, 1000.0])
+        mock_spectrum = {
+            "ms level": 1,
+            "m/z array": np.array([100.0, 200.0, 300.0]),
+            "intensity array": np.array([1000.0, 2000.0, 1500.0])
+        }
+        mock_ms.data = MagicMock()
+        mock_ms.data.time.__getitem__ = MagicMock(return_value=mock_spectrum)
         mock_controller.model.ms_measurements = {"ms_file": mock_ms}
 
         upload_tab.set_controller(mock_controller)
@@ -859,6 +893,14 @@ class TestClickTypeDistinction:
         mock_ms = MagicMock()
         mock_ms.tic_times = np.array([0.0, 1.0, 2.0])
         mock_ms.tic_values = np.array([1000.0, 1500.0, 1000.0])
+        # Add proper .data.time[rt] accessor for MS spectrum
+        mock_spectrum = {
+            "ms level": 1,
+            "m/z array": np.array([100.0, 200.0, 300.0]),
+            "intensity array": np.array([1000.0, 2000.0, 1500.0])
+        }
+        mock_ms.data = MagicMock()
+        mock_ms.data.time.__getitem__ = MagicMock(return_value=mock_spectrum)
 
         mock_controller.model.ms_measurements = {"test_file": mock_ms}
         upload_tab.set_controller(mock_controller)
@@ -879,6 +921,14 @@ class TestClickTypeDistinction:
         mock_ms = MagicMock()
         mock_ms.tic_times = np.array([0.0, 1.0, 2.0])
         mock_ms.tic_values = np.array([1000.0, 1500.0, 1000.0])
+        # Add proper .data.time[rt] accessor for MS spectrum
+        mock_spectrum = {
+            "ms level": 1,
+            "m/z array": np.array([100.0, 200.0, 300.0]),
+            "intensity array": np.array([1000.0, 2000.0, 1500.0])
+        }
+        mock_ms.data = MagicMock()
+        mock_ms.data.time.__getitem__ = MagicMock(return_value=mock_spectrum)
 
         mock_controller.model.ms_measurements = {"test_file": mock_ms}
         upload_tab.set_controller(mock_controller)
