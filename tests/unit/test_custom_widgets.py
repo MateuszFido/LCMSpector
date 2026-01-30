@@ -4,6 +4,7 @@ Custom widget tests for DragDropListWidget, IonTable, and LabelledSlider.
 Tests widget-specific functionality independent of the UploadTab context.
 """
 import pytest
+from pathlib import Path
 from PySide6.QtCore import Qt, QMimeData, QUrl
 from PySide6.QtGui import QDropEvent, QDragEnterEvent
 from PySide6.QtWidgets import QTableWidgetItem
@@ -77,7 +78,10 @@ class TestDragDropListWidget:
         drag_drop_list.dropEvent(mock_event)
 
         assert signal_catcher.was_called
-        assert str(test_file) in signal_catcher.args[0]
+        # Compare using Path objects to handle Windows/Unix path format differences
+        # (Qt returns forward slashes on Windows, while str(Path) uses backslashes)
+        dropped_paths = [Path(p) for p in signal_catcher.args[0]]
+        assert test_file in dropped_paths
 
     def test_drag_enter_accepts_file_urls(self, drag_drop_list, tmp_path):
         """dragEnterEvent accepts events with file URLs."""
