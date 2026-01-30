@@ -753,6 +753,7 @@ class UploadTab(TabBase):
                             y_label="Absorbance (mAU)",
                         )
                         self.canvas_baseline.addLegend(labelTextSize="12pt")
+                        self._add_crosshairs_to_canvas(self.canvas_baseline)
 
                     color = self._get_next_color("LC")
                     # Set pen width to 2 if this file is currently selected, else 1
@@ -775,6 +776,9 @@ class UploadTab(TabBase):
                         self.canvas_baseline,
                         "Welcome to LCMSpector\n← add files to get started",
                     )
+                    # Reset label references since canvas was cleared
+                    self.crosshair_v_label = None
+                    self.crosshair_h_label = None
 
             # Clear selection if this was the selected file
             if filename == self._selected_lc_file:
@@ -984,12 +988,14 @@ class UploadTab(TabBase):
         canvas.getPlotItem().addItem(self.crosshair_h, ignoreBounds=True)
         canvas.getPlotItem().addItem(self.line_marker, ignoreBounds=True)
 
-        self.crosshair_v_label = pg.InfLineLabel(
-            self.crosshair_v, text="", color="#b8b8b8", rotateAxis=(1, 0)
-        )
-        self.crosshair_h_label = pg.InfLineLabel(
-            self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
-        )
+        # Only create labels if they don't exist
+        if self.crosshair_v_label is None:
+            self.crosshair_v_label = pg.InfLineLabel(
+                self.crosshair_v, text="", color="#b8b8b8", rotateAxis=(1, 0)
+            )
+            self.crosshair_h_label = pg.InfLineLabel(
+                self.crosshair_h, text="", color="#b8b8b8", rotateAxis=(1, 0)
+            )
 
     def _update_crosshair(self, e):
         """Update crosshair position based on mouse movement."""
