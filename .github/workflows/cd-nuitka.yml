@@ -37,8 +37,25 @@ jobs:
         run: |
           sudo apt-get update
           # Added xvfb here to allow GUI launch testing on headless Linux
-          sudo apt-get install -y patchelf zip unzip xvfb libegl1 libopengl0 libxkbcommon-x11-0 libdbus-1-3 libxcb-cursor-dev
-
+          sudo apt-get install -y patchelf \
+                                  zip \
+                                  unzip \
+                                  xvfb \
+                                  libegl1 \
+                                  libopengl0 \
+                                  libxkbcommon-x11-0 \
+                                  libdbus-1-3 \
+                                  libxcb-cursor-dev \
+                                  libxcb-cursor0 \
+                                  libxcb-icccm4 \
+                                  libxcb-keysyms1 \
+                                  libxcb-randr0 \
+                                  libxcb-render-util0 \
+                                  libxcb-shape0 \
+                                  libxcb-sync1 \
+                                  libxcb-xfixes0 \
+                                  libxcb-xinerama0 \
+                                  libxcb-xkb1
       - name: Install dependencies
         run: uv sync
 
@@ -90,10 +107,10 @@ jobs:
         shell: bash
         run: |
           # 1. Force Ad-Hoc Signature to bypass "Unidentified Developer" / ARM64 checks
-          codesign --force --deep --sign - dist/LCMSpector.app
+          codesign --force --deep --sign - dist/main.app
 
           # 2. Launch in background
-          ./dist/LCMSpector.app/Contents/MacOS/LCMSpector & 
+          ./dist/main.app/Contents/MacOS/main & 
           PID=$!
           echo "Launched PID $PID. Waiting 30s..."
           sleep 30
@@ -145,7 +162,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          $path = "dist\LCMSpector.dist\LCMSpector.exe"
+          $path = "dist\main.dist\LCMSpector.exe"
 
           # 1. Unblock the file to prevent "Open File - Security Warning" dialogs
           Write-Host "Unblocking $path to bypass SmartScreen/Zone checks..."
