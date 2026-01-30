@@ -429,6 +429,12 @@ class View(QtWidgets.QMainWindow):
         self.results_tab.setup_layout(new_mode)
         self.quantitation_tab.setup_layout(new_mode)
 
+        # CRITICAL: Reconnect controller signals to new widgets
+        # After setup_layout(), all widgets are new instances, so old signal
+        # connections are stale. We must reconnect the controller to the new widgets.
+        if hasattr(self, "controller"):
+            self.controller.reconnect_signals()
+
         # Disable results and quantitation tabs
         self.tabWidget.setTabEnabled(self.tabWidget.indexOf(self.results_tab), False)
         self.tabWidget.setTabEnabled(
@@ -469,14 +475,25 @@ class View(QtWidgets.QMainWindow):
         """Clear all loaded data from the model and view."""
         if hasattr(self, "controller") and hasattr(self.controller, "model"):
             model = self.controller.model
-            if hasattr(model, "lc_measurements"):
-                model.lc_measurements = {}
-            if hasattr(model, "ms_measurements"):
-                model.ms_measurements = {}
-            if hasattr(model, "annotations"):
-                model.annotations = {}
-            if hasattr(model, "compounds"):
-                model.compounds = []
+
+            # IMPORTANT: Stop workers FIRST before clearing any data
+            # This prevents workers from accessing cleared data
+            if hasattr(model, "shutdown"):
+                model.shutdown()
+
+            # Now safely clear measurements with proper resource cleanup
+            if hasattr(model, "clear_measurements"):
+                model.clear_measurements()
+            else:
+                # Fallback for older model versions
+                if hasattr(model, "lc_measurements"):
+                    model.lc_measurements = {}
+                if hasattr(model, "ms_measurements"):
+                    model.ms_measurements = {}
+                if hasattr(model, "annotations"):
+                    model.annotations = {}
+                if hasattr(model, "compounds"):
+                    model.compounds = []
 
         # Clear all tabs
         self.upload_tab.clear()

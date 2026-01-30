@@ -102,23 +102,67 @@ class UploadTab(TabBase):
     def clear(self):
         """Clear all data from the tab."""
         if hasattr(self, "listLC"):
-            self.listLC.clear()
+            try:
+                self.listLC.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, "listMS"):
-            self.listMS.clear()
+            try:
+                self.listMS.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, "listAnnotations"):
-            self.listAnnotations.clear()
+            try:
+                self.listAnnotations.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, "ionTable"):
-            self.ionTable.clearContents()
-            self.ionTable.setRowCount(0)
+            try:
+                self.ionTable.clearContents()
+                self.ionTable.setRowCount(0)
+            except RuntimeError:
+                pass  # Widget already deleted
+
+        # Remove tracked plot items BEFORE clearing canvases
+        # This ensures proper cleanup of any references
         if hasattr(self, "canvas_baseline"):
-            self.canvas_baseline.clear()
-            plot_placeholder(
-                self.canvas_baseline,
-                "Welcome to LCMSpector\n\u2190 add files to get started",
-            )
+            try:
+                # Remove LC overlay plots
+                for filename, plot_item in list(self._lc_active_plots.items()):
+                    try:
+                        self.canvas_baseline.removeItem(plot_item)
+                    except Exception:
+                        pass  # Item may already be removed
+
+                # Remove main view plots
+                for plot_item in self._main_view_plots:
+                    try:
+                        self.canvas_baseline.removeItem(plot_item)
+                    except Exception:
+                        pass
+
+                self.canvas_baseline.clear()
+                plot_placeholder(
+                    self.canvas_baseline,
+                    "Welcome to LCMSpector\n\u2190 add files to get started",
+                )
+            except RuntimeError:
+                pass  # Widget already deleted
+
         if hasattr(self, "canvas_avgMS"):
-            self.canvas_avgMS.clear()
-            plot_placeholder(self.canvas_avgMS, "")
+            try:
+                # Remove MS overlay plots
+                for filename, (plot_item, _) in list(self._ms_active_plots.items()):
+                    try:
+                        if plot_item is not None:
+                            self.canvas_avgMS.removeItem(plot_item)
+                    except Exception:
+                        pass  # Item may already be removed
+
+                self.canvas_avgMS.clear()
+                plot_placeholder(self.canvas_avgMS, "")
+            except RuntimeError:
+                pass  # Widget already deleted
 
         # Reset plot tracking state
         self._lc_active_plots.clear()
@@ -146,6 +190,10 @@ class UploadTab(TabBase):
 
         # Clear existing layout
         clear_layout(self._main_layout)
+
+        # Clear stale widget references before building new layout
+        # This prevents RuntimeError when accessing deleted C++ objects
+        self._clear_stale_widget_refs()
 
         # Build mode-specific layout
         if self._current_mode == "LC/GC-MS":
@@ -176,6 +224,33 @@ class UploadTab(TabBase):
         # Update controller mode if available
         if self._controller:
             self._controller.mode = mode
+
+    def _clear_stale_widget_refs(self):
+        """Remove stale widget attribute references to prevent RuntimeError.
+
+        After clear_layout() deletes widgets via deleteLater(), the Python
+        attributes still exist but point to deleted C++ objects. This causes
+        RuntimeError when hasattr() returns True but the widget is unusable.
+        """
+        stale_attrs = [
+            "listLC",
+            "listMS",
+            "listAnnotations",
+            "browseLC",
+            "browseMS",
+            "browseAnnotations",
+            "button_clear_LC",
+            "button_clear_MS",
+            "labelLCdata",
+            "labelMSdata",
+            "labelAnnotations",
+            "canvas_baseline",
+            "canvas_avgMS",
+            "resultsPane",
+        ]
+        for attr in stale_attrs:
+            if hasattr(self, attr):
+                delattr(self, attr)
 
     # --- Layout Builders ---
 
@@ -654,7 +729,7 @@ class UploadTab(TabBase):
         """Handle LC file checkbox state change."""
         logger.debug(f"LC checkbox changed: {filename} -> {is_checked}")
 
-        if not hasattr(self, "canvas_baseline"):
+        if not hasattr(self, "canvas_baseline") or self.canvas_baseline is None:
             logger.debug("No canvas_baseline, skipping")
             return
 
@@ -666,6 +741,18 @@ class UploadTab(TabBase):
                 if lc_data:
                     logger.debug(f"Found LC data for {stem_filename}, plotting")
                     from pyqtgraph import mkPen
+                    from ui.plotting import PlotStyle
+
+                    # If this is the first plot, clear placeholder and restore axes
+                    if not self._lc_active_plots:
+                        self.canvas_baseline.clear()
+                        PlotStyle.apply_standard_style(
+                            self.canvas_baseline,
+                            title="Chromatography Data",
+                            x_label="Time (min)",
+                            y_label="Absorbance (mAU)",
+                        )
+                        self.canvas_baseline.addLegend(labelTextSize="12pt")
 
                     color = self._get_next_color("LC")
                     # Set pen width to 2 if this file is currently selected, else 1
@@ -681,6 +768,14 @@ class UploadTab(TabBase):
             if filename in self._lc_active_plots:
                 plot_item = self._lc_active_plots.pop(filename)
                 self.canvas_baseline.removeItem(plot_item)
+
+                # If no more plots, restore placeholder
+                if not self._lc_active_plots:
+                    plot_placeholder(
+                        self.canvas_baseline,
+                        "Welcome to LCMSpector\n← add files to get started",
+                    )
+
             # Clear selection if this was the selected file
             if filename == self._selected_lc_file:
                 self._selected_lc_file = None
@@ -691,7 +786,7 @@ class UploadTab(TabBase):
 
         logger.debug(f"MS checkbox changed: {filename} -> {is_checked}")
 
-        if not hasattr(self, "canvas_avgMS"):
+        if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
             logger.debug("No canvas_avgMS, skipping")
             return
 
@@ -942,7 +1037,11 @@ class UploadTab(TabBase):
         """Show MS scan at the selected time point for all checked MS files."""
         from ui.plotting import plot_average_ms_data
 
-        if not hasattr(self, "canvas_avgMS") or not self._controller:
+        if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
+            return
+        if not self._controller:
+            return
+        if not hasattr(self._controller, "model"):
             return
 
         time_x = float(self.line_marker.pos().x())

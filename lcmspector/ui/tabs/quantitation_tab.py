@@ -62,19 +62,37 @@ class QuantitationTab(TabBase):
     def clear(self):
         """Clear all data from the tab."""
         if hasattr(self, 'unifiedResultsTable'):
-            self.unifiedResultsTable.clearContents()
-            self.unifiedResultsTable.setRowCount(0)
+            try:
+                self.unifiedResultsTable.clearContents()
+                self.unifiedResultsTable.setRowCount(0)
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, 'canvas_calibration'):
-            self.canvas_calibration.clear()
+            try:
+                self.canvas_calibration.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, 'canvas_ms2'):
-            self.canvas_ms2.clear()
+            try:
+                self.canvas_ms2.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, 'canvas_library_ms2'):
-            self.canvas_library_ms2.clear()
+            try:
+                self.canvas_library_ms2.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, 'comboBoxChooseCompound'):
-            self.comboBoxChooseCompound.clear()
-            self.comboBoxChooseCompound.setEnabled(False)
+            try:
+                self.comboBoxChooseCompound.clear()
+                self.comboBoxChooseCompound.setEnabled(False)
+            except RuntimeError:
+                pass  # Widget already deleted
         if hasattr(self, 'comboBoxChooseMS2File'):
-            self.comboBoxChooseMS2File.clear()
+            try:
+                self.comboBoxChooseMS2File.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         self.file_concentrations = None
 
     def setup_layout(self, mode: str = None):

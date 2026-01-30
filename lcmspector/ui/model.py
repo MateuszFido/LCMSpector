@@ -1,4 +1,5 @@
 # model.py
+import gc
 import logging
 import traceback
 import threading
@@ -10,12 +11,12 @@ from calculation.calc_conc import calculate_concentration
 from calculation.peak_integration import integrate_peak_manual_boundaries
 from calculation.workers import LoadingWorker, ProcessingWorker
 from utils.loading import load_ms2_library
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QObject
 
 logger = logging.getLogger(__name__)
 
 
-class Model(QThread):
+class Model(QObject):
     """
     The Model class handles the loading, processing, and annotation of LC and MS measurement files.
 
@@ -53,6 +54,7 @@ class Model(QThread):
         "library",
         "worker",
         "mass_accuracy",
+        "_current_worker_id",
     ]
 
     def __init__(self):
@@ -71,12 +73,18 @@ class Model(QThread):
             )
         self.controller = None
         self.worker = None
+        self._current_worker_id = 0  # Track worker identity to prevent stale callbacks
         logger.info("Model initialized.")
         logger.info("Current thread: %s", threading.current_thread().name)
         logger.info("Current process: %d", os.getpid())
 
     def load(self, mode, file_paths, file_type):
+        # Assign unique worker ID to track this worker instance
+        self._current_worker_id += 1
+        worker_id = self._current_worker_id
+
         self.worker = LoadingWorker(self, mode, file_paths, file_type)
+        self.worker.worker_id = worker_id  # Tag worker with its ID
         self.worker.progressUpdated.connect(self.controller.view.update_progressBar)
         self.worker.progressUpdated.connect(
             self.controller.view.update_statusbar_with_loaded_file
@@ -455,11 +463,70 @@ class Model(QThread):
     def shutdown(self):
         """Gracefully stop any running workers and threads."""
         logger.debug("Trying to shut down model and workers...")
+        # Increment worker ID to invalidate any pending workers
+        self._current_worker_id += 1
         if self.worker:
-            if hasattr(self.worker, "isRunning") and self.worker.isRunning():
-                self.worker.terminate()
-                self.worker.wait()
+            try:
+                # Disconnect all signals to prevent callbacks to cleared data
+                try:
+                    self.worker.progressUpdated.disconnect()
+                except (RuntimeError, TypeError):
+                    pass  # Signal may not be connected
+                try:
+                    self.worker.finished.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+                try:
+                    self.worker.error.disconnect()
+                except (RuntimeError, TypeError):
+                    pass
+
+                # Cancel worker if it supports cancellation
+                if hasattr(self.worker, "cancel"):
+                    self.worker.cancel()
+
+                # Gracefully stop the thread
+                if hasattr(self.worker, "isRunning") and self.worker.isRunning():
+                    self.worker.quit()
+                    # Wait up to 5 seconds for graceful shutdown
+                    if not self.worker.wait(5000):
+                        logger.warning("Worker did not stop gracefully, terminating...")
+                        self.worker.terminate()
+                        self.worker.wait(1000)
+            except Exception as e:
+                logger.error(f"Error during worker shutdown: {e}")
+            finally:
+                self.worker = None
         logger.debug("Model shutdown complete.")
+
+    def clear_measurements(self):
+        """
+        Clear all measurement data and release resources.
+
+        This method properly closes PyTeomics lazy readers before clearing
+        the measurement dictionaries, then triggers garbage collection.
+        """
+        logger.debug("Clearing all measurements...")
+
+        # Close PyTeomics lazy readers in MS measurements
+        for filename, ms_measurement in self.ms_measurements.items():
+            try:
+                if hasattr(ms_measurement, "data") and ms_measurement.data is not None:
+                    if hasattr(ms_measurement.data, "close"):
+                        ms_measurement.data.close()
+                        logger.debug(f"Closed lazy reader for {filename}")
+            except Exception as e:
+                logger.warning(f"Error closing data for {filename}: {e}")
+
+        # Clear all measurement containers
+        self.lc_measurements.clear()
+        self.ms_measurements.clear()
+        self.annotations = tuple()
+        self.compounds = tuple()
+
+        # Trigger garbage collection to release memory
+        gc.collect()
+        logger.debug("Measurements cleared and memory released.")
 
     def apply_integration_changes(self):
         """

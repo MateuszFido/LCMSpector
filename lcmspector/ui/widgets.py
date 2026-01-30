@@ -102,6 +102,10 @@ class CheckableDragDropListWidget(DragDropListWidget):
         list_item.setCheckState(Qt.CheckState.Unchecked)
         super().addItem(list_item)
 
+    def checkItem(self, row):
+        """Programmatically check a box next to the item."""
+        self.item(row).setCheckState(Qt.CheckState.Checked)
+
     def _on_item_changed(self, item):
         """Emit signal when checkbox state changes."""
         is_checked = item.checkState() == Qt.CheckState.Checked
@@ -903,9 +907,28 @@ class UnifiedResultsTable(GenericTable):
             item.setBackground(highlight_color)
 
             # 4. Set timer to revert after 10 seconds (10000 ms)
-            # We use a lambda to capture the specific item and original background
-            # Note: We check if the item still exists/is valid implicitly by Python's object handling
-            QtCore.QTimer.singleShot(10000, lambda: item.setBackground(original_brush))
+            # IMPORTANT: Store row/col coordinates instead of item reference
+            # to handle cases where the table may be cleared during the delay
+            target_row, target_col = row, col
+            table_ref = self  # Capture table reference
+
+            def revert_background():
+                """Safely revert background color, handling deleted items."""
+                try:
+                    # Verify table still exists and has this cell
+                    if (
+                        table_ref.rowCount() > target_row
+                        and table_ref.columnCount() > target_col
+                    ):
+                        current_item = table_ref.item(target_row, target_col)
+                        # Only revert if item exists and text matches (same item)
+                        if current_item is not None and current_item.text() == new_text:
+                            current_item.setBackground(original_brush)
+                except (RuntimeError, AttributeError):
+                    # Table or item was deleted, ignore
+                    pass
+
+            QtCore.QTimer.singleShot(10000, revert_background)
 
 
 class ChromatogramPlotWidget(pg.PlotWidget):

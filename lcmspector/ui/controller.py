@@ -22,13 +22,27 @@ class Controller:
         self.model.controller = self
 
         # Inject controller into tab modules
-        if hasattr(self.view, 'upload_tab'):
+        self._inject_controller_into_tabs()
+
+        # Connect signals to view widgets
+        self._connect_signals()
+
+        self.mode = "LC/GC-MS"
+        logger.info("Controller initialized.")
+        logger.info("Current thread: %s", threading.current_thread().name)
+        logger.info("Current process: %d", os.getpid())
+
+    def _inject_controller_into_tabs(self):
+        """Inject controller reference into all tab modules."""
+        if hasattr(self.view, "upload_tab"):
             self.view.upload_tab.set_controller(self)
-        if hasattr(self.view, 'results_tab'):
+        if hasattr(self.view, "results_tab"):
             self.view.results_tab.set_controller(self)
-        if hasattr(self.view, 'quantitation_tab'):
+        if hasattr(self.view, "quantitation_tab"):
             self.view.quantitation_tab.set_controller(self)
 
+    def _connect_signals(self):
+        """Connect controller to current view widgets."""
         self.view.processButton.clicked.connect(self.process_data)
         self.view.comboBox_currentfile.currentIndexChanged.connect(
             self.display_selected_plots
@@ -47,14 +61,93 @@ class Controller:
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(
             self.view.display_compound_integration
         )
-        self.view.button_apply_integration.clicked.connect(self.model.apply_integration_changes)
-        self.view.button_recalculate_integration.clicked.connect(self.model.recalculate_integration_all_files)
+        self.view.button_apply_integration.clicked.connect(
+            self.model.apply_integration_changes
+        )
+        self.view.button_recalculate_integration.clicked.connect(
+            self.model.recalculate_integration_all_files
+        )
         self.view.button_reset_integration.clicked.connect(self.model.reset_integration)
 
-        self.mode = "LC/GC-MS"
-        logger.info("Controller initialized.")
-        logger.info("Current thread: %s", threading.current_thread().name)
-        logger.info("Current process: %d", os.getpid())
+    def _disconnect_signals(self):
+        """Disconnect controller from old view widgets."""
+        # Disconnect processButton
+        try:
+            self.view.processButton.clicked.disconnect(self.process_data)
+        except (RuntimeError, TypeError):
+            pass  # Already disconnected or widget deleted
+
+        # Disconnect comboBox_currentfile
+        try:
+            self.view.comboBox_currentfile.currentIndexChanged.disconnect(
+                self.display_selected_plots
+            )
+        except (RuntimeError, TypeError):
+            pass
+
+        # Disconnect calibrateButton
+        try:
+            self.view.calibrateButton.clicked.disconnect(self.calibrate)
+        except (RuntimeError, TypeError):
+            pass
+        try:
+            self.view.calibrateButton.clicked.disconnect(self.find_ms2_precursors)
+        except (RuntimeError, TypeError):
+            pass
+
+        # Disconnect comboBoxChooseCompound
+        try:
+            self.view.comboBoxChooseCompound.currentIndexChanged.disconnect(
+                self.view.display_calibration_curve
+            )
+        except (RuntimeError, TypeError):
+            pass
+        try:
+            self.view.comboBoxChooseCompound.currentIndexChanged.disconnect(
+                self.view.display_concentrations
+            )
+        except (RuntimeError, TypeError):
+            pass
+        try:
+            self.view.comboBoxChooseCompound.currentIndexChanged.disconnect(
+                self.view.display_ms2
+            )
+        except (RuntimeError, TypeError):
+            pass
+        try:
+            self.view.comboBoxChooseCompound.currentIndexChanged.disconnect(
+                self.view.display_compound_integration
+            )
+        except (RuntimeError, TypeError):
+            pass
+
+        # Disconnect integration buttons
+        try:
+            self.view.button_apply_integration.clicked.disconnect(
+                self.model.apply_integration_changes
+            )
+        except (RuntimeError, TypeError):
+            pass
+        try:
+            self.view.button_recalculate_integration.clicked.disconnect(
+                self.model.recalculate_integration_all_files
+            )
+        except (RuntimeError, TypeError):
+            pass
+        try:
+            self.view.button_reset_integration.clicked.disconnect(
+                self.model.reset_integration
+            )
+        except (RuntimeError, TypeError):
+            pass
+
+    def reconnect_signals(self):
+        """Reconnect signals after UI rebuild (mode change)."""
+        logger.debug("Reconnecting controller signals to new widgets...")
+        self._disconnect_signals()
+        self._inject_controller_into_tabs()
+        self._connect_signals()
+        logger.debug("Controller signals reconnected.")
 
     def load_lc_data(self):
         pass
@@ -230,21 +323,31 @@ class Controller:
         self.view.statusbar.showMessage(f"Error: {error_message}", 5000)
 
     def on_loading_finished(self, results):
+        # Validate this is from current worker (prevents stale callbacks after mode change)
+        if hasattr(self.model, "worker") and self.model.worker:
+            if hasattr(self.model.worker, "worker_id"):
+                if self.model.worker.worker_id != self.model._current_worker_id:
+                    logger.warning("Ignoring results from stale worker")
+                    return
+
         # Safeguard to only update what was just loaded
         if results is not None and len(results) > 0:
             try:
-                last_loaded_result = list(results.keys())[-1]
+                last_loaded_result = list(results.keys())[0]
                 logger.debug(
                     f"Received results with file type: {results[last_loaded_result].file_type}"
                 )
             except AttributeError:
-                logger.error("Invalid results format received.")
+                logger.error(
+                    "Invalid results format received. Setting last_loaded_result to None."
+                )
+                last_loaded_result = None
             if results[last_loaded_result].file_type == "LC":
                 self.model.lc_measurements = results
-                self.view.plot_raw_chromatography(results[last_loaded_result])
+                self.view.upload_tab.listLC.checkItem(0)
             elif results[last_loaded_result].file_type == "MS":
                 self.model.ms_measurements = results
-                self.view.plot_raw_MS(results[last_loaded_result])
+                self.view.upload_tab.listMS.checkItem(0)
             else:
                 logger.error("Unknown file type in results.")
 
@@ -264,5 +367,5 @@ class Controller:
             self.view.processButton.setEnabled(True)
 
             # Re-plot any files that were checked before loading completed
-            if hasattr(self.view, 'upload_tab'):
+            if hasattr(self.view, "upload_tab"):
                 self.view.upload_tab.refresh_checkbox_plots()
