@@ -360,7 +360,11 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
     # Validate Data
     cal_curve = getattr(compound, "calibration_curve", {})
     if not cal_curve:
-        plot_placeholder(widget, "No Calibration Data")
+        plot_placeholder(
+            widget,
+            '<p style="display: block; color: #d5d5d5; text-align: center; margin: auto">← Start by entering concentration values,<br> \
+            click calculate, and calibration curves will appear here. </p>',
+        )
         return
 
     x = np.array(list(cal_curve.keys()))
@@ -484,12 +488,12 @@ def plot_no_ms2_found(widget: pg.PlotWidget):
 
 
 def plot_placeholder(widget: pg.PlotWidget, text: str):
-    """Displays a centered placeholder text."""
+    """Displays a centered placeholder text by setting any HTML input."""
     widget.clear()
     widget.setBackground("w")
     widget.getPlotItem().hideAxis("bottom")
     widget.getPlotItem().hideAxis("left")
-    text_item = pg.TextItem(text=text, color="#c5c5c5", anchor=(0.5, 0.5))
+    text_item = pg.TextItem(html=text, anchor=(0.5, 0.5))
     text_item.setFont(
         fonts.get_main_font(14)
         if hasattr(fonts, "get_main_font")
@@ -546,7 +550,7 @@ def plot_compound_integration(
         current_color = next(color_cycle)
 
         # Determine if this ion is selected (editable)
-        is_selected = (selected_ion is not None and str(ion_key) == str(selected_ion))
+        is_selected = selected_ion is not None and str(ion_key) == str(selected_ion)
 
         try:
             x_data = ms_intensity[0]
@@ -609,7 +613,9 @@ def plot_compound_integration(
                         "position": 0.7,
                         "color": current_color,
                         "rotateAxis": (1, 0),
-                    } if label_left else None,
+                    }
+                    if label_left
+                    else None,
                     movable=movable,
                     bounds=[0, x_data[-1]] if movable else None,
                     markers=markers_left,
@@ -626,7 +632,9 @@ def plot_compound_integration(
                         "position": 0.7,
                         "color": current_color,
                         "rotateAxis": (1, 0),
-                    } if label_right else None,
+                    }
+                    if label_right
+                    else None,
                     movable=movable,
                     bounds=[0, x_data[-1]] if movable else None,
                     markers=markers_right,

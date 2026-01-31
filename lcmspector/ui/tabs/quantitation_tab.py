@@ -1,6 +1,7 @@
 """
 Quantitation Tab for calibration and concentration analysis.
 """
+
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
@@ -63,34 +64,34 @@ class QuantitationTab(TabBase):
 
     def clear(self):
         """Clear all data from the tab."""
-        if hasattr(self, 'unifiedResultsTable'):
+        if hasattr(self, "unifiedResultsTable"):
             try:
                 self.unifiedResultsTable.clearContents()
                 self.unifiedResultsTable.setRowCount(0)
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'canvas_calibration'):
+        if hasattr(self, "canvas_calibration"):
             try:
                 self.canvas_calibration.clear()
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'canvas_ms2'):
+        if hasattr(self, "canvas_ms2"):
             try:
                 self.canvas_ms2.clear()
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'canvas_library_ms2'):
+        if hasattr(self, "canvas_library_ms2"):
             try:
                 self.canvas_library_ms2.clear()
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'comboBoxChooseCompound'):
+        if hasattr(self, "comboBoxChooseCompound"):
             try:
                 self.comboBoxChooseCompound.clear()
                 self.comboBoxChooseCompound.setEnabled(False)
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'comboBoxChooseMS2File'):
+        if hasattr(self, "comboBoxChooseMS2File"):
             try:
                 self.comboBoxChooseMS2File.clear()
             except RuntimeError:
@@ -172,16 +173,14 @@ class QuantitationTab(TabBase):
         self.label_calibrate.setWordWrap(True)
         self.label_calibrate.setObjectName("label_calibrate")
         self.label_calibrate.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Fixed
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout_top_left.addWidget(self.label_calibrate, 0, 0, 1, 1)
 
         self.calibrateButton = QtWidgets.QPushButton("Calibrate")
         self.calibrateButton.setObjectName("calibrateButton")
         self.calibrateButton.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Fixed
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
 
@@ -198,8 +197,7 @@ class QuantitationTab(TabBase):
 
         self.label_compound = QtWidgets.QLabel("Compound:")
         sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Preferred
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
         )
         self.label_compound.setSizePolicy(sizePolicy)
         self.label_compound.setObjectName("label_compound")
@@ -237,8 +235,7 @@ class QuantitationTab(TabBase):
         self.canvas_library_ms2 = pg.PlotWidget()
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
         self.canvas_library_ms2.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Minimum
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
         )
         self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
         self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
@@ -249,25 +246,56 @@ class QuantitationTab(TabBase):
         self.ion_selection_layout = QtWidgets.QHBoxLayout()
         self.label_select_ion = QtWidgets.QLabel("Ion to edit:")
         self.label_select_ion.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Preferred
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
         )
         self.comboBoxSelectIon = QtWidgets.QComboBox()
-        self.comboBoxSelectIon.setMinimumSize(QtCore.QSize(150, 32))
+        self.comboBoxSelectIon.setMinimumSize(QtCore.QSize(250, 32))
+        self.comboBoxSelectIon.setSizeAdjustPolicy(
+            QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents
+        )
+        self.comboBoxSelectIon.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
         self.comboBoxSelectIon.addItem("-- Select ion --")
-        self.comboBoxSelectIon.setToolTip("Select an ion to enable manual integration boundary editing")
+        self.comboBoxSelectIon.setToolTip(
+            "Select an ion to enable manual integration boundary editing"
+        )
         self.label_selected_ion_status = QtWidgets.QLabel("No ion selected")
-        self.label_selected_ion_status.setStyleSheet("color: #666666; font-style: italic;")
+        self.label_selected_ion_status.setStyleSheet(
+            "color: #666666; font-style: italic;"
+        )
+
+        # Help icon with tooltip explaining integration workflow
+        self.help_icon = QtWidgets.QLabel()
+        help_pixmap = (
+            self.style()
+            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxQuestion)
+            .pixmap(QtCore.QSize(30, 30))
+        )
+        self.help_icon.setPixmap(help_pixmap)
+        self.help_icon.setCursor(Qt.CursorShape.WhatsThisCursor)
+        self.help_icon.setToolTip(
+            "<b>Manual Integration</b><br>"
+            "The integration boundaries can be manually adjusted for each ion of the selected compound.<br><br>"
+            "1. Select an ion from the dropdown or click on a curve<br>"
+            "2. Drag the boundary lines to adjust integration limits<br>"
+            "3. Click <b>Apply</b> to save changes for this file<br>"
+            "4. Click <b>Recalculate All</b> to apply same boundaries to all files<br>"
+            "5. Click <b>Reset</b> to restore automatic integration"
+        )
 
         self.ion_selection_layout.addWidget(self.label_select_ion)
         self.ion_selection_layout.addWidget(self.comboBoxSelectIon)
         self.ion_selection_layout.addWidget(self.label_selected_ion_status)
+        self.ion_selection_layout.addWidget(self.help_icon)
         self.ion_selection_layout.addStretch()
 
         self.gridLayout_quant.addLayout(self.ion_selection_layout, 4, 0, 1, 3)
 
         # Integration control buttons
-        self.button_apply_integration = QtWidgets.QPushButton("Apply Integration Changes")
+        self.button_apply_integration = QtWidgets.QPushButton(
+            "Apply Integration Changes"
+        )
         self.button_recalculate_integration = QtWidgets.QPushButton("Recalculate All")
         self.button_reset_integration = QtWidgets.QPushButton("Reset Integration")
 
@@ -358,7 +386,9 @@ class QuantitationTab(TabBase):
         # Reset selection state
         self._selected_ion = None
         self.label_selected_ion_status.setText("No ion selected")
-        self.label_selected_ion_status.setStyleSheet("color: #666666; font-style: italic;")
+        self.label_selected_ion_status.setStyleSheet(
+            "color: #666666; font-style: italic;"
+        )
 
         self.comboBoxSelectIon.blockSignals(False)
 
@@ -368,12 +398,16 @@ class QuantitationTab(TabBase):
             # "-- Select ion --" or invalid
             self._selected_ion = None
             self.label_selected_ion_status.setText("No ion selected")
-            self.label_selected_ion_status.setStyleSheet("color: #666666; font-style: italic;")
+            self.label_selected_ion_status.setStyleSheet(
+                "color: #666666; font-style: italic;"
+            )
         else:
             ion_key = self.comboBoxSelectIon.itemData(index)
             self._selected_ion = ion_key
             self.label_selected_ion_status.setText(f"Editing: {ion_key}")
-            self.label_selected_ion_status.setStyleSheet("color: #2EC4B6; font-weight: bold;")
+            self.label_selected_ion_status.setStyleSheet(
+                "color: #2EC4B6; font-weight: bold;"
+            )
 
         # Refresh the integration plot with new selection
         self.display_compound_integration()
@@ -549,6 +583,7 @@ class QuantitationTab(TabBase):
                 def make_handler(key):
                     def handler(curve_item, ev):
                         self._on_curve_clicked(key)
+
                     return handler
 
                 curve.sigClicked.connect(make_handler(ion_key))
