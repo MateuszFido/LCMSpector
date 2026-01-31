@@ -338,9 +338,12 @@ class UploadTab(TabBase):
         # Initialize placeholders
         plot_placeholder(
             self.canvas_baseline,
-            "Welcome to LCMSpector\n\u2190 add files to get started",
+            '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
         )
-        plot_placeholder(self.canvas_avgMS, "")
+        plot_placeholder(
+            self.canvas_avgMS,
+            '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
+        )
 
         # Setup crosshair proxy
         self.crosshair_v, self.crosshair_h, self.line_marker = create_crosshair_lines()
