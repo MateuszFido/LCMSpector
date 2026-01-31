@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import itertools
+import traceback
 from typing import Optional, List, Any
 
 from PySide6.QtGui import QFont, QColor
@@ -663,28 +664,19 @@ def plot_compound_integration(
 def _annotate_peaks(
     widget: pg.PlotWidget, mzs: np.array, intensities: np.array, count: int = 5
 ):
-    """Helper to annotate the top N peaks in a spectrum."""
+    """Helper to annotate the top N peaks in a spectrum.
+
+    Uses direct numpy sorting to find top N intensity points.
+    This is faster than scipy.find_peaks() and works well for discrete
+    mass spectra data where each m/z point is effectively its own peak.
+    """
     if len(mzs) == 0:
         return
 
-    # Find peaks to avoid labeling noise
-    peaks_idx, _ = find_peaks(
-        intensities, prominence=np.max(intensities) * 0.05
-    )  # 5% prominence
-
-    # If find_peaks returns nothing (sparse spectrum), just take raw maxes
-    if len(peaks_idx) == 0:
-        valid_mzs = mzs
-        valid_ints = intensities
-    else:
-        valid_mzs = mzs[peaks_idx]
-        valid_ints = intensities[peaks_idx]
-
-    # Sort by intensity descending
-    sorted_indices = np.argsort(valid_ints)[::-1]
-
-    top_mzs = valid_mzs[sorted_indices][:count]
-    top_ints = valid_ints[sorted_indices][:count]
+    # Direct top-N selection by intensity (faster than find_peaks)
+    sorted_indices = np.argsort(intensities)[::-1][:count]
+    top_mzs = mzs[sorted_indices]
+    top_ints = intensities[sorted_indices]
 
     for mz, intensity in zip(top_mzs, top_ints):
         text = pg.TextItem(text=f"{mz:.4f}", color="#3c5488", anchor=(0.5, 1))
@@ -741,6 +733,11 @@ def highlight_peak(
 
 
 def update_labels_avgMS(canvas):
+    """Update peak labels on the average MS canvas based on current view range.
+
+    Uses direct numpy sorting to find top N intensity points within the
+    visible range. This is faster than scipy.find_peaks().
+    """
     # Remove all the previous labels
     for item in canvas.items():
         if isinstance(item, pg.TextItem):
@@ -757,21 +754,20 @@ def update_labels_avgMS(canvas):
         return
     current_view_range = canvas.getViewBox().viewRange()
     # Get the intensity range within the current view range
-    mz_range = data[0][
-        np.logical_and(
-            data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
-        )
-    ]
-    indices = [i for i, x in enumerate(data[0]) if x in mz_range]
-    intensity_range = data[1][indices]
-    peaks, _ = find_peaks(intensity_range, prominence=10)
-    if len(peaks) < 5:
-        peaks, _ = find_peaks(intensity_range)
-    # Get the 10 highest peaks within the current view range
-    sorted_indices = np.argsort(intensity_range[peaks])[::-1]
-    # Get their mz values
-    mzs = mz_range[peaks][sorted_indices][0:10]
-    intensities = intensity_range[peaks][sorted_indices][0:10]
+    mask = np.logical_and(
+        data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
+    )
+    mz_range = data[0][mask]
+    intensity_range = data[1][mask]
+
+    if len(mz_range) == 0:
+        return
+
+    # Direct top-N selection by intensity (faster than find_peaks)
+    sorted_indices = np.argsort(intensity_range)[::-1][:10]
+    mzs = mz_range[sorted_indices]
+    intensities = intensity_range[sorted_indices]
+
     for mz, intensity in zip(mzs, intensities):
         text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))
         text_item.setFont(

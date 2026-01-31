@@ -829,6 +829,11 @@ class UploadTab(TabBase):
                 plot_item, _ = self._ms_active_plots.pop(filename)
                 if plot_item is not None:
                     self.canvas_avgMS.removeItem(plot_item)
+                # Clear orphaned TextItem labels when no MS plots remain
+                if len(self._ms_active_plots) == 0:
+                    for item in list(self.canvas_avgMS.items()):
+                        if isinstance(item, pg.TextItem):
+                            self.canvas_avgMS.removeItem(item)
             # Clear selection if this was the selected file
             if filename == self._selected_ms_file:
                 self._selected_ms_file = None
@@ -1041,7 +1046,7 @@ class UploadTab(TabBase):
 
     def _show_scan_at_time_x(self, event):
         """Show MS scan at the selected time point for all checked MS files."""
-        from ui.plotting import plot_average_ms_data
+        from ui.plotting import plot_average_ms_data, plot_placeholder
 
         if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
             return
@@ -1088,44 +1093,8 @@ class UploadTab(TabBase):
             self._ms_active_plots = updated_plots
             return
 
-        # Fallback: no checked files, use legacy single-file behavior
-        file = None
-
-        if self._current_mode == "LC/GC-MS":
-            if hasattr(self, "listLC") and self.listLC.count() > 0:
-                try:
-                    file = self.listLC.currentItem().text().split(".")[0]
-                except AttributeError:
-                    file = self.listLC.item(0).text().split(".")[0]
-
-                # Try to find matching MS file
-                if (
-                    hasattr(model, "ms_measurements")
-                    and file not in model.ms_measurements
-                ):
-                    if hasattr(self, "listMS") and self.listMS.count() > 0:
-                        try:
-                            file = self.listMS.currentItem().text().split(".")[0]
-                        except AttributeError:
-                            file = self.listMS.item(0).text().split(".")[0]
-
-        elif self._current_mode == "MS Only":
-            if hasattr(self, "listMS") and self.listMS.count() > 0:
-                try:
-                    file = Path(self.listMS.currentItem().text()).stem
-                except AttributeError:
-                    file = Path(self.listMS.item(0).text()).stem
-
-        if file and hasattr(model, "ms_measurements") and file in model.ms_measurements:
-            try:
-                plot_average_ms_data(
-                    file,
-                    time_x,
-                    model.ms_measurements[file].data,
-                    self.canvas_avgMS,
-                )
-            except Exception as e:
-                logger.error(f"Error displaying average MS: {e}")
+        # No checked files - show placeholder prompting user to select a file
+        plot_placeholder(self.canvas_avgMS, "← select a file from the MS list")
 
     # --- External Access ---
 
