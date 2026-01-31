@@ -247,12 +247,27 @@ class UploadTab(TabBase):
             "canvas_baseline",
             "canvas_avgMS",
             "resultsPane",
+            "help_icon_lc",
+            "help_icon_ms",
         ]
         for attr in stale_attrs:
             if hasattr(self, attr):
                 delattr(self, attr)
 
     # --- Layout Builders ---
+
+    def _create_help_icon(self, tooltip_text: str) -> QtWidgets.QLabel:
+        """Create a help icon with tooltip."""
+        help_icon = QtWidgets.QLabel()
+        help_pixmap = (
+            self.style()
+            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxQuestion)
+            .pixmap(QtCore.QSize(20, 20))
+        )
+        help_icon.setPixmap(help_pixmap)
+        help_icon.setCursor(Qt.CursorShape.WhatsThisCursor)
+        help_icon.setToolTip(tooltip_text)
+        return help_icon
 
     def _build_common_widgets(self):
         """Create widgets common to all modes."""
@@ -344,12 +359,28 @@ class UploadTab(TabBase):
         # Create file list widgets
         self.labelLCdata = QtWidgets.QLabel("LC/GC Files:")
         self.browseLC = QtWidgets.QPushButton("Browse")
+        self.help_icon_lc = self._create_help_icon(
+            "<b>Add Chromatography Files</b><br>"
+            "Supported formats: .txt, .csv<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listLC = CheckableDragDropListWidget(parent=self)
         self.listLC.setObjectName("listLC")
         self.button_clear_LC = QtWidgets.QPushButton("Clear")
 
         self.labelMSdata = QtWidgets.QLabel("MS Files:")
         self.browseMS = QtWidgets.QPushButton("Browse")
+        self.help_icon_ms = self._create_help_icon(
+            "<b>Add Mass Spectrometry Files</b><br>"
+            "Supported formats: .mzML<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listMS = CheckableDragDropListWidget(parent=self)
         self.listMS.setObjectName("listMS")
         self.button_clear_MS = QtWidgets.QPushButton("Clear")
@@ -361,8 +392,12 @@ class UploadTab(TabBase):
         self.labelAnnotations.setVisible(False)
 
         # --- Layout placement ---
-        # Row 0: Labels
-        self._main_layout.addWidget(self.labelLCdata, 1, 0, 1, 1)
+        # Row 0: Labels and browse buttons with help icons (icon on left of button)
+        lc_label_layout = QtWidgets.QHBoxLayout()
+        lc_label_layout.addWidget(self.labelLCdata)
+        lc_label_layout.addWidget(self.help_icon_lc)
+        lc_label_layout.addStretch()
+        self._main_layout.addLayout(lc_label_layout, 1, 0, 1, 1)
         self._main_layout.addWidget(self.browseLC, 1, 1, 1, 1)
         self._main_layout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
         self._main_layout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
@@ -371,8 +406,12 @@ class UploadTab(TabBase):
         self._main_layout.addWidget(self.listLC, 2, 0, 1, 2)
         self._main_layout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
 
-        # Row 3: MS label and browse
-        self._main_layout.addWidget(self.labelMSdata, 4, 0, 1, 1)
+        # Row 3: MS label and browse with help icon (icon on left of button)
+        ms_label_layout = QtWidgets.QHBoxLayout()
+        ms_label_layout.addWidget(self.labelMSdata)
+        ms_label_layout.addWidget(self.help_icon_ms)
+        ms_label_layout.addStretch()
+        self._main_layout.addLayout(ms_label_layout, 4, 0, 1, 1)
         self._main_layout.addWidget(self.browseMS, 4, 1, 1, 1)
 
         # Row 4-5: MS file list
@@ -414,6 +453,14 @@ class UploadTab(TabBase):
         # Create file list widgets (MS only)
         self.labelMSdata = QtWidgets.QLabel("MS Files:")
         self.browseMS = QtWidgets.QPushButton("Browse")
+        self.help_icon_ms = self._create_help_icon(
+            "<b>Add Mass Spectrometry Files</b><br>"
+            "Supported formats: .mzML<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listMS = CheckableDragDropListWidget(parent=self)
         self.listMS.setObjectName("listMS")
         self.button_clear_MS = QtWidgets.QPushButton("Clear")
@@ -426,7 +473,11 @@ class UploadTab(TabBase):
 
         # --- Layout placement ---
         # MS file list (spans more rows since LC is omitted)
-        self._main_layout.addWidget(self.labelMSdata, 0, 0, 1, 1)
+        ms_label_layout = QtWidgets.QHBoxLayout()
+        ms_label_layout.addWidget(self.labelMSdata)
+        ms_label_layout.addWidget(self.help_icon_ms)
+        ms_label_layout.addStretch()
+        self._main_layout.addLayout(ms_label_layout, 0, 0, 1, 1)
         self._main_layout.addWidget(self.browseMS, 0, 1, 1, 1)
         self._main_layout.addWidget(self.listMS, 2, 0, 5, 2)
         self._main_layout.addWidget(self.button_clear_MS, 7, 0, 1, 1)
@@ -467,6 +518,14 @@ class UploadTab(TabBase):
         # Create file list widgets
         self.labelLCdata = QtWidgets.QLabel("LC/GC Files:")
         self.browseLC = QtWidgets.QPushButton("Browse")
+        self.help_icon_lc = self._create_help_icon(
+            "<b>Add Chromatography Files</b><br>"
+            "Supported formats: .txt, .csv<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listLC = CheckableDragDropListWidget(parent=self)
         self.listLC.setObjectName("listLC")
         self.button_clear_LC = QtWidgets.QPushButton("Clear")
@@ -477,8 +536,12 @@ class UploadTab(TabBase):
         self.listAnnotations.setObjectName("listAnnotations")
 
         # --- Layout placement ---
-        # LC file list
-        self._main_layout.addWidget(self.labelLCdata, 1, 0, 1, 1)
+        # LC file list with help icon (icon on left of button)
+        lc_label_layout = QtWidgets.QHBoxLayout()
+        lc_label_layout.addWidget(self.labelLCdata)
+        lc_label_layout.addWidget(self.help_icon_lc)
+        lc_label_layout.addStretch()
+        self._main_layout.addLayout(lc_label_layout, 1, 0, 1, 1)
         self._main_layout.addWidget(self.browseLC, 1, 1, 1, 1)
         self._main_layout.addWidget(self.listLC, 2, 0, 1, 2)
         self._main_layout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
