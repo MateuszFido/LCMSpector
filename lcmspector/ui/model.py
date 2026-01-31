@@ -530,8 +530,21 @@ class Model(QObject):
 
     def apply_integration_changes(self):
         """
-        Retrieves the current boundaries, computes the peak area, and updates the quantitation table.
+        Retrieves the current boundaries for the selected ion, computes the peak area,
+        and updates the quantitation table for that ion only.
         """
+        # Get selected ion from the quantitation tab
+        selected_ion = self.controller.view.quantitation_tab.get_selected_ion()
+
+        if selected_ion is None:
+            from PySide6.QtWidgets import QMessageBox
+            QMessageBox.warning(
+                self.controller.view,
+                "No Ion Selected",
+                "Please select an ion from the dropdown before applying integration changes.",
+            )
+            return
+
         current_compound_text = (
             self.controller.view.comboBoxChooseCompound.currentText()
         )
@@ -541,45 +554,239 @@ class Model(QObject):
             current_compound_text
         )
 
+        # Get bounds only for the selected ion
         integration_bounds = self.controller.view.get_integration_bounds(
-            self.controller.view.canvas_library_ms2
-        )  # Returns dict[ion_key, (left, right)]
+            self.controller.view.canvas_library_ms2,
+            ion_key=selected_ion
+        )
 
-        print(integration_bounds)
+        if selected_ion not in integration_bounds:
+            logger.warning(f"No bounds found for selected ion {selected_ion}.")
+            return
+
+        left, right = integration_bounds[selected_ion]
+
+        # Find the actual ion key (may be numeric)
+        ion_key_to_update = None
         for ion in current_compound.ions:
-            if str(ion) not in integration_bounds:
-                logger.warning(f"No bounds found for {ion}, skipping.")
-                continue
+            if str(ion) == selected_ion:
+                ion_key_to_update = ion
+                break
 
-            left, right = integration_bounds[str(ion)]
+        if ion_key_to_update is None:
+            logger.error(f"Could not find ion {selected_ion} in compound {current_compound_text}.")
+            return
 
-            try:
-                ion_data = current_compound.ions[ion]
-            except Exception:
-                logger.error(f"Problem retrieving integration data. Skipping {ion}...")
-                continue
-            try:
-                ion_data["Integration Data"]["start_time"] = left
-                ion_data["Integration Data"]["end_time"] = right
-            except AttributeError:
-                logger.error(f"Problem setting integration bounds. Skipping {ion}...")
-                continue
-            try:
-                ion_data["Integration Data"] = integrate_peak_manual_boundaries(
-                    ion_data["MS Intensity"][0],
-                    ion_data["MS Intensity"][1],
-                    ion_data["Integration Data"]["start_time"],
-                    ion_data["Integration Data"]["end_time"],
-                )
-            except Exception:
-                logger.error(traceback.format_exc())
+        try:
+            ion_data = current_compound.ions[ion_key_to_update]
+        except Exception:
+            logger.error(f"Problem retrieving integration data for {selected_ion}.")
+            return
 
-        self.controller.view.unifiedResultsTable.update_ion_values(
-            current_file_text, current_compound
+        try:
+            ion_data["Integration Data"]["start_time"] = left
+            ion_data["Integration Data"]["end_time"] = right
+        except (AttributeError, TypeError):
+            logger.error(f"Problem setting integration bounds for {selected_ion}.")
+            return
+
+        try:
+            ion_data["Integration Data"] = integrate_peak_manual_boundaries(
+                ion_data["MS Intensity"][0],
+                ion_data["MS Intensity"][1],
+                ion_data["Integration Data"]["start_time"],
+                ion_data["Integration Data"]["end_time"],
+            )
+            # Sync to MS Peak Area for export/calibration
+            ion_data["MS Peak Area"] = ion_data["Integration Data"].copy()
+        except Exception:
+            logger.error(traceback.format_exc())
+            return
+
+        # Update only the single ion's value in the table
+        self.controller.view.unifiedResultsTable.update_single_ion_value(
+            current_file_text, current_compound, selected_ion
         )
 
     def recalculate_integration_all_files(self):
-        pass
+        """
+        Apply the current integration boundaries (from the selected file/ion)
+        to all other files for the same compound and ion.
+
+        This allows the user to set boundaries once and apply them consistently
+        across all samples.
+        """
+        from PySide6.QtWidgets import QMessageBox
+
+        # Get selected ion
+        selected_ion = self.controller.view.quantitation_tab.get_selected_ion()
+
+        if selected_ion is None:
+            QMessageBox.warning(
+                self.controller.view,
+                "No Ion Selected",
+                "Please select an ion from the dropdown before recalculating.",
+            )
+            return
+
+        current_compound_text = (
+            self.controller.view.comboBoxChooseCompound.currentText()
+        )
+        current_file_text = self.controller.view.unifiedResultsTable.get_selected_file()
+
+        # Get current bounds from the selected file
+        integration_bounds = self.controller.view.get_integration_bounds(
+            self.controller.view.canvas_library_ms2,
+            ion_key=selected_ion
+        )
+
+        if selected_ion not in integration_bounds:
+            QMessageBox.warning(
+                self.controller.view,
+                "No Bounds Found",
+                f"No integration bounds found for ion {selected_ion}.",
+            )
+            return
+
+        left, right = integration_bounds[selected_ion]
+
+        # Apply to all files
+        files_updated = 0
+        for filename, ms_measurement in self.ms_measurements.items():
+            compound = ms_measurement.get_compound_by_name(current_compound_text)
+            if compound is None:
+                continue
+
+            # Find the matching ion
+            ion_key_to_update = None
+            for ion in compound.ions:
+                if str(ion) == selected_ion:
+                    ion_key_to_update = ion
+                    break
+
+            if ion_key_to_update is None:
+                continue
+
+            try:
+                ion_data = compound.ions[ion_key_to_update]
+
+                if ion_data.get("MS Intensity") is None:
+                    continue
+
+                ion_data["Integration Data"] = integrate_peak_manual_boundaries(
+                    ion_data["MS Intensity"][0],
+                    ion_data["MS Intensity"][1],
+                    left,
+                    right,
+                )
+                # Sync to MS Peak Area for export/calibration
+                ion_data["MS Peak Area"] = ion_data["Integration Data"].copy()
+                files_updated += 1
+
+            except Exception as e:
+                logger.warning(f"Failed to update integration for {filename}: {e}")
+                continue
+
+        # Refresh the table
+        self.controller.view.update_unified_table_for_compound()
+
+        # Show confirmation
+        QMessageBox.information(
+            self.controller.view,
+            "Recalculation Complete",
+            f"Applied integration bounds to {files_updated} file(s) for ion {selected_ion}.",
+        )
 
     def reset_integration(self):
-        pass
+        """
+        Reset the integration boundaries for the selected ion back to automatic detection.
+
+        This re-runs the automatic peak detection and integration algorithm
+        for the selected ion in the currently selected file.
+        """
+        from PySide6.QtWidgets import QMessageBox
+        from calculation.peak_integration import integrate_ms_xic_peak, safe_peak_integration
+        import numpy as np
+
+        # Get selected ion
+        selected_ion = self.controller.view.quantitation_tab.get_selected_ion()
+
+        if selected_ion is None:
+            QMessageBox.warning(
+                self.controller.view,
+                "No Ion Selected",
+                "Please select an ion from the dropdown before resetting.",
+            )
+            return
+
+        current_compound_text = (
+            self.controller.view.comboBoxChooseCompound.currentText()
+        )
+        current_file_text = self.controller.view.unifiedResultsTable.get_selected_file()
+
+        current_compound = self.ms_measurements[current_file_text].get_compound_by_name(
+            current_compound_text
+        )
+
+        if current_compound is None:
+            logger.error(f"Could not find compound {current_compound_text} in {current_file_text}.")
+            return
+
+        # Find the matching ion
+        ion_key_to_update = None
+        for ion in current_compound.ions:
+            if str(ion) == selected_ion:
+                ion_key_to_update = ion
+                break
+
+        if ion_key_to_update is None:
+            logger.error(f"Could not find ion {selected_ion} in compound {current_compound_text}.")
+            return
+
+        try:
+            ion_data = current_compound.ions[ion_key_to_update]
+
+            if ion_data.get("MS Intensity") is None:
+                QMessageBox.warning(
+                    self.controller.view,
+                    "No Data",
+                    f"No MS intensity data available for ion {selected_ion}.",
+                )
+                return
+
+            scan_times = ion_data["MS Intensity"][0]
+            intensities = ion_data["MS Intensity"][1]
+
+            # Find RT of peak maximum for automatic detection
+            rt_peak = scan_times[np.argmax(intensities)]
+
+            # Re-run automatic integration
+            peak_area_info = safe_peak_integration(
+                integrate_ms_xic_peak,
+                scan_times=scan_times,
+                intensities=intensities,
+                rt_target=rt_peak,
+                mass_accuracy=self.mass_accuracy,
+            )
+
+            # Update both Integration Data and MS Peak Area
+            ion_data["Integration Data"] = peak_area_info
+            ion_data["MS Peak Area"] = peak_area_info.copy()
+
+            # Refresh the plot
+            self.controller.view.quantitation_tab.display_compound_integration()
+
+            # Update the table cell
+            self.controller.view.unifiedResultsTable.update_single_ion_value(
+                current_file_text, current_compound, selected_ion
+            )
+
+            logger.info(f"Reset integration for ion {selected_ion} in {current_file_text}.")
+
+        except Exception as e:
+            logger.error(f"Failed to reset integration: {traceback.format_exc()}")
+            QMessageBox.critical(
+                self.controller.view,
+                "Reset Failed",
+                f"Failed to reset integration for ion {selected_ion}: {e}",
+            )

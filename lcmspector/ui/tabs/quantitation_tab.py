@@ -39,6 +39,8 @@ class QuantitationTab(TabBase):
 
         # State
         self.file_concentrations = None
+        self._selected_ion = None  # Track currently selected ion for manual integration
+        self._curve_refs = {}  # Store references to curves for click handling
 
         # Initialize the main layout
         self._main_layout = QtWidgets.QGridLayout(self)
@@ -243,14 +245,35 @@ class QuantitationTab(TabBase):
         self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
         self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 0, 1, 3)
 
+        # Ion selection for manual integration
+        self.ion_selection_layout = QtWidgets.QHBoxLayout()
+        self.label_select_ion = QtWidgets.QLabel("Ion to edit:")
+        self.label_select_ion.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Preferred
+        )
+        self.comboBoxSelectIon = QtWidgets.QComboBox()
+        self.comboBoxSelectIon.setMinimumSize(QtCore.QSize(150, 32))
+        self.comboBoxSelectIon.addItem("-- Select ion --")
+        self.comboBoxSelectIon.setToolTip("Select an ion to enable manual integration boundary editing")
+        self.label_selected_ion_status = QtWidgets.QLabel("No ion selected")
+        self.label_selected_ion_status.setStyleSheet("color: #666666; font-style: italic;")
+
+        self.ion_selection_layout.addWidget(self.label_select_ion)
+        self.ion_selection_layout.addWidget(self.comboBoxSelectIon)
+        self.ion_selection_layout.addWidget(self.label_selected_ion_status)
+        self.ion_selection_layout.addStretch()
+
+        self.gridLayout_quant.addLayout(self.ion_selection_layout, 4, 0, 1, 3)
+
         # Integration control buttons
         self.button_apply_integration = QtWidgets.QPushButton("Apply Integration Changes")
         self.button_recalculate_integration = QtWidgets.QPushButton("Recalculate All")
         self.button_reset_integration = QtWidgets.QPushButton("Reset Integration")
 
-        self.gridLayout_quant.addWidget(self.button_apply_integration, 4, 0, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 4, 1, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_reset_integration, 4, 2, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_apply_integration, 5, 0, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 5, 1, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_reset_integration, 5, 2, 1, 1)
 
         # Add quant layout to main layout
         self._main_layout.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
@@ -271,6 +294,18 @@ class QuantitationTab(TabBase):
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
             self.display_ms2
         )
+        # Connect ion selection combo box
+        self.comboBoxSelectIon.currentIndexChanged.connect(
+            self._on_ion_selection_changed
+        )
+        # Update ion combo box when compound changes
+        self.comboBoxChooseCompound.currentIndexChanged.connect(
+            self._update_ion_combo_box
+        )
+        # Update ion combo box when file selection changes
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self._update_ion_combo_box
+        )
 
     def _on_compound_changed(self, index):
         """Internal handler for compound selection change."""
@@ -279,6 +314,77 @@ class QuantitationTab(TabBase):
     def _on_ms2_file_changed(self, index):
         """Internal handler for MS2 file selection change."""
         self.ms2_file_changed.emit(index)
+
+    def get_selected_ion(self) -> str | None:
+        """
+        Get the currently selected ion key for manual integration.
+
+        Returns
+        -------
+        str or None
+            The ion key (e.g., "123.456") or None if no ion is selected.
+        """
+        return self._selected_ion
+
+    def _update_ion_combo_box(self):
+        """Update the ion selection combo box based on current compound and file."""
+        self.comboBoxSelectIon.blockSignals(True)
+        self.comboBoxSelectIon.clear()
+        self.comboBoxSelectIon.addItem("-- Select ion --")
+
+        if not self._controller:
+            self.comboBoxSelectIon.blockSignals(False)
+            return
+
+        # Get current compound
+        compound_idx = self.comboBoxChooseCompound.currentIndex()
+        if compound_idx < 0 or not self._controller.model.compounds:
+            self.comboBoxSelectIon.blockSignals(False)
+            return
+
+        compound = self._controller.model.compounds[compound_idx]
+
+        # Get ion info for display
+        ion_keys = list(compound.ions.keys())
+        ion_info_list = getattr(compound, "ion_info", [])
+
+        for i, ion_key in enumerate(ion_keys):
+            info_str = ion_info_list[i] if i < len(ion_info_list) else ""
+            display_text = f"{ion_key}"
+            if info_str:
+                display_text += f" ({info_str})"
+            self.comboBoxSelectIon.addItem(display_text, userData=str(ion_key))
+
+        # Reset selection state
+        self._selected_ion = None
+        self.label_selected_ion_status.setText("No ion selected")
+        self.label_selected_ion_status.setStyleSheet("color: #666666; font-style: italic;")
+
+        self.comboBoxSelectIon.blockSignals(False)
+
+    def _on_ion_selection_changed(self, index):
+        """Handle ion selection change from combo box."""
+        if index <= 0:
+            # "-- Select ion --" or invalid
+            self._selected_ion = None
+            self.label_selected_ion_status.setText("No ion selected")
+            self.label_selected_ion_status.setStyleSheet("color: #666666; font-style: italic;")
+        else:
+            ion_key = self.comboBoxSelectIon.itemData(index)
+            self._selected_ion = ion_key
+            self.label_selected_ion_status.setText(f"Editing: {ion_key}")
+            self.label_selected_ion_status.setStyleSheet("color: #2EC4B6; font-weight: bold;")
+
+        # Refresh the integration plot with new selection
+        self.display_compound_integration()
+
+    def _on_curve_clicked(self, ion_key: str):
+        """Handle click on an integration curve to select that ion."""
+        # Find the combo box index for this ion
+        for i in range(1, self.comboBoxSelectIon.count()):
+            if self.comboBoxSelectIon.itemData(i) == ion_key:
+                self.comboBoxSelectIon.setCurrentIndex(i)
+                break
 
     # --- Data Display Methods ---
 
@@ -420,9 +526,34 @@ class QuantitationTab(TabBase):
                 for xic in ms_file.xics
                 if xic.name == self.comboBoxChooseCompound.currentText()
             )
-            plot_compound_integration(self.canvas_library_ms2, ms_compound)
+            # Pass selected ion to enable selective movability
+            self._curve_refs = plot_compound_integration(
+                self.canvas_library_ms2, ms_compound, selected_ion=self._selected_ion
+            )
+            # Connect curve click signals for click-to-select
+            self._connect_curve_click_signals()
         except (AttributeError, StopIteration):
             logger.warning(f"No MS data found for {selected_file}.")
+
+    def _connect_curve_click_signals(self):
+        """Connect sigClicked signals on curves for click-to-select functionality."""
+        for ion_key, curve in self._curve_refs.items():
+            try:
+                # Disconnect any previous connections
+                try:
+                    curve.sigClicked.disconnect()
+                except (TypeError, RuntimeError):
+                    pass  # Not connected or already deleted
+
+                # Connect with a closure to capture ion_key
+                def make_handler(key):
+                    def handler(curve_item, ev):
+                        self._on_curve_clicked(key)
+                    return handler
+
+                curve.sigClicked.connect(make_handler(ion_key))
+            except Exception as e:
+                logger.warning(f"Failed to connect click signal for {ion_key}: {e}")
 
     def display_ms2(self):
         """Display MS2 data for the selected file."""
@@ -465,7 +596,9 @@ class QuantitationTab(TabBase):
             )
             plot_no_ms2_found(self.canvas_ms2)
 
-    def get_integration_bounds(self, canvas=None) -> dict[str, tuple[float, float]]:
+    def get_integration_bounds(
+        self, canvas=None, ion_key: str = None
+    ) -> dict[str, tuple[float, float]]:
         """
         Retrieve integration bounds for each ion.
 
@@ -473,6 +606,8 @@ class QuantitationTab(TabBase):
         ----------
         canvas : pg.PlotWidget, optional
             The canvas to get bounds from. Defaults to canvas_library_ms2.
+        ion_key : str, optional
+            If provided, only return bounds for this specific ion.
 
         Returns
         -------
@@ -489,21 +624,27 @@ class QuantitationTab(TabBase):
             if isinstance(item, pg.InfiniteLine):
                 name = item.name()
                 if name and name.endswith("_left"):
-                    ion_key = name[:-5]
-                    if ion_key not in bounds:
-                        bounds[ion_key] = {}
-                    bounds[ion_key]["left"] = item.value()
+                    current_ion_key = name[:-5]
+                    # Filter by ion_key if provided
+                    if ion_key is not None and current_ion_key != ion_key:
+                        continue
+                    if current_ion_key not in bounds:
+                        bounds[current_ion_key] = {}
+                    bounds[current_ion_key]["left"] = item.value()
                 elif name and name.endswith("_right"):
-                    ion_key = name[:-6]
-                    if ion_key not in bounds:
-                        bounds[ion_key] = {}
-                    bounds[ion_key]["right"] = item.value()
+                    current_ion_key = name[:-6]
+                    # Filter by ion_key if provided
+                    if ion_key is not None and current_ion_key != ion_key:
+                        continue
+                    if current_ion_key not in bounds:
+                        bounds[current_ion_key] = {}
+                    bounds[current_ion_key]["right"] = item.value()
 
         # Convert to sorted tuples
         result = {}
-        for ion_key, b in bounds.items():
+        for key, b in bounds.items():
             if "left" in b and "right" in b:
-                result[ion_key] = (
+                result[key] = (
                     min(b["left"], b["right"]),
                     max(b["left"], b["right"]),
                 )

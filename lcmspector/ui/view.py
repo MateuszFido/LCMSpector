@@ -359,9 +359,9 @@ class View(QtWidgets.QMainWindow):
         """Display MS2 data. Delegates to QuantitationTab."""
         self.quantitation_tab.display_ms2()
 
-    def get_integration_bounds(self, canvas=None):
+    def get_integration_bounds(self, canvas=None, ion_key: str = None):
         """Get integration bounds. Delegates to QuantitationTab."""
-        return self.quantitation_tab.get_integration_bounds(canvas)
+        return self.quantitation_tab.get_integration_bounds(canvas, ion_key)
 
     def setup_dock_area(self, xics, widget=None):
         """Setup dock area with XICs. Delegates to ResultsTab."""

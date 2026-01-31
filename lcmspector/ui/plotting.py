@@ -6,6 +6,7 @@ from typing import Optional, List, Any
 
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtCore import Qt, QSize
+from PySide6.QtCore import Qt as QtCore_Qt
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
@@ -497,7 +498,27 @@ def plot_placeholder(widget: pg.PlotWidget, text: str):
     widget.addItem(text_item)
 
 
-def plot_compound_integration(widget: pg.PlotWidget, compound):
+def plot_compound_integration(
+    widget: pg.PlotWidget, compound, selected_ion: str = None
+) -> dict:
+    """
+    Plot compound integration with XIC traces and integration boundaries.
+
+    Parameters
+    ----------
+    widget : pg.PlotWidget
+        The plot widget to draw on.
+    compound : Compound
+        The compound object containing ion data.
+    selected_ion : str, optional
+        The ion key to make editable. Only this ion will have movable boundary lines.
+        Other ions will be shown with dashed, non-movable boundaries.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping ion_key to curve reference for click handling.
+    """
     widget.clear()
     widget.addLegend(labelTextSize="12pt")
     PlotStyle.apply_standard_style(
@@ -510,7 +531,9 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
     ions_dict = getattr(compound, "ions", {})
     ion_info_list = getattr(compound, "ion_info", [])
 
+    curve_refs = {}  # Store curve references for click handling
     color_cycle = itertools.cycle(PlotStyle.PALETTE)
+
     for j, (ion_key, ion_data) in enumerate(ions_dict.items()):
         ms_intensity = ion_data.get("MS Intensity")
         integration_data = ion_data.get("Integration Data")
@@ -522,64 +545,96 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
         info_str = ion_info_list[j] if j < len(ion_info_list) else ""
         current_color = next(color_cycle)
 
+        # Determine if this ion is selected (editable)
+        is_selected = (selected_ion is not None and str(ion_key) == str(selected_ion))
+
         try:
             x_data = ms_intensity[0]
             y_data = ms_intensity[1]
 
-            # Plot trace
-            widget.plot(
+            # Plot trace - make clickable for selection
+            curve = widget.plot(
                 x_data,
                 y_data,
-                pen=mkPen(current_color, width=1),
+                pen=mkPen(current_color, width=2 if is_selected else 1),
                 name=f"{ion_key} {info_str}",
             )
+            # Make curve clickable
+            curve.setCurveClickable(True)
+            curve_refs[str(ion_key)] = curve
 
-            # Annotate Max
+            # Annotate Max only for selected ion or if no ion selected
             if len(y_data) > 0:
                 max_idx = np.argmax(y_data)
                 max_time = x_data[max_idx]
                 max_val = y_data[max_idx]
 
-                widget.plot(
-                    [max_time],
-                    [max_val],
-                    pen=mkPen(current_color, width=1),
-                    symbol="o",
-                    symbolSize=5,
-                    brush=mkBrush(current_color),
-                )
-                widget.getPlotItem().addLine(
+                if is_selected or selected_ion is None:
+                    widget.plot(
+                        [max_time],
+                        [max_val],
+                        pen=mkPen(current_color, width=1),
+                        symbol="o",
+                        symbolSize=5,
+                        brush=mkBrush(current_color),
+                    )
+
+                # Configure line style based on selection
+                if is_selected:
+                    # Selected ion: solid lines, movable, with markers and labels
+                    line_pen = mkPen(current_color, width=2)
+                    line_style = Qt.PenStyle.SolidLine
+                    movable = True
+                    markers_left = [("|>", 0.5, 10.0)]
+                    markers_right = [("<|", 0.5, 10.0)]
+                    label_left = f"{ion_key} (LEFT)"
+                    label_right = f"{ion_key} (RIGHT)"
+                else:
+                    # Non-selected ion: dashed lines, not movable, no markers/labels
+                    line_pen = mkPen(current_color, width=1, style=Qt.PenStyle.DashLine)
+                    line_style = Qt.PenStyle.DashLine
+                    movable = False
+                    markers_left = None
+                    markers_right = None
+                    label_left = None
+                    label_right = None
+
+                # Add left boundary line
+                left_line = widget.getPlotItem().addLine(
                     x=integration_data["start_time"],
-                    pen=mkPen(current_color, width=2),
-                    hoverPen=mkPen("red", width=2),
-                    label=f"{ion_key} (LEFT)",
+                    pen=line_pen,
+                    hoverPen=mkPen("red", width=2) if is_selected else None,
+                    label=label_left,
                     labelOpts={
                         "position": 0.7,
                         "color": current_color,
                         "rotateAxis": (1, 0),
-                    },
-                    movable=True,
-                    bounds=[0, x_data[-1]],
-                    markers=[("|>", 0.5, 10.0)],
+                    } if label_left else None,
+                    movable=movable,
+                    bounds=[0, x_data[-1]] if movable else None,
+                    markers=markers_left,
                     name=f"{ion_key}_left",
                 )
-                widget.getPlotItem().addLine(
+
+                # Add right boundary line
+                right_line = widget.getPlotItem().addLine(
                     x=integration_data["end_time"],
-                    pen=mkPen(current_color, width=2),
-                    hoverPen=mkPen("red", width=2),
-                    label=f"{ion_key} (RIGHT)",
+                    pen=line_pen,
+                    hoverPen=mkPen("red", width=2) if is_selected else None,
+                    label=label_right,
                     labelOpts={
                         "position": 0.7,
                         "color": current_color,
                         "rotateAxis": (1, 0),
-                    },
-                    movable=True,
-                    bounds=[0, x_data[-1]],
-                    markers=[("<|", 0.5, 10.0)],
+                    } if label_right else None,
+                    movable=movable,
+                    bounds=[0, x_data[-1]] if movable else None,
+                    markers=markers_right,
                     name=f"{ion_key}_right",
                 )
 
-                if info_str:
+                # Add text annotation only for selected or if no selection
+                if info_str and (is_selected or selected_ion is None):
                     text_item = pg.TextItem(
                         text=info_str, color=current_color, anchor=(0, 0)
                     )
@@ -590,6 +645,8 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
         except Exception as e:
             logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
             continue
+
+    return curve_refs
 
 
 # --- Helper Functions ---
