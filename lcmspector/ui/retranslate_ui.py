@@ -21,7 +21,7 @@ def retranslateUi(MainWindow):
     )
     try:
         # Upload tab widgets
-        if hasattr(MainWindow, 'browseLC'):
+        if hasattr(MainWindow, "browseLC"):
             MainWindow.browseLC.setText(_translate("MainWindow", "Browse"))
         MainWindow.comboBoxChangeMode.setItemText(
             0, _translate("MainWindow", "LC/GC-MS")
@@ -32,25 +32,25 @@ def retranslateUi(MainWindow):
         MainWindow.comboBoxChangeMode.setItemText(
             2, _translate("MainWindow", "Chromatography Only")
         )
-        if hasattr(MainWindow, 'browseMS'):
+        if hasattr(MainWindow, "browseMS"):
             MainWindow.browseMS.setText(_translate("MainWindow", "Browse"))
-        if hasattr(MainWindow, 'browseAnnotations'):
+        if hasattr(MainWindow, "browseAnnotations"):
             MainWindow.browseAnnotations.setText(_translate("MainWindow", "Browse"))
-        if hasattr(MainWindow, 'labelAnnotations'):
+        if hasattr(MainWindow, "labelAnnotations"):
             MainWindow.labelAnnotations.setText(
                 _translate("MainWindow", "Annotations (.txt)")
             )
-        if hasattr(MainWindow, 'labelLCdata'):
+        if hasattr(MainWindow, "labelLCdata"):
             MainWindow.labelLCdata.setText(
                 _translate("MainWindow", "Chromatography data (.txt)")
             )
-        if hasattr(MainWindow, 'labelMSdata'):
+        if hasattr(MainWindow, "labelMSdata"):
             MainWindow.labelMSdata.setText(_translate("MainWindow", "MS data (.mzML)"))
-        if hasattr(MainWindow, 'labelIonList'):
+        if hasattr(MainWindow, "labelIonList"):
             MainWindow.labelIonList.setText(
                 _translate("MainWindow", "Targeted m/z values:")
             )
-        if hasattr(MainWindow, 'comboBoxIonLists'):
+        if hasattr(MainWindow, "comboBoxIonLists"):
             MainWindow.comboBoxIonLists.setToolTip(
                 _translate(
                     "MainWindow",
@@ -74,28 +74,39 @@ def retranslateUi(MainWindow):
         )
 
         # Results tab widgets - access through results_tab
-        if hasattr(MainWindow, 'results_tab') and hasattr(MainWindow.results_tab, 'label_results_currentfile'):
+        if hasattr(MainWindow, "results_tab") and hasattr(
+            MainWindow.results_tab, "label_results_currentfile"
+        ):
             MainWindow.results_tab.label_results_currentfile.setText(
                 _translate("MainWindow", "Current file:")
             )
 
         # Quantitation tab widgets - access through quantitation_tab
-        if hasattr(MainWindow, 'quantitation_tab'):
+        if hasattr(MainWindow, "quantitation_tab"):
             quant = MainWindow.quantitation_tab
-            if hasattr(quant, 'label_compound'):
+            if hasattr(quant, "label_compound"):
                 quant.label_compound.setText(_translate("MainWindow", "Compound:"))
-            if hasattr(quant, 'label_calibrate'):
+            if hasattr(quant, "label_calibrate"):
                 quant.label_calibrate.setText(
-                    _translate("MainWindow", "Select the files to be used for calibration.")
+                    _translate(
+                        "MainWindow",
+                        'Select files with known concentrations or enter them manually, and click "Calculate".',
+                    )
                 )
-            if hasattr(quant, 'calibrateButton'):
+            if hasattr(quant, "calibrateButton"):
                 quant.calibrateButton.setText(_translate("MainWindow", "Calculate"))
-            if hasattr(quant, 'button_apply_integration'):
-                quant.button_apply_integration.setText(_translate("MainWindow", "Apply"))
-            if hasattr(quant, 'button_recalculate_integration'):
-                quant.button_recalculate_integration.setText(_translate("MainWindow", "Recalculate"))
-            if hasattr(quant, 'button_reset_integration'):
-                quant.button_reset_integration.setText(_translate("MainWindow", "Reset"))
+            if hasattr(quant, "button_apply_integration"):
+                quant.button_apply_integration.setText(
+                    _translate("MainWindow", "Apply")
+                )
+            if hasattr(quant, "button_recalculate_integration"):
+                quant.button_recalculate_integration.setText(
+                    _translate("MainWindow", "Recalculate")
+                )
+            if hasattr(quant, "button_reset_integration"):
+                quant.button_reset_integration.setText(
+                    _translate("MainWindow", "Reset")
+                )
 
         # Menu bar
         MainWindow.menuFile.setTitle(_translate("MainWindow", "File"))
@@ -126,16 +137,18 @@ def retranslateUi(MainWindow):
         MainWindow.actionLogs.setShortcut(_translate("MainWindow", "F11"))
 
         # Clear/Save/Delete buttons (if they exist)
-        if hasattr(MainWindow, 'button_clear_LC'):
+        if hasattr(MainWindow, "button_clear_LC"):
             MainWindow.button_clear_LC.setText(_translate("MainWindow", "Clear"))
-        if hasattr(MainWindow, 'button_clear_MS'):
+        if hasattr(MainWindow, "button_clear_MS"):
             MainWindow.button_clear_MS.setText(_translate("MainWindow", "Clear"))
-        if hasattr(MainWindow, 'button_clear_ion_list'):
+        if hasattr(MainWindow, "button_clear_ion_list"):
             MainWindow.button_clear_ion_list.setText(_translate("MainWindow", "Clear"))
-        if hasattr(MainWindow, 'button_save_ion_list'):
+        if hasattr(MainWindow, "button_save_ion_list"):
             MainWindow.button_save_ion_list.setText(_translate("MainWindow", "Save"))
-        if hasattr(MainWindow, 'button_delete_ion_list'):
-            MainWindow.button_delete_ion_list.setText(_translate("MainWindow", "Delete"))
+        if hasattr(MainWindow, "button_delete_ion_list"):
+            MainWindow.button_delete_ion_list.setText(
+                _translate("MainWindow", "Delete")
+            )
 
     except RuntimeError:
         logger.error("Error retranslating ui: %s", traceback.format_exc())
