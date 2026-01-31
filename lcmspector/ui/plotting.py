@@ -661,22 +661,58 @@ def plot_compound_integration(
 # --- Helper Functions ---
 
 
+def _select_distinct_peaks(
+    mzs: np.ndarray,
+    intensities: np.ndarray,
+    count: int = 5,
+    mz_threshold: float = 0.5,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Select top N distinct peaks using non-maximum suppression.
+
+    Prevents multiple labels from clustering around the same peak by
+    suppressing points within mz_threshold of higher-intensity points.
+
+    Args:
+        mzs: Array of m/z values
+        intensities: Array of intensity values
+        count: Number of peaks to select
+        mz_threshold: Minimum m/z distance between selected peaks (Da)
+
+    Returns:
+        Tuple of (selected_mzs, selected_intensities) arrays
+    """
+    if len(mzs) == 0:
+        return np.array([]), np.array([])
+
+    sorted_indices = np.argsort(intensities)[::-1]
+    selected_mzs = []
+    selected_ints = []
+
+    for idx in sorted_indices:
+        mz, intensity = mzs[idx], intensities[idx]
+
+        # Check if far enough from all selected peaks
+        if all(abs(mz - sel_mz) >= mz_threshold for sel_mz in selected_mzs):
+            selected_mzs.append(mz)
+            selected_ints.append(intensity)
+            if len(selected_mzs) >= count:
+                break
+
+    return np.array(selected_mzs), np.array(selected_ints)
+
+
 def _annotate_peaks(
     widget: pg.PlotWidget, mzs: np.array, intensities: np.array, count: int = 5
 ):
     """Helper to annotate the top N peaks in a spectrum.
 
-    Uses direct numpy sorting to find top N intensity points.
-    This is faster than scipy.find_peaks() and works well for discrete
-    mass spectra data where each m/z point is effectively its own peak.
+    Uses non-maximum suppression to select distinct peaks, preventing
+    multiple labels from clustering around the same peak.
     """
     if len(mzs) == 0:
         return
 
-    # Direct top-N selection by intensity (faster than find_peaks)
-    sorted_indices = np.argsort(intensities)[::-1][:count]
-    top_mzs = mzs[sorted_indices]
-    top_ints = intensities[sorted_indices]
+    top_mzs, top_ints = _select_distinct_peaks(mzs, intensities, count)
 
     for mz, intensity in zip(top_mzs, top_ints):
         text = pg.TextItem(text=f"{mz:.4f}", color="#3c5488", anchor=(0.5, 1))
@@ -735,8 +771,8 @@ def highlight_peak(
 def update_labels_avgMS(canvas):
     """Update peak labels on the average MS canvas based on current view range.
 
-    Uses direct numpy sorting to find top N intensity points within the
-    visible range. This is faster than scipy.find_peaks().
+    Uses non-maximum suppression to select distinct peaks within the visible
+    range, preventing label clustering around the same peak.
     """
     # Remove all the previous labels
     for item in canvas.items():
@@ -763,10 +799,7 @@ def update_labels_avgMS(canvas):
     if len(mz_range) == 0:
         return
 
-    # Direct top-N selection by intensity (faster than find_peaks)
-    sorted_indices = np.argsort(intensity_range)[::-1][:10]
-    mzs = mz_range[sorted_indices]
-    intensities = intensity_range[sorted_indices]
+    mzs, intensities = _select_distinct_peaks(mz_range, intensity_range, count=10)
 
     for mz, intensity in zip(mzs, intensities):
         text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))

@@ -316,7 +316,7 @@ class UploadTab(TabBase):
 
         self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
         self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
-        self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
+        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(
             lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
