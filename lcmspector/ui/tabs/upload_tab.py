@@ -251,6 +251,7 @@ class UploadTab(TabBase):
             "resultsPane",
             "help_icon_lc",
             "help_icon_ms",
+            "help_icon_ion_list",
         ]
         for attr in stale_attrs:
             if hasattr(self, attr):
@@ -283,6 +284,21 @@ class UploadTab(TabBase):
         self.labelIonList = QtWidgets.QLabel("Targeted ions (m/z values):")
         self.comboBoxIonLists = QtWidgets.QComboBox()
         self.comboBoxIonLists.addItem("Create new ion list...")
+
+        self.help_icon_ion_list = self._create_help_icon(
+            "<b>Targeted m/z values</b><br><br>"
+            "Enter compound names and m/z values directly in the table below.<br>"
+            "Multiple ions per compound are supported (comma-separated).<br><br>"
+            "<b>Predefined ion lists:</b><br>"
+            "You can choose from several predefined ion lists.<br><br>"
+            "- Select from the dropdown to load a saved ion list<br>"
+            "or<br>"
+            "- Save your current list for future use<br><br>"
+            "<b>LCMSpector can look up m/z values automatically:</b><br>"
+            "- Enter a compound name and leave m/z empty<br>"
+            "- Press Enter or Tab to auto-lookup [M+H]+ and [M-H]- values<br><br>"
+            "This requires an active internet connection."
+        )
 
         self.ionTable = IonTable(view=self, parent=self)
 
@@ -429,6 +445,7 @@ class UploadTab(TabBase):
         # Ion list controls (right column)
         self._main_layout.addWidget(self.labelIonList, 0, 4, 1, 1)
         self._main_layout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self._main_layout.addWidget(self.help_icon_ion_list, 1, 6, 1, 1)
         self._main_layout.addWidget(self.ionTable, 2, 4, 4, 3)
         self._main_layout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
         self._main_layout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
@@ -493,6 +510,7 @@ class UploadTab(TabBase):
         # Ion list controls (right column)
         self._main_layout.addWidget(self.labelIonList, 0, 4, 1, 1)
         self._main_layout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self._main_layout.addWidget(self.help_icon_ion_list, 1, 6, 1, 1)
         self._main_layout.addWidget(self.ionTable, 2, 4, 4, 3)
         self._main_layout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
         self._main_layout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
@@ -562,6 +580,7 @@ class UploadTab(TabBase):
         # Ion list controls (right column)
         self._main_layout.addWidget(self.labelIonList, 0, 4, 1, 1)
         self._main_layout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
+        self._main_layout.addWidget(self.help_icon_ion_list, 1, 6, 1, 1)
         self._main_layout.addWidget(self.ionTable, 2, 4, 4, 3)
         self._main_layout.addWidget(self.button_clear_ion_list, 6, 4, 1, 1)
         self._main_layout.addWidget(self.button_save_ion_list, 6, 5, 1, 1)
