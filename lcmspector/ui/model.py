@@ -358,9 +358,11 @@ class Model(QObject):
             lc_measurement = self.lc_measurements.get(ms_measurement.filename, None)
 
             for compound in ms_measurement.xics:
-                ion_data = zip(
-                    compound.ions.keys(), compound.ions.values(), compound.ion_info
-                )
+                ion_keys = list(compound.ions.keys())
+                ion_values = list(compound.ions.values())
+                ion_info_list = getattr(compound, "ion_info", [])
+                padded_ion_info = ion_info_list + [""] * (len(ion_keys) - len(ion_info_list))
+                ion_data = zip(ion_keys, ion_values, padded_ion_info)
                 for ion, data, ion_name in ion_data:
                     results_dict = {
                         # Existing fields

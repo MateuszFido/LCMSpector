@@ -624,12 +624,14 @@ class UnifiedResultsTable(GenericTable):
 
         # Dynamic columns for the current compound's ions
         ion_headers = []
-        if compound and compound.ion_info:
-            for ion_info in compound.ion_info:
+        if compound:
+            ion_keys = list(compound.ions.keys())
+            for i, ion_key in enumerate(ion_keys):
+                label = compound.get_ion_label(i)
                 # Add MS intensity column for each ion
-                ion_headers.append(f"{ion_info} (MS)")
+                ion_headers.append(f"{label} (MS)")
                 # Add LC intensity column for each ion if available
-                ion_headers.append(f"{ion_info} (LC)")
+                ion_headers.append(f"{label} (LC)")
 
         all_headers = base_headers + ion_headers
 

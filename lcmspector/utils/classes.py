@@ -315,5 +315,26 @@ class Compound(BaseModel):
     def calibration_parameters(self, value):
         self._calibration_parameters = value
 
+    def get_ion_label(self, index: int) -> str:
+        """
+        Get a label for the ion at the given index.
+        Returns ion_info if available, otherwise falls back to m/z value.
+
+        Parameters
+        ----------
+        index : int
+            The index of the ion in target_list/ion_info.
+
+        Returns
+        -------
+        str
+            The ion label (ion_info string or m/z value as string).
+        """
+        if index < len(self.ion_info) and self.ion_info[index]:
+            return self.ion_info[index]
+        if index < len(self.target_list):
+            return str(self.target_list[index])
+        return ""
+
     def __str__(self):
         return f"Compound: {self.name}, ions: {self.target_list}, ion info: {self.ion_info}"
