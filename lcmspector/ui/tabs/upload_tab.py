@@ -56,6 +56,7 @@ class UploadTab(TabBase):
         # Plot tracking for checkbox plotting feature
         self._lc_active_plots = {}  # {filename: PlotDataItem}
         self._ms_active_plots = {}  # {filename: PlotDataItem}
+        self._tic_active_plots = {}  # {filename: PlotDataItem} - TIC plots in MS Only mode
         self._color_index_lc = 0
         self._color_index_ms = 0
         self._selected_lc_file = None  # Currently selected LC filename
@@ -144,7 +145,7 @@ class UploadTab(TabBase):
                 self.canvas_baseline.clear()
                 plot_placeholder(
                     self.canvas_baseline,
-                    "Welcome to LCMSpector\n\u2190 add files to get started",
+                    '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
                 )
             except RuntimeError:
                 pass  # Widget already deleted
@@ -167,6 +168,7 @@ class UploadTab(TabBase):
         # Reset plot tracking state
         self._lc_active_plots.clear()
         self._ms_active_plots.clear()
+        self._tic_active_plots.clear()
         self._color_index_lc = 0
         self._color_index_ms = 0
         self._selected_lc_file = None
@@ -253,6 +255,9 @@ class UploadTab(TabBase):
         for attr in stale_attrs:
             if hasattr(self, attr):
                 delattr(self, attr)
+
+        # Clear TIC plot tracking on mode change
+        self._tic_active_plots = {}
 
     # --- Layout Builders ---
 
@@ -840,7 +845,7 @@ class UploadTab(TabBase):
                 if not self._lc_active_plots:
                     plot_placeholder(
                         self.canvas_baseline,
-                        "Welcome to LCMSpector\n← add files to get started",
+                        '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
                     )
                     # Reset label references since canvas was cleared
                     self.crosshair_v_label = None
@@ -890,6 +895,34 @@ class UploadTab(TabBase):
                     )
                     # Store tuple of (plot_item, color) to preserve color for time updates
                     self._ms_active_plots[filename] = (plot_item, color)
+
+                    # In MS Only mode, also plot TIC to canvas_baseline
+                    if self._current_mode == "MS Only":
+                        from ui.plotting import PlotStyle
+                        from pyqtgraph import mkPen
+
+                        # First TIC plot: clear and setup canvas
+                        if not self._tic_active_plots:
+                            self.canvas_baseline.clear()
+                            PlotStyle.apply_standard_style(
+                                self.canvas_baseline,
+                                title="Total Ion Current (TIC)",
+                                x_label="Time (min)",
+                                y_label="Intensity (cps)",
+                            )
+                            self.canvas_baseline.addLegend(labelTextSize="12pt")
+                            self._add_crosshairs_to_canvas(self.canvas_baseline)
+
+                        # Plot TIC with overlay support
+                        tic_color = self._get_next_color("LC")  # Reuse LC color cycling
+                        if ms_data.tic_times is not None and len(ms_data.tic_times) > 0:
+                            tic_plot_item = self.canvas_baseline.plot(
+                                ms_data.tic_times,
+                                ms_data.tic_values,
+                                pen=mkPen(tic_color, width=1),
+                                name=filename,
+                            )
+                            self._tic_active_plots[filename] = tic_plot_item
         else:
             if filename in self._ms_active_plots:
                 plot_item, _ = self._ms_active_plots.pop(filename)
@@ -900,6 +933,21 @@ class UploadTab(TabBase):
                     for item in list(self.canvas_avgMS.items()):
                         if isinstance(item, pg.TextItem):
                             self.canvas_avgMS.removeItem(item)
+
+            # In MS Only mode, also remove TIC from canvas_baseline
+            if self._current_mode == "MS Only" and filename in self._tic_active_plots:
+                tic_plot_item = self._tic_active_plots.pop(filename)
+                self.canvas_baseline.removeItem(tic_plot_item)
+
+                # Restore placeholder if no TIC plots remain
+                if not self._tic_active_plots:
+                    plot_placeholder(
+                        self.canvas_baseline,
+                        '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
+                    )
+                    self.crosshair_v_label = None
+                    self.crosshair_h_label = None
+
             # Clear selection if this was the selected file
             if filename == self._selected_ms_file:
                 self._selected_ms_file = None
