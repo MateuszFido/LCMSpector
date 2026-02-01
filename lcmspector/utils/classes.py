@@ -268,6 +268,7 @@ class Compound(BaseModel):
     _ms2: List = PrivateAttr(default_factory=list)
     _calibration_curve: Dict = PrivateAttr(default_factory=dict)
     _calibration_parameters: Dict = PrivateAttr(default_factory=dict)
+    _concentration: Optional[float] = PrivateAttr(default=None)
 
     def model_post_init(self, __context):
         """
@@ -312,6 +313,14 @@ class Compound(BaseModel):
     @calibration_parameters.setter
     def calibration_parameters(self, value):
         self._calibration_parameters = value
+
+    @property
+    def concentration(self):
+        return self._concentration
+
+    @concentration.setter
+    def concentration(self, value):
+        self._concentration = value
 
     def get_ion_label(self, index: int) -> str:
         """

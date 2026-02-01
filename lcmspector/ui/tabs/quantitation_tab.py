@@ -216,6 +216,8 @@ class QuantitationTab(TabBase):
         self.calibrateButton.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
+        self.calibrateButton.setEnabled(False)
+        self.calibrateButton.setToolTip("Enter concentrations for at least 2 files (0/2)")
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
 
         # Unified results table
@@ -336,6 +338,8 @@ class QuantitationTab(TabBase):
         self.comboBoxChooseCompound.currentIndexChanged.connect(
             self.update_unified_table_for_compound
         )
+        # Monitor concentration inputs for calibrate button state
+        self.unifiedResultsTable.itemChanged.connect(self._on_table_item_changed)
         # Connect unified table selection to display MS2 data
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
             self.display_ms2
@@ -390,6 +394,21 @@ class QuantitationTab(TabBase):
             if index >= 0:
                 self.comboBoxChooseFile.setCurrentIndex(index)
             self.comboBoxChooseFile.blockSignals(False)
+
+    def _on_table_item_changed(self, item):
+        """Handle table item changes to monitor concentration inputs."""
+        if item.column() == 1:  # Concentration column
+            self._update_calibrate_button_state()
+
+    def _update_calibrate_button_state(self):
+        """Enable/disable calibrate button based on valid calibration file count."""
+        calibration_files = self.unifiedResultsTable.get_calibration_files()
+        valid_count = sum(1 for conc in calibration_files.values() if conc and conc.strip())
+        self.calibrateButton.setEnabled(valid_count >= 2)
+        if valid_count < 2:
+            self.calibrateButton.setToolTip(f"Enter concentrations for at least 2 files ({valid_count}/2)")
+        else:
+            self.calibrateButton.setToolTip(f"Calibrate using {valid_count} files")
 
     def get_selected_ion(self) -> str | None:
         """
@@ -512,10 +531,8 @@ class QuantitationTab(TabBase):
             )
         else:
             # Fallback: just setup basic columns without compound data
-            self.unifiedResultsTable.setColumnCount(3)
-            self.unifiedResultsTable.setHorizontalHeaderLabels(
-                ["File", "Calibration", "Concentration"]
-            )
+            self.unifiedResultsTable.setColumnCount(2)
+            self.unifiedResultsTable.setHorizontalHeaderLabels(["File", "Concentration"])
             self.unifiedResultsTable.setRowCount(len(self.file_concentrations))
 
             for row, (filename, concentration) in enumerate(self.file_concentrations):
@@ -524,19 +541,11 @@ class QuantitationTab(TabBase):
                 file_item.setFlags(file_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.unifiedResultsTable.setItem(row, 0, file_item)
 
-                # Calibration checkbox
-                checkbox_widget = QtWidgets.QWidget()
-                checkbox = QtWidgets.QCheckBox()
-                checkbox.setChecked(False)
-                layout = QtWidgets.QHBoxLayout(checkbox_widget)
-                layout.addWidget(checkbox)
-                layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                layout.setContentsMargins(0, 0, 0, 0)
-                self.unifiedResultsTable.setCellWidget(row, 1, checkbox_widget)
-
                 # Concentration
                 conc_item = QtWidgets.QTableWidgetItem(concentration or "")
-                self.unifiedResultsTable.setItem(row, 2, conc_item)
+                self.unifiedResultsTable.setItem(row, 1, conc_item)
+
+        self._update_calibrate_button_state()
 
     def update_choose_compound(self, compounds):
         """

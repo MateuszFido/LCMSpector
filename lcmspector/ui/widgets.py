@@ -619,8 +619,8 @@ class UnifiedResultsTable(GenericTable):
         """
         self.current_compound = compound
 
-        # Base columns: File, Calibration checkbox, Concentration
-        base_headers = ["File", "Calibration", "Concentration"]
+        # Base columns: File, Concentration
+        base_headers = ["File", "Concentration"]
 
         # Dynamic columns for the current compound's ions
         ion_headers = []
@@ -640,11 +640,10 @@ class UnifiedResultsTable(GenericTable):
 
         # Set appropriate column widths
         self.setColumnWidth(0, 200)  # File column
-        self.setColumnWidth(1, 150)  # Calibration checkbox column
-        self.setColumnWidth(2, 150)  # Concentration column
+        self.setColumnWidth(1, 150)  # Concentration column
 
         # Set ion columns to reasonable width
-        for i in range(3, len(all_headers)):
+        for i in range(2, len(all_headers)):
             self.setColumnWidth(i, 120)
 
     def populate_data(self, file_concentrations, ms_measurements, current_compound):
@@ -666,8 +665,8 @@ class UnifiedResultsTable(GenericTable):
         for row in range(self.rowCount()):
             for col in range(self.columnCount()):
                 if (
-                    col >= 3
-                ):  # Only clear ion data columns, preserve file/calibration/concentration
+                    col >= 2
+                ):  # Only clear ion data columns, preserve file/concentration
                     self.setItem(row, col, None)
 
         # If no rows exist yet, set them up
@@ -684,27 +683,14 @@ class UnifiedResultsTable(GenericTable):
                 file_item.setFlags(file_item.flags() & ~Qt.ItemFlag.ItemIsEditable)
                 self.setItem(row, 0, file_item)
 
-            # Column 1: Calibration checkbox (only set if not already set)
-            if not self.cellWidget(row, 1):
-                checkbox_widget = QtWidgets.QWidget()
-                checkbox = QtWidgets.QCheckBox()
-                checkbox.setChecked(False)
-                layout = QtWidgets.QHBoxLayout(checkbox_widget)
-                layout.addWidget(checkbox)
-                layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
-                layout.setContentsMargins(0, 0, 0, 0)
-                self.setCellWidget(row, 1, checkbox_widget)
-
-            # Column 2: Concentration (editable) - update if changed
-            if not self.item(row, 2) or self.item(row, 2).text() != (
-                concentration or ""
-            ):
+            # Column 1: Concentration (editable) - only set if not already present
+            if not self.item(row, 1):
                 conc_item = QtWidgets.QTableWidgetItem(concentration or "")
-                self.setItem(row, 2, conc_item)
+                self.setItem(row, 1, conc_item)
 
             # Dynamic columns: Ion intensities for current compound only
             if current_compound and hasattr(current_compound, "ions"):
-                col_index = 3
+                col_index = 2
                 ms_file = ms_measurements.get(filename)
 
                 if ms_file and ms_file.xics:
@@ -776,20 +762,20 @@ class UnifiedResultsTable(GenericTable):
 
     def get_calibration_files(self):
         """
-        Get the files selected for calibration and their concentrations.
+        Get files with concentrations for calibration.
 
         Returns:
         --------
-        dict : Dictionary mapping filename to concentration for selected calibration files
+        dict : Dictionary mapping filename to concentration for files with non-empty concentrations
         """
         selected_files = {}
         for row in range(self.rowCount()):
-            checkbox_widget = self.cellWidget(row, 1)
-            if checkbox_widget:
-                checkbox = checkbox_widget.findChild(QtWidgets.QCheckBox)
-                if checkbox and checkbox.isChecked():
-                    filename = self.item(row, 0).text()
-                    concentration = self.item(row, 2).text()
+            filename_item = self.item(row, 0)
+            concentration_item = self.item(row, 1)
+            if filename_item and concentration_item:
+                filename = filename_item.text()
+                concentration = concentration_item.text()
+                if concentration and concentration.strip():
                     selected_files[filename] = concentration
         return selected_files
 
@@ -860,8 +846,8 @@ class UnifiedResultsTable(GenericTable):
             ion_data = compound.ions[ion_name]
 
             # Calculate column indices:
-            # Base offset is 3 (File, Cal, Conc). Each ion has 2 columns (MS, LC).
-            ms_col = 3 + (i * 2)
+            # Base offset is 2 (File, Conc). Each ion has 2 columns (MS, LC).
+            ms_col = 2 + (i * 2)
             lc_col = ms_col + 1
 
             # --- Update MS Column ---
@@ -932,8 +918,8 @@ class UnifiedResultsTable(GenericTable):
         ion_data = compound.ions[actual_ion_key]
 
         # Calculate column index:
-        # Base offset is 3 (File, Cal, Conc). Each ion has 2 columns (MS, LC).
-        ms_col = 3 + (ion_index * 2)
+        # Base offset is 2 (File, Conc). Each ion has 2 columns (MS, LC).
+        ms_col = 2 + (ion_index * 2)
 
         # Update MS Column with the new integration data
         ms_area_data = ion_data.get("Integration Data")

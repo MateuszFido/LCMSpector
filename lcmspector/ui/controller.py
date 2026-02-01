@@ -48,7 +48,6 @@ class Controller:
             self.display_selected_plots
         )
         self.view.calibrateButton.clicked.connect(self.calibrate)
-        self.view.calibrateButton.clicked.connect(self.find_ms2_precursors)
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(
             self.view.display_calibration_curve
         )
@@ -88,10 +87,6 @@ class Controller:
         # Disconnect calibrateButton
         try:
             self.view.calibrateButton.clicked.disconnect(self.calibrate)
-        except (RuntimeError, TypeError):
-            pass
-        try:
-            self.view.calibrateButton.clicked.disconnect(self.find_ms2_precursors)
         except (RuntimeError, TypeError):
             pass
 
@@ -245,6 +240,13 @@ class Controller:
         self.update_filenames()
         self.view.actionExport.setEnabled(True)
 
+        # Enable compound selection and populate compound list
+        self.view.comboBoxChooseCompound.setEnabled(True)
+        self.view.update_choose_compound(self.model.compounds)
+
+        # Search for MS2 precursors
+        self.find_ms2_precursors()
+
     def update_filenames(self):
         if self.mode == "LC/GC-MS" or self.mode == "LC/GC Only":
             filenames = list(self.model.lc_measurements.keys())
@@ -287,16 +289,24 @@ class Controller:
         :return: None
         """
         selected_files = self.view.get_calibration_files()
-        if selected_files:
-            try:
-                self.model.calibrate(selected_files)
-            except Exception:
-                logger.error(f"Error calibrating files: {traceback.format_exc()}")
-                return
-        else:
+        if not selected_files:
             logger.error("No files selected for calibration.")
-        self.view.comboBoxChooseCompound.setEnabled(True)
-        self.view.update_choose_compound(self.model.compounds)
+            return
+
+        # Validate at least 2 files have concentration values
+        valid_count = sum(1 for conc in selected_files.values() if conc and conc.strip())
+        if valid_count < 2:
+            logger.error(f"Need at least 2 files with concentrations for calibration, got {valid_count}.")
+            return
+
+        try:
+            self.model.calibrate(selected_files)
+        except Exception:
+            logger.error(f"Error calibrating files: {traceback.format_exc()}")
+            return
+
+        # Display the calibration curve after successful calibration
+        self.view.display_calibration_curve()
 
     def find_ms2_precursors(self):
         """
