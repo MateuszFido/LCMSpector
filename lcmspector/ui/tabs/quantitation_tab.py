@@ -96,6 +96,11 @@ class QuantitationTab(TabBase):
                 self.comboBoxChooseMS2File.clear()
             except RuntimeError:
                 pass  # Widget already deleted
+        if hasattr(self, "comboBoxChooseFile"):
+            try:
+                self.comboBoxChooseFile.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
         self.file_concentrations = None
 
     def setup_layout(self, mode: str = None):
@@ -157,12 +162,40 @@ class QuantitationTab(TabBase):
         self.gridLayout_quant.setObjectName("gridLayout_quant")
         self.gridLayout_quant.setColumnStretch(0, 1)
         self.gridLayout_quant.setColumnStretch(1, 1)
-        self.gridLayout_quant.setRowStretch(0, 1)
+        # Row stretches shifted down by 1 for header row
         self.gridLayout_quant.setRowStretch(1, 1)
         self.gridLayout_quant.setRowStretch(2, 1)
         self.gridLayout_quant.setRowStretch(3, 1)
+        self.gridLayout_quant.setRowStretch(4, 1)
 
-        # Top left layout (calibration controls + results table)
+        # --- Header layout with prominent file/compound selection (Row 0) ---
+        self.header_layout = QtWidgets.QHBoxLayout()
+
+        # File selector
+        self.label_file = QtWidgets.QLabel("File:")
+        self.label_file.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.comboBoxChooseFile = QtWidgets.QComboBox()
+        self.comboBoxChooseFile.setMinimumSize(QtCore.QSize(200, 32))
+        self.comboBoxChooseFile.setObjectName("comboBoxChooseFile")
+
+        # Compound selector (prominent in header)
+        self.label_compound = QtWidgets.QLabel("Compound:")
+        self.label_compound.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.comboBoxChooseCompound = QtWidgets.QComboBox()
+        self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(200, 32))
+        self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
+        self.comboBoxChooseCompound.setEnabled(False)
+
+        self.header_layout.addWidget(self.label_file)
+        self.header_layout.addWidget(self.comboBoxChooseFile)
+        self.header_layout.addSpacing(20)
+        self.header_layout.addWidget(self.label_compound)
+        self.header_layout.addWidget(self.comboBoxChooseCompound)
+        self.header_layout.addStretch()
+
+        self.gridLayout_quant.addLayout(self.header_layout, 0, 0, 1, 3)
+
+        # --- Top left layout (calibration controls + results table) (Row 1-3) ---
         self.gridLayout_top_left = QtWidgets.QGridLayout()
         self.gridLayout_top_left.setObjectName("gridLayout_top_left")
 
@@ -189,38 +222,24 @@ class QuantitationTab(TabBase):
         self.unifiedResultsTable.setObjectName("unifiedResultsTable")
         self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 2, 2)
 
-        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 3, 1)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 1, 0, 3, 1)
 
-        # Top right layout (compound selection + calibration curve)
+        # --- Top right layout (calibration curve) (Row 1) ---
         self.gridLayout_top_right = QtWidgets.QGridLayout()
         self.gridLayout_top_right.setObjectName("gridLayout_top_right")
 
-        self.label_compound = QtWidgets.QLabel("Compound:")
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
-        )
-        self.label_compound.setSizePolicy(sizePolicy)
-        self.label_compound.setObjectName("label_compound")
-        self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 1)
-
-        self.comboBoxChooseCompound = QtWidgets.QComboBox()
-        self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
-        self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
-        self.comboBoxChooseCompound.setEnabled(False)
-        self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 2)
-
         self.canvas_calibration = pg.PlotWidget()
         self.canvas_calibration.setObjectName("canvas_calibration")
-        self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 3)
+        self.gridLayout_top_right.addWidget(self.canvas_calibration, 0, 0, 1, 3)
 
-        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 2)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 1, 1, 1, 2)
 
-        # MS2 file selection
+        # MS2 file selection (Row 2)
         self.comboBoxChooseMS2File = QtWidgets.QComboBox()
         self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
-        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 1, 1, 1, 2)
+        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 2, 1, 1, 2)
 
-        # MS2 canvas
+        # MS2 canvas (Row 3)
         self.canvas_ms2 = pg.PlotWidget()
         self.canvas_ms2.setObjectName("canvas_ms2")
         self.canvas_ms2.setMouseEnabled(x=True, y=False)
@@ -229,9 +248,9 @@ class QuantitationTab(TabBase):
         self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
             lambda ev: update_labels_avgMS(self.canvas_ms2)
         )
-        self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 2)
+        self.gridLayout_quant.addWidget(self.canvas_ms2, 3, 1, 1, 2)
 
-        # Library MS2 / Integration canvas
+        # Library MS2 / Integration canvas (Row 4)
         self.canvas_library_ms2 = pg.PlotWidget()
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
         self.canvas_library_ms2.setSizePolicy(
@@ -240,9 +259,9 @@ class QuantitationTab(TabBase):
         self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
         self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 0, 1, 3)
+        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 4, 0, 1, 3)
 
-        # Ion selection for manual integration
+        # Ion selection for manual integration (Row 5)
         self.ion_selection_layout = QtWidgets.QHBoxLayout()
         self.label_select_ion = QtWidgets.QLabel("Ion to edit:")
         self.label_select_ion.setSizePolicy(
@@ -290,18 +309,18 @@ class QuantitationTab(TabBase):
         self.ion_selection_layout.addWidget(self.help_icon)
         self.ion_selection_layout.addStretch()
 
-        self.gridLayout_quant.addLayout(self.ion_selection_layout, 4, 0, 1, 3)
+        self.gridLayout_quant.addLayout(self.ion_selection_layout, 5, 0, 1, 3)
 
-        # Integration control buttons
+        # Integration control buttons (Row 6)
         self.button_apply_integration = QtWidgets.QPushButton(
             "Apply Integration Changes"
         )
         self.button_recalculate_integration = QtWidgets.QPushButton("Recalculate All")
         self.button_reset_integration = QtWidgets.QPushButton("Reset Integration")
 
-        self.gridLayout_quant.addWidget(self.button_apply_integration, 5, 0, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 5, 1, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_reset_integration, 5, 2, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_apply_integration, 6, 0, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 6, 1, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_reset_integration, 6, 2, 1, 1)
 
         # Add quant layout to main layout
         self._main_layout.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
@@ -334,6 +353,17 @@ class QuantitationTab(TabBase):
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
             self._update_ion_combo_box
         )
+        # File combo box <-> table selection bidirectional sync
+        self.comboBoxChooseFile.currentTextChanged.connect(
+            self._on_file_combo_changed
+        )
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self._sync_file_combo_from_table
+        )
+        # Update integration plot when file selection changes
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self.display_compound_integration
+        )
 
     def _on_compound_changed(self, index):
         """Internal handler for compound selection change."""
@@ -342,6 +372,27 @@ class QuantitationTab(TabBase):
     def _on_ms2_file_changed(self, index):
         """Internal handler for MS2 file selection change."""
         self.ms2_file_changed.emit(index)
+
+    def _on_file_combo_changed(self, filename: str):
+        """Handle file selection from combo box - select matching table row."""
+        if not filename:
+            return
+        # Find and select the matching row in the table
+        for row in range(self.unifiedResultsTable.rowCount()):
+            item = self.unifiedResultsTable.item(row, 0)
+            if item and item.text() == filename:
+                self.unifiedResultsTable.selectRow(row)
+                break
+
+    def _sync_file_combo_from_table(self):
+        """Sync file combo box when table selection changes."""
+        selected_file = self.unifiedResultsTable.get_selected_file()
+        if selected_file:
+            self.comboBoxChooseFile.blockSignals(True)
+            index = self.comboBoxChooseFile.findText(selected_file)
+            if index >= 0:
+                self.comboBoxChooseFile.setCurrentIndex(index)
+            self.comboBoxChooseFile.blockSignals(False)
 
     def get_selected_ion(self) -> str | None:
         """
@@ -503,6 +554,21 @@ class QuantitationTab(TabBase):
         for compound in compounds:
             self.comboBoxChooseCompound.addItem(compound.name)
 
+    def update_file_combo_box(self, filenames: list[str]):
+        """
+        Update the file selection combo box with available files.
+
+        Parameters
+        ----------
+        filenames : list[str]
+            List of filenames to populate the combo box
+        """
+        self.comboBoxChooseFile.blockSignals(True)
+        self.comboBoxChooseFile.clear()
+        for filename in filenames:
+            self.comboBoxChooseFile.addItem(filename)
+        self.comboBoxChooseFile.blockSignals(False)
+
     def get_calibration_files(self):
         """
         Get calibration files from the unified results table.
@@ -524,8 +590,16 @@ class QuantitationTab(TabBase):
         if not self._controller:
             return
 
+        compound_name = self.comboBoxChooseCompound.currentText()
+        # Set dynamic title showing compound name
+        self.canvas_calibration.setTitle(
+            f"Calibration: {compound_name}",
+            color="w",
+            size="11pt",
+        )
+
         for compound in self._controller.model.compounds:
-            if compound.name == self.comboBoxChooseCompound.currentText():
+            if compound.name == compound_name:
                 try:
                     plot_calibration_curve(compound, self.canvas_calibration)
                 except TypeError:
@@ -553,12 +627,20 @@ class QuantitationTab(TabBase):
         if not self._controller:
             return
 
+        compound_name = self.comboBoxChooseCompound.currentText()
+        # Set dynamic title showing file and compound
+        self.canvas_library_ms2.setTitle(
+            f"Integration profile of {compound_name} in {selected_file}",
+            color="w",
+            size="12pt",
+        )
+
         ms_file = self._controller.model.ms_measurements.get(selected_file)
         try:
             ms_compound = next(
                 xic
                 for xic in ms_file.xics
-                if xic.name == self.comboBoxChooseCompound.currentText()
+                if xic.name == compound_name
             )
             # Pass selected ion to enable selective movability
             self._curve_refs = plot_compound_integration(

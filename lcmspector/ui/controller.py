@@ -255,6 +255,7 @@ class Controller:
             ]
             self.view.update_combo_box(filenames)
             self.view.update_table_quantitation(concentrations)
+            self.view.quantitation_tab.update_file_combo_box(filenames)
         else:
             filenames = list(self.model.ms_measurements.keys())
             concentrations = [
@@ -263,6 +264,7 @@ class Controller:
             ]
             self.view.update_combo_box(filenames)
             self.view.update_table_quantitation(concentrations)
+            self.view.quantitation_tab.update_file_combo_box(filenames)
 
     def display_selected_plots(self):
         """
