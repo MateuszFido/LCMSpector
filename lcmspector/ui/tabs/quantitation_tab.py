@@ -313,11 +313,9 @@ class QuantitationTab(TabBase):
         self.gridLayout_quant.addLayout(self.ion_selection_layout, 5, 0, 1, 3)
 
         # Integration control buttons (Row 6)
-        self.button_apply_integration = QtWidgets.QPushButton(
-            "Apply Integration Changes"
-        )
-        self.button_recalculate_integration = QtWidgets.QPushButton("Recalculate All")
-        self.button_reset_integration = QtWidgets.QPushButton("Reset Integration")
+        self.button_apply_integration = QtWidgets.QPushButton("Apply changes")
+        self.button_recalculate_integration = QtWidgets.QPushButton("Recalculate all")
+        self.button_reset_integration = QtWidgets.QPushButton("Reset integration")
 
         self.gridLayout_quant.addWidget(self.button_apply_integration, 6, 0, 1, 1)
         self.gridLayout_quant.addWidget(self.button_recalculate_integration, 6, 1, 1, 1)
@@ -355,9 +353,7 @@ class QuantitationTab(TabBase):
             self._update_ion_combo_box
         )
         # File combo box <-> table selection bidirectional sync
-        self.comboBoxChooseFile.currentTextChanged.connect(
-            self._on_file_combo_changed
-        )
+        self.comboBoxChooseFile.currentTextChanged.connect(self._on_file_combo_changed)
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
             self._sync_file_combo_from_table
         )
@@ -642,11 +638,7 @@ class QuantitationTab(TabBase):
             return
 
         try:
-            ms_compound = next(
-                xic
-                for xic in ms_file.xics
-                if xic.name == compound_name
-            )
+            ms_compound = next(xic for xic in ms_file.xics if xic.name == compound_name)
             # Pass selected ion to enable selective movability
             self._curve_refs = plot_compound_integration(
                 self.canvas_library_ms2, ms_compound, selected_ion=self._selected_ion

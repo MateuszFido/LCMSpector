@@ -1,6 +1,7 @@
 """
 Results Tab for displaying processed data visualizations.
 """
+
 from PySide6 import QtWidgets, QtCore
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea
@@ -63,19 +64,19 @@ class ResultsTab(TabBase):
 
     def clear(self):
         """Clear all data from the tab."""
-        if hasattr(self, 'canvas_annotatedLC'):
+        if hasattr(self, "canvas_annotatedLC"):
             try:
                 self.canvas_annotatedLC.clear()
             except RuntimeError:
                 pass
-        if hasattr(self, 'canvas_XICs'):
+        if hasattr(self, "canvas_XICs"):
             # DockArea doesn't have a clear method, need to remove all docks
             try:
                 for dock in list(self.canvas_XICs.docks.values()):
                     dock.close()
             except (AttributeError, RuntimeError):
                 pass
-        if hasattr(self, 'comboBox_currentfile'):
+        if hasattr(self, "comboBox_currentfile"):
             try:
                 self.comboBox_currentfile.clear()
             except RuntimeError:
@@ -138,8 +139,7 @@ class ResultsTab(TabBase):
         # Control row with file selection
         self.label_results_currentfile = QtWidgets.QLabel("Current file:")
         self.label_results_currentfile.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Preferred
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
         )
 
         self.comboBox_currentfile = QtWidgets.QComboBox()
@@ -166,13 +166,13 @@ class ResultsTab(TabBase):
 
         if self._current_mode == "LC/GC-MS":
             # Show both annotated LC and XICs side by side
-            self._main_layout.addWidget(self.scrollArea, 1, 1, 1, 1)
+            self._main_layout.addWidget(self.scrollArea, 2, 0, 1, 2)
 
             # Annotated LC chromatogram
             self.canvas_annotatedLC = pg.PlotWidget()
             self.canvas_annotatedLC.setObjectName("canvas_annotatedLC")
             self.canvas_annotatedLC.setMouseEnabled(x=True, y=False)
-            self._main_layout.addWidget(self.canvas_annotatedLC, 1, 0, 1, 1)
+            self._main_layout.addWidget(self.canvas_annotatedLC, 1, 0, 1, 2)
         elif self._current_mode == "MS Only":
             # Only show XICs spanning the full width
             self._main_layout.addWidget(self.scrollArea, 1, 0, 1, 2)
@@ -254,14 +254,14 @@ class ResultsTab(TabBase):
                     logger.error("Canvas was deleted, skipping LC plot")
 
             # Plot XICs
-            if ms_file and hasattr(ms_file, 'xics') and ms_file.xics:
+            if ms_file and hasattr(ms_file, "xics") and ms_file.xics:
                 plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
             else:
                 self._show_xic_placeholder()
 
     def _display_ms_only_plots(self, ms_file):
         """Display plots for MS Only mode."""
-        if ms_file and hasattr(ms_file, 'xics') and ms_file.xics:
+        if ms_file and hasattr(ms_file, "xics") and ms_file.xics:
             plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
         else:
             self._show_xic_placeholder()

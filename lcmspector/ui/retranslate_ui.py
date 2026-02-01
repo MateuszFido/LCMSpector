@@ -95,18 +95,6 @@ def retranslateUi(MainWindow):
                 )
             if hasattr(quant, "calibrateButton"):
                 quant.calibrateButton.setText(_translate("MainWindow", "Calculate"))
-            if hasattr(quant, "button_apply_integration"):
-                quant.button_apply_integration.setText(
-                    _translate("MainWindow", "Apply")
-                )
-            if hasattr(quant, "button_recalculate_integration"):
-                quant.button_recalculate_integration.setText(
-                    _translate("MainWindow", "Recalculate")
-                )
-            if hasattr(quant, "button_reset_integration"):
-                quant.button_reset_integration.setText(
-                    _translate("MainWindow", "Reset")
-                )
 
         # Menu bar
         MainWindow.menuFile.setTitle(_translate("MainWindow", "File"))
