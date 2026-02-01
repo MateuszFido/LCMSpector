@@ -249,12 +249,181 @@ class GenericTable(QtWidgets.QTableWidget):
 
 
 class IonTable(GenericTable):
+    # Signal emitted for status bar updates
+    lookup_status = QtCore.Signal(str, int)  # (message, duration_ms)
+
     def __init__(self, view, parent=None):
         super().__init__(50, 3, parent)
         self.setHorizontalHeaderLabels(["Compound", "Expected m/z", "Add. info"])
         self.setObjectName("ionTable")
         self.setStyleSheet("gridline-color: #e0e0e0;")
         self.view = view
+
+        # PubChem lookup state
+        self._lookup_thread = None
+        self._lookup_worker = None
+
+        # Connect closeEditor signal (fires only when editing finishes, not on each keystroke)
+        self.itemDelegate().closeEditor.connect(self._on_editor_closed)
+
+    def _on_editor_closed(self, editor, hint):
+        """Handle editor close - trigger PubChem lookup for compound names.
+
+        This fires only when editing is finished (Enter, Tab, or click away),
+        not on every keystroke like cellChanged does.
+        """
+        row = self.currentRow()
+        col = self.currentColumn()
+
+        # Only trigger on compound name column (col 0)
+        if col != 0:
+            return
+
+        # Get the compound name
+        name_item = self.item(row, 0)
+        if name_item is None:
+            return
+        compound_name = name_item.text().strip()
+        if not compound_name:
+            return
+
+        # Only lookup if m/z column is empty
+        mz_item = self.item(row, 1)
+        if mz_item is not None and mz_item.text().strip():
+            return
+
+        # Execute lookup immediately (no debounce needed since closeEditor only fires once)
+        self._execute_lookup_for(row, compound_name)
+
+    def _execute_lookup_for(self, row: int, compound_name: str):
+        """Execute a PubChem lookup for the given row and compound name."""
+        # Clean up any existing lookup
+        self._cleanup_lookup()
+
+        # Emit status message
+        self.lookup_status.emit(f"Looking up '{compound_name}' on PubChem...", 0)
+
+        # Create worker and thread
+        from PySide6.QtCore import QThread
+        from utils.pubchem import PubChemLookupWorker
+
+        self._lookup_thread = QThread()
+        self._lookup_worker = PubChemLookupWorker(compound_name)
+        self._lookup_worker.moveToThread(self._lookup_thread)
+
+        # Store row for the callback
+        self._lookup_row = row
+
+        # Connect signals
+        self._lookup_thread.started.connect(self._lookup_worker.run)
+        self._lookup_worker.finished.connect(self._on_lookup_finished)
+        self._lookup_worker.error.connect(self._on_lookup_error)
+        self._lookup_worker.finished.connect(self._cleanup_lookup)
+        self._lookup_worker.error.connect(self._cleanup_lookup)
+
+        # Start the lookup
+        self._lookup_thread.start()
+
+    def _on_lookup_finished(self, compound_name: str, data: dict):
+        """Handle successful PubChem lookup - fill m/z and info columns."""
+        row = getattr(self, "_lookup_row", None)
+        if row is None:
+            return
+
+        # Verify the row still has the same compound name
+        name_item = self.item(row, 0)
+        if name_item is None or name_item.text().strip() != compound_name:
+            return
+
+        # Format m/z values: [M+H]+, [M-H]-
+        mz_pos = data.get("mz_pos")
+        mz_neg = data.get("mz_neg")
+
+        if mz_pos is not None and mz_neg is not None:
+            mz_text = f"{mz_pos}, {mz_neg}"
+            info_text = "[M+H]+, [M-H]-"
+
+            # Block signals to avoid re-triggering
+            self.blockSignals(True)
+
+            # Fill m/z column
+            mz_item = self.item(row, 1)
+            if mz_item is None:
+                mz_item = QtWidgets.QTableWidgetItem()
+                self.setItem(row, 1, mz_item)
+            mz_item.setText(mz_text)
+
+            # Fill info column
+            info_item = self.item(row, 2)
+            if info_item is None:
+                info_item = QtWidgets.QTableWidgetItem()
+                self.setItem(row, 2, info_item)
+            info_item.setText(info_text)
+
+            self.blockSignals(False)
+
+            # Apply green highlight to filled cells
+            self._highlight_cell(row, 1)
+            self._highlight_cell(row, 2)
+
+            # Emit success status (matching log message format)
+            self.lookup_status.emit(
+                f"PubChem lookup successful for '{compound_name}': [M+H]+ = {mz_pos}", 5000
+            )
+
+    def _on_lookup_error(self, compound_name: str, error_msg: str):
+        """Handle PubChem lookup error."""
+        # Emit descriptive error status
+        if "not found" in error_msg.lower():
+            self.lookup_status.emit(
+                f"Compound '{compound_name}' not found on PubChem", 5000
+            )
+        else:
+            self.lookup_status.emit(
+                f"PubChem lookup failed for '{compound_name}': {error_msg}", 5000
+            )
+
+    def _highlight_cell(self, row: int, col: int):
+        """Apply temporary green highlight to cell (reverts after 10 seconds)."""
+        item = self.item(row, col)
+        if item is None:
+            return
+
+        highlight_color = QtGui.QColor(200, 255, 200)
+        original_brush = item.background()
+        item.setBackground(highlight_color)
+
+        # Store coordinates for safe revert
+        target_row, target_col = row, col
+        table_ref = self
+
+        def revert():
+            """Safely revert background color, handling deleted items."""
+            try:
+                if (
+                    table_ref.rowCount() > target_row
+                    and table_ref.columnCount() > target_col
+                ):
+                    current_item = table_ref.item(target_row, target_col)
+                    if current_item is not None:
+                        current_item.setBackground(original_brush)
+            except RuntimeError:
+                # Table or item was deleted, ignore
+                pass
+
+        QtCore.QTimer.singleShot(10000, revert)
+
+    def _cleanup_lookup(self):
+        """Clean up lookup thread and worker."""
+        if self._lookup_thread is not None:
+            self._lookup_thread.quit()
+            self._lookup_thread.wait(1000)
+            self._lookup_thread.deleteLater()
+            self._lookup_thread = None
+
+        if self._lookup_worker is not None:
+            self._lookup_worker.deleteLater()
+            self._lookup_worker = None
 
     def get_items(self):
         """

@@ -622,6 +622,9 @@ class UploadTab(TabBase):
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
 
+        # Connect IonTable PubChem lookup status to status bar
+        self.ionTable.lookup_status.connect(self._on_lookup_status)
+
         # Process button
         self.processButton.clicked.connect(self.process_requested.emit)
 
@@ -980,6 +983,14 @@ class UploadTab(TabBase):
 
     # --- Ion List Management ---
 
+    def _on_lookup_status(self, message: str, duration_ms: int):
+        """Forward PubChem lookup status to status bar."""
+        if self.statusbar:
+            self.statusbar.showMessage(message, duration_ms)
+        else:
+            # Fallback to status_message signal if statusbar not available
+            self.status_message.emit(message, duration_ms)
+
     def _load_ion_config_names(self):
         """Reads config.json to populate the dropdown."""
         if self.config_path.exists():
@@ -1011,27 +1022,33 @@ class UploadTab(TabBase):
                 data = json.load(f)
 
             ion_data = data.get(selection, {})
-            self.ionTable.setRowCount(len(ion_data))
 
-            for row, (name, details) in enumerate(ion_data.items()):
-                # Name
-                self.ionTable.setItem(row, 0, QtWidgets.QTableWidgetItem(str(name)))
+            # Block signals to prevent triggering PubChem lookups during programmatic updates
+            self.ionTable.blockSignals(True)
+            try:
+                self.ionTable.setRowCount(len(ion_data))
 
-                # Ions (Handle list or string legacy format)
-                ions = details.get("ions", [])
-                if isinstance(ions, list):
-                    ions_str = ", ".join(map(str, ions))
-                else:
-                    ions_str = str(ions)
-                self.ionTable.setItem(row, 1, QtWidgets.QTableWidgetItem(ions_str))
+                for row, (name, details) in enumerate(ion_data.items()):
+                    # Name
+                    self.ionTable.setItem(row, 0, QtWidgets.QTableWidgetItem(str(name)))
 
-                # Info (Handle list or string legacy format)
-                info = details.get("info", [])
-                if isinstance(info, list):
-                    info_str = ", ".join(map(str, info))
-                else:
-                    info_str = str(info)
-                self.ionTable.setItem(row, 2, QtWidgets.QTableWidgetItem(info_str))
+                    # Ions (Handle list or string legacy format)
+                    ions = details.get("ions", [])
+                    if isinstance(ions, list):
+                        ions_str = ", ".join(map(str, ions))
+                    else:
+                        ions_str = str(ions)
+                    self.ionTable.setItem(row, 1, QtWidgets.QTableWidgetItem(ions_str))
+
+                    # Info (Handle list or string legacy format)
+                    info = details.get("info", [])
+                    if isinstance(info, list):
+                        info_str = ", ".join(map(str, info))
+                    else:
+                        info_str = str(info)
+                    self.ionTable.setItem(row, 2, QtWidgets.QTableWidgetItem(info_str))
+            finally:
+                self.ionTable.blockSignals(False)
 
         except Exception as e:
             logger.error(f"Error updating ion list: {e}")
