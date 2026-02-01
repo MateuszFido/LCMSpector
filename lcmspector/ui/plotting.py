@@ -7,7 +7,6 @@ from typing import Optional, List, Any
 
 from PySide6.QtGui import QFont, QColor
 from PySide6.QtCore import Qt, QSize
-from PySide6.QtCore import Qt as QtCore_Qt
 import numpy as np
 import pandas as pd
 import pyqtgraph as pg
