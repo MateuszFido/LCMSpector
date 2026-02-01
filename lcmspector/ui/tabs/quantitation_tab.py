@@ -15,6 +15,7 @@ from ui.plotting import (
     plot_compound_integration,
     plot_ms2_from_file,
     plot_no_ms2_found,
+    plot_no_ms_info,
     update_labels_avgMS,
 )
 
@@ -636,6 +637,10 @@ class QuantitationTab(TabBase):
         )
 
         ms_file = self._controller.model.ms_measurements.get(selected_file)
+        if ms_file is None:
+            plot_no_ms_info(self.canvas_library_ms2)
+            return
+
         try:
             ms_compound = next(
                 xic
@@ -650,6 +655,7 @@ class QuantitationTab(TabBase):
             self._connect_curve_click_signals()
         except (AttributeError, StopIteration):
             logger.warning(f"No MS data found for {selected_file}.")
+            plot_no_ms_info(self.canvas_library_ms2)
 
     def _connect_curve_click_signals(self):
         """Connect sigClicked signals on curves for click-to-select functionality."""

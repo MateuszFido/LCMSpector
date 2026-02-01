@@ -86,23 +86,53 @@ def plot_absorbance_data(
     widget: pg.PlotWidget,
     color: str = "#2EC4B6",
     pen_width: int = 1,
-):
-    """Plots baseline-corrected chromatography data with filename in legend."""
-    filename = os.path.basename(path).split(".")[0]
+    name: str | None = None,
+    clear: bool = True,
+) -> pg.PlotDataItem:
+    """Plots baseline-corrected chromatography data with filename in legend.
 
-    PlotStyle.apply_standard_style(
-        widget,
-        title="Chromatography Data",
-        x_label="Retention time (min)",
-        y_label="Absorbance (mAU)",
-    )
-    # Plot Corrected trace only, using filename as legend entry
-    widget.plot(
+    Parameters
+    ----------
+    path : str
+        Path to the LC file (used for deriving default name)
+    dataframe : pd.DataFrame
+        DataFrame with 'Time (min)' and 'Value (mAU)' columns
+    widget : pg.PlotWidget
+        Target plot widget
+    color : str
+        Color for the trace (default: teal)
+    pen_width : int
+        Width of the pen (default: 1)
+    name : str | None
+        Legend name for the plot item. If None, derives from path.
+    clear : bool
+        If True, applies standard style. If False, overlays without restyling.
+
+    Returns
+    -------
+    pg.PlotDataItem
+        The created plot item
+    """
+    # Use provided name or derive from path
+    legend_name = name if name is not None else os.path.basename(path).split(".")[0]
+
+    if clear:
+        PlotStyle.apply_standard_style(
+            widget,
+            title="Chromatography Data",
+            x_label="Retention time (min)",
+            y_label="Absorbance (mAU)",
+        )
+
+    # Plot corrected trace, using legend_name as legend entry
+    plot_item = widget.plot(
         dataframe["Time (min)"],
         dataframe["Value (mAU)"],
         pen=mkPen(color, width=pen_width),
-        name=filename,
+        name=legend_name,
     )
+    widget.getPlotItem().getViewBox().autoRange()
+    return plot_item
 
 
 def plot_average_ms_data(
@@ -192,6 +222,7 @@ def plot_average_ms_data(
     # Peak Annotation
     _annotate_peaks(widget, mzs, intensities, count=5)
 
+    widget.getPlotItem().getViewBox().autoRange()
     return plot_item
 
 
@@ -398,6 +429,7 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
             logger.error(f"Error plotting calibration fit: {e}")
     else:
         logger.warning(f"No calibration parameters found for {compound.name}")
+    widget.getPlotItem().getViewBox().autoRange()
 
 
 def plot_total_ion_current(
@@ -480,12 +512,20 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
     # Annotate Top 5
     _annotate_peaks(canvas, mzs, rel_intensities, count=5)
+    canvas.getPlotItem().getViewBox().autoRange()
 
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
     widget.clear()
     PlotStyle.apply_standard_style(widget, title="No MS2 spectrum found")
     plot_placeholder(widget, "No MS2 Data Found")
+
+
+def plot_no_ms_info(widget: pg.PlotWidget):
+    """Display placeholder when no MS information is available."""
+    widget.clear()
+    PlotStyle.apply_standard_style(widget, title="No MS Information")
+    plot_placeholder(widget, "No MS data available for this file.")
 
 
 def plot_placeholder(widget: pg.PlotWidget, text: str):
@@ -501,6 +541,7 @@ def plot_placeholder(widget: pg.PlotWidget, text: str):
         else QFont("Arial", 14)
     )
     widget.addItem(text_item)
+    widget.getPlotItem().getViewBox().autoRange()
 
 
 def plot_compound_integration(
@@ -528,7 +569,7 @@ def plot_compound_integration(
     widget.addLegend(labelTextSize="12pt")
     PlotStyle.apply_standard_style(
         widget,
-        title=f"Integration of {compound.name}",
+        title=f"Integration profile of {compound.name} in {compound.file}",
         x_label="Time (min)",
         y_label="Intensity / a.u.",
     )
@@ -655,6 +696,7 @@ def plot_compound_integration(
             logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
             continue
 
+    widget.getPlotItem().getViewBox().autoRange()
     return curve_refs
 
 

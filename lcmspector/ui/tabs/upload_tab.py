@@ -798,6 +798,8 @@ class UploadTab(TabBase):
 
     def _on_lc_checkbox_changed(self, filename: str, is_checked: bool):
         """Handle LC file checkbox state change."""
+        from ui.plotting import plot_absorbance_data
+
         logger.debug(f"LC checkbox changed: {filename} -> {is_checked}")
 
         if not hasattr(self, "canvas_baseline") or self.canvas_baseline is None:
@@ -811,29 +813,26 @@ class UploadTab(TabBase):
                 lc_data = self._controller.model.lc_measurements.get(stem_filename)
                 if lc_data:
                     logger.debug(f"Found LC data for {stem_filename}, plotting")
-                    from pyqtgraph import mkPen
-                    from ui.plotting import PlotStyle
 
                     # If this is the first plot, clear placeholder and restore axes
-                    if not self._lc_active_plots:
+                    should_clear = len(self._lc_active_plots) == 0
+                    if should_clear:
                         self.canvas_baseline.clear()
-                        PlotStyle.apply_standard_style(
-                            self.canvas_baseline,
-                            title="Chromatography Data",
-                            x_label="Time (min)",
-                            y_label="Absorbance (mAU)",
-                        )
                         self.canvas_baseline.addLegend(labelTextSize="12pt")
                         self._add_crosshairs_to_canvas(self.canvas_baseline)
 
                     color = self._get_next_color("LC")
                     # Set pen width to 2 if this file is currently selected, else 1
                     pen_width = 2 if filename == self._selected_lc_file else 1
-                    plot_item = self.canvas_baseline.plot(
-                        lc_data.baseline_corrected["Time (min)"],
-                        lc_data.baseline_corrected["Value (mAU)"],
-                        pen=mkPen(color, width=pen_width),
+
+                    plot_item = plot_absorbance_data(
+                        lc_data.path,
+                        lc_data.baseline_corrected,
+                        self.canvas_baseline,
+                        color=color,
+                        pen_width=pen_width,
                         name=filename,
+                        clear=should_clear,
                     )
                     self._lc_active_plots[filename] = plot_item
         else:
@@ -1059,8 +1058,8 @@ class UploadTab(TabBase):
             logger.debug(
                 f"Plotting chromatography for {lc_file.path}, preserving checkbox plots"
             )
-            # Call plot_absorbance_data with new signature
-            plot_absorbance_data(
+            # Call plot_absorbance_data and capture returned plot item
+            plot_item = plot_absorbance_data(
                 lc_file.path,
                 lc_file.baseline_corrected,
                 self.canvas_baseline,
@@ -1068,10 +1067,8 @@ class UploadTab(TabBase):
                 pen_width=1,
             )
 
-            # Track the new main view plot (now only 1 item added)
-            plot_items = self.canvas_baseline.getPlotItem().listDataItems()
-            if plot_items:
-                self._main_view_plots = [plot_items[-1]]
+            # Track the new main view plot using the returned item
+            self._main_view_plots = [plot_item]
 
             self._add_crosshairs_to_canvas(self.canvas_baseline)
         except Exception as e:

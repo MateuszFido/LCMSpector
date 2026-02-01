@@ -183,15 +183,23 @@ class LCMeasurement(Measurement):
                 return peak_info
         return None
 
-    def plot(self):
+    def plot(self, widget):
+        """Plot this measurement's baseline-corrected data on the given widget.
+
+        Parameters
+        ----------
+        widget : pg.PlotWidget
+            The plot widget to draw on.
+
+        Returns
+        -------
+        pg.PlotDataItem
+            The created plot item.
+        """
         from ui.plotting import plot_absorbance_data
 
-        plot_absorbance_data(self.path, self.baseline_corrected)
+        return plot_absorbance_data(self.path, self.baseline_corrected, widget)
 
-    def plot_annotated(self):
-        from ui.plotting import plot_annotated_LC
-
-        plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
 class MSMeasurement(Measurement):
@@ -221,16 +229,6 @@ class MSMeasurement(Measurement):
 
         # Keep lazy reader for indexed scan access (used by show_scan_at_time_x)
         self.data = load_ms_data(path)
-
-    def plot(self):
-        from ui.plotting import plot_average_ms_data
-
-        self.average_plot = plot_average_ms_data(self.path, self.data)
-
-    def plot_annotated(self):
-        from ui.plotting import plot_annotated_XICs
-
-        self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
     def get_compound_by_name(self, name: str):
         """
