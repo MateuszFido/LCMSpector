@@ -101,9 +101,12 @@ def prepare_xic_payload(path: str, xics: tuple) -> list[XicCompound]:
             peak_time = float(data[0][max_idx])
             peak_int = float(data[1][max_idx])
 
-            ions.append(
+            ion_info_list = getattr(compound, "ion_info", [])
+        info_str = ion_info_list[j] if j < len(ion_info_list) else ""
+        label = f"{ion} ({info_str})" if info_str else str(ion)
+        ions.append(
                 IonInfo(
-                    label=f"{ion} ({compound.ion_info[j]})",
+                    label=label,
                     colour=colour_list[j],
                     x=x,
                     y=y,

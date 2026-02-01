@@ -359,9 +359,9 @@ class View(QtWidgets.QMainWindow):
         """Display MS2 data. Delegates to QuantitationTab."""
         self.quantitation_tab.display_ms2()
 
-    def get_integration_bounds(self, canvas=None):
+    def get_integration_bounds(self, canvas=None, ion_key: str = None):
         """Get integration bounds. Delegates to QuantitationTab."""
-        return self.quantitation_tab.get_integration_bounds(canvas)
+        return self.quantitation_tab.get_integration_bounds(canvas, ion_key)
 
     def setup_dock_area(self, xics, widget=None):
         """Setup dock area with XICs. Delegates to ResultsTab."""
@@ -378,14 +378,8 @@ class View(QtWidgets.QMainWindow):
         self.upload_tab._plot_raw_ms(ms_file)
 
     def display_plots(self, lc_file, ms_file):
-        """Display plots for given files. Delegates to tabs."""
-        # Update upload tab plots
-        if lc_file:
-            self.upload_tab._plot_raw_chromatography(lc_file)
-        if ms_file:
-            self.upload_tab._plot_raw_ms(ms_file)
-
-        # Update results tab plots
+        """Display plots for given files. Delegates to ResultsTab only."""
+        # Only update results tab - upload tab has its own checkbox system
         self.results_tab.display_plots(lc_file, ms_file)
 
     # =========================================================================

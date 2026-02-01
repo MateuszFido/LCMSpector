@@ -2,6 +2,7 @@ import os
 import time
 import logging
 import itertools
+import traceback
 from typing import Optional, List, Any
 
 from PySide6.QtGui import QFont, QColor
@@ -84,23 +85,53 @@ def plot_absorbance_data(
     widget: pg.PlotWidget,
     color: str = "#2EC4B6",
     pen_width: int = 1,
-):
-    """Plots baseline-corrected chromatography data with filename in legend."""
-    filename = os.path.basename(path).split(".")[0]
+    name: str | None = None,
+    clear: bool = True,
+) -> pg.PlotDataItem:
+    """Plots baseline-corrected chromatography data with filename in legend.
 
-    PlotStyle.apply_standard_style(
-        widget,
-        title="Chromatography Data",
-        x_label="Retention time (min)",
-        y_label="Absorbance (mAU)",
-    )
-    # Plot Corrected trace only, using filename as legend entry
-    widget.plot(
+    Parameters
+    ----------
+    path : str
+        Path to the LC file (used for deriving default name)
+    dataframe : pd.DataFrame
+        DataFrame with 'Time (min)' and 'Value (mAU)' columns
+    widget : pg.PlotWidget
+        Target plot widget
+    color : str
+        Color for the trace (default: teal)
+    pen_width : int
+        Width of the pen (default: 1)
+    name : str | None
+        Legend name for the plot item. If None, derives from path.
+    clear : bool
+        If True, applies standard style. If False, overlays without restyling.
+
+    Returns
+    -------
+    pg.PlotDataItem
+        The created plot item
+    """
+    # Use provided name or derive from path
+    legend_name = name if name is not None else os.path.basename(path).split(".")[0]
+
+    if clear:
+        PlotStyle.apply_standard_style(
+            widget,
+            title="Chromatography Data",
+            x_label="Retention time (min)",
+            y_label="Absorbance (mAU)",
+        )
+
+    # Plot corrected trace, using legend_name as legend entry
+    plot_item = widget.plot(
         dataframe["Time (min)"],
         dataframe["Value (mAU)"],
         pen=mkPen(color, width=pen_width),
-        name=filename,
+        name=legend_name,
     )
+    widget.getPlotItem().getViewBox().autoRange()
+    return plot_item
 
 
 def plot_average_ms_data(
@@ -190,6 +221,7 @@ def plot_average_ms_data(
     # Peak Annotation
     _annotate_peaks(widget, mzs, intensities, count=5)
 
+    widget.getPlotItem().getViewBox().autoRange()
     return plot_item
 
 
@@ -359,7 +391,11 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
     # Validate Data
     cal_curve = getattr(compound, "calibration_curve", {})
     if not cal_curve:
-        plot_placeholder(widget, "No Calibration Data")
+        plot_placeholder(
+            widget,
+            '<p style="display: block; color: #d5d5d5; text-align: center; margin: auto">← Start by entering concentration values,<br> \
+            click calculate, and calibration curves will appear here. </p>',
+        )
         return
 
     x = np.array(list(cal_curve.keys()))
@@ -392,6 +428,7 @@ def plot_calibration_curve(compound, widget: pg.PlotWidget):
             logger.error(f"Error plotting calibration fit: {e}")
     else:
         logger.warning(f"No calibration parameters found for {compound.name}")
+    widget.getPlotItem().getViewBox().autoRange()
 
 
 def plot_total_ion_current(
@@ -474,6 +511,7 @@ def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWi
 
     # Annotate Top 5
     _annotate_peaks(canvas, mzs, rel_intensities, count=5)
+    canvas.getPlotItem().getViewBox().autoRange()
 
 
 def plot_no_ms2_found(widget: pg.PlotWidget):
@@ -482,27 +520,55 @@ def plot_no_ms2_found(widget: pg.PlotWidget):
     plot_placeholder(widget, "No MS2 Data Found")
 
 
+def plot_no_ms_info(widget: pg.PlotWidget):
+    """Display placeholder when no MS information is available."""
+    widget.clear()
+    PlotStyle.apply_standard_style(widget, title="No MS Information")
+    plot_placeholder(widget, "No MS data available for this file.")
+
+
 def plot_placeholder(widget: pg.PlotWidget, text: str):
-    """Displays a centered placeholder text."""
+    """Displays a centered placeholder text by setting any HTML input."""
     widget.clear()
     widget.setBackground("w")
     widget.getPlotItem().hideAxis("bottom")
     widget.getPlotItem().hideAxis("left")
-    text_item = pg.TextItem(text=text, color="#c5c5c5", anchor=(0.5, 0.5))
+    text_item = pg.TextItem(html=text, anchor=(0.5, 0.5))
     text_item.setFont(
         fonts.get_main_font(14)
         if hasattr(fonts, "get_main_font")
         else QFont("Arial", 14)
     )
     widget.addItem(text_item)
+    widget.getPlotItem().getViewBox().autoRange()
 
 
-def plot_compound_integration(widget: pg.PlotWidget, compound):
+def plot_compound_integration(
+    widget: pg.PlotWidget, compound, selected_ion: str = None
+) -> dict:
+    """
+    Plot compound integration with XIC traces and integration boundaries.
+
+    Parameters
+    ----------
+    widget : pg.PlotWidget
+        The plot widget to draw on.
+    compound : Compound
+        The compound object containing ion data.
+    selected_ion : str, optional
+        The ion key to make editable. Only this ion will have movable boundary lines.
+        Other ions will be shown with dashed, non-movable boundaries.
+
+    Returns
+    -------
+    dict
+        Dictionary mapping ion_key to curve reference for click handling.
+    """
     widget.clear()
     widget.addLegend(labelTextSize="12pt")
     PlotStyle.apply_standard_style(
         widget,
-        title=f"Integration of {compound.name}",
+        title=f"Integration profile of {compound.name} in {compound.file}",
         x_label="Time (min)",
         y_label="Intensity / a.u.",
     )
@@ -510,7 +576,9 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
     ions_dict = getattr(compound, "ions", {})
     ion_info_list = getattr(compound, "ion_info", [])
 
+    curve_refs = {}  # Store curve references for click handling
     color_cycle = itertools.cycle(PlotStyle.PALETTE)
+
     for j, (ion_key, ion_data) in enumerate(ions_dict.items()):
         ms_intensity = ion_data.get("MS Intensity")
         integration_data = ion_data.get("Integration Data")
@@ -522,64 +590,100 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
         info_str = ion_info_list[j] if j < len(ion_info_list) else ""
         current_color = next(color_cycle)
 
+        # Determine if this ion is selected (editable)
+        is_selected = selected_ion is not None and str(ion_key) == str(selected_ion)
+
         try:
             x_data = ms_intensity[0]
             y_data = ms_intensity[1]
 
-            # Plot trace
-            widget.plot(
+            # Plot trace - make clickable for selection
+            curve = widget.plot(
                 x_data,
                 y_data,
-                pen=mkPen(current_color, width=1),
+                pen=mkPen(current_color, width=2 if is_selected else 1),
                 name=f"{ion_key} {info_str}",
             )
+            # Make curve clickable
+            curve.setCurveClickable(True)
+            curve_refs[str(ion_key)] = curve
 
-            # Annotate Max
+            # Annotate Max only for selected ion or if no ion selected
             if len(y_data) > 0:
                 max_idx = np.argmax(y_data)
                 max_time = x_data[max_idx]
                 max_val = y_data[max_idx]
 
-                widget.plot(
-                    [max_time],
-                    [max_val],
-                    pen=mkPen(current_color, width=1),
-                    symbol="o",
-                    symbolSize=5,
-                    brush=mkBrush(current_color),
-                )
-                widget.getPlotItem().addLine(
+                if is_selected or selected_ion is None:
+                    widget.plot(
+                        [max_time],
+                        [max_val],
+                        pen=mkPen(current_color, width=1),
+                        symbol="o",
+                        symbolSize=5,
+                        brush=mkBrush(current_color),
+                    )
+
+                # Configure line style based on selection
+                if is_selected:
+                    # Selected ion: solid lines, movable, with markers and labels
+                    line_pen = mkPen(current_color, width=2)
+                    line_style = Qt.PenStyle.SolidLine
+                    movable = True
+                    markers_left = [("|>", 0.5, 10.0)]
+                    markers_right = [("<|", 0.5, 10.0)]
+                    label_left = f"{ion_key} (LEFT)"
+                    label_right = f"{ion_key} (RIGHT)"
+                else:
+                    # Non-selected ion: dashed lines, not movable, no markers/labels
+                    line_pen = mkPen(current_color, width=1, style=Qt.PenStyle.DashLine)
+                    line_style = Qt.PenStyle.DashLine
+                    movable = False
+                    markers_left = None
+                    markers_right = None
+                    label_left = None
+                    label_right = None
+
+                # Add left boundary line
+                left_line = widget.getPlotItem().addLine(
                     x=integration_data["start_time"],
-                    pen=mkPen(current_color, width=2),
-                    hoverPen=mkPen("red", width=2),
-                    label=f"{ion_key} (LEFT)",
+                    pen=line_pen,
+                    hoverPen=mkPen("red", width=2) if is_selected else None,
+                    label=label_left,
                     labelOpts={
                         "position": 0.7,
                         "color": current_color,
                         "rotateAxis": (1, 0),
-                    },
-                    movable=True,
-                    bounds=[0, x_data[-1]],
-                    markers=[("|>", 0.5, 10.0)],
+                    }
+                    if label_left
+                    else None,
+                    movable=movable,
+                    bounds=[0, x_data[-1]] if movable else None,
+                    markers=markers_left,
                     name=f"{ion_key}_left",
                 )
-                widget.getPlotItem().addLine(
+
+                # Add right boundary line
+                right_line = widget.getPlotItem().addLine(
                     x=integration_data["end_time"],
-                    pen=mkPen(current_color, width=2),
-                    hoverPen=mkPen("red", width=2),
-                    label=f"{ion_key} (RIGHT)",
+                    pen=line_pen,
+                    hoverPen=mkPen("red", width=2) if is_selected else None,
+                    label=label_right,
                     labelOpts={
                         "position": 0.7,
                         "color": current_color,
                         "rotateAxis": (1, 0),
-                    },
-                    movable=True,
-                    bounds=[0, x_data[-1]],
-                    markers=[("<|", 0.5, 10.0)],
+                    }
+                    if label_right
+                    else None,
+                    movable=movable,
+                    bounds=[0, x_data[-1]] if movable else None,
+                    markers=markers_right,
                     name=f"{ion_key}_right",
                 )
 
-                if info_str:
+                # Add text annotation only for selected or if no selection
+                if info_str and (is_selected or selected_ion is None):
                     text_item = pg.TextItem(
                         text=info_str, color=current_color, anchor=(0, 0)
                     )
@@ -591,35 +695,65 @@ def plot_compound_integration(widget: pg.PlotWidget, compound):
             logger.warning(f"Failed to plot {ion_key} for {compound.name}: {e}")
             continue
 
+    widget.getPlotItem().getViewBox().autoRange()
+    return curve_refs
+
 
 # --- Helper Functions ---
+
+
+def _select_distinct_peaks(
+    mzs: np.ndarray,
+    intensities: np.ndarray,
+    count: int = 5,
+    mz_threshold: float = 0.5,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Select top N distinct peaks using non-maximum suppression.
+
+    Prevents multiple labels from clustering around the same peak by
+    suppressing points within mz_threshold of higher-intensity points.
+
+    Args:
+        mzs: Array of m/z values
+        intensities: Array of intensity values
+        count: Number of peaks to select
+        mz_threshold: Minimum m/z distance between selected peaks (Da)
+
+    Returns:
+        Tuple of (selected_mzs, selected_intensities) arrays
+    """
+    if len(mzs) == 0:
+        return np.array([]), np.array([])
+
+    sorted_indices = np.argsort(intensities)[::-1]
+    selected_mzs = []
+    selected_ints = []
+
+    for idx in sorted_indices:
+        mz, intensity = mzs[idx], intensities[idx]
+
+        # Check if far enough from all selected peaks
+        if all(abs(mz - sel_mz) >= mz_threshold for sel_mz in selected_mzs):
+            selected_mzs.append(mz)
+            selected_ints.append(intensity)
+            if len(selected_mzs) >= count:
+                break
+
+    return np.array(selected_mzs), np.array(selected_ints)
 
 
 def _annotate_peaks(
     widget: pg.PlotWidget, mzs: np.array, intensities: np.array, count: int = 5
 ):
-    """Helper to annotate the top N peaks in a spectrum."""
+    """Helper to annotate the top N peaks in a spectrum.
+
+    Uses non-maximum suppression to select distinct peaks, preventing
+    multiple labels from clustering around the same peak.
+    """
     if len(mzs) == 0:
         return
 
-    # Find peaks to avoid labeling noise
-    peaks_idx, _ = find_peaks(
-        intensities, prominence=np.max(intensities) * 0.05
-    )  # 5% prominence
-
-    # If find_peaks returns nothing (sparse spectrum), just take raw maxes
-    if len(peaks_idx) == 0:
-        valid_mzs = mzs
-        valid_ints = intensities
-    else:
-        valid_mzs = mzs[peaks_idx]
-        valid_ints = intensities[peaks_idx]
-
-    # Sort by intensity descending
-    sorted_indices = np.argsort(valid_ints)[::-1]
-
-    top_mzs = valid_mzs[sorted_indices][:count]
-    top_ints = valid_ints[sorted_indices][:count]
+    top_mzs, top_ints = _select_distinct_peaks(mzs, intensities, count)
 
     for mz, intensity in zip(top_mzs, top_ints):
         text = pg.TextItem(text=f"{mz:.4f}", color="#3c5488", anchor=(0.5, 1))
@@ -676,6 +810,11 @@ def highlight_peak(
 
 
 def update_labels_avgMS(canvas):
+    """Update peak labels on the average MS canvas based on current view range.
+
+    Uses non-maximum suppression to select distinct peaks within the visible
+    range, preventing label clustering around the same peak.
+    """
     # Remove all the previous labels
     for item in canvas.items():
         if isinstance(item, pg.TextItem):
@@ -692,21 +831,17 @@ def update_labels_avgMS(canvas):
         return
     current_view_range = canvas.getViewBox().viewRange()
     # Get the intensity range within the current view range
-    mz_range = data[0][
-        np.logical_and(
-            data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
-        )
-    ]
-    indices = [i for i, x in enumerate(data[0]) if x in mz_range]
-    intensity_range = data[1][indices]
-    peaks, _ = find_peaks(intensity_range, prominence=10)
-    if len(peaks) < 5:
-        peaks, _ = find_peaks(intensity_range)
-    # Get the 10 highest peaks within the current view range
-    sorted_indices = np.argsort(intensity_range[peaks])[::-1]
-    # Get their mz values
-    mzs = mz_range[peaks][sorted_indices][0:10]
-    intensities = intensity_range[peaks][sorted_indices][0:10]
+    mask = np.logical_and(
+        data[0] >= current_view_range[0][0], data[0] <= current_view_range[0][1]
+    )
+    mz_range = data[0][mask]
+    intensity_range = data[1][mask]
+
+    if len(mz_range) == 0:
+        return
+
+    mzs, intensities = _select_distinct_peaks(mz_range, intensity_range, count=10)
+
     for mz, intensity in zip(mzs, intensities):
         text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))
         text_item.setFont(

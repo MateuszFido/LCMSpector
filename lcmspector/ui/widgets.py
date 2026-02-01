@@ -624,12 +624,14 @@ class UnifiedResultsTable(GenericTable):
 
         # Dynamic columns for the current compound's ions
         ion_headers = []
-        if compound and compound.ion_info:
-            for ion_info in compound.ion_info:
+        if compound:
+            ion_keys = list(compound.ions.keys())
+            for i, ion_key in enumerate(ion_keys):
+                label = compound.get_ion_label(i)
                 # Add MS intensity column for each ion
-                ion_headers.append(f"{ion_info} (MS)")
+                ion_headers.append(f"{label} (MS)")
                 # Add LC intensity column for each ion if available
-                ion_headers.append(f"{ion_info} (LC)")
+                ion_headers.append(f"{label} (LC)")
 
         all_headers = base_headers + ion_headers
 
@@ -877,6 +879,69 @@ class UnifiedResultsTable(GenericTable):
             if lc_val is not None:
                 new_text = str(lc_val)
                 self._update_and_highlight_cell(target_row, lc_col, new_text)
+
+    def update_single_ion_value(self, filename: str, compound, ion_key: str):
+        """
+        Update a single ion's column for a specific file based on manual integration changes.
+        Applies a temporary visual highlight to the changed cell.
+
+        Parameters
+        ----------
+        filename : str
+            The name of the file to update (must match the File column).
+        compound : Compound
+            The compound object containing updated peak area data.
+        ion_key : str
+            The specific ion key to update (as a string).
+        """
+        # Find the row for this filename
+        matching_items = self.findItems(filename, Qt.MatchFlag.MatchExactly)
+        if not matching_items:
+            raise AttributeError(
+                f"No matching entries for filename '{filename}' in UnifiedResultsTable."
+            )
+
+        # Ensure we found the item in column 0 (File Name)
+        target_row = -1
+        for item in matching_items:
+            if item.column() == 0:
+                target_row = item.row()
+                break
+
+        if target_row == -1:
+            raise AttributeError(
+                f"No matching entries for filename '{filename}' in column 0."
+            )
+
+        # Find the ion index in the compound
+        ion_names = list(compound.ions.keys())
+        ion_index = -1
+        actual_ion_key = None
+
+        for i, ion_name in enumerate(ion_names):
+            if str(ion_name) == ion_key:
+                ion_index = i
+                actual_ion_key = ion_name
+                break
+
+        if ion_index == -1 or actual_ion_key is None:
+            raise AttributeError(
+                f"Ion key '{ion_key}' not found in compound '{compound.name}'."
+            )
+
+        ion_data = compound.ions[actual_ion_key]
+
+        # Calculate column index:
+        # Base offset is 3 (File, Cal, Conc). Each ion has 2 columns (MS, LC).
+        ms_col = 3 + (ion_index * 2)
+
+        # Update MS Column with the new integration data
+        ms_area_data = ion_data.get("Integration Data")
+        if isinstance(ms_area_data, dict):
+            ms_val = ms_area_data.get("baseline_corrected_area")
+            if ms_val is not None:
+                new_text = f"{ms_val:.2e}"
+                self._update_and_highlight_cell(target_row, ms_col, new_text)
 
     def _update_and_highlight_cell(self, row, col, new_text):
         """

@@ -1,6 +1,7 @@
 """
 Quantitation Tab for calibration and concentration analysis.
 """
+
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
@@ -14,6 +15,7 @@ from ui.plotting import (
     plot_compound_integration,
     plot_ms2_from_file,
     plot_no_ms2_found,
+    plot_no_ms_info,
     update_labels_avgMS,
 )
 
@@ -39,6 +41,8 @@ class QuantitationTab(TabBase):
 
         # State
         self.file_concentrations = None
+        self._selected_ion = None  # Track currently selected ion for manual integration
+        self._curve_refs = {}  # Store references to curves for click handling
 
         # Initialize the main layout
         self._main_layout = QtWidgets.QGridLayout(self)
@@ -61,36 +65,41 @@ class QuantitationTab(TabBase):
 
     def clear(self):
         """Clear all data from the tab."""
-        if hasattr(self, 'unifiedResultsTable'):
+        if hasattr(self, "unifiedResultsTable"):
             try:
                 self.unifiedResultsTable.clearContents()
                 self.unifiedResultsTable.setRowCount(0)
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'canvas_calibration'):
+        if hasattr(self, "canvas_calibration"):
             try:
                 self.canvas_calibration.clear()
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'canvas_ms2'):
+        if hasattr(self, "canvas_ms2"):
             try:
                 self.canvas_ms2.clear()
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'canvas_library_ms2'):
+        if hasattr(self, "canvas_library_ms2"):
             try:
                 self.canvas_library_ms2.clear()
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'comboBoxChooseCompound'):
+        if hasattr(self, "comboBoxChooseCompound"):
             try:
                 self.comboBoxChooseCompound.clear()
                 self.comboBoxChooseCompound.setEnabled(False)
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, 'comboBoxChooseMS2File'):
+        if hasattr(self, "comboBoxChooseMS2File"):
             try:
                 self.comboBoxChooseMS2File.clear()
+            except RuntimeError:
+                pass  # Widget already deleted
+        if hasattr(self, "comboBoxChooseFile"):
+            try:
+                self.comboBoxChooseFile.clear()
             except RuntimeError:
                 pass  # Widget already deleted
         self.file_concentrations = None
@@ -154,12 +163,40 @@ class QuantitationTab(TabBase):
         self.gridLayout_quant.setObjectName("gridLayout_quant")
         self.gridLayout_quant.setColumnStretch(0, 1)
         self.gridLayout_quant.setColumnStretch(1, 1)
-        self.gridLayout_quant.setRowStretch(0, 1)
+        # Row stretches shifted down by 1 for header row
         self.gridLayout_quant.setRowStretch(1, 1)
         self.gridLayout_quant.setRowStretch(2, 1)
         self.gridLayout_quant.setRowStretch(3, 1)
+        self.gridLayout_quant.setRowStretch(4, 1)
 
-        # Top left layout (calibration controls + results table)
+        # --- Header layout with prominent file/compound selection (Row 0) ---
+        self.header_layout = QtWidgets.QHBoxLayout()
+
+        # File selector
+        self.label_file = QtWidgets.QLabel("File:")
+        self.label_file.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.comboBoxChooseFile = QtWidgets.QComboBox()
+        self.comboBoxChooseFile.setMinimumSize(QtCore.QSize(200, 32))
+        self.comboBoxChooseFile.setObjectName("comboBoxChooseFile")
+
+        # Compound selector (prominent in header)
+        self.label_compound = QtWidgets.QLabel("Compound:")
+        self.label_compound.setStyleSheet("font-weight: bold; font-size: 14px;")
+        self.comboBoxChooseCompound = QtWidgets.QComboBox()
+        self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(200, 32))
+        self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
+        self.comboBoxChooseCompound.setEnabled(False)
+
+        self.header_layout.addWidget(self.label_file)
+        self.header_layout.addWidget(self.comboBoxChooseFile)
+        self.header_layout.addSpacing(20)
+        self.header_layout.addWidget(self.label_compound)
+        self.header_layout.addWidget(self.comboBoxChooseCompound)
+        self.header_layout.addStretch()
+
+        self.gridLayout_quant.addLayout(self.header_layout, 0, 0, 1, 3)
+
+        # --- Top left layout (calibration controls + results table) (Row 1-3) ---
         self.gridLayout_top_left = QtWidgets.QGridLayout()
         self.gridLayout_top_left.setObjectName("gridLayout_top_left")
 
@@ -170,16 +207,14 @@ class QuantitationTab(TabBase):
         self.label_calibrate.setWordWrap(True)
         self.label_calibrate.setObjectName("label_calibrate")
         self.label_calibrate.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Fixed
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout_top_left.addWidget(self.label_calibrate, 0, 0, 1, 1)
 
         self.calibrateButton = QtWidgets.QPushButton("Calibrate")
         self.calibrateButton.setObjectName("calibrateButton")
         self.calibrateButton.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Preferred,
-            QtWidgets.QSizePolicy.Policy.Fixed
+            QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
         self.gridLayout_top_left.addWidget(self.calibrateButton, 0, 1, 1, 1)
 
@@ -188,39 +223,24 @@ class QuantitationTab(TabBase):
         self.unifiedResultsTable.setObjectName("unifiedResultsTable")
         self.gridLayout_top_left.addWidget(self.unifiedResultsTable, 1, 0, 2, 2)
 
-        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 0, 0, 3, 1)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_left, 1, 0, 3, 1)
 
-        # Top right layout (compound selection + calibration curve)
+        # --- Top right layout (calibration curve) (Row 1) ---
         self.gridLayout_top_right = QtWidgets.QGridLayout()
         self.gridLayout_top_right.setObjectName("gridLayout_top_right")
 
-        self.label_compound = QtWidgets.QLabel("Compound:")
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Preferred
-        )
-        self.label_compound.setSizePolicy(sizePolicy)
-        self.label_compound.setObjectName("label_compound")
-        self.gridLayout_top_right.addWidget(self.label_compound, 0, 0, 1, 1)
-
-        self.comboBoxChooseCompound = QtWidgets.QComboBox()
-        self.comboBoxChooseCompound.setMinimumSize(QtCore.QSize(0, 32))
-        self.comboBoxChooseCompound.setObjectName("comboBoxChooseCompound")
-        self.comboBoxChooseCompound.setEnabled(False)
-        self.gridLayout_top_right.addWidget(self.comboBoxChooseCompound, 0, 1, 1, 2)
-
         self.canvas_calibration = pg.PlotWidget()
         self.canvas_calibration.setObjectName("canvas_calibration")
-        self.gridLayout_top_right.addWidget(self.canvas_calibration, 1, 0, 1, 3)
+        self.gridLayout_top_right.addWidget(self.canvas_calibration, 0, 0, 1, 3)
 
-        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 0, 1, 1, 2)
+        self.gridLayout_quant.addLayout(self.gridLayout_top_right, 1, 1, 1, 2)
 
-        # MS2 file selection
+        # MS2 file selection (Row 2)
         self.comboBoxChooseMS2File = QtWidgets.QComboBox()
         self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
-        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 1, 1, 1, 2)
+        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 2, 1, 1, 2)
 
-        # MS2 canvas
+        # MS2 canvas (Row 3)
         self.canvas_ms2 = pg.PlotWidget()
         self.canvas_ms2.setObjectName("canvas_ms2")
         self.canvas_ms2.setMouseEnabled(x=True, y=False)
@@ -229,28 +249,79 @@ class QuantitationTab(TabBase):
         self.canvas_ms2.getPlotItem().getViewBox().sigRangeChangedManually.connect(
             lambda ev: update_labels_avgMS(self.canvas_ms2)
         )
-        self.gridLayout_quant.addWidget(self.canvas_ms2, 2, 1, 1, 2)
+        self.gridLayout_quant.addWidget(self.canvas_ms2, 3, 1, 1, 2)
 
-        # Library MS2 / Integration canvas
+        # Library MS2 / Integration canvas (Row 4)
         self.canvas_library_ms2 = pg.PlotWidget()
         self.canvas_library_ms2.setObjectName("canvas_library_ms2")
         self.canvas_library_ms2.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Minimum,
-            QtWidgets.QSizePolicy.Policy.Minimum
+            QtWidgets.QSizePolicy.Policy.Minimum, QtWidgets.QSizePolicy.Policy.Minimum
         )
         self.canvas_library_ms2.setMouseEnabled(x=True, y=False)
         self.canvas_library_ms2.getPlotItem().getViewBox().enableAutoRange(axis="y")
         self.canvas_library_ms2.getPlotItem().getViewBox().setAutoVisible(y=True)
-        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 3, 0, 1, 3)
+        self.gridLayout_quant.addWidget(self.canvas_library_ms2, 4, 0, 1, 3)
 
-        # Integration control buttons
-        self.button_apply_integration = QtWidgets.QPushButton("Apply Integration Changes")
+        # Ion selection for manual integration (Row 5)
+        self.ion_selection_layout = QtWidgets.QHBoxLayout()
+        self.label_select_ion = QtWidgets.QLabel("Ion to edit:")
+        self.label_select_ion.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
+        )
+        self.comboBoxSelectIon = QtWidgets.QComboBox()
+        self.comboBoxSelectIon.setMinimumSize(QtCore.QSize(250, 32))
+        self.comboBoxSelectIon.setSizeAdjustPolicy(
+            QtWidgets.QComboBox.SizeAdjustPolicy.AdjustToContents
+        )
+        self.comboBoxSelectIon.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
+        self.comboBoxSelectIon.addItem("-- Select ion --")
+        self.comboBoxSelectIon.setToolTip(
+            "Select an ion to enable manual integration boundary editing"
+        )
+        self.label_selected_ion_status = QtWidgets.QLabel("No ion selected")
+        self.label_selected_ion_status.setStyleSheet(
+            "color: #666666; font-style: italic;"
+        )
+
+        # Help icon with tooltip explaining integration workflow
+        self.help_icon = QtWidgets.QLabel()
+        help_pixmap = (
+            self.style()
+            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxQuestion)
+            .pixmap(QtCore.QSize(30, 30))
+        )
+        self.help_icon.setPixmap(help_pixmap)
+        self.help_icon.setCursor(Qt.CursorShape.WhatsThisCursor)
+        self.help_icon.setToolTip(
+            "<b>Manual Integration</b><br>"
+            "The integration boundaries can be manually adjusted for each ion of the selected compound.<br><br>"
+            "1. Select an ion from the dropdown or click on a curve<br>"
+            "2. Drag the boundary lines to adjust integration limits<br>"
+            "3. Click <b>Apply</b> to save changes for this file<br>"
+            "4. Click <b>Recalculate All</b> to apply same boundaries to all files<br>"
+            "5. Click <b>Reset</b> to restore automatic integration"
+        )
+
+        self.ion_selection_layout.addWidget(self.label_select_ion)
+        self.ion_selection_layout.addWidget(self.comboBoxSelectIon)
+        self.ion_selection_layout.addWidget(self.label_selected_ion_status)
+        self.ion_selection_layout.addWidget(self.help_icon)
+        self.ion_selection_layout.addStretch()
+
+        self.gridLayout_quant.addLayout(self.ion_selection_layout, 5, 0, 1, 3)
+
+        # Integration control buttons (Row 6)
+        self.button_apply_integration = QtWidgets.QPushButton(
+            "Apply Integration Changes"
+        )
         self.button_recalculate_integration = QtWidgets.QPushButton("Recalculate All")
         self.button_reset_integration = QtWidgets.QPushButton("Reset Integration")
 
-        self.gridLayout_quant.addWidget(self.button_apply_integration, 4, 0, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 4, 1, 1, 1)
-        self.gridLayout_quant.addWidget(self.button_reset_integration, 4, 2, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_apply_integration, 6, 0, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_recalculate_integration, 6, 1, 1, 1)
+        self.gridLayout_quant.addWidget(self.button_reset_integration, 6, 2, 1, 1)
 
         # Add quant layout to main layout
         self._main_layout.addLayout(self.gridLayout_quant, 0, 0, 1, 1)
@@ -271,6 +342,29 @@ class QuantitationTab(TabBase):
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
             self.display_ms2
         )
+        # Connect ion selection combo box
+        self.comboBoxSelectIon.currentIndexChanged.connect(
+            self._on_ion_selection_changed
+        )
+        # Update ion combo box when compound changes
+        self.comboBoxChooseCompound.currentIndexChanged.connect(
+            self._update_ion_combo_box
+        )
+        # Update ion combo box when file selection changes
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self._update_ion_combo_box
+        )
+        # File combo box <-> table selection bidirectional sync
+        self.comboBoxChooseFile.currentTextChanged.connect(
+            self._on_file_combo_changed
+        )
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self._sync_file_combo_from_table
+        )
+        # Update integration plot when file selection changes
+        self.unifiedResultsTable.selectionModel().selectionChanged.connect(
+            self.display_compound_integration
+        )
 
     def _on_compound_changed(self, index):
         """Internal handler for compound selection change."""
@@ -279,6 +373,104 @@ class QuantitationTab(TabBase):
     def _on_ms2_file_changed(self, index):
         """Internal handler for MS2 file selection change."""
         self.ms2_file_changed.emit(index)
+
+    def _on_file_combo_changed(self, filename: str):
+        """Handle file selection from combo box - select matching table row."""
+        if not filename:
+            return
+        # Find and select the matching row in the table
+        for row in range(self.unifiedResultsTable.rowCount()):
+            item = self.unifiedResultsTable.item(row, 0)
+            if item and item.text() == filename:
+                self.unifiedResultsTable.selectRow(row)
+                break
+
+    def _sync_file_combo_from_table(self):
+        """Sync file combo box when table selection changes."""
+        selected_file = self.unifiedResultsTable.get_selected_file()
+        if selected_file:
+            self.comboBoxChooseFile.blockSignals(True)
+            index = self.comboBoxChooseFile.findText(selected_file)
+            if index >= 0:
+                self.comboBoxChooseFile.setCurrentIndex(index)
+            self.comboBoxChooseFile.blockSignals(False)
+
+    def get_selected_ion(self) -> str | None:
+        """
+        Get the currently selected ion key for manual integration.
+
+        Returns
+        -------
+        str or None
+            The ion key (e.g., "123.456") or None if no ion is selected.
+        """
+        return self._selected_ion
+
+    def _update_ion_combo_box(self):
+        """Update the ion selection combo box based on current compound and file."""
+        self.comboBoxSelectIon.blockSignals(True)
+        self.comboBoxSelectIon.clear()
+        self.comboBoxSelectIon.addItem("-- Select ion --")
+
+        if not self._controller:
+            self.comboBoxSelectIon.blockSignals(False)
+            return
+
+        # Get current compound
+        compound_idx = self.comboBoxChooseCompound.currentIndex()
+        if compound_idx < 0 or not self._controller.model.compounds:
+            self.comboBoxSelectIon.blockSignals(False)
+            return
+
+        compound = self._controller.model.compounds[compound_idx]
+
+        # Get ion info for display
+        ion_keys = list(compound.ions.keys())
+        ion_info_list = getattr(compound, "ion_info", [])
+
+        for i, ion_key in enumerate(ion_keys):
+            info_str = ion_info_list[i] if i < len(ion_info_list) else ""
+            display_text = f"{ion_key}"
+            if info_str:
+                display_text += f" ({info_str})"
+            self.comboBoxSelectIon.addItem(display_text, userData=str(ion_key))
+
+        # Reset selection state
+        self._selected_ion = None
+        self.label_selected_ion_status.setText("No ion selected")
+        self.label_selected_ion_status.setStyleSheet(
+            "color: #666666; font-style: italic;"
+        )
+
+        self.comboBoxSelectIon.blockSignals(False)
+
+    def _on_ion_selection_changed(self, index):
+        """Handle ion selection change from combo box."""
+        if index <= 0:
+            # "-- Select ion --" or invalid
+            self._selected_ion = None
+            self.label_selected_ion_status.setText("No ion selected")
+            self.label_selected_ion_status.setStyleSheet(
+                "color: #666666; font-style: italic;"
+            )
+        else:
+            ion_key = self.comboBoxSelectIon.itemData(index)
+            self._selected_ion = ion_key
+            self.label_selected_ion_status.setText(f"Editing: {ion_key}")
+            self.label_selected_ion_status.setStyleSheet(
+                "color: #2EC4B6; font-weight: bold;"
+            )
+
+        # Refresh the integration plot with new selection
+        self.display_compound_integration()
+
+    def _on_curve_clicked(self, ion_key: str):
+        """Handle click on an integration curve to select that ion."""
+        # Find the combo box index for this ion
+        for i in range(1, self.comboBoxSelectIon.count()):
+            if self.comboBoxSelectIon.itemData(i) == ion_key:
+                self.comboBoxSelectIon.setCurrentIndex(i)
+                break
 
     # --- Data Display Methods ---
 
@@ -363,6 +555,21 @@ class QuantitationTab(TabBase):
         for compound in compounds:
             self.comboBoxChooseCompound.addItem(compound.name)
 
+    def update_file_combo_box(self, filenames: list[str]):
+        """
+        Update the file selection combo box with available files.
+
+        Parameters
+        ----------
+        filenames : list[str]
+            List of filenames to populate the combo box
+        """
+        self.comboBoxChooseFile.blockSignals(True)
+        self.comboBoxChooseFile.clear()
+        for filename in filenames:
+            self.comboBoxChooseFile.addItem(filename)
+        self.comboBoxChooseFile.blockSignals(False)
+
     def get_calibration_files(self):
         """
         Get calibration files from the unified results table.
@@ -384,8 +591,16 @@ class QuantitationTab(TabBase):
         if not self._controller:
             return
 
+        compound_name = self.comboBoxChooseCompound.currentText()
+        # Set dynamic title showing compound name
+        self.canvas_calibration.setTitle(
+            f"Calibration: {compound_name}",
+            color="w",
+            size="11pt",
+        )
+
         for compound in self._controller.model.compounds:
-            if compound.name == self.comboBoxChooseCompound.currentText():
+            if compound.name == compound_name:
                 try:
                     plot_calibration_curve(compound, self.canvas_calibration)
                 except TypeError:
@@ -413,16 +628,55 @@ class QuantitationTab(TabBase):
         if not self._controller:
             return
 
+        compound_name = self.comboBoxChooseCompound.currentText()
+        # Set dynamic title showing file and compound
+        self.canvas_library_ms2.setTitle(
+            f"Integration profile of {compound_name} in {selected_file}",
+            color="w",
+            size="12pt",
+        )
+
         ms_file = self._controller.model.ms_measurements.get(selected_file)
+        if ms_file is None:
+            plot_no_ms_info(self.canvas_library_ms2)
+            return
+
         try:
             ms_compound = next(
                 xic
                 for xic in ms_file.xics
-                if xic.name == self.comboBoxChooseCompound.currentText()
+                if xic.name == compound_name
             )
-            plot_compound_integration(self.canvas_library_ms2, ms_compound)
+            # Pass selected ion to enable selective movability
+            self._curve_refs = plot_compound_integration(
+                self.canvas_library_ms2, ms_compound, selected_ion=self._selected_ion
+            )
+            # Connect curve click signals for click-to-select
+            self._connect_curve_click_signals()
         except (AttributeError, StopIteration):
             logger.warning(f"No MS data found for {selected_file}.")
+            plot_no_ms_info(self.canvas_library_ms2)
+
+    def _connect_curve_click_signals(self):
+        """Connect sigClicked signals on curves for click-to-select functionality."""
+        for ion_key, curve in self._curve_refs.items():
+            try:
+                # Disconnect any previous connections
+                try:
+                    curve.sigClicked.disconnect()
+                except (TypeError, RuntimeError):
+                    pass  # Not connected or already deleted
+
+                # Connect with a closure to capture ion_key
+                def make_handler(key):
+                    def handler(curve_item, ev):
+                        self._on_curve_clicked(key)
+
+                    return handler
+
+                curve.sigClicked.connect(make_handler(ion_key))
+            except Exception as e:
+                logger.warning(f"Failed to connect click signal for {ion_key}: {e}")
 
     def display_ms2(self):
         """Display MS2 data for the selected file."""
@@ -465,7 +719,9 @@ class QuantitationTab(TabBase):
             )
             plot_no_ms2_found(self.canvas_ms2)
 
-    def get_integration_bounds(self, canvas=None) -> dict[str, tuple[float, float]]:
+    def get_integration_bounds(
+        self, canvas=None, ion_key: str = None
+    ) -> dict[str, tuple[float, float]]:
         """
         Retrieve integration bounds for each ion.
 
@@ -473,6 +729,8 @@ class QuantitationTab(TabBase):
         ----------
         canvas : pg.PlotWidget, optional
             The canvas to get bounds from. Defaults to canvas_library_ms2.
+        ion_key : str, optional
+            If provided, only return bounds for this specific ion.
 
         Returns
         -------
@@ -489,21 +747,27 @@ class QuantitationTab(TabBase):
             if isinstance(item, pg.InfiniteLine):
                 name = item.name()
                 if name and name.endswith("_left"):
-                    ion_key = name[:-5]
-                    if ion_key not in bounds:
-                        bounds[ion_key] = {}
-                    bounds[ion_key]["left"] = item.value()
+                    current_ion_key = name[:-5]
+                    # Filter by ion_key if provided
+                    if ion_key is not None and current_ion_key != ion_key:
+                        continue
+                    if current_ion_key not in bounds:
+                        bounds[current_ion_key] = {}
+                    bounds[current_ion_key]["left"] = item.value()
                 elif name and name.endswith("_right"):
-                    ion_key = name[:-6]
-                    if ion_key not in bounds:
-                        bounds[ion_key] = {}
-                    bounds[ion_key]["right"] = item.value()
+                    current_ion_key = name[:-6]
+                    # Filter by ion_key if provided
+                    if ion_key is not None and current_ion_key != ion_key:
+                        continue
+                    if current_ion_key not in bounds:
+                        bounds[current_ion_key] = {}
+                    bounds[current_ion_key]["right"] = item.value()
 
         # Convert to sorted tuples
         result = {}
-        for ion_key, b in bounds.items():
+        for key, b in bounds.items():
             if "left" in b and "right" in b:
-                result[ion_key] = (
+                result[key] = (
                     min(b["left"], b["right"]),
                     max(b["left"], b["right"]),
                 )

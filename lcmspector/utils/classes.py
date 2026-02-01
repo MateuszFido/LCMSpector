@@ -183,15 +183,23 @@ class LCMeasurement(Measurement):
                 return peak_info
         return None
 
-    def plot(self):
+    def plot(self, widget):
+        """Plot this measurement's baseline-corrected data on the given widget.
+
+        Parameters
+        ----------
+        widget : pg.PlotWidget
+            The plot widget to draw on.
+
+        Returns
+        -------
+        pg.PlotDataItem
+            The created plot item.
+        """
         from ui.plotting import plot_absorbance_data
 
-        plot_absorbance_data(self.path, self.baseline_corrected)
+        return plot_absorbance_data(self.path, self.baseline_corrected, widget)
 
-    def plot_annotated(self):
-        from ui.plotting import plot_annotated_LC
-
-        plot_annotated_LC(self.path, self.baseline_corrected, self.compounds)
 
 
 class MSMeasurement(Measurement):
@@ -221,16 +229,6 @@ class MSMeasurement(Measurement):
 
         # Keep lazy reader for indexed scan access (used by show_scan_at_time_x)
         self.data = load_ms_data(path)
-
-    def plot(self):
-        from ui.plotting import plot_average_ms_data
-
-        self.average_plot = plot_average_ms_data(self.path, self.data)
-
-    def plot_annotated(self):
-        from ui.plotting import plot_annotated_XICs
-
-        self.XIC_plot = plot_annotated_XICs(self.path, self.xics, self.compounds)
 
     def get_compound_by_name(self, name: str):
         """
@@ -314,6 +312,27 @@ class Compound(BaseModel):
     @calibration_parameters.setter
     def calibration_parameters(self, value):
         self._calibration_parameters = value
+
+    def get_ion_label(self, index: int) -> str:
+        """
+        Get a label for the ion at the given index.
+        Returns ion_info if available, otherwise falls back to m/z value.
+
+        Parameters
+        ----------
+        index : int
+            The index of the ion in target_list/ion_info.
+
+        Returns
+        -------
+        str
+            The ion label (ion_info string or m/z value as string).
+        """
+        if index < len(self.ion_info) and self.ion_info[index]:
+            return self.ion_info[index]
+        if index < len(self.target_list):
+            return str(self.target_list[index])
+        return ""
 
     def __str__(self):
         return f"Compound: {self.name}, ions: {self.target_list}, ion info: {self.ion_info}"

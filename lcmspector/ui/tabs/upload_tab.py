@@ -56,6 +56,7 @@ class UploadTab(TabBase):
         # Plot tracking for checkbox plotting feature
         self._lc_active_plots = {}  # {filename: PlotDataItem}
         self._ms_active_plots = {}  # {filename: PlotDataItem}
+        self._tic_active_plots = {}  # {filename: PlotDataItem} - TIC plots in MS Only mode
         self._color_index_lc = 0
         self._color_index_ms = 0
         self._selected_lc_file = None  # Currently selected LC filename
@@ -144,7 +145,7 @@ class UploadTab(TabBase):
                 self.canvas_baseline.clear()
                 plot_placeholder(
                     self.canvas_baseline,
-                    "Welcome to LCMSpector\n\u2190 add files to get started",
+                    '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
                 )
             except RuntimeError:
                 pass  # Widget already deleted
@@ -167,6 +168,7 @@ class UploadTab(TabBase):
         # Reset plot tracking state
         self._lc_active_plots.clear()
         self._ms_active_plots.clear()
+        self._tic_active_plots.clear()
         self._color_index_lc = 0
         self._color_index_ms = 0
         self._selected_lc_file = None
@@ -247,12 +249,30 @@ class UploadTab(TabBase):
             "canvas_baseline",
             "canvas_avgMS",
             "resultsPane",
+            "help_icon_lc",
+            "help_icon_ms",
         ]
         for attr in stale_attrs:
             if hasattr(self, attr):
                 delattr(self, attr)
 
+        # Clear TIC plot tracking on mode change
+        self._tic_active_plots = {}
+
     # --- Layout Builders ---
+
+    def _create_help_icon(self, tooltip_text: str) -> QtWidgets.QLabel:
+        """Create a help icon with tooltip."""
+        help_icon = QtWidgets.QLabel()
+        help_pixmap = (
+            self.style()
+            .standardIcon(QtWidgets.QStyle.StandardPixmap.SP_MessageBoxQuestion)
+            .pixmap(QtCore.QSize(20, 20))
+        )
+        help_icon.setPixmap(help_pixmap)
+        help_icon.setCursor(Qt.CursorShape.WhatsThisCursor)
+        help_icon.setToolTip(tooltip_text)
+        return help_icon
 
     def _build_common_widgets(self):
         """Create widgets common to all modes."""
@@ -316,16 +336,19 @@ class UploadTab(TabBase):
 
         self.canvas_avgMS.getPlotItem().getViewBox().sigXRangeChanged.connect(setYRange)
         self.canvas_avgMS.getPlotItem().setDownsampling(ds=20)
-        self.canvas_avgMS.getPlotItem().getViewBox().sigResized.connect(
+        self.canvas_avgMS.getPlotItem().getViewBox().sigRangeChangedManually.connect(
             lambda ev: update_labels_avgMS(self.canvas_avgMS)
         )
 
         # Initialize placeholders
         plot_placeholder(
             self.canvas_baseline,
-            "Welcome to LCMSpector\n\u2190 add files to get started",
+            '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
         )
-        plot_placeholder(self.canvas_avgMS, "")
+        plot_placeholder(
+            self.canvas_avgMS,
+            '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
+        )
 
         # Setup crosshair proxy
         self.crosshair_v, self.crosshair_h, self.line_marker = create_crosshair_lines()
@@ -344,12 +367,28 @@ class UploadTab(TabBase):
         # Create file list widgets
         self.labelLCdata = QtWidgets.QLabel("LC/GC Files:")
         self.browseLC = QtWidgets.QPushButton("Browse")
+        self.help_icon_lc = self._create_help_icon(
+            "<b>Add Chromatography Files</b><br>"
+            "Supported formats: .txt, .csv<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listLC = CheckableDragDropListWidget(parent=self)
         self.listLC.setObjectName("listLC")
         self.button_clear_LC = QtWidgets.QPushButton("Clear")
 
         self.labelMSdata = QtWidgets.QLabel("MS Files:")
         self.browseMS = QtWidgets.QPushButton("Browse")
+        self.help_icon_ms = self._create_help_icon(
+            "<b>Add Mass Spectrometry Files</b><br>"
+            "Supported formats: .mzML<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listMS = CheckableDragDropListWidget(parent=self)
         self.listMS.setObjectName("listMS")
         self.button_clear_MS = QtWidgets.QPushButton("Clear")
@@ -361,8 +400,12 @@ class UploadTab(TabBase):
         self.labelAnnotations.setVisible(False)
 
         # --- Layout placement ---
-        # Row 0: Labels
-        self._main_layout.addWidget(self.labelLCdata, 1, 0, 1, 1)
+        # Row 0: Labels and browse buttons with help icons (icon on left of button)
+        lc_label_layout = QtWidgets.QHBoxLayout()
+        lc_label_layout.addWidget(self.labelLCdata)
+        lc_label_layout.addWidget(self.help_icon_lc)
+        lc_label_layout.addStretch()
+        self._main_layout.addLayout(lc_label_layout, 1, 0, 1, 1)
         self._main_layout.addWidget(self.browseLC, 1, 1, 1, 1)
         self._main_layout.addWidget(self.labelAnnotations, 1, 2, 1, 1)
         self._main_layout.addWidget(self.browseAnnotations, 1, 3, 1, 1)
@@ -371,8 +414,12 @@ class UploadTab(TabBase):
         self._main_layout.addWidget(self.listLC, 2, 0, 1, 2)
         self._main_layout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
 
-        # Row 3: MS label and browse
-        self._main_layout.addWidget(self.labelMSdata, 4, 0, 1, 1)
+        # Row 3: MS label and browse with help icon (icon on left of button)
+        ms_label_layout = QtWidgets.QHBoxLayout()
+        ms_label_layout.addWidget(self.labelMSdata)
+        ms_label_layout.addWidget(self.help_icon_ms)
+        ms_label_layout.addStretch()
+        self._main_layout.addLayout(ms_label_layout, 4, 0, 1, 1)
         self._main_layout.addWidget(self.browseMS, 4, 1, 1, 1)
 
         # Row 4-5: MS file list
@@ -414,6 +461,14 @@ class UploadTab(TabBase):
         # Create file list widgets (MS only)
         self.labelMSdata = QtWidgets.QLabel("MS Files:")
         self.browseMS = QtWidgets.QPushButton("Browse")
+        self.help_icon_ms = self._create_help_icon(
+            "<b>Add Mass Spectrometry Files</b><br>"
+            "Supported formats: .mzML<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listMS = CheckableDragDropListWidget(parent=self)
         self.listMS.setObjectName("listMS")
         self.button_clear_MS = QtWidgets.QPushButton("Clear")
@@ -426,7 +481,11 @@ class UploadTab(TabBase):
 
         # --- Layout placement ---
         # MS file list (spans more rows since LC is omitted)
-        self._main_layout.addWidget(self.labelMSdata, 0, 0, 1, 1)
+        ms_label_layout = QtWidgets.QHBoxLayout()
+        ms_label_layout.addWidget(self.labelMSdata)
+        ms_label_layout.addWidget(self.help_icon_ms)
+        ms_label_layout.addStretch()
+        self._main_layout.addLayout(ms_label_layout, 0, 0, 1, 1)
         self._main_layout.addWidget(self.browseMS, 0, 1, 1, 1)
         self._main_layout.addWidget(self.listMS, 2, 0, 5, 2)
         self._main_layout.addWidget(self.button_clear_MS, 7, 0, 1, 1)
@@ -467,6 +526,14 @@ class UploadTab(TabBase):
         # Create file list widgets
         self.labelLCdata = QtWidgets.QLabel("LC/GC Files:")
         self.browseLC = QtWidgets.QPushButton("Browse")
+        self.help_icon_lc = self._create_help_icon(
+            "<b>Add Chromatography Files</b><br>"
+            "Supported formats: .txt, .csv<br><br>"
+            "<b>How to add files:</b><br>"
+            "- Click Browse to select files<br>"
+            "- Drag & drop files directly<br>"
+            "- Drag & drop folders to add all valid files recursively"
+        )
         self.listLC = CheckableDragDropListWidget(parent=self)
         self.listLC.setObjectName("listLC")
         self.button_clear_LC = QtWidgets.QPushButton("Clear")
@@ -477,8 +544,12 @@ class UploadTab(TabBase):
         self.listAnnotations.setObjectName("listAnnotations")
 
         # --- Layout placement ---
-        # LC file list
-        self._main_layout.addWidget(self.labelLCdata, 1, 0, 1, 1)
+        # LC file list with help icon (icon on left of button)
+        lc_label_layout = QtWidgets.QHBoxLayout()
+        lc_label_layout.addWidget(self.labelLCdata)
+        lc_label_layout.addWidget(self.help_icon_lc)
+        lc_label_layout.addStretch()
+        self._main_layout.addLayout(lc_label_layout, 1, 0, 1, 1)
         self._main_layout.addWidget(self.browseLC, 1, 1, 1, 1)
         self._main_layout.addWidget(self.listLC, 2, 0, 1, 2)
         self._main_layout.addWidget(self.button_clear_LC, 3, 0, 1, 1)
@@ -727,6 +798,8 @@ class UploadTab(TabBase):
 
     def _on_lc_checkbox_changed(self, filename: str, is_checked: bool):
         """Handle LC file checkbox state change."""
+        from ui.plotting import plot_absorbance_data
+
         logger.debug(f"LC checkbox changed: {filename} -> {is_checked}")
 
         if not hasattr(self, "canvas_baseline") or self.canvas_baseline is None:
@@ -740,29 +813,26 @@ class UploadTab(TabBase):
                 lc_data = self._controller.model.lc_measurements.get(stem_filename)
                 if lc_data:
                     logger.debug(f"Found LC data for {stem_filename}, plotting")
-                    from pyqtgraph import mkPen
-                    from ui.plotting import PlotStyle
 
                     # If this is the first plot, clear placeholder and restore axes
-                    if not self._lc_active_plots:
+                    should_clear = len(self._lc_active_plots) == 0
+                    if should_clear:
                         self.canvas_baseline.clear()
-                        PlotStyle.apply_standard_style(
-                            self.canvas_baseline,
-                            title="Chromatography Data",
-                            x_label="Time (min)",
-                            y_label="Absorbance (mAU)",
-                        )
                         self.canvas_baseline.addLegend(labelTextSize="12pt")
                         self._add_crosshairs_to_canvas(self.canvas_baseline)
 
                     color = self._get_next_color("LC")
                     # Set pen width to 2 if this file is currently selected, else 1
                     pen_width = 2 if filename == self._selected_lc_file else 1
-                    plot_item = self.canvas_baseline.plot(
-                        lc_data.baseline_corrected["Time (min)"],
-                        lc_data.baseline_corrected["Value (mAU)"],
-                        pen=mkPen(color, width=pen_width),
+
+                    plot_item = plot_absorbance_data(
+                        lc_data.path,
+                        lc_data.baseline_corrected,
+                        self.canvas_baseline,
+                        color=color,
+                        pen_width=pen_width,
                         name=filename,
+                        clear=should_clear,
                     )
                     self._lc_active_plots[filename] = plot_item
         else:
@@ -774,7 +844,7 @@ class UploadTab(TabBase):
                 if not self._lc_active_plots:
                     plot_placeholder(
                         self.canvas_baseline,
-                        "Welcome to LCMSpector\n← add files to get started",
+                        '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
                     )
                     # Reset label references since canvas was cleared
                     self.crosshair_v_label = None
@@ -824,11 +894,59 @@ class UploadTab(TabBase):
                     )
                     # Store tuple of (plot_item, color) to preserve color for time updates
                     self._ms_active_plots[filename] = (plot_item, color)
+
+                    # In MS Only mode, also plot TIC to canvas_baseline
+                    if self._current_mode == "MS Only":
+                        from ui.plotting import PlotStyle
+                        from pyqtgraph import mkPen
+
+                        # First TIC plot: clear and setup canvas
+                        if not self._tic_active_plots:
+                            self.canvas_baseline.clear()
+                            PlotStyle.apply_standard_style(
+                                self.canvas_baseline,
+                                title="Total Ion Current (TIC)",
+                                x_label="Time (min)",
+                                y_label="Intensity (cps)",
+                            )
+                            self.canvas_baseline.addLegend(labelTextSize="12pt")
+                            self._add_crosshairs_to_canvas(self.canvas_baseline)
+
+                        # Plot TIC with overlay support
+                        tic_color = self._get_next_color("LC")  # Reuse LC color cycling
+                        if ms_data.tic_times is not None and len(ms_data.tic_times) > 0:
+                            tic_plot_item = self.canvas_baseline.plot(
+                                ms_data.tic_times,
+                                ms_data.tic_values,
+                                pen=mkPen(tic_color, width=1),
+                                name=filename,
+                            )
+                            self._tic_active_plots[filename] = tic_plot_item
         else:
             if filename in self._ms_active_plots:
                 plot_item, _ = self._ms_active_plots.pop(filename)
                 if plot_item is not None:
                     self.canvas_avgMS.removeItem(plot_item)
+                # Clear orphaned TextItem labels when no MS plots remain
+                if len(self._ms_active_plots) == 0:
+                    for item in list(self.canvas_avgMS.items()):
+                        if isinstance(item, pg.TextItem):
+                            self.canvas_avgMS.removeItem(item)
+
+            # In MS Only mode, also remove TIC from canvas_baseline
+            if self._current_mode == "MS Only" and filename in self._tic_active_plots:
+                tic_plot_item = self._tic_active_plots.pop(filename)
+                self.canvas_baseline.removeItem(tic_plot_item)
+
+                # Restore placeholder if no TIC plots remain
+                if not self._tic_active_plots:
+                    plot_placeholder(
+                        self.canvas_baseline,
+                        '<p style="color: #c5c5c5">\n\u2190 Add files to get started</p>',
+                    )
+                    self.crosshair_v_label = None
+                    self.crosshair_h_label = None
+
             # Clear selection if this was the selected file
             if filename == self._selected_ms_file:
                 self._selected_ms_file = None
@@ -940,8 +1058,8 @@ class UploadTab(TabBase):
             logger.debug(
                 f"Plotting chromatography for {lc_file.path}, preserving checkbox plots"
             )
-            # Call plot_absorbance_data with new signature
-            plot_absorbance_data(
+            # Call plot_absorbance_data and capture returned plot item
+            plot_item = plot_absorbance_data(
                 lc_file.path,
                 lc_file.baseline_corrected,
                 self.canvas_baseline,
@@ -949,10 +1067,8 @@ class UploadTab(TabBase):
                 pen_width=1,
             )
 
-            # Track the new main view plot (now only 1 item added)
-            plot_items = self.canvas_baseline.getPlotItem().listDataItems()
-            if plot_items:
-                self._main_view_plots = [plot_items[-1]]
+            # Track the new main view plot using the returned item
+            self._main_view_plots = [plot_item]
 
             self._add_crosshairs_to_canvas(self.canvas_baseline)
         except Exception as e:
@@ -1041,7 +1157,7 @@ class UploadTab(TabBase):
 
     def _show_scan_at_time_x(self, event):
         """Show MS scan at the selected time point for all checked MS files."""
-        from ui.plotting import plot_average_ms_data
+        from ui.plotting import plot_average_ms_data, plot_placeholder
 
         if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
             return
@@ -1088,44 +1204,8 @@ class UploadTab(TabBase):
             self._ms_active_plots = updated_plots
             return
 
-        # Fallback: no checked files, use legacy single-file behavior
-        file = None
-
-        if self._current_mode == "LC/GC-MS":
-            if hasattr(self, "listLC") and self.listLC.count() > 0:
-                try:
-                    file = self.listLC.currentItem().text().split(".")[0]
-                except AttributeError:
-                    file = self.listLC.item(0).text().split(".")[0]
-
-                # Try to find matching MS file
-                if (
-                    hasattr(model, "ms_measurements")
-                    and file not in model.ms_measurements
-                ):
-                    if hasattr(self, "listMS") and self.listMS.count() > 0:
-                        try:
-                            file = self.listMS.currentItem().text().split(".")[0]
-                        except AttributeError:
-                            file = self.listMS.item(0).text().split(".")[0]
-
-        elif self._current_mode == "MS Only":
-            if hasattr(self, "listMS") and self.listMS.count() > 0:
-                try:
-                    file = Path(self.listMS.currentItem().text()).stem
-                except AttributeError:
-                    file = Path(self.listMS.item(0).text()).stem
-
-        if file and hasattr(model, "ms_measurements") and file in model.ms_measurements:
-            try:
-                plot_average_ms_data(
-                    file,
-                    time_x,
-                    model.ms_measurements[file].data,
-                    self.canvas_avgMS,
-                )
-            except Exception as e:
-                logger.error(f"Error displaying average MS: {e}")
+        # No checked files - show placeholder prompting user to select a file
+        plot_placeholder(self.canvas_avgMS, "← select a file from the MS list")
 
     # --- External Access ---
 

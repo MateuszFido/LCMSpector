@@ -13,6 +13,7 @@ from ui.plotting import (
     plot_annotated_LC,
     plot_annotated_XICs,
     highlight_peak,
+    plot_no_ms_info,
 )
 
 logger = logging.getLogger(__name__)
@@ -255,11 +256,28 @@ class ResultsTab(TabBase):
             # Plot XICs
             if ms_file and hasattr(ms_file, 'xics') and ms_file.xics:
                 plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
+            else:
+                self._show_xic_placeholder()
 
     def _display_ms_only_plots(self, ms_file):
         """Display plots for MS Only mode."""
         if ms_file and hasattr(ms_file, 'xics') and ms_file.xics:
             plot_annotated_XICs(ms_file.xics, self.canvas_XICs)
+        else:
+            self._show_xic_placeholder()
+
+    def _show_xic_placeholder(self):
+        """Clear XICs dock area and show placeholder for missing MS data."""
+        # Close all existing docks
+        for dock in list(self.canvas_XICs.docks.values()):
+            dock.close()
+
+        # Add a single placeholder dock
+        dock = self.canvas_XICs.addDock(
+            name="placeholder",
+            widget=pg.PlotWidget(),
+        )
+        plot_no_ms_info(dock.widgets[0])
 
     def setup_dock_area(self, xics, widget=None):
         """
