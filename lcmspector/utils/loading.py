@@ -151,6 +151,9 @@ def extract_tic_data(path: str) -> tuple[np.ndarray, np.ndarray]:
     """
     Extract Total Ion Current data from an mzML file.
 
+    Tries to read pre-computed TIC from the chromatogramList element first
+    (instant, no scan iteration). Falls back to iterating all scans if absent.
+
     Runs in worker process during loading - no UI blocking.
 
     Parameters
@@ -163,19 +166,20 @@ def extract_tic_data(path: str) -> tuple[np.ndarray, np.ndarray]:
     tuple[np.ndarray, np.ndarray]
         (times, tic_values) arrays
     """
+    from utils.mzml_reader import extract_tic_chromatogram, iter_scans
+
+    # Fast path: read pre-computed TIC from chromatogramList
+    result = extract_tic_chromatogram(path)
+    if result is not None:
+        return result
+
+    # Fallback: iterate all scans
+    logger.info("TIC chromatogram not found, falling back to scan iteration")
     times = []
     tic_values = []
-
-    with mzml.MzML(path) as reader:
-        for scan in reader:
-            try:
-                tic = scan.get("total ion current", 0)
-                scan_list = scan.get("scanList", {}).get("scan", [{}])[0]
-                time_val = scan_list.get("scan start time", 0)
-                times.append(time_val)
-                tic_values.append(tic)
-            except (KeyError, IndexError):
-                continue
+    for scan_time, tic, ms_level, mz, intensity in iter_scans(path):
+        times.append(scan_time)
+        tic_values.append(tic)
 
     return np.array(times, dtype=np.float64), np.array(tic_values, dtype=np.float64)
 

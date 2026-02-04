@@ -4,8 +4,8 @@ import pandas as pd
 import static_frame as sf
 from pathlib import Path
 from typing import Tuple
-from pyteomics.mzml import MzML
 from calculation.peak_integration import integrate_ms_xic_peak
+from utils.mzml_reader import iter_scans
 
 logger = logging.getLogger(__name__)
 
@@ -120,30 +120,32 @@ def build_xics(
         A tuple of Compound objects with XICs computed.
     """
 
-    # turn target_mzs into numpy array and pre-allocate result containers
-    data = MzML(filepath)
-
     target_mzs = np.asarray(ion_list, dtype=np.float32)
-    xic_intensities = np.zeros((len(data), len(target_mzs)), dtype=np.float32)
-    scan_times = np.zeros(len(data), dtype=np.float32)
 
     # Compute tolerance windows for each target mz
     delta = target_mzs * mass_accuracy * 3
     lower = target_mzs - delta
     upper = target_mzs + delta
 
-    for i, scan in enumerate(data):
-        mz_array = scan["m/z array"]
-        intensity_array = scan["intensity array"]
-        scan_times[i] = scan["scanList"]["scan"][0]["scan start time"]
+    # Collect results via lists (scan count unknown with streaming parser)
+    times_list = []
+    intensities_list = []
+
+    for scan_time, tic, ms_level, mz_array, intensity_array in iter_scans(filepath):
+        times_list.append(scan_time)
 
         # Binary search the arrays for mz ranges to sum in
         left_idx = np.searchsorted(mz_array, lower, side="left")
         right_idx = np.searchsorted(mz_array, upper, side="right")
 
+        row = np.zeros(len(target_mzs), dtype=np.float32)
         for ion_idx, (left, right) in enumerate(zip(left_idx, right_idx)):
             if left < right:  # Only sum if we have values in range
-                xic_intensities[i, ion_idx] = np.sum(intensity_array[left:right])
+                row[ion_idx] = np.sum(intensity_array[left:right])
+        intensities_list.append(row)
+
+    scan_times = np.array(times_list, dtype=np.float32)
+    xic_intensities = np.array(intensities_list, dtype=np.float32) if intensities_list else np.zeros((0, len(target_mzs)), dtype=np.float32)
 
     return xic_intensities, scan_times
 
