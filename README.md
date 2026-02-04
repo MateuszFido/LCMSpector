@@ -115,156 +115,64 @@ The user can upload and process the data entirely locally on their machine. No n
 
 # 🐳 Running with Docker
 
-Docker is a fantastic alternative if you don't want to install the app directly on your system. 
-
-## MacOS
-
-### 1. Install XQuartz (if you don't have it already)
-
-Download and install XQuartz from:  
-https://www.xquartz.org/
-
-- After installation, open XQuartz.
-- Go to **XQuartz > Preferences > Security** and check:  
-  **"Allow connections from network clients"**
-- Restart XQuartz if you changed the setting.
-
----
-
-### 2. Allow Docker to Connect to XQuartz
-
-Open a terminal on your Mac and run:
-
-```bash
-xhost + 127.0.0.1
-```
-
----
-
-### 3. Pull the Docker Image
-
-```bash
-docker pull mateuszfido/lcmspector:latest
-```
-
----
-
-### 4. Run the Docker Container
-
-In **the same** terminal, run:
-
-```bash
-docker run -it \
-  -e DISPLAY=host.docker.internal:0 \
-  mateuszfido/lcmspector:latest
-```
->[!IMPORTANT]
->To be able to analyze files on your local machine, add `-v /path/on/host:/path/in/container` to the Docker command to mount your data folder(s).
----
-
-If you have issues:
-- Make sure XQuartz is running and "Allow connections from network clients" is checked.
-- Make sure your Mac firewall allows incoming connections for XQuartz.
-- Try restarting XQuartz or your terminal session.
-
----
-
-## Linux
+Docker is a fantastic alternative if you don't want to install the app directly on your system. Currently only Linux is supported.
 
 ### 1. Prerequisites
 
-Make sure you have Docker installed and an X11 server running (most Linux desktops do this by default).
+Make sure you have [Podman](https://podman.io/) or [Docker Engine](https://docs.docker.com/engine/install/) installed and an X11 server running (most Linux desktops do this by default).
 
-You may also need to allow clients to connect to your X server:
+> [!NOTE]
+> **Docker Desktop** will not work for GUI forwarding — it runs containers inside a VM that cannot access the host's X11 socket. Use Podman or Docker Engine instead.
+
+---
+
+### 2. Build or Pull the Image
 
 ```bash
-xhost +local:docker
+podman build -t lcmspector .
+# or: docker build -t lcmspector .
 ```
 
 ---
 
-### 2. Pull the Docker Image
+### 3. Run the Container
+
+Allow local X11 connections, then run:
 
 ```bash
-docker pull mateuszfido/lcmspector:latest
-```
+xhost +local:
 
----
-
-### 3. Run the Docker Container
-
-Run the following command in your terminal:
-
-```bash
-docker run -it \
+podman run --rm \
+  --security-opt label=disable \
   -e DISPLAY=$DISPLAY \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
-  mateuszfido/lcmspector:latest
+  lcmspector
 ```
->[!IMPORTANT]
->To be able to analyze files on your local machine, add `-v /path/on/host:/path/in/container` to the Docker command to mount your data folder(s).
 
----
-
-If you have issues:
-- Make sure you ran `xhost +local:docker` to allow Docker containers to use your X server.
-- Check that your DISPLAY variable is set (usually `:0` on most desktop Linux systems).
-- Make sure your system firewall is not blocking local X11 connections.
-
----
-
-## Windows 
-
-### 1. Install an X11 Server (VcXsrv)
-
-- Download [VcXsrv Windows X Server](https://sourceforge.net/projects/vcxsrv/) and install it.
-- Launch **XLaunch** (installed with VcXsrv), and configure as follows:
-  - Select "Multiple windows"
-  - Start no client
-  - Extra settings: Check "Disable access control"
-  - Finish to start the server
-
----
-
-### 2. Find Your Host IP Address
-
-Open Command Prompt or PowerShell and run:
+With Docker Engine the `--security-opt` flag is not needed:
 
 ```bash
-ipconfig
+docker run --rm \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
+  lcmspector
 ```
 
-Look for your IPv4 address (e.g., `192.168.1.100`).
+When you're done, re-enable X11 access control:
 
----
-
-### 3. Pull the Docker Image
-
-```powershell
-docker pull mateuszfido/lcmspector:latest
+```bash
+xhost -local:
 ```
 
----
+> [!IMPORTANT]
+> To analyze files on your local machine, add `-v /path/on/host:/path/in/container` to mount your data folder(s).
 
-### 4. Run the Docker Container
-
-In your terminal, run (replace `<YOUR-IP>` with your IPv4 address from step 2):
-
-```powershell
-docker run -it ^
-  -e DISPLAY=<YOUR-IP>:0.0 ^
-  mateuszfido/lcmspector:latest
-```
-
->[!IMPORTANT]
->To be able to analyze files on your local machine, add `-v /path/on/host:/path/in/container` to the Docker command to mount your data folder(s).
 ---
 
 If you have issues:
-- Make sure VcXsrv is running and "Disable access control" is checked.
-- Ensure your firewall allows VcXsrv connections.
-- Double-check you used the correct IP address.
-- Try restarting VcXsrv or your terminal session.
+- Check that your `DISPLAY` variable is set (`echo $DISPLAY`, usually `:0`).
+- On Fedora/SELinux, `--security-opt label=disable` is required for Podman to access the X11 socket.
+- Make sure your system firewall is not blocking local X11 connections.
 
 ---
 

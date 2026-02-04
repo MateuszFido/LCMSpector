@@ -1,29 +1,50 @@
-FROM ubuntu:latest AS build
-
-# Install Python, pip, and dependencies
-RUN apt-get update && apt-get install -y python3.12 python3-pip python3-venv python3-numpy-dev x11-xserver-utils build-essential libx11-dev libgl1-mesa-glx libegl1-mesa libglib2.0-0 libxkbcommon-x11-0 libdbus-1-dev libxcb-* qt6-base-dev qt6-tools-dev-tools libqt6gui6 libqt6widgets6 libqt6core6
+FROM ubuntu:24.04
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV LIBGL_ALWAYS_INDIRECT=1
 
-# Copy your app code
-COPY . /lc-inspector
+# Runtime dependencies for PySide6/Qt GUI via X11 forwarding
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libgl1 \
+        libopengl0 \
+        libegl1 \
+        libfontconfig1 \
+        libglib2.0-0 \
+        libxkbcommon-x11-0 \
+        libdbus-1-3 \
+        libxcb-cursor0 \
+        libxcb-icccm4 \
+        libxcb-keysyms1 \
+        libxcb-randr0 \
+        libxcb-render-util0 \
+        libxcb-shape0 \
+        libxcb-sync1 \
+        libxcb-xfixes0 \
+        libxcb-xinerama0 \
+        libxcb-xkb1 \
+    && rm -rf /var/lib/apt/lists/*
 
-# Create a virtual environment and install dependencies
-WORKDIR /lc-inspector
-RUN python3 -m venv venv
-RUN . venv/bin/activate && pip install numpy
-RUN . venv/bin/activate && pip install pandas
-RUN . venv/bin/activate && pip install PySide6
-RUN . venv/bin/activate && pip install pyqtgraph pyteomics pytest PyYAML scipy static_frame lxml
+# Install uv (official multi-stage copy)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /usr/local/bin/
 
-# Set the PATH environment variable
-ENV PATH="/lc-inspector/venv/bin:$PATH"
+# Install Python 3.13 via uv
+RUN uv python install 3.13
 
-# Set environment variables for Qt and PySide6
-ENV DISPLAY=:99
-ENV QT_QPA_PLATFORM=offscreen
+WORKDIR /app
+
+# Copy dependency files first for layer caching
+COPY pyproject.toml uv.lock ./
+
+# Install all dependencies (including dev group for pytest)
+RUN uv sync --frozen
+
+# Copy application source and tests
+COPY lcmspector/ lcmspector/
+COPY tests/ tests/
+COPY pytest.ini ./
+
+# Qt binding hint (no QT_QPA_PLATFORM — defaults to xcb for GUI)
 ENV QT_API=pyside6
 
-# Run the GUI app
-CMD ["python", "lc-inspector/main.py"]
+# Default: run the application
+CMD ["uv", "run", "python", "lcmspector/main.py"]
