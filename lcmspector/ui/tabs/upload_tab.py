@@ -1069,6 +1069,9 @@ class UploadTab(TabBase):
             finally:
                 self.ionTable.blockSignals(False)
 
+            # Clear custom m/z ranges when ion list changes
+            self.ionTable._custom_mz_ranges.clear()
+
         except Exception as e:
             logger.error(f"Error updating ion list: {e}")
             self.status_message.emit(f"Error updating ion list: {e}", 3000)
@@ -1242,6 +1245,44 @@ class UploadTab(TabBase):
 
         # No checked files - show placeholder prompting user to select a file
         plot_placeholder(self.canvas_avgMS, "← select a file from the MS list")
+
+    # --- Spectrum Data Access ---
+
+    def get_current_spectrum_data(self):
+        """Get m/z and intensity arrays from the currently displayed spectrum.
+
+        Returns the raw arrays from the first checked MS file at the current
+        retention time. Used by IonTable to feed spectrum data into MzRangeDialog.
+
+        Returns
+        -------
+        tuple[np.ndarray, np.ndarray] or None
+            (mzs, intensities) arrays, or None if no MS data available.
+        """
+        if not self._ms_active_plots or not self._controller:
+            return None
+        model = self._controller.model
+        if not hasattr(model, "ms_measurements"):
+            return None
+
+        first_filename = next(iter(self._ms_active_plots))
+        stem = Path(first_filename).stem
+        ms_data = model.ms_measurements.get(stem)
+        if ms_data is None:
+            return None
+
+        time_x = float(self.line_marker.pos().x()) if self.line_marker.isVisible() else 0.0
+        try:
+            spectrum = ms_data.data.time[time_x]
+            if spectrum["ms level"] > 1:
+                spec_range = ms_data.data.time[time_x - 0.1 : time_x + 0.1]
+                for spec in spec_range:
+                    if spec["ms level"] == 1:
+                        spectrum = spec
+                        break
+            return spectrum["m/z array"], spectrum["intensity array"]
+        except (ValueError, IndexError, KeyError):
+            return None
 
     # --- External Access ---
 

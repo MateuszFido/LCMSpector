@@ -2,7 +2,9 @@ from datetime import datetime
 import json
 import webbrowser
 from pathlib import Path
+import numpy as np
 import pyqtgraph as pg
+from pyqtgraph import mkPen
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
 from utils.classes import Compound
@@ -263,8 +265,130 @@ class IonTable(GenericTable):
         self._lookup_thread = None
         self._lookup_worker = None
 
+        # Custom m/z range storage: {compound_name: {mz: (left, right)}}
+        self._custom_mz_ranges = {}
+
         # Connect closeEditor signal (fires only when editing finishes, not on each keystroke)
         self.itemDelegate().closeEditor.connect(self._on_editor_closed)
+
+    def contextMenuEvent(self, pos):
+        """Override to add 'Edit integration...' action to context menu."""
+        # Build the base menu (same as GenericTable but without popup)
+        self.menu = QtWidgets.QMenu(self)
+
+        add_row_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("document-new"), "(⌘+N) Add Row", self
+        )
+        add_row_action.triggered.connect(self.append_row)
+        self.menu.addAction(add_row_action)
+
+        remove_row_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("edit-delete"), "(⌫) Remove Row", self
+        )
+        remove_row_action.triggered.connect(self.clear_selection)
+        self.menu.addAction(remove_row_action)
+
+        select_all_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("edit-select-all"), "(⌘+A) Select All", self
+        )
+        select_all_action.triggered.connect(self.select_all)
+        self.menu.addAction(select_all_action)
+
+        copy_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("edit-copy"), "(⌘+C) Copy", self
+        )
+        copy_action.triggered.connect(self.copy)
+        self.menu.addAction(copy_action)
+
+        paste_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("edit-paste"), "(⌘+V) Paste", self
+        )
+        paste_action.triggered.connect(self.paste_from_clipboard)
+        self.menu.addAction(paste_action)
+
+        undo_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("edit-undo"), "(⌘+Z) Undo", self
+        )
+        undo_action.triggered.connect(self.undoStack.undo)
+        self.menu.addAction(undo_action)
+
+        redo_action = QtGui.QAction(
+            QtGui.QIcon.fromTheme("edit-redo"), "(⌘+U) Redo", self
+        )
+        redo_action.triggered.connect(self.undoStack.redo)
+        self.menu.addAction(redo_action)
+
+        # --- Add integration editor action ---
+        self.menu.addSeparator()
+        edit_action = QtGui.QAction("Edit integration...", self)
+
+        # Only enable if the right-clicked row has m/z values
+        row = self.rowAt(pos.y())
+        mz_item = self.item(row, 1) if row >= 0 else None
+        has_mz = mz_item is not None and mz_item.text().strip()
+        edit_action.setEnabled(bool(has_mz))
+
+        edit_action.triggered.connect(lambda: self._open_mz_range_dialog(row))
+        self.menu.addAction(edit_action)
+
+        self.menu.popup(QtGui.QCursor.pos())
+
+    def _open_mz_range_dialog(self, row):
+        """Open the MzRangeDialog for the compound at the given row."""
+        # 1. Parse compound info from the row
+        name_item = self.item(row, 0)
+        if name_item is None:
+            return
+        compound_name = name_item.text().strip()
+        if not compound_name:
+            return
+
+        mz_item = self.item(row, 1)
+        if mz_item is None:
+            return
+        try:
+            mz_values = [float(x) for x in mz_item.text().split(",") if x.strip()]
+        except ValueError:
+            return
+        if not mz_values:
+            return
+
+        info_item = self.item(row, 2)
+        info_text = info_item.text() if info_item else ""
+        ion_labels = [x.strip() for x in info_text.split(",") if x.strip()]
+        # Pad labels
+        while len(ion_labels) < len(mz_values):
+            ion_labels.append(f"m/z {mz_values[len(ion_labels)]:.4f}")
+
+        # 2. Get spectrum data from UploadTab
+        spectrum_data = self.view.get_current_spectrum_data()
+        if spectrum_data is None:
+            self.lookup_status.emit("No MS data available. Check an MS file first.", 5000)
+            return
+        mzs, intensities = spectrum_data
+
+        # 3. Get mass accuracy
+        mass_accuracy = self.view.mass_accuracy
+
+        # 4. Launch dialog
+        dialog = MzRangeDialog(
+            mzs=mzs,
+            intensities=intensities,
+            target_mz_values=mz_values,
+            ion_labels=ion_labels,
+            mass_accuracy=mass_accuracy,
+            compound_name=compound_name,
+            existing_ranges=self._custom_mz_ranges.get(compound_name, {}),
+            parent=self,
+        )
+        dialog.exec()
+
+        # 5. Store result
+        ranges = dialog.get_ranges()
+        if ranges:
+            self._custom_mz_ranges[compound_name] = ranges
+        elif compound_name in self._custom_mz_ranges:
+            del self._custom_mz_ranges[compound_name]
 
     def _on_editor_closed(self, editor, hint):
         """Handle editor close - trigger PubChem lookup for compound names.
@@ -457,6 +581,8 @@ class IonTable(GenericTable):
 
             try:
                 compound = Compound(name=name, target_list=ions, ion_info=ion_info)
+                if name in self._custom_mz_ranges:
+                    compound.custom_mz_ranges = dict(self._custom_mz_ranges[name])
                 items.append(compound)
             except Exception as e:
                 print(f"Error creating compound '{name}': {e}")
@@ -1227,3 +1353,240 @@ class ReadmeDialog(QtWidgets.QDialog):
         except FileNotFoundError:
             html_content = "<p><b>README file not found.</b></p>"
         self.browser.setHtml(html_content)
+
+
+class MzRangeDialog(QtWidgets.QDialog):
+    """Dialog for editing m/z integration boundaries per ion.
+
+    Displays the current mass spectrum zoomed to one ion at a time with
+    draggable boundary lines. Users switch between ions via a combo box
+    and apply/reset ranges individually.
+
+    Parameters
+    ----------
+    mzs : np.ndarray
+        Spectrum m/z array.
+    intensities : np.ndarray
+        Spectrum intensity array.
+    target_mz_values : list[float]
+        Ion m/z values for this compound.
+    ion_labels : list[str]
+        Display labels (e.g. "[M+H]+").
+    mass_accuracy : float
+        Default mass accuracy for ±3x window.
+    compound_name : str
+        Compound name for the dialog title.
+    existing_ranges : dict
+        Previously applied ``{mz: (left, right)}`` overrides.
+    parent : QWidget, optional
+        Parent widget.
+    """
+
+    def __init__(
+        self,
+        mzs,
+        intensities,
+        target_mz_values,
+        ion_labels,
+        mass_accuracy,
+        compound_name,
+        existing_ranges=None,
+        parent=None,
+    ):
+        super().__init__(parent)
+        self.setWindowTitle(f"Edit Integration \u2014 {compound_name}")
+        self.resize(700, 500)
+
+        self._mzs = mzs
+        self._intensities = intensities
+        self._target_mz_values = target_mz_values
+        self._ion_labels = ion_labels
+        self._mass_accuracy = mass_accuracy
+        self._compound_name = compound_name
+
+        # Internal state: {mz: (left, right)} for all ions
+        self._ranges = dict(existing_ranges) if existing_ranges else {}
+        self._current_ion_idx = 0
+        self._left_line = None
+        self._right_line = None
+
+        self._build_ui()
+        self._plot_spectrum()
+        self._update_ion_view()
+
+    def _build_ui(self):
+        """Build the dialog layout."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Ion selector combo
+        combo_layout = QtWidgets.QHBoxLayout()
+        combo_layout.addWidget(QtWidgets.QLabel("Ion:"))
+        self._ion_combo = QtWidgets.QComboBox()
+        for i, (mz, label) in enumerate(
+            zip(self._target_mz_values, self._ion_labels)
+        ):
+            self._ion_combo.addItem(f"{label} ({mz:.4f})")
+        self._ion_combo.currentIndexChanged.connect(self._on_ion_changed)
+        combo_layout.addWidget(self._ion_combo)
+        combo_layout.addStretch()
+        layout.addLayout(combo_layout)
+
+        # Plot widget
+        self._plot_widget = pg.PlotWidget()
+        self._plot_widget.setBackground("w")
+        self._plot_widget.setMouseEnabled(x=True, y=False)
+
+        # Auto Y-range on X-range change
+        def _auto_y(vb):
+            vb.enableAutoRange(axis="y")
+            vb.setAutoVisible(y=True)
+
+        self._plot_widget.getPlotItem().getViewBox().sigXRangeChanged.connect(
+            _auto_y
+        )
+
+        layout.addWidget(self._plot_widget)
+
+        # Buttons
+        btn_layout = QtWidgets.QHBoxLayout()
+        self._apply_btn = QtWidgets.QPushButton("Apply")
+        self._apply_btn.clicked.connect(self._on_apply)
+        self._reset_btn = QtWidgets.QPushButton("Reset")
+        self._reset_btn.clicked.connect(self._on_reset)
+        self._close_btn = QtWidgets.QPushButton("Close")
+        self._close_btn.clicked.connect(self.accept)
+
+        btn_layout.addWidget(self._apply_btn)
+        btn_layout.addWidget(self._reset_btn)
+        btn_layout.addStretch()
+        btn_layout.addWidget(self._close_btn)
+        layout.addLayout(btn_layout)
+
+    def _plot_spectrum(self):
+        """Plot the full spectrum on the internal PlotWidget."""
+        from ui.plotting import PlotStyle
+
+        PlotStyle.apply_standard_style(
+            self._plot_widget,
+            title=f"Spectrum \u2014 {self._compound_name}",
+            x_label="m/z",
+            y_label="Intensity (a.u.)",
+        )
+
+        if len(self._mzs) < 500:
+            graph_item = pg.BarGraphItem(
+                x=self._mzs,
+                height=self._intensities,
+                width=0.2,
+                pen=mkPen("#3c5488ff", width=1),
+                brush=pg.mkBrush("#3c5488ff"),
+            )
+            self._plot_widget.addItem(graph_item)
+        else:
+            self._plot_widget.plot(
+                self._mzs,
+                self._intensities,
+                pen=mkPen("#3c5488ff", width=1),
+            )
+
+    def _default_bounds(self, mz):
+        """Compute default ±3x mass_accuracy bounds for a target m/z."""
+        delta = mz * self._mass_accuracy * 3
+        return (mz - delta, mz + delta)
+
+    def _update_ion_view(self):
+        """Update the view for the currently selected ion."""
+        from ui.plotting import PlotStyle
+
+        idx = self._current_ion_idx
+        if idx >= len(self._target_mz_values):
+            return
+
+        mz = self._target_mz_values[idx]
+        color = PlotStyle.PALETTE[idx % len(PlotStyle.PALETTE)]
+
+        # Get current or default bounds
+        if mz in self._ranges:
+            left_pos, right_pos = self._ranges[mz]
+        else:
+            left_pos, right_pos = self._default_bounds(mz)
+
+        # Remove old lines
+        plot_item = self._plot_widget.getPlotItem()
+        if self._left_line is not None:
+            plot_item.removeItem(self._left_line)
+            self._left_line = None
+        if self._right_line is not None:
+            plot_item.removeItem(self._right_line)
+            self._right_line = None
+
+        # Create boundary lines
+        line_pen = mkPen(color, width=2)
+        hover_pen = mkPen("red", width=2)
+
+        self._left_line = plot_item.addLine(
+            x=left_pos,
+            pen=line_pen,
+            hoverPen=hover_pen,
+            movable=True,
+            markers=[("|>", 0.5, 10.0)],
+            name=f"{mz}_left",
+        )
+
+        self._right_line = plot_item.addLine(
+            x=right_pos,
+            pen=line_pen,
+            hoverPen=hover_pen,
+            movable=True,
+            markers=[("<|", 0.5, 10.0)],
+            name=f"{mz}_right",
+        )
+
+        # Zoom to ion region (±2 Da)
+        self._plot_widget.setXRange(mz - 2.0, mz + 2.0)
+
+    def _on_ion_changed(self, index):
+        """Handle ion combo box selection change."""
+        self._current_ion_idx = index
+        self._update_ion_view()
+
+    def _on_apply(self):
+        """Store current line positions in _ranges."""
+        if self._left_line is None or self._right_line is None:
+            return
+
+        idx = self._current_ion_idx
+        if idx >= len(self._target_mz_values):
+            return
+
+        mz = self._target_mz_values[idx]
+        left_pos = self._left_line.value()
+        right_pos = self._right_line.value()
+        self._ranges[mz] = (left_pos, right_pos)
+
+    def _on_reset(self):
+        """Remove custom range for current ion, reset lines to defaults."""
+        idx = self._current_ion_idx
+        if idx >= len(self._target_mz_values):
+            return
+
+        mz = self._target_mz_values[idx]
+        if mz in self._ranges:
+            del self._ranges[mz]
+
+        # Reset lines to default positions
+        left_pos, right_pos = self._default_bounds(mz)
+        if self._left_line is not None:
+            self._left_line.setValue(left_pos)
+        if self._right_line is not None:
+            self._right_line.setValue(right_pos)
+
+    def get_ranges(self):
+        """Return the applied custom ranges.
+
+        Returns
+        -------
+        dict
+            ``{mz_float: (left, right)}`` for ions with custom ranges.
+        """
+        return dict(self._ranges)

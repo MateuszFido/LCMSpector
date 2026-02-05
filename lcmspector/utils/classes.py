@@ -269,6 +269,8 @@ class Compound(BaseModel):
     _calibration_curve: Dict = PrivateAttr(default_factory=dict)
     _calibration_parameters: Dict = PrivateAttr(default_factory=dict)
     _concentration: Optional[float] = PrivateAttr(default=None)
+    _custom_mz_ranges: Dict = PrivateAttr(default_factory=dict)
+    # Structure: {mz_float: (lower_bound, upper_bound)}
 
     def model_post_init(self, __context):
         """
@@ -321,6 +323,14 @@ class Compound(BaseModel):
     @concentration.setter
     def concentration(self, value):
         self._concentration = value
+
+    @property
+    def custom_mz_ranges(self):
+        return self._custom_mz_ranges
+
+    @custom_mz_ranges.setter
+    def custom_mz_ranges(self, value):
+        self._custom_mz_ranges = value
 
     def get_ion_label(self, index: int) -> str:
         """

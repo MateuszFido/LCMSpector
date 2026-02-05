@@ -98,26 +98,27 @@ def baseline_correction(dataframe: pd.DataFrame) -> sf.FrameHE:
 
 
 def build_xics(
-    filepath: str, ion_list: np.typing.NDArray[np.float32], mass_accuracy: np.float64
+    filepath: str, ion_list: np.typing.NDArray[np.float32], mass_accuracy: np.float64,
+    custom_ranges: dict = None,
 ) -> Tuple[np.typing.NDArray[np.float32], np.typing.NDArray[np.float32]]:
     """
     Creates XICs (extracted ion chromatograms) for a list of ions and Scan objects for a given data file.
 
     Parameters
     ----------
-    data : List of Scan objects
-        The list of Scan objects containing the MS data.
-    ion_list : List of Compound objects
-        The list of Compounds to generate XICs for.
+    filepath : str
+        Path to the mzML file.
+    ion_list : np.ndarray
+        Array of target m/z values.
     mass_accuracy : float
         The mass accuracy to use for XIC extraction.
-    file_name : str
-        The name of the file being processed.
+    custom_ranges : dict, optional
+        Per-ion m/z range overrides: ``{mz_float: (lower, upper)}``.
 
     Returns
     -------
-    Tuple of Compound objects
-        A tuple of Compound objects with XICs computed.
+    Tuple of np.ndarray
+        (intensities, scan_times) arrays.
     """
 
     target_mzs = np.asarray(ion_list, dtype=np.float32)
@@ -126,6 +127,12 @@ def build_xics(
     delta = target_mzs * mass_accuracy * 3
     lower = target_mzs - delta
     upper = target_mzs + delta
+
+    # Apply per-ion custom m/z range overrides
+    if custom_ranges:
+        for i, mz in enumerate(target_mzs):
+            if mz in custom_ranges:
+                lower[i], upper[i] = custom_ranges[mz]
 
     # Collect results via lists (scan count unknown with streaming parser)
     times_list = []
@@ -158,7 +165,16 @@ def construct_xics(
     """Wrapper around build_xics for calling from ProcessPoolExecutor.
     Returns a list of *filled* Compound objects."""
     target_mzs = _extract_target_mzs(compounds)
-    intensities, rts = build_xics(filepath, target_mzs, mass_accuracy)
+
+    # Collect custom m/z ranges from compounds
+    custom_ranges = {}
+    for cmpd in compounds:
+        custom_ranges.update(cmpd.custom_mz_ranges)
+
+    intensities, rts = build_xics(
+        filepath, target_mzs, mass_accuracy,
+        custom_ranges=custom_ranges or None,
+    )
 
     # Map results onto Compound objects
     mz_to_column = {mz: idx for idx, mz in enumerate(target_mzs)}  # lookup index
