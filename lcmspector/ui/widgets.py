@@ -387,6 +387,10 @@ class IonTable(GenericTable):
         ranges = dialog.get_ranges()
         if ranges:
             self._custom_mz_ranges[compound_name] = ranges
+            self.lookup_status.emit(
+                f"Applied integration boundaries for '{compound_name}' to all files",
+                5000,
+            )
         elif compound_name in self._custom_mz_ranges:
             del self._custom_mz_ranges[compound_name]
 
@@ -1447,6 +1451,15 @@ class MzRangeDialog(QtWidgets.QDialog):
 
         layout.addWidget(self._plot_widget)
 
+        # Boundary value display labels
+        boundary_layout = QtWidgets.QHBoxLayout()
+        self._left_label = QtWidgets.QLabel("Left: ---")
+        self._right_label = QtWidgets.QLabel("Right: ---")
+        boundary_layout.addWidget(self._left_label)
+        boundary_layout.addStretch()
+        boundary_layout.addWidget(self._right_label)
+        layout.addLayout(boundary_layout)
+
         # Buttons
         btn_layout = QtWidgets.QHBoxLayout()
         self._apply_btn = QtWidgets.QPushButton("Apply")
@@ -1542,8 +1555,24 @@ class MzRangeDialog(QtWidgets.QDialog):
             name=f"{mz}_right",
         )
 
+        # Connect signals to update boundary labels
+        self._left_line.sigPositionChanged.connect(self._update_boundary_labels)
+        self._right_line.sigPositionChanged.connect(self._update_boundary_labels)
+
         # Zoom to ion region (±2 Da)
         self._plot_widget.setXRange(mz - 2.0, mz + 2.0)
+
+        # Update labels with initial values
+        self._update_boundary_labels()
+
+    def _update_boundary_labels(self):
+        """Update the boundary value labels when lines are moved."""
+        if self._left_line is None or self._right_line is None:
+            return
+        left_val = self._left_line.value()
+        right_val = self._right_line.value()
+        self._left_label.setText(f"Left: {left_val:.4f}")
+        self._right_label.setText(f"Right: {right_val:.4f}")
 
     def _on_ion_changed(self, index):
         """Handle ion combo box selection change."""
