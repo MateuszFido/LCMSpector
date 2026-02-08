@@ -279,8 +279,9 @@ def detect_input_type(user_input: str) -> str:
                 mass = comp.mass()
                 if mass > 0:
                     return "formula"
-            except (PyteomicsError, Exception):
-                pass
+            except (PyteomicsError, Exception) as exc:
+                # Failed to compute mass; treat input as non-formula and fall through.
+                logger.debug("Failed to compute mass for parsed composition %r: %s", comp, exc)
 
     # Check for peptide sequence (formula takes priority)
     if is_valid_peptide(text):
