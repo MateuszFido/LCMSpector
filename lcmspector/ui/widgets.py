@@ -417,18 +417,20 @@ class IonTable(GenericTable):
             info_text = ", ".join(mz_dict.keys())
 
             self.blockSignals(True)
-            mz_item = self.item(row, 1)
-            if mz_item is None:
-                mz_item = QtWidgets.QTableWidgetItem()
-                self.setItem(row, 1, mz_item)
-            mz_item.setText(mz_text)
+            try:
+                mz_item = self.item(row, 1)
+                if mz_item is None:
+                    mz_item = QtWidgets.QTableWidgetItem()
+                    self.setItem(row, 1, mz_item)
+                mz_item.setText(mz_text)
 
-            info_item = self.item(row, 2)
-            if info_item is None:
-                info_item = QtWidgets.QTableWidgetItem()
-                self.setItem(row, 2, info_item)
-            info_item.setText(info_text)
-            self.blockSignals(False)
+                info_item = self.item(row, 2)
+                if info_item is None:
+                    info_item = QtWidgets.QTableWidgetItem()
+                    self.setItem(row, 2, info_item)
+                info_item.setText(info_text)
+            finally:
+                self.blockSignals(False)
 
             self._highlight_cell(row, 1)
             self._highlight_cell(row, 2)
