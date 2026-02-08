@@ -1139,13 +1139,14 @@ class UploadTab(TabBase):
                 pass  # Skip invalid formulas silently
 
     def _on_adducts_changed_upload(self, adduct_list: list[str]):
-        """Handle adduct dropdown change: remove old theoretical plots before recompute.
+        """Handle adduct dropdown change: clear old plots then recompute.
 
-        The IonTable._on_adducts_changed() handler (connected separately) will
-        recompute and re-emit theoretical_spectrum_ready for each compound.
+        UploadTab is the sole orchestrator: clear first, then tell IonTable
+        to recompute (which emits theoretical_spectrum_ready per compound).
         """
         self._remove_theoretical_plots()
         self._color_index_theo = 0
+        self.ionTable._on_adducts_changed(adduct_list)
 
     def _on_clear_ion_list(self):
         """Handle the Clear button: remove all theoretical plots then clear the table."""

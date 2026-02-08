@@ -369,9 +369,12 @@ class IonTable(GenericTable):
         self.itemDelegate().closeEditor.connect(self._on_editor_closed)
 
     def set_adduct_dropdown(self, dropdown: "AdductDropdown"):
-        """Store reference to the adduct dropdown and connect its signal."""
+        """Store reference to the adduct dropdown.
+
+        Note: No signal connection here — UploadTab orchestrates the
+        adducts_changed flow to ensure correct clear→recompute→replot order.
+        """
         self._adduct_dropdown = dropdown
-        dropdown.adducts_changed.connect(self._on_adducts_changed)
 
     def _get_active_adducts(self) -> list[str]:
         """Return currently checked adducts from dropdown, or defaults."""

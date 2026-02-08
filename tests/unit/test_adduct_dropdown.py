@@ -312,3 +312,61 @@ class TestAdductPersistence:
         assert tab.ionTable.rowCount() == 1
         name_item = tab.ionTable.item(0, 0)
         assert name_item.text() == "Caffeine"
+
+
+# ===========================================================================
+# TestTheoreticalPlotsSurviveAdductChange
+# ===========================================================================
+
+
+class TestTheoreticalPlotsSurviveAdductChange:
+    """Regression test: theoretical plots must survive adduct changes."""
+
+    @pytest.fixture
+    def tab_with_formula(self, qapp, qtbot, tmp_path):
+        """UploadTab with a config that has a formula-based compound."""
+        config = {
+            "Formulas": {
+                "_adducts": ["[M+H]+", "[M-H]-"],
+                "Caffeine": {
+                    "ions": [195.0882, 193.0726],
+                    "info": ["[M+H]+", "[M-H]-"],
+                    "formula": "C8H10N4O2",
+                },
+            },
+        }
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps(config, indent=2))
+
+        from ui.tabs.upload_tab import UploadTab
+
+        tab = UploadTab(parent=None, mode="MS Only")
+        tab.config_path = config_path
+        qtbot.addWidget(tab)
+
+        tab.comboBoxIonLists.clear()
+        tab.comboBoxIonLists.addItem("Create new ion list...")
+        tab._load_ion_config_names()
+
+        # Select the list to populate the IonTable
+        idx = tab.comboBoxIonLists.findText("Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+        return tab
+
+    def test_theoretical_plots_survive_adduct_change(self, tab_with_formula):
+        """Changing adducts must leave _theoretical_plots populated, not empty."""
+        tab = tab_with_formula
+
+        # Theoretical plots should exist after loading a formula config
+        assert len(tab._theoretical_plots) > 0, (
+            "_theoretical_plots should be populated after loading formulas"
+        )
+
+        # Change adducts — this is the operation that previously wiped plots
+        tab._on_adducts_changed_upload(["[M+H]+", "[M+Na]+"])
+
+        # Plots must still be present
+        assert len(tab._theoretical_plots) > 0, (
+            "_theoretical_plots should survive adduct change"
+        )
+        assert "Caffeine" in tab._theoretical_plots
