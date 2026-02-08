@@ -1153,7 +1153,8 @@ class UploadTab(TabBase):
         self._remove_theoretical_plots()
         self._color_index_theo = 0
         self.ionTable._theoretical_spectra.clear()
-        self.ionTable.clear()
+        self.ionTable.clearContents()
+        self.ionTable.setRowCount(0)
 
     def _on_lookup_status(self, message: str, duration_ms: int):
         """Forward PubChem lookup status to status bar."""
