@@ -1200,10 +1200,13 @@ class UploadTab(TabBase):
 
             ion_data = data.get(selection, {})
 
-            # Restore adduct selection if saved
+            # Restore adduct selection if saved; otherwise fall back to defaults
             saved_adducts = ion_data.get("_adducts")
-            if saved_adducts is not None and isinstance(saved_adducts, list):
+            if isinstance(saved_adducts, list):
                 self.adduct_dropdown.set_checked(saved_adducts)
+            else:
+                # Legacy or missing _adducts: reset to default adducts to avoid stale state
+                self.adduct_dropdown.set_checked(DEFAULT_ADDUCTS)
 
             # Filter out the _adducts metadata key for compound iteration
             compound_data = {k: v for k, v in ion_data.items() if k != "_adducts"}
