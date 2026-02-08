@@ -14,6 +14,7 @@ leverages PyQt6's signal-slot mechanism for thread communication.
 import time
 import traceback
 import logging
+import multiprocessing
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from PySide6.QtCore import QThread, QObject, Signal
@@ -88,7 +89,7 @@ class LoadingWorker(QThread):
             return
 
         try:
-            with ProcessPoolExecutor() as executor:
+            with ProcessPoolExecutor(mp_context=multiprocessing.get_context("spawn")) as executor:
                 futures = {}
 
                 if self.file_type == "LC":
@@ -173,7 +174,7 @@ class ProcessingWorker(QThread):
             return
         results = []
         try:
-            with ProcessPoolExecutor() as executor:
+            with ProcessPoolExecutor(mp_context=multiprocessing.get_context("spawn")) as executor:
                 futures = {}
                 if self.mode in {"LC/GC-MS", "MS Only"}:
                     for ms_file in ms_measurements:

@@ -12,14 +12,6 @@ import logging.handlers
 import multiprocessing
 import tempfile
 from pathlib import Path
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import QThread
-from ui.model import Model
-from ui.view import View
-from ui.controller import Controller
-from ui import fonts
-from utils.resources import ensure_ms2_library, DownloadWorker
 
 
 def configure_logging():
@@ -71,6 +63,18 @@ def _get_resources_dir() -> Path:
 
 def main():
     """Main entry point for the application."""
+    if multiprocessing.parent_process() is not None:
+        return  # We're in a multiprocessing child — do not create a GUI
+
+    from PySide6.QtGui import QIcon
+    from PySide6.QtWidgets import QApplication
+    from PySide6.QtCore import QThread
+    from ui.model import Model
+    from ui.view import View
+    from ui.controller import Controller
+    from ui import fonts
+    from utils.resources import ensure_ms2_library, DownloadWorker
+
     # Configure logging
     logger = configure_logging()
     logger.info(

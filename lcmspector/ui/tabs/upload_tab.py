@@ -65,6 +65,9 @@ class UploadTab(TabBase):
         # Track main view plots separately (for selective clearing)
         self._main_view_plots = []  # PlotDataItems from click-to-view actions
 
+        # Theoretical spectrum overlay tracking: {compound_name: list[BarGraphItem]}
+        self._theoretical_plots = {}
+
         # Setup initial UI
         self.setup_layout(mode)
 
@@ -169,6 +172,7 @@ class UploadTab(TabBase):
         self._lc_active_plots.clear()
         self._ms_active_plots.clear()
         self._tic_active_plots.clear()
+        self._theoretical_plots.clear()
         self._color_index_lc = 0
         self._color_index_ms = 0
         self._selected_lc_file = None
@@ -644,6 +648,11 @@ class UploadTab(TabBase):
         # Connect IonTable PubChem lookup status to status bar
         self.ionTable.lookup_status.connect(self._on_lookup_status)
 
+        # Connect theoretical spectrum signal
+        self.ionTable.theoretical_spectrum_ready.connect(
+            self._on_theoretical_spectrum_ready
+        )
+
         # Process button
         self.processButton.clicked.connect(self.process_requested.emit)
 
@@ -1001,6 +1010,69 @@ class UploadTab(TabBase):
                         self._on_ms_checkbox_changed(filename, True)
 
     # --- Ion List Management ---
+
+    def _on_theoretical_spectrum_ready(self, compound_name: str, spectrum):
+        """Overlay theoretical isotopic peaks on canvas_avgMS."""
+        if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
+            return
+
+        # Remove previous theoretical plots for this compound
+        self._remove_theoretical_plots(compound_name)
+
+        items = []
+        for adduct_label, adduct in spectrum.adducts.items():
+            # Scale abundances to 80% of max experimental intensity
+            max_exp = 1.0
+            for plot_item, _ in self._ms_active_plots.values():
+                if plot_item is not None:
+                    try:
+                        y_data = plot_item.yData
+                        if y_data is not None and len(y_data) > 0:
+                            max_exp = max(max_exp, float(y_data.max()))
+                    except Exception:
+                        pass
+            scaled_heights = adduct.abundances * max_exp * 0.8
+
+            bar_item = pg.BarGraphItem(
+                x=adduct.mz_values,
+                height=scaled_heights,
+                width=0.15,
+                pen=pg.mkPen("#e25759", width=1),
+                brush=pg.mkBrush(226, 87, 89, 100),
+            )
+            self.canvas_avgMS.addItem(bar_item)
+            items.append(bar_item)
+
+        if items:
+            self._theoretical_plots[compound_name] = items
+
+    def _remove_theoretical_plots(self, compound_name: str = None):
+        """Remove theoretical spectrum overlays from canvas_avgMS.
+
+        Parameters
+        ----------
+        compound_name : str, optional
+            If given, remove only plots for this compound.
+            If None, remove all theoretical plots.
+        """
+        if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
+            return
+
+        if compound_name is not None:
+            items = self._theoretical_plots.pop(compound_name, [])
+            for item in items:
+                try:
+                    self.canvas_avgMS.removeItem(item)
+                except Exception:
+                    pass
+        else:
+            for name, items in self._theoretical_plots.items():
+                for item in items:
+                    try:
+                        self.canvas_avgMS.removeItem(item)
+                    except Exception:
+                        pass
+            self._theoretical_plots.clear()
 
     def _on_lookup_status(self, message: str, duration_ms: int):
         """Forward PubChem lookup status to status bar."""

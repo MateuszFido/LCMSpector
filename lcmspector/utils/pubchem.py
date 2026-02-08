@@ -54,7 +54,7 @@ class PubChemLookupWorker(QObject):
             # Query PubChem for compound properties
             logger.debug(f"Querying PubChem API for '{self.compound_name}'")
             results = pcp.get_properties(
-                ["IUPACName", "ExactMass"],
+                ["IUPACName", "ExactMass", "MolecularFormula"],
                 self.compound_name,
                 namespace="name",
             )
@@ -89,6 +89,7 @@ class PubChemLookupWorker(QObject):
                 "mz_pos": mz_pos,
                 "mz_neg": mz_neg,
                 "iupac_name": iupac_name,
+                "molecular_formula": compound_data.get("MolecularFormula", ""),
             }
 
             logger.info(

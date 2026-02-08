@@ -253,6 +253,8 @@ class GenericTable(QtWidgets.QTableWidget):
 class IonTable(GenericTable):
     # Signal emitted for status bar updates
     lookup_status = QtCore.Signal(str, int)  # (message, duration_ms)
+    # Signal emitted when a theoretical spectrum is computed
+    theoretical_spectrum_ready = QtCore.Signal(str, object)  # (compound_name, TheoreticalSpectrum)
 
     def __init__(self, view, parent=None):
         super().__init__(50, 3, parent)
@@ -267,6 +269,9 @@ class IonTable(GenericTable):
 
         # Custom m/z range storage: {compound_name: {mz: (left, right)}}
         self._custom_mz_ranges = {}
+
+        # Theoretical spectra storage: {compound_name: TheoreticalSpectrum}
+        self._theoretical_spectra = {}
 
         # Connect closeEditor signal (fires only when editing finishes, not on each keystroke)
         self.itemDelegate().closeEditor.connect(self._on_editor_closed)
@@ -379,6 +384,7 @@ class IonTable(GenericTable):
             mass_accuracy=mass_accuracy,
             compound_name=compound_name,
             existing_ranges=self._custom_mz_ranges.get(compound_name, {}),
+            theoretical_spectrum=self._theoretical_spectra.get(compound_name),
             parent=self,
         )
         dialog.exec()
@@ -420,8 +426,14 @@ class IonTable(GenericTable):
         if mz_item is not None and mz_item.text().strip():
             return
 
-        # Execute lookup immediately (no debounce needed since closeEditor only fires once)
-        self._execute_lookup_for(row, compound_name)
+        # Branch: formula → local calculation, name → PubChem lookup
+        from utils.theoretical_spectrum import detect_input_type
+
+        if detect_input_type(compound_name) == "formula":
+            self._execute_formula_lookup(row, compound_name)
+        else:
+            # Execute PubChem lookup (no debounce needed since closeEditor only fires once)
+            self._execute_lookup_for(row, compound_name)
 
     def _execute_lookup_for(self, row: int, compound_name: str):
         """Execute a PubChem lookup for the given row and compound name."""
@@ -451,6 +463,71 @@ class IonTable(GenericTable):
 
         # Start the lookup
         self._lookup_thread.start()
+
+    def _execute_formula_lookup(self, row: int, formula: str):
+        """Resolve a molecular formula locally and fill m/z cells.
+
+        Computes [M+H]+ and [M-H]- from the formula using pyteomics,
+        fills the table cells, and emits ``theoretical_spectrum_ready``.
+        """
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+        from utils.pubchem import PROTON_MASS
+
+        try:
+            spectrum = calculate_theoretical_spectrum(formula)
+        except ValueError as e:
+            self.lookup_status.emit(f"Invalid formula '{formula}': {e}", 5000)
+            return
+
+        # Extract monoisotopic m/z from adducts
+        mz_pos = None
+        mz_neg = None
+        if "[M+H]+" in spectrum.adducts:
+            mz_pos = round(spectrum.adducts["[M+H]+"].monoisotopic_mz, 4)
+        if "[M-H]-" in spectrum.adducts:
+            mz_neg = round(spectrum.adducts["[M-H]-"].monoisotopic_mz, 4)
+
+        if mz_pos is not None and mz_neg is not None:
+            mz_text = f"{mz_pos}, {mz_neg}"
+            info_text = "[M+H]+, [M-H]-"
+        elif mz_pos is not None:
+            mz_text = str(mz_pos)
+            info_text = "[M+H]+"
+        elif mz_neg is not None:
+            mz_text = str(mz_neg)
+            info_text = "[M-H]-"
+        else:
+            self.lookup_status.emit(f"Could not compute adducts for '{formula}'", 5000)
+            return
+
+        # Block signals to avoid re-triggering
+        self.blockSignals(True)
+
+        mz_item = self.item(row, 1)
+        if mz_item is None:
+            mz_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 1, mz_item)
+        mz_item.setText(mz_text)
+
+        info_item = self.item(row, 2)
+        if info_item is None:
+            info_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 2, info_item)
+        info_item.setText(info_text)
+
+        self.blockSignals(False)
+
+        # Apply green highlight
+        self._highlight_cell(row, 1)
+        self._highlight_cell(row, 2)
+
+        # Store and emit theoretical spectrum
+        self._theoretical_spectra[formula] = spectrum
+        self.theoretical_spectrum_ready.emit(formula, spectrum)
+
+        self.lookup_status.emit(
+            f"Formula '{formula}' resolved: [M+H]+ = {mz_pos}", 5000
+        )
 
     def _on_lookup_finished(self, compound_name: str, data: dict):
         """Handle successful PubChem lookup - fill m/z and info columns."""
@@ -498,6 +575,18 @@ class IonTable(GenericTable):
             self.lookup_status.emit(
                 f"PubChem lookup successful for '{compound_name}': [M+H]+ = {mz_pos}", 5000
             )
+
+            # Compute theoretical spectrum if molecular formula is available
+            molecular_formula = data.get("molecular_formula", "")
+            if molecular_formula:
+                try:
+                    from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+                    spectrum = calculate_theoretical_spectrum(molecular_formula)
+                    self._theoretical_spectra[compound_name] = spectrum
+                    self.theoretical_spectrum_ready.emit(compound_name, spectrum)
+                except Exception:
+                    pass  # Non-critical: theoretical overlay is optional
 
     def _on_lookup_error(self, compound_name: str, error_msg: str):
         """Handle PubChem lookup error."""
@@ -1395,6 +1484,7 @@ class MzRangeDialog(QtWidgets.QDialog):
         mass_accuracy,
         compound_name,
         existing_ranges=None,
+        theoretical_spectrum=None,
         parent=None,
     ):
         super().__init__(parent)
@@ -1407,12 +1497,14 @@ class MzRangeDialog(QtWidgets.QDialog):
         self._ion_labels = ion_labels
         self._mass_accuracy = mass_accuracy
         self._compound_name = compound_name
+        self._theoretical_spectrum = theoretical_spectrum
 
         # Internal state: {mz: (left, right)} for all ions
         self._ranges = dict(existing_ranges) if existing_ranges else {}
         self._current_ion_idx = 0
         self._left_line = None
         self._right_line = None
+        self._theo_items = []  # Tracked theoretical overlay items
 
         self._build_ui()
         self._plot_spectrum()
@@ -1564,6 +1656,59 @@ class MzRangeDialog(QtWidgets.QDialog):
 
         # Update labels with initial values
         self._update_boundary_labels()
+
+        # Overlay theoretical spectrum for current ion
+        self._plot_theoretical_for_current_ion()
+
+    def _plot_theoretical_for_current_ion(self):
+        """Overlay theoretical isotopic peaks for the currently selected ion."""
+        # Clean up previous theoretical items
+        plot_item = self._plot_widget.getPlotItem()
+        for item in self._theo_items:
+            try:
+                plot_item.removeItem(item)
+            except Exception:
+                pass
+        self._theo_items.clear()
+
+        if self._theoretical_spectrum is None:
+            return
+
+        idx = self._current_ion_idx
+        if idx >= len(self._ion_labels):
+            return
+
+        # Match ion label to adduct key
+        label = self._ion_labels[idx]
+        adduct = self._theoretical_spectrum.adducts.get(label)
+        if adduct is None:
+            return
+
+        # Scale abundances relative to experimental data in view window
+        mz = self._target_mz_values[idx]
+        view_mask = (self._mzs >= mz - 2.0) & (self._mzs <= mz + 2.0)
+        if np.any(view_mask):
+            max_exp = np.max(self._intensities[view_mask])
+        else:
+            max_exp = 1.0
+        scaled_heights = adduct.abundances * max_exp * 0.9
+
+        # Plot as bar graph
+        bar_item = pg.BarGraphItem(
+            x=adduct.mz_values,
+            height=scaled_heights,
+            width=0.1,
+            pen=mkPen("#d95f02", width=1),
+            brush=pg.mkBrush(217, 95, 2, 80),
+        )
+        plot_item.addItem(bar_item)
+        self._theo_items.append(bar_item)
+
+        # Add "Theoretical" text label above the monoisotopic peak
+        text_item = pg.TextItem("Theoretical", color="#d95f02", anchor=(0.5, 1.0))
+        text_item.setPos(adduct.monoisotopic_mz, scaled_heights[0] * 1.05)
+        plot_item.addItem(text_item)
+        self._theo_items.append(text_item)
 
     def _update_boundary_labels(self):
         """Update the boundary value labels when lines are moved."""
