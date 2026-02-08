@@ -1216,8 +1216,12 @@ class UploadTab(TabBase):
             for suffix in ("", " b", " y", " precursor"):
                 try:
                     legend.removeItem(f"{name}{suffix}")
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug(
+                        "Failed to remove legend item '%s' from canvas_avgMS: %s",
+                        f"{name}{suffix}",
+                        exc,
+                    )
 
         if compound_name is not None:
             items = self._theoretical_plots.pop(compound_name, [])
