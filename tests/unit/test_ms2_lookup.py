@@ -58,16 +58,12 @@ class TestFindNearestMS2:
         """Should not match when precursor is outside mz_tolerance."""
         from utils.mzml_reader import find_nearest_ms2
 
-        # Use a very tight tolerance that excludes the 103.04 precursor
+        # Use a very tight tolerance that excludes the 103.04 precursor.
+        # The real precursor is 103.040163, so a 0.0001 tolerance around 103.04
+        # should be too strict and result in no match.
         result = find_nearest_ms2(
             TEST_MZML, precursor_mz=103.04, target_rt=0.026,
             mz_tolerance=0.0001, rt_window=2.0,
-        )
-        # The real precursor is 103.040163, so 0.0001 tolerance should still match
-        # Use a precursor that's clearly outside range
-        result = find_nearest_ms2(
-            TEST_MZML, precursor_mz=104.0, target_rt=0.026,
-            mz_tolerance=0.01, rt_window=2.0,
         )
         assert result is None
 
