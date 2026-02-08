@@ -59,6 +59,7 @@ class UploadTab(TabBase):
         self._tic_active_plots = {}  # {filename: PlotDataItem} - TIC plots in MS Only mode
         self._color_index_lc = 0
         self._color_index_ms = 0
+        self._color_index_theo = 0
         self._selected_lc_file = None  # Currently selected LC filename
         self._selected_ms_file = None  # Currently selected MS filename
 
@@ -825,6 +826,9 @@ class UploadTab(TabBase):
         if plot_type == "LC":
             color = PlotStyle.PALETTE[self._color_index_lc % len(PlotStyle.PALETTE)]
             self._color_index_lc += 1
+        elif plot_type == "theo":
+            color = PlotStyle.PALETTE[self._color_index_theo % len(PlotStyle.PALETTE)]
+            self._color_index_theo += 1
         else:
             color = PlotStyle.PALETTE[self._color_index_ms % len(PlotStyle.PALETTE)]
             self._color_index_ms += 1
@@ -1022,7 +1026,12 @@ class UploadTab(TabBase):
         # Remove previous theoretical plots for this compound
         self._remove_theoretical_plots(compound_name)
 
+        color = self._get_next_color("theo")
+        qcolor = pg.mkColor(color)
+        brush_color = QtGui.QColor(qcolor.red(), qcolor.green(), qcolor.blue(), 100)
+
         items = []
+        first_bar = True
         for adduct_label, adduct in spectrum.adducts.items():
             # Scale abundances to 80% of max experimental intensity
             max_exp = 1.0
@@ -1040,11 +1049,13 @@ class UploadTab(TabBase):
                 x=adduct.mz_values,
                 height=scaled_heights,
                 width=0.15,
-                pen=pg.mkPen("#e25759", width=1),
-                brush=pg.mkBrush(226, 87, 89, 100),
+                pen=pg.mkPen(color, width=1),
+                brush=pg.mkBrush(brush_color),
+                name=compound_name if first_bar else None,
             )
             self.canvas_avgMS.addItem(bar_item)
             items.append(bar_item)
+            first_bar = False
 
         if items:
             self._theoretical_plots[compound_name] = items
@@ -1061,11 +1072,18 @@ class UploadTab(TabBase):
         if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
             return
 
+        legend = self.canvas_avgMS.getPlotItem().legend
+
         if compound_name is not None:
             items = self._theoretical_plots.pop(compound_name, [])
             for item in items:
                 try:
                     self.canvas_avgMS.removeItem(item)
+                except Exception:
+                    pass
+            if legend is not None:
+                try:
+                    legend.removeItem(compound_name)
                 except Exception:
                     pass
         else:
@@ -1075,12 +1093,18 @@ class UploadTab(TabBase):
                         self.canvas_avgMS.removeItem(item)
                     except Exception:
                         pass
+                if legend is not None:
+                    try:
+                        legend.removeItem(name)
+                    except Exception:
+                        pass
             self._theoretical_plots.clear()
 
     def _compute_theoretical_spectra_for_ion_list(self, ion_data: dict):
         """Compute and plot theoretical spectra for all compounds with formulas."""
         from utils.theoretical_spectrum import calculate_theoretical_spectrum
 
+        self._color_index_theo = 0
         for name, details in ion_data.items():
             formula = details.get("formula")
             if not formula:
@@ -1095,6 +1119,7 @@ class UploadTab(TabBase):
     def _on_clear_ion_list(self):
         """Handle the Clear button: remove all theoretical plots then clear the table."""
         self._remove_theoretical_plots()
+        self._color_index_theo = 0
         self.ionTable._theoretical_spectra.clear()
         self.ionTable.clear()
 

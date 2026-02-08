@@ -417,7 +417,7 @@ class TestAutoPlotAndLiveUpdate:
         assert len(tab.ionTable._theoretical_spectra) == 0
 
     def test_plots_created_for_formulas(self, tab_with_formulas):
-        """Theoretical plots dict is populated after loading ion list with formulas."""
+        """Theoretical plots dict is populated with distinct colors per compound."""
         tab = tab_with_formulas
         idx = tab.comboBoxIonLists.findText("With Formulas")
         tab.comboBoxIonLists.setCurrentIndex(idx)
@@ -425,6 +425,11 @@ class TestAutoPlotAndLiveUpdate:
         assert "Apigenin" in tab._theoretical_plots
         assert "Catechin" in tab._theoretical_plots
         assert "NoFormula" not in tab._theoretical_plots
+
+        # Each compound should have a different pen color
+        apigenin_pen = tab._theoretical_plots["Apigenin"][0].opts["pen"]
+        catechin_pen = tab._theoretical_plots["Catechin"][0].opts["pen"]
+        assert apigenin_pen.color().name() != catechin_pen.color().name()
 
     def test_clear_selection_emits_compound_removed(self, tab_with_formulas, qtbot):
         """Selecting a compound row and clearing emits compound_removed."""
@@ -528,3 +533,83 @@ class TestAutoPlotAndLiveUpdate:
         assert ions_data["Catechin"]["formula"] == "C15H14O6"
         # Compound without formula should not have the key
         assert "formula" not in ions_data.get("NoFormula", {})
+
+    def test_theoretical_plots_have_legend_entries(self, tab_with_formulas):
+        """Compounds with formulas get legend entries on canvas_avgMS."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        legend = tab.canvas_avgMS.getPlotItem().legend
+        assert legend is not None
+
+        # Collect legend entry labels
+        labels = [entry[1].text for entry in legend.items]
+        assert "Apigenin" in labels
+        assert "Catechin" in labels
+        assert "NoFormula" not in labels
+
+    def test_legend_cleared_on_ion_list_switch(self, tab_with_formulas):
+        """Switching ion lists removes old legend entries."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx1 = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx1)
+
+        legend = tab.canvas_avgMS.getPlotItem().legend
+        labels_before = [entry[1].text for entry in legend.items]
+        assert "Apigenin" in labels_before
+
+        # Switch to list without formulas
+        idx2 = tab.comboBoxIonLists.findText("No Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx2)
+
+        labels_after = [entry[1].text for entry in legend.items]
+        assert "Apigenin" not in labels_after
+        assert "Catechin" not in labels_after
+
+    def test_legend_cleared_on_compound_removal(self, tab_with_formulas):
+        """Removing a compound clears its legend entry."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        legend = tab.canvas_avgMS.getPlotItem().legend
+        labels = [entry[1].text for entry in legend.items]
+        assert "Apigenin" in labels
+
+        # Remove Apigenin
+        tab.ionTable.setCurrentCell(0, 0)
+        tab.ionTable.selectRow(0)
+        tab.ionTable.clear_selection()
+
+        labels_after = [entry[1].text for entry in legend.items]
+        assert "Apigenin" not in labels_after
+        # Catechin should still be there
+        assert "Catechin" in labels_after
+
+    def test_color_index_resets_on_clear(self, tab_with_formulas):
+        """After clear, next compound starts from palette[0]."""
+        from ui.plotting import PlotStyle
+
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        # Color index should have advanced
+        assert tab._color_index_theo > 0
+
+        # Click clear button
+        tab.button_clear_ion_list.click()
+        assert tab._color_index_theo == 0
+
+        # Re-load the list — first compound should get palette[0]
+        tab.comboBoxIonLists.setCurrentIndex(0)  # reset
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        first_compound = list(tab._theoretical_plots.keys())[0]
+        first_bar = tab._theoretical_plots[first_compound][0]
+        expected_color = PlotStyle.PALETTE[0]
+        actual_color = first_bar.opts["pen"].color().name()
+        assert actual_color == expected_color.lower()
