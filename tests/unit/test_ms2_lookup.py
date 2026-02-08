@@ -137,14 +137,21 @@ class TestMS2LookupWorker:
         assert len(blocker.args[0]) > 0  # Error message is non-empty
 
     def test_cancel_prevents_emission(self, qtbot):
-        """Cancelled worker should not emit finished signal."""
+        """Cancelled worker should not emit finished or error signals."""
         from calculation.workers import MS2LookupWorker
 
         worker = MS2LookupWorker("/nonexistent/file.mzml", 100.0, 1.0)
-        worker.cancel()
-        worker.start()
+        # Ensure that neither finished nor error is emitted after cancel.
+        with qtbot.waitSignal(worker.finished, timeout=100, raising=False) as finished_blocker, \
+                qtbot.waitSignal(worker.error, timeout=100, raising=False) as error_blocker:
+            worker.cancel()
+            worker.start()
+
+        assert not finished_blocker.signal_triggered
+        assert not error_blocker.signal_triggered
+
+        # Wait a bit to allow the worker thread to finish cleanly.
         worker.wait(2000)
-        # No assertion needed — if cancel works, neither finished nor error emits
 
 
 # ============================================================================
