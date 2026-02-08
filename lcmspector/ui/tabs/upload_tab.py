@@ -6,6 +6,8 @@ from pathlib import Path
 import logging
 import json
 import os
+
+import numpy as np
 from PySide6 import QtWidgets, QtCore, QtGui
 from PySide6.QtCore import Qt
 import pyqtgraph as pg
@@ -1037,11 +1039,37 @@ class UploadTab(TabBase):
 
     # --- Ion List Management ---
 
+    def _get_max_experimental_intensity(self):
+        """Get maximum intensity from currently plotted MS data."""
+        max_exp = 1.0
+        for plot_item, _ in self._ms_active_plots.values():
+            if plot_item is not None:
+                try:
+                    y_data = plot_item.yData
+                    if y_data is not None and len(y_data) > 0:
+                        max_exp = max(max_exp, float(y_data.max()))
+                except Exception:
+                    # Intentionally ignore errors from malformed plot items, but log for debugging.
+                    logger.debug(
+                        "Failed to read yData from plot item while computing max experimental intensity",
+                        exc_info=True,
+                    )
+        return max_exp
+
     def _on_theoretical_spectrum_ready(self, compound_name: str, spectrum):
-        """Overlay theoretical isotopic peaks on canvas_avgMS."""
+        """Overlay theoretical peaks on canvas_avgMS."""
+        from utils.theoretical_spectrum import PeptideSpectrum
+
         if not hasattr(self, "canvas_avgMS") or self.canvas_avgMS is None:
             return
 
+        if isinstance(spectrum, PeptideSpectrum):
+            self._plot_peptide_spectrum(compound_name, spectrum)
+        else:
+            self._plot_formula_spectrum(compound_name, spectrum)
+
+    def _plot_formula_spectrum(self, compound_name: str, spectrum):
+        """Overlay theoretical isotopic peaks for a formula-based compound."""
         # Remove previous theoretical plots for this compound
         self._remove_theoretical_plots(compound_name)
 
@@ -1052,16 +1080,7 @@ class UploadTab(TabBase):
         items = []
         first_bar = True
         for adduct_label, adduct in spectrum.adducts.items():
-            # Scale abundances to 80% of max experimental intensity
-            max_exp = 1.0
-            for plot_item, _ in self._ms_active_plots.values():
-                if plot_item is not None:
-                    try:
-                        y_data = plot_item.yData
-                        if y_data is not None and len(y_data) > 0:
-                            max_exp = max(max_exp, float(y_data.max()))
-                    except Exception:
-                        pass
+            max_exp = self._get_max_experimental_intensity()
             scaled_heights = adduct.abundances * max_exp * 0.8
 
             bar_item = pg.BarGraphItem(
@@ -1075,6 +1094,102 @@ class UploadTab(TabBase):
             self.canvas_avgMS.addItem(bar_item)
             items.append(bar_item)
             first_bar = False
+
+            # Add adduct label above monoisotopic peak
+            text_item = pg.TextItem(adduct_label, color=color, anchor=(0.5, 1.0))
+            text_item.setFont(QtGui.QFont("", 8))
+            text_item.setPos(adduct.monoisotopic_mz, scaled_heights[0] * 1.05)
+            self.canvas_avgMS.addItem(text_item)
+            items.append(text_item)
+
+        if items:
+            self._theoretical_plots[compound_name] = items
+
+    def _plot_peptide_spectrum(self, compound_name: str, spectrum):
+        """Overlay b/y fragment ions and precursor isotopic envelope."""
+        # Remove previous theoretical plots for this compound
+        self._remove_theoretical_plots(compound_name)
+
+        max_exp = self._get_max_experimental_intensity()
+        items = []
+
+        # Separate b and y ions
+        b_ions = [f for f in spectrum.fragments if f.ion_type == "b"]
+        y_ions = [f for f in spectrum.fragments if f.ion_type == "y"]
+
+        # Colors for fragment ions
+        b_color = "#1f77b4"  # blue
+        y_color = "#d62728"  # red
+
+        # Scale factor: bar heights at 80% of max experimental intensity
+        bar_height = max_exp * 0.8
+
+        # Plot b ions
+        if b_ions:
+            b_mzs = np.array([f.mz for f in b_ions])
+            b_heights = np.full(len(b_ions), bar_height)
+            bar_item = pg.BarGraphItem(
+                x=b_mzs,
+                height=b_heights,
+                width=1.0,
+                pen=pg.mkPen(b_color, width=1),
+                brush=pg.mkBrush(31, 119, 180, 100),
+                name=f"{compound_name} b",
+            )
+            self.canvas_avgMS.addItem(bar_item)
+            items.append(bar_item)
+
+            # Add labels above b ion bars
+            for f in b_ions:
+                text_item = pg.TextItem(
+                    f.label, color=b_color, anchor=(0.5, 1.0)
+                )
+                text_item.setFont(QtGui.QFont("", 8))
+                text_item.setPos(f.mz, bar_height * 1.05)
+                self.canvas_avgMS.addItem(text_item)
+                items.append(text_item)
+
+        # Plot y ions
+        if y_ions:
+            y_mzs = np.array([f.mz for f in y_ions])
+            y_heights = np.full(len(y_ions), bar_height)
+            bar_item = pg.BarGraphItem(
+                x=y_mzs,
+                height=y_heights,
+                width=1.0,
+                pen=pg.mkPen(y_color, width=1),
+                brush=pg.mkBrush(214, 39, 40, 100),
+                name=f"{compound_name} y",
+            )
+            self.canvas_avgMS.addItem(bar_item)
+            items.append(bar_item)
+
+            # Add labels above y ion bars
+            for f in y_ions:
+                text_item = pg.TextItem(
+                    f.label, color=y_color, anchor=(0.5, 1.0)
+                )
+                text_item.setFont(QtGui.QFont("", 8))
+                text_item.setPos(f.mz, bar_height * 1.05)
+                self.canvas_avgMS.addItem(text_item)
+                items.append(text_item)
+
+        # Plot precursor isotopic envelope
+        precursor_color = "#7f7f7f"  # muted gray
+        first_precursor = True
+        for adduct_label, adduct in spectrum.precursor_isotopes.items():
+            scaled_heights = adduct.abundances * max_exp * 0.8
+            bar_item = pg.BarGraphItem(
+                x=adduct.mz_values,
+                height=scaled_heights,
+                width=0.15,
+                pen=pg.mkPen(precursor_color, width=1),
+                brush=pg.mkBrush(127, 127, 127, 100),
+                name=f"{compound_name} precursor" if first_precursor else None,
+            )
+            self.canvas_avgMS.addItem(bar_item)
+            items.append(bar_item)
+            first_precursor = False
 
         if items:
             self._theoretical_plots[compound_name] = items
@@ -1093,6 +1208,21 @@ class UploadTab(TabBase):
 
         legend = self.canvas_avgMS.getPlotItem().legend
 
+        def _remove_legend_entries(name):
+            """Remove all legend entries for a compound (formula + peptide variants)."""
+            if legend is None:
+                return
+            # Remove the base name and peptide sub-entries
+            for suffix in ("", " b", " y", " precursor"):
+                try:
+                    legend.removeItem(f"{name}{suffix}")
+                except Exception as exc:
+                    logger.debug(
+                        "Failed to remove legend item '%s' from canvas_avgMS: %s",
+                        f"{name}{suffix}",
+                        exc,
+                    )
+
         if compound_name is not None:
             items = self._theoretical_plots.pop(compound_name, [])
             for item in items:
@@ -1100,11 +1230,7 @@ class UploadTab(TabBase):
                     self.canvas_avgMS.removeItem(item)
                 except Exception as exc:
                     logger.debug("Failed to remove theoretical plot item from canvas_avgMS: %s", exc)
-            if legend is not None:
-                try:
-                    legend.removeItem(compound_name)
-                except Exception as exc:
-                    logger.debug("Failed to remove legend item for compound '%s': %s", compound_name, exc)
+            _remove_legend_entries(compound_name)
         else:
             for name, items in self._theoretical_plots.items():
                 for item in items:
@@ -1112,31 +1238,39 @@ class UploadTab(TabBase):
                         self.canvas_avgMS.removeItem(item)
                     except Exception as exc:
                         logger.debug("Failed to remove theoretical plot item from canvas_avgMS: %s", exc)
-                if legend is not None:
-                    try:
-                        legend.removeItem(name)
-                    except Exception as exc:
-                        logger.debug("Failed to remove legend item for compound '%s': %s", name, exc)
+                _remove_legend_entries(name)
             self._theoretical_plots.clear()
 
     def _compute_theoretical_spectra_for_ion_list(self, ion_data: dict):
-        """Compute and plot theoretical spectra for all compounds with formulas."""
-        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+        """Compute and plot theoretical spectra for all compounds with formulas or sequences."""
+        from utils.theoretical_spectrum import (
+            calculate_peptide_fragments,
+            calculate_theoretical_spectrum,
+        )
 
         active_adducts = self.adduct_dropdown.checked_adducts()
         self._color_index_theo = 0
         for name, details in ion_data.items():
             if name == "_adducts":
                 continue  # Skip metadata key
+
+            sequence = details.get("sequence")
             formula = details.get("formula")
-            if not formula:
-                continue
-            try:
-                spectrum = calculate_theoretical_spectrum(formula, active_adducts)
-                self.ionTable._theoretical_spectra[name] = spectrum
-                self._on_theoretical_spectrum_ready(name, spectrum)
-            except Exception:
-                pass  # Skip invalid formulas silently
+
+            if sequence:
+                try:
+                    spectrum = calculate_peptide_fragments(sequence, active_adducts)
+                    self.ionTable._theoretical_spectra[name] = spectrum
+                    self._on_theoretical_spectrum_ready(name, spectrum)
+                except Exception:
+                    pass  # Skip invalid sequences silently
+            elif formula:
+                try:
+                    spectrum = calculate_theoretical_spectrum(formula, active_adducts)
+                    self.ionTable._theoretical_spectra[name] = spectrum
+                    self._on_theoretical_spectrum_ready(name, spectrum)
+                except Exception:
+                    pass  # Skip invalid formulas silently
 
     def _on_adducts_changed_upload(self, adduct_list: list[str]):
         """Handle adduct dropdown change: clear old plots then recompute.
@@ -1206,6 +1340,8 @@ class UploadTab(TabBase):
                 self.adduct_dropdown.set_checked(saved_adducts)
             else:
                 # Legacy or missing _adducts: reset to default adducts to avoid stale state
+                from utils.theoretical_spectrum import DEFAULT_ADDUCTS
+
                 self.adduct_dropdown.set_checked(DEFAULT_ADDUCTS)
 
             # Filter out the _adducts metadata key for compound iteration

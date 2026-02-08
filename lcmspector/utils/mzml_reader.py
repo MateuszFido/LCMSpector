@@ -22,6 +22,10 @@ _BINARY_DATA_ARRAY_TAG = f"{{{_NS}}}binaryDataArray"
 _BINARY_TAG = f"{{{_NS}}}binary"
 _SCAN_TAG = f"{{{_NS}}}scan"
 _CHROMATOGRAM_TAG = f"{{{_NS}}}chromatogram"
+_PRECURSOR_LIST_TAG = f"{{{_NS}}}precursorList"
+_PRECURSOR_TAG = f"{{{_NS}}}precursor"
+_SELECTED_ION_LIST_TAG = f"{{{_NS}}}selectedIonList"
+_SELECTED_ION_TAG = f"{{{_NS}}}selectedIon"
 
 # Accession constants
 _MS_LEVEL = "MS:1000511"
@@ -34,6 +38,7 @@ _FLOAT_64 = "MS:1000523"
 _FLOAT_32 = "MS:1000521"
 _ZLIB = "MS:1000574"
 _TIC_CHROMATOGRAM = "MS:1000235"
+_SELECTED_ION_MZ = "MS:1000744"
 
 
 def _decode_binary(raw_base64: str, is_zlib: bool, dtype: np.dtype) -> np.ndarray:
@@ -150,3 +155,97 @@ def iter_scans(filepath: str):
 
         if mz_array is not None and intensity_array is not None:
             yield scan_time, tic, ms_level, mz_array, intensity_array
+
+
+def find_nearest_ms2(
+    filepath: str,
+    precursor_mz: float,
+    target_rt: float,
+    mz_tolerance: float = 0.5,
+    rt_window: float = 2.0,
+):
+    """Find MS2 scan nearest to target_rt whose precursor matches precursor_mz.
+
+    Streams all spectra, filtering by ms_level==2, RT window, and precursor m/z.
+    Only decodes binary arrays for matching candidates to minimise overhead.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the mzML file.
+    precursor_mz : float
+        Target precursor m/z value to match.
+    target_rt : float
+        Target retention time in minutes.
+    mz_tolerance : float
+        Maximum allowed difference in m/z (Da). Default 0.5.
+    rt_window : float
+        Maximum allowed RT difference in minutes. Default 2.0.
+
+    Returns
+    -------
+    tuple or None
+        (scan_time, mz_array, intensity_array) of the best match, or None.
+    """
+    best = None
+    best_rt_delta = float("inf")
+
+    for event, spectrum_elem in iterparse(filepath, tag=_SPECTRUM_TAG):
+        ms_level = 1
+        scan_time = 0.0
+
+        # Extract ms_level from spectrum-level cvParams
+        for cv in spectrum_elem.iterchildren(_CVPARAM_TAG):
+            acc = cv.get("accession")
+            if acc == _MS_LEVEL:
+                ms_level = int(cv.get("value"))
+                break
+
+        # Skip MS1 scans immediately
+        if ms_level != 2:
+            spectrum_elem.clear()
+            continue
+
+        # Extract scan start time
+        for scan_elem in spectrum_elem.iter(_SCAN_TAG):
+            for cv in scan_elem.iterchildren(_CVPARAM_TAG):
+                if cv.get("accession") == _SCAN_START_TIME:
+                    scan_time = float(cv.get("value"))
+            break
+
+        # Skip if outside RT window
+        rt_delta = abs(scan_time - target_rt)
+        if rt_delta > rt_window:
+            spectrum_elem.clear()
+            continue
+
+        # Parse precursor m/z from <precursorList>
+        precursor_match = False
+        for precursor_list in spectrum_elem.iter(_PRECURSOR_LIST_TAG):
+            for precursor_elem in precursor_list.iter(_SELECTED_ION_TAG):
+                for cv in precursor_elem.iterchildren(_CVPARAM_TAG):
+                    if cv.get("accession") == _SELECTED_ION_MZ:
+                        found_mz = float(cv.get("value"))
+                        if abs(found_mz - precursor_mz) <= mz_tolerance:
+                            precursor_match = True
+                        break
+                if precursor_match:
+                    break
+            break
+
+        if not precursor_match:
+            spectrum_elem.clear()
+            continue
+
+        # Only decode binary for matching candidates
+        if rt_delta < best_rt_delta:
+            arrays = _parse_binary_arrays(spectrum_elem)
+            mz_array = arrays.get("mz")
+            intensity_array = arrays.get("intensity")
+            if mz_array is not None and intensity_array is not None:
+                best = (scan_time, mz_array, intensity_array)
+                best_rt_delta = rt_delta
+
+        spectrum_elem.clear()
+
+    return best

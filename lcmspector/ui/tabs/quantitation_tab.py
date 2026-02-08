@@ -13,11 +13,12 @@ from ui.widgets import UnifiedResultsTable
 from ui.plotting import (
     plot_calibration_curve,
     plot_compound_integration,
-    plot_ms2_from_file,
+    plot_ms2_spectrum,
     plot_no_ms2_found,
     plot_no_ms_info,
     update_labels_avgMS,
 )
+from calculation.workers import MS2LookupWorker
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,6 @@ class QuantitationTab(TabBase):
     # Signals to communicate with controller
     calibration_requested = QtCore.Signal()
     compound_changed = QtCore.Signal(int)
-    ms2_file_changed = QtCore.Signal(int)
 
     def __init__(self, parent=None, mode="LC/GC-MS"):
         super().__init__(parent)
@@ -43,6 +43,8 @@ class QuantitationTab(TabBase):
         self.file_concentrations = None
         self._selected_ion = None  # Track currently selected ion for manual integration
         self._curve_refs = {}  # Store references to curves for click handling
+        self._ms2_worker = None  # Current MS2 lookup worker
+        self._ms2_lookup_id = 0  # Monotonic counter for stale result rejection
 
         # Initialize the main layout
         self._main_layout = QtWidgets.QGridLayout(self)
@@ -92,9 +94,9 @@ class QuantitationTab(TabBase):
                 self.comboBoxChooseCompound.setEnabled(False)
             except RuntimeError:
                 pass  # Widget already deleted
-        if hasattr(self, "comboBoxChooseMS2File"):
+        if hasattr(self, "comboBoxMS2Ion"):
             try:
-                self.comboBoxChooseMS2File.clear()
+                self.comboBoxMS2Ion.clear()
             except RuntimeError:
                 pass  # Widget already deleted
         if hasattr(self, "comboBoxChooseFile"):
@@ -237,10 +239,20 @@ class QuantitationTab(TabBase):
 
         self.gridLayout_quant.addLayout(self.gridLayout_top_right, 1, 1, 1, 2)
 
-        # MS2 file selection (Row 2)
-        self.comboBoxChooseMS2File = QtWidgets.QComboBox()
-        self.comboBoxChooseMS2File.setObjectName("comboBoxChooseMS2File")
-        self.gridLayout_quant.addWidget(self.comboBoxChooseMS2File, 2, 1, 1, 2)
+        # MS2 ion selection + status label (Row 2)
+        self.ms2_header_layout = QtWidgets.QHBoxLayout()
+        self.label_ms2_ion = QtWidgets.QLabel("MS2 Ion:")
+        self.label_ms2_ion.setStyleSheet("font-weight: bold; font-size: 13px;")
+        self.comboBoxMS2Ion = QtWidgets.QComboBox()
+        self.comboBoxMS2Ion.setMinimumSize(QtCore.QSize(200, 28))
+        self.comboBoxMS2Ion.setObjectName("comboBoxMS2Ion")
+        self.label_ms2_status = QtWidgets.QLabel("")
+        self.label_ms2_status.setStyleSheet("color: #666666; font-style: italic;")
+        self.ms2_header_layout.addWidget(self.label_ms2_ion)
+        self.ms2_header_layout.addWidget(self.comboBoxMS2Ion)
+        self.ms2_header_layout.addWidget(self.label_ms2_status)
+        self.ms2_header_layout.addStretch()
+        self.gridLayout_quant.addLayout(self.ms2_header_layout, 2, 1, 1, 2)
 
         # MS2 canvas (Row 3)
         self.canvas_ms2 = pg.PlotWidget()
@@ -331,18 +343,21 @@ class QuantitationTab(TabBase):
         self.comboBoxChooseCompound.currentIndexChanged.connect(
             self._on_compound_changed
         )
-        self.comboBoxChooseMS2File.currentIndexChanged.connect(
-            self._on_ms2_file_changed
-        )
         # Connect compound selection to update the unified table
         self.comboBoxChooseCompound.currentIndexChanged.connect(
             self.update_unified_table_for_compound
         )
         # Monitor concentration inputs for calibrate button state
         self.unifiedResultsTable.itemChanged.connect(self._on_table_item_changed)
-        # Connect unified table selection to display MS2 data
+        # MS2 ion combo triggers lookup
+        self.comboBoxMS2Ion.currentIndexChanged.connect(self._trigger_ms2_lookup)
+        # Update MS2 ion combo when compound changes
+        self.comboBoxChooseCompound.currentIndexChanged.connect(
+            self._update_ms2_ion_combo
+        )
+        # Update MS2 lookup when table selection (file) changes
         self.unifiedResultsTable.selectionModel().selectionChanged.connect(
-            self.display_ms2
+            self._trigger_ms2_lookup
         )
         # Connect ion selection combo box
         self.comboBoxSelectIon.currentIndexChanged.connect(
@@ -369,10 +384,6 @@ class QuantitationTab(TabBase):
     def _on_compound_changed(self, index):
         """Internal handler for compound selection change."""
         self.compound_changed.emit(index)
-
-    def _on_ms2_file_changed(self, index):
-        """Internal handler for MS2 file selection change."""
-        self.ms2_file_changed.emit(index)
 
     def _on_file_combo_changed(self, filename: str):
         """Handle file selection from combo box - select matching table row."""
@@ -679,46 +690,124 @@ class QuantitationTab(TabBase):
             except Exception as e:
                 logger.warning(f"Failed to connect click signal for {ion_key}: {e}")
 
-    def display_ms2(self):
-        """Display MS2 data for the selected file."""
-        selected_file = self.unifiedResultsTable.get_selected_file()
-        if not selected_file:
-            logger.error("No file selected for MS2 display")
-            plot_no_ms2_found(self.canvas_ms2)
+    def _update_ms2_ion_combo(self):
+        """Populate the MS2 ion combo box with ions of the current compound."""
+        self.comboBoxMS2Ion.blockSignals(True)
+        self.comboBoxMS2Ion.clear()
+
+        if not self._controller:
+            self.comboBoxMS2Ion.blockSignals(False)
             return
+
+        compound_idx = self.comboBoxChooseCompound.currentIndex()
+        if compound_idx < 0 or not self._controller.model.compounds:
+            self.comboBoxMS2Ion.blockSignals(False)
+            return
+
+        compound = self._controller.model.compounds[compound_idx]
+        ion_keys = list(compound.ions.keys())
+        ion_info_list = getattr(compound, "ion_info", [])
+
+        for i, ion_key in enumerate(ion_keys):
+            info_str = ion_info_list[i] if i < len(ion_info_list) else ""
+            display_text = f"{ion_key}"
+            if info_str:
+                display_text += f" ({info_str})"
+            self.comboBoxMS2Ion.addItem(display_text, userData=float(ion_key))
+
+        self.comboBoxMS2Ion.blockSignals(False)
+
+        # Auto-trigger lookup for the first ion
+        if self.comboBoxMS2Ion.count() > 0:
+            self._trigger_ms2_lookup()
+
+    def _trigger_ms2_lookup(self):
+        """Cancel any pending MS2 worker and start a new lookup."""
+        # Cancel previous worker
+        if self._ms2_worker is not None:
+            self._ms2_worker.cancel()
+            self._ms2_worker = None
 
         if not self._controller:
             return
 
+        selected_file = self.unifiedResultsTable.get_selected_file()
+        if not selected_file:
+            return
+
         ms_file = self._controller.model.ms_measurements.get(selected_file)
         if ms_file is None:
-            logger.error(f"No MS file found for {selected_file}")
             plot_no_ms2_found(self.canvas_ms2)
             return
 
-        try:
-            self._controller.model.find_ms2_in_file(ms_file)
-            compound = next(
-                (
-                    xic
-                    for xic in ms_file.xics
-                    if xic.name == self.comboBoxChooseCompound.currentText()
-                ),
-                None,
-            )
-            precursor = float(
-                self.comboBoxChooseMS2File.currentText()
-                .split("m/z ")[1]
-                .replace("(", "")
-                .replace(")", "")
-            )
-            plot_ms2_from_file(ms_file, compound, precursor, self.canvas_ms2)
-        except Exception:
-            logger.error(
-                f"No MS2 found for {self.comboBoxChooseMS2File.currentText()}: "
-                f"{traceback.format_exc()}"
-            )
+        if self.comboBoxMS2Ion.currentIndex() < 0:
+            return
+
+        precursor_mz = self.comboBoxMS2Ion.currentData()
+        if precursor_mz is None:
+            return
+
+        # Get target RT from compound XIC data
+        compound_name = self.comboBoxChooseCompound.currentText()
+        compound = ms_file.get_compound_by_name(compound_name)
+        if compound is None:
             plot_no_ms2_found(self.canvas_ms2)
+            return
+
+        # Use the ion's RT as target
+        ion_data = compound.ions.get(precursor_mz)
+        if ion_data is None:
+            # Try matching as string
+            for key, val in compound.ions.items():
+                if str(key) == str(precursor_mz):
+                    ion_data = val
+                    break
+        target_rt = ion_data.get("RT", 0) if ion_data else 0
+        if target_rt is None or target_rt == 0:
+            # Fallback: use the first scan time
+            target_rt = 0
+
+        self._ms2_lookup_id += 1
+        lookup_id = self._ms2_lookup_id
+
+        self.label_ms2_status.setText("Searching...")
+        self.label_ms2_status.setStyleSheet("color: #0b81a2; font-style: italic;")
+
+        worker = MS2LookupWorker(
+            ms_file.path, precursor_mz, target_rt
+        )
+        worker.finished.connect(lambda result, lid=lookup_id: self._on_ms2_found(result, lid))
+        worker.error.connect(lambda msg, lid=lookup_id: self._on_ms2_error(msg, lid))
+        self._ms2_worker = worker
+        worker.start()
+
+    def _on_ms2_found(self, result, lookup_id):
+        """Handle MS2 lookup result. Ignores stale results."""
+        if lookup_id != self._ms2_lookup_id:
+            return  # Stale result
+
+        if result is None:
+            self.label_ms2_status.setText("No MS2 found")
+            self.label_ms2_status.setStyleSheet("color: #999999; font-style: italic;")
+            plot_no_ms2_found(self.canvas_ms2)
+            return
+
+        scan_time, mz_array, intensity_array = result
+        self.label_ms2_status.setText(f"Found at RT {scan_time:.2f} min")
+        self.label_ms2_status.setStyleSheet("color: #2EC4B6; font-weight: bold;")
+
+        compound_name = self.comboBoxChooseCompound.currentText()
+        ion_text = self.comboBoxMS2Ion.currentText()
+        title = f"MS2 of {compound_name} ({ion_text}) at RT {scan_time:.2f} min"
+        plot_ms2_spectrum(self.canvas_ms2, mz_array, intensity_array, title=title)
+
+    def _on_ms2_error(self, error_msg, lookup_id):
+        """Handle MS2 lookup error. Ignores stale results."""
+        if lookup_id != self._ms2_lookup_id:
+            return
+        self.label_ms2_status.setText(f"Error: {error_msg}")
+        self.label_ms2_status.setStyleSheet("color: #e25759; font-style: italic;")
+        plot_no_ms2_found(self.canvas_ms2)
 
     def get_integration_bounds(
         self, canvas=None, ion_key: str = None

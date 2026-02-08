@@ -3,16 +3,20 @@ Theoretical isotopic mass spectrum prediction.
 
 Provides formula detection, isotopic pattern calculation using pyteomics,
 and data structures for theoretical spectra with common adducts.
+Supports molecular formulas, peptide sequences, and compound name lookup.
 """
 
 import logging
 from dataclasses import dataclass, field
 
 import numpy as np
-from pyteomics.mass import Composition, isotopologues, nist_mass
+from pyteomics.mass import Composition, fast_mass, isotopologues, nist_mass
 from pyteomics.auxiliary import PyteomicsError
 
 logger = logging.getLogger(__name__)
+
+# Standard 20 amino acids (single-letter codes)
+STANDARD_AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWY")
 
 
 @dataclass
@@ -48,6 +52,48 @@ class TheoreticalSpectrum:
 
     formula: str
     adducts: dict
+
+
+@dataclass
+class PeptideFragment:
+    """A single b or y fragment ion.
+
+    Attributes
+    ----------
+    label : str
+        Fragment label (e.g. "b3", "y5").
+    mz : float
+        Monoisotopic m/z value.
+    ion_type : str
+        "b" or "y".
+    position : int
+        Cleavage position (1-indexed).
+    """
+
+    label: str
+    mz: float
+    ion_type: str
+    position: int
+
+
+@dataclass
+class PeptideSpectrum:
+    """Theoretical spectrum for a peptide sequence.
+
+    Attributes
+    ----------
+    sequence : str
+        Amino acid sequence.
+    fragments : list[PeptideFragment]
+        b and y fragment ions.
+    precursor_isotopes : dict[str, AdductSpectrum]
+        Isotopic envelopes for each adduct, same structure as
+        TheoreticalSpectrum.adducts.
+    """
+
+    sequence: str
+    fragments: list
+    precursor_isotopes: dict
 
 
 @dataclass
@@ -175,18 +221,36 @@ def calculate_monoisotopic_mz(formula: str, adduct_types: list[str]) -> dict[str
     return result
 
 
+def is_valid_peptide(text: str) -> bool:
+    """Check if text is a valid peptide sequence (standard 20 amino acids).
+
+    Parameters
+    ----------
+    text : str
+        Text to check (should be pre-stripped).
+
+    Returns
+    -------
+    bool
+        True if text looks like a peptide sequence.
+    """
+    if len(text) < 2:
+        return False
+    return all(c in STANDARD_AMINO_ACIDS for c in text)
+
+
 def detect_input_type(user_input: str) -> str:
-    """Determine whether user input is a molecular formula or a compound name.
+    """Determine whether user input is a molecular formula, peptide, or compound name.
 
     Parameters
     ----------
     user_input : str
-        Text entered by the user (e.g. "C8H10N4O2" or "Caffeine").
+        Text entered by the user (e.g. "C8H10N4O2", "PEPTIDE", or "Caffeine").
 
     Returns
     -------
     str
-        ``"formula"`` or ``"name"``.
+        ``"formula"``, ``"peptide"``, or ``"name"``.
     """
     if not user_input or not user_input.strip():
         return "name"
@@ -205,26 +269,25 @@ def detect_input_type(user_input: str) -> str:
     try:
         comp = Composition(formula=text)
     except (PyteomicsError, Exception):
-        return "name"
+        comp = None
 
-    # Empty composition -> name
-    if not comp:
-        return "name"
+    if comp:
+        # Verify all parsed elements exist in nist_mass
+        all_valid = all(element in nist_mass for element in comp)
+        if all_valid:
+            try:
+                mass = comp.mass()
+                if mass > 0:
+                    return "formula"
+            except (PyteomicsError, Exception) as exc:
+                # Failed to compute mass; treat input as non-formula and fall through.
+                logger.debug("Failed to compute mass for parsed composition %r: %s", comp, exc)
 
-    # Verify all parsed elements exist in nist_mass
-    for element in comp:
-        if element not in nist_mass:
-            return "name"
+    # Check for peptide sequence (formula takes priority)
+    if is_valid_peptide(text):
+        return "peptide"
 
-    # Verify mass can be computed (catches remaining edge cases)
-    try:
-        mass = comp.mass()
-        if mass <= 0:
-            return "name"
-    except (PyteomicsError, Exception):
-        return "name"
-
-    return "formula"
+    return "name"
 
 
 def calculate_theoretical_spectrum(
@@ -326,3 +389,142 @@ def calculate_theoretical_spectrum(
             continue
 
     return TheoreticalSpectrum(formula=formula, adducts=adducts)
+
+
+def calculate_peptide_precursor_mz(
+    sequence: str, adduct_types: list[str] | None = None
+) -> dict[str, float]:
+    """Fast path: dict of {adduct_label: monoisotopic_mz} for a peptide sequence.
+
+    Parameters
+    ----------
+    sequence : str
+        Amino acid sequence (e.g. "PEPTIDE").
+    adduct_types : list[str], optional
+        Adduct labels to compute. Default: ``DEFAULT_ADDUCTS``.
+
+    Returns
+    -------
+    dict[str, float]
+        Mapping of adduct label to rounded monoisotopic m/z.
+    """
+    if adduct_types is None:
+        adduct_types = DEFAULT_ADDUCTS
+
+    base_comp = Composition(sequence=sequence)
+    result = {}
+    for label in adduct_types:
+        defn = ADDUCT_DEFINITIONS.get(label)
+        if defn is not None:
+            result[label] = round(compute_adduct_mz(base_comp, defn), 4)
+    return result
+
+
+def calculate_peptide_fragments(
+    sequence: str,
+    adduct_types: list[str] | None = None,
+    abundance_threshold: float = 0.001,
+) -> PeptideSpectrum:
+    """Calculate theoretical b/y fragment ions and precursor isotopic envelope.
+
+    Parameters
+    ----------
+    sequence : str
+        Amino acid sequence (e.g. "PEPTIDE").
+    adduct_types : list[str], optional
+        Adduct labels for precursor isotopic envelopes. Default: ``DEFAULT_ADDUCTS``.
+    abundance_threshold : float, optional
+        Minimum relative abundance for isotopologues. Default: 0.001.
+
+    Returns
+    -------
+    PeptideSpectrum
+        Fragment ions and precursor isotopic envelopes.
+
+    Raises
+    ------
+    ValueError
+        If the sequence contains invalid amino acids.
+    """
+    if adduct_types is None:
+        adduct_types = DEFAULT_ADDUCTS
+
+    if not is_valid_peptide(sequence):
+        raise ValueError(f"Invalid peptide sequence: '{sequence}'")
+
+    n = len(sequence)
+    fragments = []
+
+    # Generate b and y ions (singly charged)
+    for i in range(1, n):
+        # b ion: N-terminal fragment
+        b_mz = fast_mass(sequence[:i], ion_type="b", charge=1)
+        fragments.append(PeptideFragment(
+            label=f"b{i}", mz=round(b_mz, 4), ion_type="b", position=i
+        ))
+
+        # y ion: C-terminal fragment
+        y_mz = fast_mass(sequence[n - i :], ion_type="y", charge=1)
+        fragments.append(PeptideFragment(
+            label=f"y{i}", mz=round(y_mz, 4), ion_type="y", position=i
+        ))
+
+    # Compute precursor isotopic envelopes (same pattern as calculate_theoretical_spectrum)
+    base_comp = Composition(sequence=sequence)
+    precursor_isotopes = {}
+
+    for adduct_type in adduct_types:
+        defn = ADDUCT_DEFINITIONS.get(adduct_type)
+        if defn is None:
+            continue
+
+        try:
+            adduct_comp = compute_adduct_composition(base_comp, defn)
+
+            isos = list(
+                isotopologues(
+                    composition=adduct_comp,
+                    report_abundance=True,
+                    overall_threshold=abundance_threshold,
+                )
+            )
+
+            if not isos:
+                continue
+
+            mz_list = []
+            abundance_list = []
+            for iso_comp, abundance in isos:
+                mz_list.append(iso_comp.mass() / defn.charge)
+                abundance_list.append(abundance)
+
+            mz_array = np.array(mz_list)
+            abundance_array = np.array(abundance_list)
+
+            sort_idx = np.argsort(mz_array)
+            mz_array = mz_array[sort_idx]
+            abundance_array = abundance_array[sort_idx]
+
+            max_abundance = abundance_array.max()
+            if max_abundance > 0:
+                abundance_array = abundance_array / max_abundance
+
+            monoisotopic_mz = mz_array[0]
+
+            precursor_isotopes[adduct_type] = AdductSpectrum(
+                mz_values=mz_array,
+                abundances=abundance_array,
+                monoisotopic_mz=monoisotopic_mz,
+            )
+
+        except Exception as e:
+            logger.warning(
+                f"Failed to compute {adduct_type} isotopes for '{sequence}': {e}"
+            )
+            continue
+
+    return PeptideSpectrum(
+        sequence=sequence,
+        fragments=fragments,
+        precursor_isotopes=precursor_isotopes,
+    )

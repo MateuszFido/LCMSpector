@@ -3,10 +3,69 @@ Shared fixtures for UI testing suite.
 
 Provides pytest-qt fixtures and mock objects for testing LCMSpector UI components.
 """
+import gc
 import json
+import os
+import sys
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+
+
+# ============================================================================
+# Qt Cleanup Hooks
+# ============================================================================
+
+
+def pytest_configure(config):
+    """Disable Python's cyclic garbage collector for the entire test session.
+
+    PySide6/shiboken segfaults when Python's GC collects PySide6 wrapper
+    objects whose C++ counterparts have already been destroyed.  Disabling
+    automatic GC prevents this race.  Manual gc.collect() is also unsafe
+    here, so we rely on reference-counting for Python-side cleanup and
+    os._exit(0) to skip atexit handlers that would trigger the same issue.
+    """
+    gc.disable()
+
+
+@pytest.fixture(autouse=True)
+def _flush_qt_events(qapp):
+    """Flush deferred deletions between every test to prevent accumulation."""
+    yield
+    for _ in range(3):  # handle cascading deletions
+        qapp.processEvents()
+
+
+def pytest_sessionfinish(session, exitstatus):
+    """Capture the real exit status before shutdown."""
+    session.config._real_exitstatus = exitstatus
+
+
+def pytest_unconfigure(config):
+    """Bypass Python interpreter shutdown when all tests passed.
+
+    Qt's atexit handlers can trigger use-after-free segfaults during
+    interpreter shutdown when thousands of deferred deletions accumulate
+    in a session-scoped QApplication.  When all tests passed, skip the
+    teardown entirely with os._exit(0).
+    """
+    real_status = getattr(config, "_real_exitstatus", None)
+    if real_status is not None and real_status == 0:
+        if sys.platform == "win32":
+            import ctypes
+
+            kernel32 = ctypes.windll.kernel32
+            kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+            kernel32.TerminateProcess.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+            kernel32.TerminateProcess.restype = ctypes.c_int
+
+            sys.stdout.flush()
+            sys.stderr.flush()
+
+            kernel32.TerminateProcess(kernel32.GetCurrentProcess(), 0)
+        else:
+            os._exit(0)
 
 
 # ============================================================================
@@ -213,6 +272,9 @@ def upload_tab(qapp, qtbot, config_file):
 
     yield tab
 
+    tab.close()
+    tab.deleteLater()
+
 
 @pytest.fixture
 def upload_tab_ms_only(qapp, qtbot, config_file):
@@ -232,6 +294,9 @@ def upload_tab_ms_only(qapp, qtbot, config_file):
 
     yield tab
 
+    tab.close()
+    tab.deleteLater()
+
 
 @pytest.fixture
 def upload_tab_chrom_only(qapp, qtbot, config_file):
@@ -250,6 +315,9 @@ def upload_tab_chrom_only(qapp, qtbot, config_file):
     tab._load_ion_config_names()
 
     yield tab
+
+    tab.close()
+    tab.deleteLater()
 
 
 # ============================================================================
@@ -327,6 +395,9 @@ def drag_drop_list(qapp, qtbot):
     qtbot.addWidget(widget)
     yield widget
 
+    widget.close()
+    widget.deleteLater()
+
 
 @pytest.fixture
 def ion_table(qapp, qtbot, config_file):
@@ -347,6 +418,10 @@ def ion_table(qapp, qtbot, config_file):
     qtbot.addWidget(table)
     yield table
 
+    table._cleanup_lookup()
+    table.close()
+    table.deleteLater()
+
 
 @pytest.fixture
 def labelled_slider(qapp, qtbot):
@@ -358,3 +433,6 @@ def labelled_slider(qapp, qtbot):
     widget = LabelledSlider("Test Label", values, default, parent=None)
     qtbot.addWidget(widget)
     yield widget
+
+    widget.close()
+    widget.deleteLater()

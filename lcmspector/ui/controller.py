@@ -55,9 +55,6 @@ class Controller:
             self.view.display_concentrations
         )
         self.view.comboBoxChooseCompound.currentIndexChanged.connect(
-            self.view.display_ms2
-        )
-        self.view.comboBoxChooseCompound.currentIndexChanged.connect(
             self.view.display_compound_integration
         )
         self.view.button_apply_integration.clicked.connect(
@@ -100,12 +97,6 @@ class Controller:
         try:
             self.view.comboBoxChooseCompound.currentIndexChanged.disconnect(
                 self.view.display_concentrations
-            )
-        except (RuntimeError, TypeError):
-            pass
-        try:
-            self.view.comboBoxChooseCompound.currentIndexChanged.disconnect(
-                self.view.display_ms2
             )
         except (RuntimeError, TypeError):
             pass
@@ -244,9 +235,6 @@ class Controller:
         self.view.comboBoxChooseCompound.setEnabled(True)
         self.view.update_choose_compound(self.model.compounds)
 
-        # Search for MS2 precursors
-        self.find_ms2_precursors()
-
     def update_filenames(self):
         if self.mode == "LC/GC-MS" or self.mode == "LC/GC Only":
             filenames = list(self.model.lc_measurements.keys())
@@ -307,18 +295,6 @@ class Controller:
 
         # Display the calibration curve after successful calibration
         self.view.display_calibration_curve()
-
-    def find_ms2_precursors(self):
-        """
-        Finds the MS2 precursors in the library for the currently selected files with annotated concentrations.
-        :return: None
-        """
-        try:
-            self.view.statusbar.showMessage("Looking for MS2 precursors...", 5000)
-            self.model.find_ms2_precursors()
-        except Exception:
-            logger.error("Error finding MS2 precursors: %s", traceback.format_exc())
-            return
 
     def on_worker_error(self, error_message):
         """
