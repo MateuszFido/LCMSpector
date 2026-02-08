@@ -87,6 +87,147 @@ class TestDetectInputType:
 # ===========================================================================
 
 
+class TestAdductDefinitions:
+    """Tests for AdductDefinition dataclass and ADDUCT_DEFINITIONS dict."""
+
+    def test_all_13_adducts_present(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        assert len(ADDUCT_DEFINITIONS) == 13
+
+    def test_positive_adducts_count(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        positive = [d for d in ADDUCT_DEFINITIONS.values() if d.polarity == "positive"]
+        assert len(positive) == 7
+
+    def test_negative_adducts_count(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        negative = [d for d in ADDUCT_DEFINITIONS.values() if d.polarity == "negative"]
+        assert len(negative) == 6
+
+    def test_default_checked_are_mh_plus_and_mh_minus(self):
+        from utils.theoretical_spectrum import DEFAULT_ADDUCTS
+
+        assert "[M+H]+" in DEFAULT_ADDUCTS
+        assert "[M-H]-" in DEFAULT_ADDUCTS
+        assert len(DEFAULT_ADDUCTS) == 2
+
+    def test_adduct_labels_match_keys(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        for label, defn in ADDUCT_DEFINITIONS.items():
+            assert label == defn.label
+
+
+class TestComputeAdductMz:
+    """Tests for compute_adduct_mz() and calculate_monoisotopic_mz()."""
+
+    def test_mh_plus_caffeine(self):
+        """[M+H]+ for caffeine: exact_mass + H ≈ 195.0882."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+H]+"])
+        assert "[M+H]+" in result
+        assert result["[M+H]+"] == pytest.approx(195.0882, abs=0.001)
+
+    def test_mh_minus_caffeine(self):
+        """[M-H]- for caffeine: exact_mass - H ≈ 193.0726."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M-H]-"])
+        assert "[M-H]-" in result
+        assert result["[M-H]-"] == pytest.approx(193.0726, abs=0.001)
+
+    def test_m_na_plus_caffeine(self):
+        """[M+Na]+ for caffeine: exact_mass + Na ≈ 217.0695."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+Na]+"])
+        assert "[M+Na]+" in result
+        assert result["[M+Na]+"] == pytest.approx(217.0695, abs=0.01)
+
+    def test_m_k_plus_caffeine(self):
+        """[M+K]+ for caffeine: exact_mass + K ≈ 233.0434."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+K]+"])
+        assert "[M+K]+" in result
+        assert result["[M+K]+"] == pytest.approx(233.0434, abs=0.01)
+
+    def test_m_nh4_plus_caffeine(self):
+        """[M+NH4]+ for caffeine: exact_mass + NH4 ≈ 212.1147."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+NH4]+"])
+        assert "[M+NH4]+" in result
+        assert result["[M+NH4]+"] == pytest.approx(212.1147, abs=0.01)
+
+    def test_multiply_charged_mz_divided(self):
+        """[M+2H]2+ m/z ≈ (M + 2H) / 2."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+2H]2+"])
+        assert "[M+2H]2+" in result
+        # (194.0804 + 2*1.00794) / 2 ≈ 98.0481
+        assert result["[M+2H]2+"] == pytest.approx(98.048, abs=0.01)
+
+    def test_dimer_mz(self):
+        """[2M+H]+ m/z ≈ 2*M + H."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[2M+H]+"])
+        assert "[2M+H]+" in result
+        # 2*194.0804 + 1.00794 ≈ 389.1687
+        assert result["[2M+H]+"] == pytest.approx(389.169, abs=0.01)
+
+    def test_water_loss_mz(self):
+        """[M+H-H2O]+ m/z ≈ M + H - H2O."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+H-H2O]+"])
+        assert "[M+H-H2O]+" in result
+        # 194.0804 + 1.00794 - 18.01056 ≈ 177.0778
+        assert result["[M+H-H2O]+"] == pytest.approx(177.078, abs=0.01)
+
+    def test_m_cl_minus(self):
+        """[M+Cl]- for caffeine: exact_mass + Cl ≈ 229.0518."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+Cl]-"])
+        assert "[M+Cl]-" in result
+        assert result["[M+Cl]-"] == pytest.approx(229.052, abs=0.01)
+
+    def test_m_formate_minus(self):
+        """[M+HCOO]- for caffeine: exact_mass + CHO2 ≈ 239.0780."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+HCOO]-"])
+        assert "[M+HCOO]-" in result
+        assert result["[M+HCOO]-"] == pytest.approx(239.078, abs=0.01)
+
+    def test_calculate_monoisotopic_mz_multiple(self):
+        """Fast path returns correct dict for multiple adducts."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz(
+            "C8H10N4O2", ["[M+H]+", "[M-H]-", "[M+Na]+"]
+        )
+        assert len(result) == 3
+        assert "[M+H]+" in result
+        assert "[M-H]-" in result
+        assert "[M+Na]+" in result
+
+    def test_calculate_monoisotopic_mz_skips_unknown(self):
+        """Unknown adduct label is silently skipped."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+H]+", "[FAKE]+"])
+        assert len(result) == 1
+        assert "[M+H]+" in result
+
+
 class TestCalculateTheoreticalSpectrum:
     """Tests for calculate_theoretical_spectrum()."""
 
@@ -141,6 +282,35 @@ class TestCalculateTheoreticalSpectrum:
 
         spec = calculate_theoretical_spectrum("H2O")
         assert spec.formula == "H2O"
+
+    def test_with_custom_adducts(self):
+        """Passing specific adduct list produces only those adducts."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum(
+            "C8H10N4O2", adduct_types=["[M+Na]+", "[M+Cl]-"]
+        )
+        assert "[M+Na]+" in spec.adducts
+        assert "[M+Cl]-" in spec.adducts
+        assert "[M+H]+" not in spec.adducts
+
+    def test_multiply_charged_isotopologues_divided(self):
+        """[M+2H]2+ isotopologue m/z values should be divided by charge."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum(
+            "C8H10N4O2", adduct_types=["[M+2H]2+"]
+        )
+        adduct = spec.adducts["[M+2H]2+"]
+        # Monoisotopic should be roughly (194.08 + 2*1.008) / 2 ≈ 98
+        assert adduct.monoisotopic_mz == pytest.approx(98.048, abs=0.1)
+
+    def test_backward_compatible_defaults(self):
+        """Default behavior with no adduct_types produces [M+H]+ and [M-H]-."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("C6H12O6")
+        assert set(spec.adducts.keys()) == {"[M+H]+", "[M-H]-"}
 
 
 # ===========================================================================

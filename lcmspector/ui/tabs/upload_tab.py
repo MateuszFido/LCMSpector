@@ -15,6 +15,7 @@ from ui.widgets import (
     DragDropListWidget,
     CheckableDragDropListWidget,
     IonTable,
+    AdductDropdown,
     ChromatogramPlotWidget,
     LabelledSlider,
 )
@@ -307,6 +308,9 @@ class UploadTab(TabBase):
 
         self.ionTable = IonTable(view=self, parent=self)
 
+        self.adduct_dropdown = AdductDropdown(parent=self)
+        self.ionTable.set_adduct_dropdown(self.adduct_dropdown)
+
         self.button_clear_ion_list = QtWidgets.QPushButton("Clear")
         self.button_save_ion_list = QtWidgets.QPushButton("Save")
         self.button_delete_ion_list = QtWidgets.QPushButton("Delete")
@@ -448,7 +452,11 @@ class UploadTab(TabBase):
         self._main_layout.addWidget(self.button_clear_MS, 6, 0, 1, 1)
 
         # Ion list controls (right column)
-        self._main_layout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        ion_label_layout = QtWidgets.QHBoxLayout()
+        ion_label_layout.addWidget(self.labelIonList)
+        ion_label_layout.addStretch()
+        ion_label_layout.addWidget(self.adduct_dropdown)
+        self._main_layout.addLayout(ion_label_layout, 0, 4, 1, 3)
         self._main_layout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self._main_layout.addWidget(self.help_icon_ion_list, 1, 6, 1, 1)
         self._main_layout.addWidget(self.ionTable, 2, 4, 4, 3)
@@ -513,7 +521,11 @@ class UploadTab(TabBase):
         self._main_layout.addWidget(self.button_clear_MS, 7, 0, 1, 1)
 
         # Ion list controls (right column)
-        self._main_layout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        ion_label_layout = QtWidgets.QHBoxLayout()
+        ion_label_layout.addWidget(self.labelIonList)
+        ion_label_layout.addStretch()
+        ion_label_layout.addWidget(self.adduct_dropdown)
+        self._main_layout.addLayout(ion_label_layout, 0, 4, 1, 3)
         self._main_layout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self._main_layout.addWidget(self.help_icon_ion_list, 1, 6, 1, 1)
         self._main_layout.addWidget(self.ionTable, 2, 4, 4, 3)
@@ -583,7 +595,11 @@ class UploadTab(TabBase):
         self._main_layout.addWidget(self.listAnnotations, 2, 2, 1, 2)
 
         # Ion list controls (right column)
-        self._main_layout.addWidget(self.labelIonList, 0, 4, 1, 1)
+        ion_label_layout = QtWidgets.QHBoxLayout()
+        ion_label_layout.addWidget(self.labelIonList)
+        ion_label_layout.addStretch()
+        ion_label_layout.addWidget(self.adduct_dropdown)
+        self._main_layout.addLayout(ion_label_layout, 0, 4, 1, 3)
         self._main_layout.addWidget(self.comboBoxIonLists, 1, 4, 1, 2)
         self._main_layout.addWidget(self.help_icon_ion_list, 1, 6, 1, 1)
         self._main_layout.addWidget(self.ionTable, 2, 4, 4, 3)
@@ -656,6 +672,9 @@ class UploadTab(TabBase):
 
         # Connect compound removal to clean up theoretical plots
         self.ionTable.compound_removed.connect(self._remove_theoretical_plots)
+
+        # Connect adduct dropdown to remove old plots before IonTable recomputes
+        self.adduct_dropdown.adducts_changed.connect(self._on_adducts_changed_upload)
 
         # Process button
         self.processButton.clicked.connect(self.process_requested.emit)
@@ -1104,17 +1123,29 @@ class UploadTab(TabBase):
         """Compute and plot theoretical spectra for all compounds with formulas."""
         from utils.theoretical_spectrum import calculate_theoretical_spectrum
 
+        active_adducts = self.adduct_dropdown.checked_adducts()
         self._color_index_theo = 0
         for name, details in ion_data.items():
+            if name == "_adducts":
+                continue  # Skip metadata key
             formula = details.get("formula")
             if not formula:
                 continue
             try:
-                spectrum = calculate_theoretical_spectrum(formula)
+                spectrum = calculate_theoretical_spectrum(formula, active_adducts)
                 self.ionTable._theoretical_spectra[name] = spectrum
                 self._on_theoretical_spectrum_ready(name, spectrum)
             except Exception:
                 pass  # Skip invalid formulas silently
+
+    def _on_adducts_changed_upload(self, adduct_list: list[str]):
+        """Handle adduct dropdown change: remove old theoretical plots before recompute.
+
+        The IonTable._on_adducts_changed() handler (connected separately) will
+        recompute and re-emit theoretical_spectrum_ready for each compound.
+        """
+        self._remove_theoretical_plots()
+        self._color_index_theo = 0
 
     def _on_clear_ion_list(self):
         """Handle the Clear button: remove all theoretical plots then clear the table."""
@@ -1167,12 +1198,20 @@ class UploadTab(TabBase):
 
             ion_data = data.get(selection, {})
 
+            # Restore adduct selection if saved
+            saved_adducts = ion_data.get("_adducts")
+            if saved_adducts is not None and isinstance(saved_adducts, list):
+                self.adduct_dropdown.set_checked(saved_adducts)
+
+            # Filter out the _adducts metadata key for compound iteration
+            compound_data = {k: v for k, v in ion_data.items() if k != "_adducts"}
+
             # Block signals to prevent triggering PubChem lookups during programmatic updates
             self.ionTable.blockSignals(True)
             try:
-                self.ionTable.setRowCount(len(ion_data))
+                self.ionTable.setRowCount(len(compound_data))
 
-                for row, (name, details) in enumerate(ion_data.items()):
+                for row, (name, details) in enumerate(compound_data.items()):
                     # Name
                     self.ionTable.setItem(row, 0, QtWidgets.QTableWidgetItem(str(name)))
 
