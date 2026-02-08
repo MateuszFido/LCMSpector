@@ -1098,25 +1098,25 @@ class UploadTab(TabBase):
             for item in items:
                 try:
                     self.canvas_avgMS.removeItem(item)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Failed to remove theoretical plot item from canvas_avgMS: %s", exc)
             if legend is not None:
                 try:
                     legend.removeItem(compound_name)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Failed to remove legend item for compound '%s': %s", compound_name, exc)
         else:
             for name, items in self._theoretical_plots.items():
                 for item in items:
                     try:
                         self.canvas_avgMS.removeItem(item)
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug("Failed to remove theoretical plot item from canvas_avgMS: %s", exc)
                 if legend is not None:
                     try:
                         legend.removeItem(name)
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.debug("Failed to remove legend item for compound '%s': %s", name, exc)
             self._theoretical_plots.clear()
 
     def _compute_theoretical_spectra_for_ion_list(self, ion_data: dict):
