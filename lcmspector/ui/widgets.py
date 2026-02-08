@@ -943,7 +943,9 @@ class IonTable(GenericTable):
         active_adducts = self._get_active_adducts()
         from utils.theoretical_spectrum import DEFAULT_ADDUCTS
 
-        if active_adducts != DEFAULT_ADDUCTS:
+        # Compare as sets so the same selection in a different order
+        # does not trigger unnecessary persistence.
+        if set(active_adducts) != set(DEFAULT_ADDUCTS):
             ions_data["_adducts"] = active_adducts
 
         # Save locally in config.json
