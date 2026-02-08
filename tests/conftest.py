@@ -6,6 +6,7 @@ Provides pytest-qt fixtures and mock objects for testing LCMSpector UI component
 import gc
 import json
 import os
+import sys
 import pytest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -51,7 +52,12 @@ def pytest_unconfigure(config):
     """
     real_status = getattr(config, "_real_exitstatus", None)
     if real_status is not None and real_status == 0:
-        os._exit(0)
+        if sys.platform == "win32":
+            import ctypes
+            kernel32 = ctypes.windll.kernel32
+            kernel32.TerminateProcess(kernel32.GetCurrentProcess(), 0)
+        else:
+            os._exit(0)
 
 
 # ============================================================================
