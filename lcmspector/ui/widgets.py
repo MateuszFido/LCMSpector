@@ -395,17 +395,26 @@ class IonTable(GenericTable):
         return -1
 
     def _on_adducts_changed(self, adduct_list: list[str]):
-        """Recompute m/z and theoretical spectra for all formula-based compounds."""
+        """Recompute m/z and theoretical spectra for all formula/peptide compounds."""
         from utils.theoretical_spectrum import (
+            PeptideSpectrum,
             calculate_monoisotopic_mz,
+            calculate_peptide_fragments,
+            calculate_peptide_precursor_mz,
             calculate_theoretical_spectrum,
         )
 
         for name, spectrum in list(self._theoretical_spectra.items()):
-            formula = spectrum.formula
+            is_peptide = isinstance(spectrum, PeptideSpectrum)
 
             # Fast path: update table m/z values
-            mz_dict = calculate_monoisotopic_mz(formula, adduct_list)
+            if is_peptide:
+                mz_dict = calculate_peptide_precursor_mz(
+                    spectrum.sequence, adduct_list
+                )
+            else:
+                mz_dict = calculate_monoisotopic_mz(spectrum.formula, adduct_list)
+
             if not mz_dict:
                 continue
 
@@ -437,7 +446,14 @@ class IonTable(GenericTable):
 
             # Slow path: recompute theoretical spectrum with new adducts
             try:
-                new_spectrum = calculate_theoretical_spectrum(formula, adduct_list)
+                if is_peptide:
+                    new_spectrum = calculate_peptide_fragments(
+                        spectrum.sequence, adduct_list
+                    )
+                else:
+                    new_spectrum = calculate_theoretical_spectrum(
+                        spectrum.formula, adduct_list
+                    )
                 self._theoretical_spectra[name] = new_spectrum
                 self.theoretical_spectrum_ready.emit(name, new_spectrum)
             except Exception:
@@ -606,11 +622,14 @@ class IonTable(GenericTable):
         if mz_item is not None and mz_item.text().strip():
             return
 
-        # Branch: formula → local calculation, name → PubChem lookup
+        # Branch: formula → local calculation, peptide → local, name → PubChem lookup
         from utils.theoretical_spectrum import detect_input_type
 
-        if detect_input_type(compound_name) == "formula":
+        input_type = detect_input_type(compound_name)
+        if input_type == "formula":
             self._execute_formula_lookup(row, compound_name)
+        elif input_type == "peptide":
+            self._execute_peptide_lookup(row, compound_name)
         else:
             # Execute PubChem lookup (no debounce needed since closeEditor only fires once)
             self._execute_lookup_for(row, compound_name)
@@ -706,6 +725,71 @@ class IonTable(GenericTable):
         first_mz = mz_dict[first_label]
         self.lookup_status.emit(
             f"Formula '{formula}' resolved: {first_label} = {first_mz}", 5000
+        )
+
+    def _execute_peptide_lookup(self, row: int, sequence: str):
+        """Resolve a peptide sequence locally and fill m/z cells.
+
+        Computes precursor m/z for all active adducts and b/y fragment
+        ions, fills table cells, and emits ``theoretical_spectrum_ready``.
+        """
+        from utils.theoretical_spectrum import (
+            calculate_peptide_precursor_mz,
+            calculate_peptide_fragments,
+        )
+
+        active_adducts = self._get_active_adducts()
+
+        # Fast path: compute precursor m/z for table display
+        try:
+            mz_dict = calculate_peptide_precursor_mz(sequence, active_adducts)
+        except Exception as e:
+            self.lookup_status.emit(f"Invalid peptide '{sequence}': {e}", 5000)
+            return
+
+        if not mz_dict:
+            self.lookup_status.emit(
+                f"Could not compute adducts for '{sequence}'", 5000
+            )
+            return
+
+        mz_text = ", ".join(str(v) for v in mz_dict.values())
+        info_text = ", ".join(mz_dict.keys())
+
+        # Block signals to avoid re-triggering
+        self.blockSignals(True)
+
+        mz_item = self.item(row, 1)
+        if mz_item is None:
+            mz_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 1, mz_item)
+        mz_item.setText(mz_text)
+
+        info_item = self.item(row, 2)
+        if info_item is None:
+            info_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 2, info_item)
+        info_item.setText(info_text)
+
+        self.blockSignals(False)
+
+        # Apply green highlight
+        self._highlight_cell(row, 1)
+        self._highlight_cell(row, 2)
+
+        # Slow path: compute fragment spectrum with isotopic patterns
+        try:
+            spectrum = calculate_peptide_fragments(sequence, active_adducts)
+            self._theoretical_spectra[sequence] = spectrum
+            self.theoretical_spectrum_ready.emit(sequence, spectrum)
+        except ValueError as e:
+            self.lookup_status.emit(f"Invalid peptide '{sequence}': {e}", 5000)
+            return
+
+        first_label = next(iter(mz_dict))
+        first_mz = mz_dict[first_label]
+        self.lookup_status.emit(
+            f"Peptide '{sequence}' resolved: {first_label} = {first_mz}", 5000
         )
 
     def _on_lookup_finished(self, compound_name: str, data: dict):
@@ -937,9 +1021,15 @@ class IonTable(GenericTable):
                 x.strip() for x in info_text.split(",") if x.strip()
             ]
 
-            # 4. Persist formula if available (for auto-plotting on reload)
+            # 4. Persist formula or sequence if available (for auto-plotting on reload)
             if name in self._theoretical_spectra:
-                ions_data[name]["formula"] = self._theoretical_spectra[name].formula
+                from utils.theoretical_spectrum import PeptideSpectrum
+
+                spectrum = self._theoretical_spectra[name]
+                if isinstance(spectrum, PeptideSpectrum):
+                    ions_data[name]["sequence"] = spectrum.sequence
+                else:
+                    ions_data[name]["formula"] = spectrum.formula
 
         # 5. Persist adduct selection
         active_adducts = self._get_active_adducts()

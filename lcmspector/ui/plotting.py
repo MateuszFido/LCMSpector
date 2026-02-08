@@ -757,6 +757,7 @@ def _annotate_peaks(
 
     for mz, intensity in zip(top_mzs, top_ints):
         text = pg.TextItem(text=f"{mz:.4f}", color="#3c5488", anchor=(0.5, 1))
+        text._lcms_owner = "peak_label"
         text.setFont(QFont("Helvetica", 9))
         text.setPos(mz, intensity)
         widget.addItem(text)
@@ -815,9 +816,9 @@ def update_labels_avgMS(canvas):
     Uses non-maximum suppression to select distinct peaks within the visible
     range, preventing label clustering around the same peak.
     """
-    # Remove all the previous labels
+    # Remove only m/z peak labels (tagged), preserving peptide/formula labels
     for item in canvas.items():
-        if isinstance(item, pg.TextItem):
+        if isinstance(item, pg.TextItem) and getattr(item, "_lcms_owner", None) == "peak_label":
             canvas.removeItem(item)
     if canvas.getPlotItem().listDataItems():
         try:
@@ -844,6 +845,7 @@ def update_labels_avgMS(canvas):
 
     for mz, intensity in zip(mzs, intensities):
         text_item = pg.TextItem(text=f"{mz:.4f}", color="#242526", anchor=(0, 0))
+        text_item._lcms_owner = "peak_label"
         text_item.setFont(
             pg.QtGui.QFont("Helvetica", 10, weight=pg.QtGui.QFont.Weight.Normal)
         )
