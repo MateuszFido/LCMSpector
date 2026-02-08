@@ -1,5 +1,4 @@
 # model.py
-import gc
 import logging
 import traceback
 import threading
@@ -439,9 +438,7 @@ class Model(QObject):
         self.annotations = tuple()
         self.compounds = tuple()
 
-        # Trigger garbage collection to release memory
-        gc.collect()
-        logger.debug("Measurements cleared and memory released.")
+        logger.debug("Measurements cleared.")
 
     def apply_integration_changes(self):
         """

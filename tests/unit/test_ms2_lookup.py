@@ -159,12 +159,13 @@ class TestMS2LookupWorker:
 class TestMS2Plotting:
     """Tests for ui.plotting.plot_ms2_spectrum()."""
 
-    def test_plots_normalised_bars(self, qapp):
+    def test_plots_normalised_bars(self, qtbot):
         """Should add bar graph items normalised to 100%."""
         import pyqtgraph as pg
         from ui.plotting import plot_ms2_spectrum
 
         canvas = pg.PlotWidget()
+        qtbot.addWidget(canvas)
         mz = np.array([100.0, 200.0, 300.0])
         intensity = np.array([500.0, 1000.0, 250.0])
 
@@ -175,21 +176,23 @@ class TestMS2Plotting:
         bar_items = [i for i in items if isinstance(i, pg.BarGraphItem)]
         assert len(bar_items) == 1
 
-    def test_handles_empty_arrays(self, qapp):
+    def test_handles_empty_arrays(self, qtbot):
         """Should not crash on empty arrays."""
         import pyqtgraph as pg
         from ui.plotting import plot_ms2_spectrum
 
         canvas = pg.PlotWidget()
+        qtbot.addWidget(canvas)
         plot_ms2_spectrum(canvas, np.array([]), np.array([]), title="Empty")
         # Should show placeholder, not crash
 
-    def test_title_is_set(self, qapp):
+    def test_title_is_set(self, qtbot):
         """Should set the plot title."""
         import pyqtgraph as pg
         from ui.plotting import plot_ms2_spectrum
 
         canvas = pg.PlotWidget()
+        qtbot.addWidget(canvas)
         mz = np.array([100.0, 200.0])
         intensity = np.array([500.0, 1000.0])
         plot_ms2_spectrum(canvas, mz, intensity, title="Custom Title")
