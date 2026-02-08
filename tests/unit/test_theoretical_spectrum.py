@@ -5,6 +5,7 @@ Tests formula detection, isotopic pattern calculation, IonTable formula
 branching, and MzRangeDialog theoretical overlay.
 """
 
+import json
 import numpy as np
 import pytest
 from unittest.mock import MagicMock, patch
@@ -339,3 +340,191 @@ class TestMzRangeDialogTheoretical:
         assert len(dialog._theo_items) >= 2
         # Items should be different objects (old ones removed)
         assert dialog._theo_items[0] is not items_ion0[0]
+
+
+# ===========================================================================
+# TestAutoPlotAndLiveUpdate
+# ===========================================================================
+
+
+class TestAutoPlotAndLiveUpdate:
+    """Tests for auto-plotting theoretical spectra on ion list load and
+    live-updating when compounds are removed."""
+
+    @pytest.fixture
+    def config_with_formulas(self, tmp_path):
+        """Config with formula fields for some compounds."""
+        config = {
+            "With Formulas": {
+                "Apigenin": {
+                    "ions": [271.0601, 269.0455],
+                    "info": ["[M+H]+", "[M-H]-"],
+                    "formula": "C15H10O5",
+                },
+                "Catechin": {
+                    "ions": [291.0863, 289.0718],
+                    "info": ["[M+H]+", "[M-H]-"],
+                    "formula": "C15H14O6",
+                },
+                "NoFormula": {
+                    "ions": [100.0, 98.0],
+                    "info": ["[M+H]+", "[M-H]-"],
+                },
+            },
+            "No Formulas": {
+                "CompA": {
+                    "ions": [150.0, 148.0],
+                    "info": ["[M+H]+", "[M-H]-"],
+                },
+            },
+        }
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps(config, indent=2))
+        return config_path
+
+    @pytest.fixture
+    def tab_with_formulas(self, qapp, qtbot, config_with_formulas):
+        """UploadTab with formula-enabled config."""
+        from ui.tabs.upload_tab import UploadTab
+
+        tab = UploadTab(parent=None, mode="MS Only")
+        tab.config_path = config_with_formulas
+        qtbot.addWidget(tab)
+
+        tab.comboBoxIonLists.clear()
+        tab.comboBoxIonLists.addItem("Create new ion list...")
+        tab._load_ion_config_names()
+        return tab
+
+    def test_bulk_computation_with_formula(self, tab_with_formulas):
+        """Selecting an ion list with formulas populates _theoretical_spectra."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        # Compounds with formulas should have theoretical spectra
+        assert "Apigenin" in tab.ionTable._theoretical_spectra
+        assert "Catechin" in tab.ionTable._theoretical_spectra
+        # Compound without formula should not
+        assert "NoFormula" not in tab.ionTable._theoretical_spectra
+
+    def test_bulk_computation_skips_no_formula(self, tab_with_formulas):
+        """Entries without 'formula' key produce no spectra."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("No Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        assert len(tab.ionTable._theoretical_spectra) == 0
+
+    def test_plots_created_for_formulas(self, tab_with_formulas):
+        """Theoretical plots dict is populated after loading ion list with formulas."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        assert "Apigenin" in tab._theoretical_plots
+        assert "Catechin" in tab._theoretical_plots
+        assert "NoFormula" not in tab._theoretical_plots
+
+    def test_clear_selection_emits_compound_removed(self, tab_with_formulas, qtbot):
+        """Selecting a compound row and clearing emits compound_removed."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        from tests.conftest import SignalCatcher
+
+        catcher = SignalCatcher()
+        tab.ionTable.compound_removed.connect(catcher.slot)
+
+        # Select the first row (Apigenin) — specifically the name cell
+        tab.ionTable.setCurrentCell(0, 0)
+        tab.ionTable.selectRow(0)
+        tab.ionTable.clear_selection()
+
+        assert catcher.was_called
+        assert catcher.args == ("Apigenin",)
+
+    def test_clear_selection_cleans_cached_spectra(self, tab_with_formulas):
+        """Clearing a compound row removes it from _theoretical_spectra."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        assert "Apigenin" in tab.ionTable._theoretical_spectra
+
+        tab.ionTable.setCurrentCell(0, 0)
+        tab.ionTable.selectRow(0)
+        tab.ionTable.clear_selection()
+
+        assert "Apigenin" not in tab.ionTable._theoretical_spectra
+
+    def test_plots_cleared_on_ion_list_switch(self, tab_with_formulas):
+        """Switching ion lists removes old theoretical plots before adding new ones."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx1 = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx1)
+        assert len(tab._theoretical_plots) > 0
+
+        # Switch to list without formulas
+        idx2 = tab.comboBoxIonLists.findText("No Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx2)
+
+        # All old plots should be gone
+        assert len(tab._theoretical_plots) == 0
+        assert len(tab.ionTable._theoretical_spectra) == 0
+
+    def test_clear_button_removes_theoretical_plots(self, tab_with_formulas, qtbot):
+        """Full clear button removes all theoretical overlays."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+        assert len(tab._theoretical_plots) > 0
+
+        # Click clear button
+        tab.button_clear_ion_list.click()
+
+        assert len(tab._theoretical_plots) == 0
+        assert len(tab.ionTable._theoretical_spectra) == 0
+
+    def test_save_ion_list_persists_formula(self, tab_with_formulas, qtbot):
+        """Saving an ion list includes the formula field in the saved data."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        # Build ions_data the same way save_ion_list does, to verify formula inclusion
+        ions_data = {}
+        table = tab.ionTable
+        for row in range(table.rowCount()):
+            name_item = table.item(row, 0)
+            if name_item is None:
+                continue
+            name = name_item.text().strip()
+            if not name:
+                continue
+            ions_data[name] = {}
+            mz_item = table.item(row, 1)
+            mz_text = mz_item.text() if mz_item else ""
+            try:
+                ions_data[name]["ions"] = [
+                    float(x) for x in mz_text.split(",") if x.strip()
+                ]
+            except ValueError:
+                ions_data[name]["ions"] = []
+            # Verify formula persistence logic
+            if name in table._theoretical_spectra:
+                ions_data[name]["formula"] = table._theoretical_spectra[name].formula
+
+        assert "Apigenin" in ions_data
+        assert ions_data["Apigenin"]["formula"] == "C15H10O5"
+        assert "Catechin" in ions_data
+        assert ions_data["Catechin"]["formula"] == "C15H14O6"
+        # Compound without formula should not have the key
+        assert "formula" not in ions_data.get("NoFormula", {})

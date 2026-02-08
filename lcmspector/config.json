@@ -5,37 +5,43 @@
                 47.0128,
                 44.9982,
                 91.0026
-            ]
+            ],
+            "formula": "CH2O2"
         },
         "Acetic acid": {
             "ions": [
                 61.0284,
                 59.0139
-            ]
+            ],
+            "formula": "C2H4O2"
         },
         "Butanoic acid": {
             "ions": [
                 89.0597,
                 87.04515
-            ]
+            ],
+            "formula": "C4H8O2"
         },
         "Propionic acid": {
             "ions": [
                 75.0441,
                 73.0295
-            ]
+            ],
+            "formula": "C3H6O2"
         },
         "Pentanoic acid": {
             "ions": [
                 103.0754,
                 101.0608
-            ]
+            ],
+            "formula": "C5H10O2"
         },
         "Hexanoic acid": {
             "ions": [
                 117.09101,
                 115.07645
-            ]
+            ],
+            "formula": "C6H12O2"
         }
     },
     "Flavonoids": {
@@ -47,7 +53,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O5"
         },
         "Catechin": {
             "ions": [
@@ -57,7 +64,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H14O6"
         },
         "Chrysin": {
             "ions": [
@@ -67,7 +75,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O4"
         },
         "Galangin": {
             "ions": [
@@ -77,7 +86,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O5"
         },
         "Genistein": {
             "ions": [
@@ -87,7 +97,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O5"
         },
         "Isorhamnetin": {
             "ions": [
@@ -97,7 +108,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C16H12O7"
         },
         "Kaempferol": {
             "ions": [
@@ -107,7 +119,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O6"
         },
         "Luteolin": {
             "ions": [
@@ -117,7 +130,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O6"
         },
         "Myricetin": {
             "ions": [
@@ -127,7 +141,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O8"
         },
         "Pinobanksin": {
             "ions": [
@@ -137,7 +152,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H12O5"
         },
         "Pinocembrin": {
             "ions": [
@@ -147,7 +163,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H12O4"
         },
         "Quercetin": {
             "ions": [
@@ -157,7 +174,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C15H10O7"
         },
         "Rutin": {
             "ions": [
@@ -167,7 +185,8 @@
             "info": [
                 "[M+H]+",
                 "[M-H]-"
-            ]
+            ],
+            "formula": "C27H30O16"
         }
     },
     "Terpenoids": {

@@ -640,7 +640,7 @@ class UploadTab(TabBase):
             self.button_clear_MS.clicked.connect(self.listMS.clear)
 
         # Ion table controls
-        self.button_clear_ion_list.clicked.connect(self.ionTable.clear)
+        self.button_clear_ion_list.clicked.connect(self._on_clear_ion_list)
         self.button_save_ion_list.clicked.connect(self.ionTable.save_ion_list)
         self.button_delete_ion_list.clicked.connect(self.ionTable.delete_ion_list)
         self.comboBoxIonLists.currentIndexChanged.connect(self.update_ion_list)
@@ -652,6 +652,9 @@ class UploadTab(TabBase):
         self.ionTable.theoretical_spectrum_ready.connect(
             self._on_theoretical_spectrum_ready
         )
+
+        # Connect compound removal to clean up theoretical plots
+        self.ionTable.compound_removed.connect(self._remove_theoretical_plots)
 
         # Process button
         self.processButton.clicked.connect(self.process_requested.emit)
@@ -1074,6 +1077,27 @@ class UploadTab(TabBase):
                         pass
             self._theoretical_plots.clear()
 
+    def _compute_theoretical_spectra_for_ion_list(self, ion_data: dict):
+        """Compute and plot theoretical spectra for all compounds with formulas."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        for name, details in ion_data.items():
+            formula = details.get("formula")
+            if not formula:
+                continue
+            try:
+                spectrum = calculate_theoretical_spectrum(formula)
+                self.ionTable._theoretical_spectra[name] = spectrum
+                self._on_theoretical_spectrum_ready(name, spectrum)
+            except Exception:
+                pass  # Skip invalid formulas silently
+
+    def _on_clear_ion_list(self):
+        """Handle the Clear button: remove all theoretical plots then clear the table."""
+        self._remove_theoretical_plots()
+        self.ionTable._theoretical_spectra.clear()
+        self.ionTable.clear()
+
     def _on_lookup_status(self, message: str, duration_ms: int):
         """Forward PubChem lookup status to status bar."""
         if self.statusbar:
@@ -1099,6 +1123,10 @@ class UploadTab(TabBase):
     def update_ion_list(self):
         """Populates the table based on combo selection."""
         selection = self.comboBoxIonLists.currentText()
+
+        # Always clear theoretical plots when switching lists
+        self._remove_theoretical_plots()
+        self.ionTable._theoretical_spectra.clear()
 
         # Handle "Create new" or empty selection
         if not selection or selection == "Create new ion list...":
@@ -1143,6 +1171,9 @@ class UploadTab(TabBase):
 
             # Clear custom m/z ranges when ion list changes
             self.ionTable._custom_mz_ranges.clear()
+
+            # Compute theoretical spectra for compounds with formulas
+            self._compute_theoretical_spectra_for_ion_list(ion_data)
 
         except Exception as e:
             logger.error(f"Error updating ion list: {e}")

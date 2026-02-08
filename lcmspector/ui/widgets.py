@@ -255,6 +255,8 @@ class IonTable(GenericTable):
     lookup_status = QtCore.Signal(str, int)  # (message, duration_ms)
     # Signal emitted when a theoretical spectrum is computed
     theoretical_spectrum_ready = QtCore.Signal(str, object)  # (compound_name, TheoreticalSpectrum)
+    # Signal emitted when a compound is removed from the table
+    compound_removed = QtCore.Signal(str)  # compound_name
 
     def __init__(self, view, parent=None):
         super().__init__(50, 3, parent)
@@ -275,6 +277,17 @@ class IonTable(GenericTable):
 
         # Connect closeEditor signal (fires only when editing finishes, not on each keystroke)
         self.itemDelegate().closeEditor.connect(self._on_editor_closed)
+
+    def clear_selection(self):
+        """Override to detect removed compounds and emit compound_removed signal."""
+        removed_names = set()
+        for item in self.selectedItems():
+            if item.column() == 0 and item.text().strip():
+                removed_names.add(item.text().strip())
+        super().clear_selection()
+        for name in removed_names:
+            self._theoretical_spectra.pop(name, None)
+            self.compound_removed.emit(name)
 
     def contextMenuEvent(self, pos):
         """Override to add 'Edit integration...' action to context menu."""
@@ -725,6 +738,10 @@ class IonTable(GenericTable):
             ions_data[name]["info"] = [
                 x.strip() for x in info_text.split(",") if x.strip()
             ]
+
+            # 4. Persist formula if available (for auto-plotting on reload)
+            if name in self._theoretical_spectra:
+                ions_data[name]["formula"] = self._theoretical_spectra[name].formula
 
         # Save locally in config.json
         try:
