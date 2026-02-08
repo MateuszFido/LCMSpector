@@ -17,8 +17,12 @@ An open-source desktop application for analyzing targeted mass spectrometry (LC/
 - View MS spectra scan-by-scan at any retention time
 - Overlay and compare multiple files simultaneously on the same plot
 - Look up compound m/z values from PubChem by name
+- Compute theoretical isotopic patterns from molecular formulas and overlay on spectra
+- Predict b/y fragment ions for peptide sequences
+- Customize m/z integration boundaries per compound via interactive dialog
+- Select from 13 adducts (positive and negative) for m/z calculation
 - Quantify concentrations using built-in linear regression calibration
-- Match compounds against integrated MS/MS libraries (MoNA format)
+- Look up MS2 spectra on-demand from mzML files for compound verification
 - Export plots (SVG, TIFF, PNG, JPG) and data (CSV)
 - High-performance mzML parsing via a custom lxml-based reader
 - Vendor-agnostic: accepts `.mzML`, `.txt`, and `.csv` files
@@ -55,7 +59,7 @@ Pre-built executables for Windows, macOS, and Linux are available under [Release
 2. Choose a compound list or define your own (compound names are automatically looked up on PubChem)
 3. Click **Process**
 4. View results: TIC, XICs, labelled chromatograms, and raw MS scans
-5. Verify compound structures with MS/MS database matching
+5. Verify compounds with on-demand MS2 spectrum lookup
 6. Quantify using calibration standards
 
 <p align="center">
