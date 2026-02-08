@@ -265,7 +265,6 @@ class Compound(BaseModel):
     # Internal state attributes (Excluded from __init__ arguments and validation)
     _file: Optional[Any] = PrivateAttr(default=None)
     _ions: Dict = PrivateAttr(default_factory=dict)
-    _ms2: List = PrivateAttr(default_factory=list)
     _calibration_curve: Dict = PrivateAttr(default_factory=dict)
     _calibration_parameters: Dict = PrivateAttr(default_factory=dict)
     _concentration: Optional[float] = PrivateAttr(default=None)
@@ -298,11 +297,6 @@ class Compound(BaseModel):
     @file.setter
     def file(self, value):
         self._file = value
-
-    # Expose other internal attributes similarly if direct access is needed
-    @property
-    def ms2(self):
-        return self._ms2
 
     @property
     def calibration_curve(self):

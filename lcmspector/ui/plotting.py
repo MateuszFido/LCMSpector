@@ -453,64 +453,46 @@ def plot_total_ion_current(
         )
 
 
-def plot_ms2_from_file(ms_file, ms_compound, precursor: float, canvas: pg.PlotWidget):
-    """Plots MS2 spectrum matching a precursor."""
+def plot_ms2_spectrum(
+    canvas: pg.PlotWidget,
+    mz_array: np.ndarray,
+    intensity_array: np.ndarray,
+    title: str = "MS2 Spectrum",
+):
+    """Plot an MS2 spectrum as normalised bar graph with peak annotations.
+
+    Parameters
+    ----------
+    canvas : pg.PlotWidget
+        Target plot widget.
+    mz_array : np.ndarray
+        m/z values.
+    intensity_array : np.ndarray
+        Intensity values (will be normalised to 100 %).
+    title : str
+        Plot title.
+    """
     canvas.clear()
-
-    if not ms_file or not ms_compound:
-        plot_placeholder(canvas, "Invalid Data")
-        return
-
-    xics = getattr(ms_file, "xics", [])
-    compound_to_plot = next((c for c in xics if c.name == ms_compound.name), None)
-
-    if not compound_to_plot:
-        plot_placeholder(canvas, "Compound not found in file")
-        return
-
-    # Find matching scan
-    ms2_scans = getattr(compound_to_plot, "ms2", [])
-    found_scan = None
-
-    for scan in ms2_scans:
-        try:
-            selected_ion = scan["precursorList"]["precursor"][0]["selectedIonList"][
-                "selectedIon"
-            ][0]
-            selected_mz = selected_ion["selected ion m/z"]
-            if np.isclose(
-                selected_mz, precursor, atol=0.005
-            ):  # Increased tolerance slightly
-                found_scan = scan
-                break
-        except (KeyError, IndexError, TypeError):
-            continue
-
-    if not found_scan:
-        plot_no_ms2_found(canvas)
-        return
-
-    # Plot
-    mzs = found_scan["m/z array"]
-    intensities = found_scan["intensity array"]
-
-    title = (
-        f"{ms_file.filename}: MS2 of {ms_compound.name} (Precursor: {precursor:.2f})"
-    )
     PlotStyle.apply_standard_style(
         canvas, title=title, x_label="m/z", y_label="Intensity (%)"
     )
 
-    # Normalize
-    max_int = np.max(intensities) if len(intensities) > 0 else 1
-    rel_intensities = (intensities / max_int) * 100
+    if len(mz_array) == 0 or len(intensity_array) == 0:
+        plot_placeholder(canvas, "Empty MS2 spectrum")
+        return
+
+    max_int = np.max(intensity_array)
+    if max_int == 0:
+        max_int = 1.0
+    rel_intensities = (intensity_array / max_int) * 100
 
     canvas.addItem(
-        pg.BarGraphItem(x=mzs, height=rel_intensities, width=0.2, pen="b", brush="b")
+        pg.BarGraphItem(
+            x=mz_array, height=rel_intensities, width=0.2, pen="b", brush="b"
+        )
     )
 
-    # Annotate Top 5
-    _annotate_peaks(canvas, mzs, rel_intensities, count=5)
+    _annotate_peaks(canvas, mz_array, rel_intensities, count=8)
     canvas.getPlotItem().getViewBox().autoRange()
 
 

@@ -133,9 +133,9 @@ class View(QtWidgets.QMainWindow):
         return self.quantitation_tab.comboBoxChooseCompound
 
     @property
-    def comboBoxChooseMS2File(self):
-        """Access MS2 file combo box from QuantitationTab."""
-        return self.quantitation_tab.comboBoxChooseMS2File
+    def comboBoxMS2Ion(self):
+        """Access MS2 ion combo box from QuantitationTab."""
+        return self.quantitation_tab.comboBoxMS2Ion
 
     @property
     def unifiedResultsTable(self):
@@ -354,10 +354,6 @@ class View(QtWidgets.QMainWindow):
     def display_compound_integration(self):
         """Display compound integration. Delegates to QuantitationTab."""
         self.quantitation_tab.display_compound_integration()
-
-    def display_ms2(self):
-        """Display MS2 data. Delegates to QuantitationTab."""
-        self.quantitation_tab.display_ms2()
 
     def get_integration_bounds(self, canvas=None, ion_key: str = None):
         """Get integration bounds. Delegates to QuantitationTab."""

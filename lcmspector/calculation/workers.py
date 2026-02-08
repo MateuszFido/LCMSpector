@@ -19,6 +19,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from PySide6.QtCore import QThread, QObject, Signal
 from utils.classes import LCMeasurement, MSMeasurement
+from utils.mzml_reader import find_nearest_ms2
 from calculation.preprocessing import construct_xics
 
 logger = logging.getLogger(__name__)
@@ -208,3 +209,49 @@ class ProcessingWorker(QThread):
 
         logger.info(f"Processed {len(results)} MS files in {time.time() - st:.2f} s.")
         self.finished.emit(results)
+
+
+class MS2LookupWorker(QThread):
+    """Lightweight QThread that searches an mzML file for the MS2 scan
+    nearest to *target_rt* whose precursor m/z matches *precursor_mz*.
+
+    Signals
+    -------
+    finished : object
+        Emits ``(scan_time, mz_array, intensity_array)`` on success, or
+        ``None`` when no matching scan is found.
+    error : str
+        Emits an error message string on failure.
+    """
+
+    finished = Signal(object)
+    error = Signal(str)
+
+    def __init__(self, filepath, precursor_mz, target_rt, mz_tolerance=0.5):
+        super().__init__()
+        self.filepath = filepath
+        self.precursor_mz = precursor_mz
+        self.target_rt = target_rt
+        self.mz_tolerance = mz_tolerance
+        self._cancelled = False
+
+    def cancel(self):
+        """Mark this lookup as cancelled so the result is discarded."""
+        self._cancelled = True
+
+    def run(self):
+        if self._cancelled:
+            return
+        try:
+            result = find_nearest_ms2(
+                self.filepath,
+                self.precursor_mz,
+                self.target_rt,
+                mz_tolerance=self.mz_tolerance,
+            )
+            if not self._cancelled:
+                self.finished.emit(result)
+        except Exception as e:
+            if not self._cancelled:
+                logger.error(f"MS2 lookup error: {traceback.format_exc()}")
+                self.error.emit(str(e))

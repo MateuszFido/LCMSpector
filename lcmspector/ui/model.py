@@ -10,7 +10,6 @@ import pandas as pd
 from calculation.calc_conc import calculate_concentration
 from calculation.peak_integration import integrate_peak_manual_boundaries
 from calculation.workers import LoadingWorker, ProcessingWorker
-from utils.loading import load_ms2_library
 from PySide6.QtCore import QObject
 
 logger = logging.getLogger(__name__)
@@ -51,7 +50,6 @@ class Model(QObject):
         "annotations",
         "controller",
         "compounds",
-        "library",
         "worker",
         "mass_accuracy",
         "_current_worker_id",
@@ -64,13 +62,6 @@ class Model(QObject):
         self.annotations = tuple()
         self.compounds = tuple()
         self.mass_accuracy = 0.0001
-        self.library = load_ms2_library()
-        if self.library:
-            logger.info("MS2 library loaded.")
-        else:
-            logger.error(
-                "No MS2 library found. Please make sure a corresponding library in .msp format is in the 'resources' folder."
-            )
         self.controller = None
         self.worker = None
         self._current_worker_id = 0  # Track worker identity to prevent stale callbacks
@@ -272,84 +263,6 @@ class Model(QObject):
                     logger.error(
                         f"Error calculating concentration for {ms_compound.name} in {ms_file.filename}: {traceback.format_exc()}"
                     )
-
-    def find_ms2_precursors(self) -> dict:
-        compound = self.compounds[
-            self.controller.view.comboBoxChooseCompound.currentIndex()
-        ]
-        library_entries = set()
-        # safety check
-        if not compound:
-            raise ValueError("No compound selected.")
-        for ion in compound.ions.keys():
-            try:
-                library_entry = next(
-                    (
-                        section
-                        for section in self.library.values()
-                        if (
-                            precursor_mz := next(
-                                (
-                                    line.split(" ")[1]
-                                    for line in section
-                                    if "PrecursorMZ:" in line
-                                ),
-                                None,
-                            )
-                        )
-                        is not None
-                        and np.isclose(float(precursor_mz), float(ion), atol=0.005)
-                    ),
-                    None,
-                )
-                if library_entry:
-                    logger.info(
-                        f"Precursor m/z {ion} found for {compound.name} in the library."
-                    )
-                    library_entries.add(tuple(library_entry))
-                else:
-                    logger.debug(f"Library entry not found for {compound.name}: {ion}")
-            except StopIteration:
-                logger.debug(
-                    "Library entry not found for %s: %.4f", {compound.name}, {ion}
-                )
-                break
-        # HACK: Terribly complex dict comprehension
-        library_entries = {
-            entry[0].split("Name: ", 1)[1].partition("\n")[0]
-            + (
-                f"m/z ({
-                    round(
-                        float(
-                            next(
-                                (
-                                    line.split(' ')[1]
-                                    for line in entry
-                                    if 'PrecursorMZ:' in line
-                                ),
-                                None,
-                            )
-                        ),
-                        4,
-                    )
-                })"
-                if (
-                    precursor_mz := next(
-                        (
-                            line.split(" ")[1]
-                            for line in entry
-                            if "PrecursorMZ:" in line
-                        ),
-                        None,
-                    )
-                )
-                else ""
-            ).strip(): entry
-            for entry in library_entries
-        }
-        self.controller.view.comboBoxChooseMS2File.clear()
-        self.controller.view.comboBoxChooseMS2File.addItems(library_entries.keys())
-        return library_entries
 
     def export(self):
         results = []
