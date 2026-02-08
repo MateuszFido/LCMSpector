@@ -1,1198 +1,1252 @@
 {
-    "Short-chain fatty acids": {
-        "Formic acid": {
-            "ions": [
-                47.0128,
-                44.9982,
-                91.0026
-            ],
-            "formula": "CH2O2"
-        },
-        "Acetic acid": {
-            "ions": [
-                61.0284,
-                59.0139
-            ],
-            "formula": "C2H4O2"
-        },
-        "Butanoic acid": {
-            "ions": [
-                89.0597,
-                87.04515
-            ],
-            "formula": "C4H8O2"
-        },
-        "Propionic acid": {
-            "ions": [
-                75.0441,
-                73.0295
-            ],
-            "formula": "C3H6O2"
-        },
-        "Pentanoic acid": {
-            "ions": [
-                103.0754,
-                101.0608
-            ],
-            "formula": "C5H10O2"
-        },
-        "Hexanoic acid": {
-            "ions": [
-                117.09101,
-                115.07645
-            ],
-            "formula": "C6H12O2"
-        }
+  "Short-chain fatty acids": {
+    "Formic acid": {
+      "ions": [
+        47.0128,
+        44.9982,
+        91.0026
+      ],
+      "formula": "CH2O2"
     },
-    "Flavonoids": {
-        "Apigenin": {
-            "ions": [
-                271.0601,
-                269.0455
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O5"
-        },
-        "Catechin": {
-            "ions": [
-                291.0863,
-                289.0718
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H14O6"
-        },
-        "Chrysin": {
-            "ions": [
-                255.0652,
-                253.0506
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O4"
-        },
-        "Galangin": {
-            "ions": [
-                271.0601,
-                269.0455
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O5"
-        },
-        "Genistein": {
-            "ions": [
-                271.0601,
-                269.0455
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O5"
-        },
-        "Isorhamnetin": {
-            "ions": [
-                317.0656,
-                315.051
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C16H12O7"
-        },
-        "Kaempferol": {
-            "ions": [
-                287.055,
-                285.0405
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O6"
-        },
-        "Luteolin": {
-            "ions": [
-                287.055,
-                285.0405
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O6"
-        },
-        "Myricetin": {
-            "ions": [
-                319.0448,
-                317.0303
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O8"
-        },
-        "Pinobanksin": {
-            "ions": [
-                273.0757,
-                271.0612
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H12O5"
-        },
-        "Pinocembrin": {
-            "ions": [
-                257.0808,
-                255.0663
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H12O4"
-        },
-        "Quercetin": {
-            "ions": [
-                303.0499,
-                301.0354
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C15H10O7"
-        },
-        "Rutin": {
-            "ions": [
-                611.1607,
-                609.1461
-            ],
-            "info": [
-                "[M+H]+",
-                "[M-H]-"
-            ],
-            "formula": "C27H30O16"
-        }
+    "Acetic acid": {
+      "ions": [
+        61.0284,
+        59.0139
+      ],
+      "formula": "C2H4O2"
     },
-    "Terpenoids": {
-        "Isoprenyl pyrophosphate": {
-            "ions": [
-                247.0131,
-                244.9985
-            ]
-        },
-        "Citral": {
-            "ions": [
-                153.12739,
-                151.11284
-            ]
-        },
-        "Geraniol": {
-            "ions": [
-                155.14304,
-                153.12849
-            ]
-        },
-        "Isoprene": {
-            "ions": [
-                69.0699,
-                67.0554
-            ]
-        },
-        "Linalool": {
-            "ions": [
-                155.14304,
-                153.1285
-            ]
-        },
-        "Menthol": {
-            "ions": [
-                157.1587,
-                155.1441
-            ]
-        },
-        "Farnesol": {
-            "ions": [
-                223.2056,
-                221.1911
-            ]
-        },
-        "Hydroxyserrulatenoate": {
-            "ions": [
-                317.2112,
-                315.1965
-            ]
-        },
-        "Eucalyptol (cineol)": {
-            "ions": [
-                155.14304,
-                153.1285
-            ]
-        },
-        "Amyrin": {
-            "ions": [
-                427.39344,
-                425.37888
-            ]
-        },
-        "Steviol": {
-            "ions": [
-                319.2268,
-                317.2112
-            ]
-        },
-        "Thymol (carvacrol)": {
-            "ions": [
-                151.11174,
-                149.09719
-            ]
-        },
-        "Abietic acid": {
-            "ions": [
-                303.2319,
-                301.2173
-            ]
-        }
+    "Butanoic acid": {
+      "ions": [
+        89.0597,
+        87.04515
+      ],
+      "formula": "C4H8O2"
     },
-    "Phenolic acids": {
-        "Abscisic acid": {
-            "ions": [
-                265.14344,
-                263.12888
-            ]
-        },
-        "Caffeic acid": {
-            "ions": [
-                181.04954,
-                179.03498
-            ]
-        },
-        "Chlorogenic acid": {
-            "ions": [
-                355.10236,
-                353.08781
-            ]
-        },
-        "Cinnamic acid": {
-            "ions": [
-                149.05971,
-                147.04515
-            ]
-        },
-        "Ellagic acid": {
-            "ions": [
-                303.01354,
-                300.99899
-            ]
-        },
-        "Ferulic acid": {
-            "ions": [
-                195.06519,
-                193.05063
-            ]
-        },
-        "Gallic acid": {
-            "ions": [
-                171.0288,
-                169.01425
-            ]
-        },
-        "p-Coumaric acid": {
-            "ions": [
-                165.05462,
-                163.04007
-            ]
-        },
-        "Salicylic acid": {
-            "ions": [
-                139.03897,
-                137.02442
-            ]
-        },
-        "Protocatechuic acid": {
-            "ions": [
-                155.03389,
-                153.01933
-            ]
-        },
-        "Sinapinic acid": {
-            "ions": [
-                225.07575,
-                223.06119
-            ]
-        },
-        "Syringic acid": {
-            "ions": [
-                199.0601,
-                197.04555
-            ]
-        },
-        "Vanillic acid": {
-            "ions": [
-                169.04954,
-                167.03498
-            ]
-        }
+    "Propionic acid": {
+      "ions": [
+        75.0441,
+        73.0295
+      ],
+      "formula": "C3H6O2"
     },
-    "Long-chain fatty acids": {
-        "Palmitic acid": {
-            "ions": [
-                145.065,
-                143.0503
-            ]
-        },
-        "Myristic acid": {
-            "ions": [
-                183.087,
-                181.0723
-            ]
-        },
-        "Ethylbutyrate": {
-            "ions": [
-                137.0539,
-                136.0392
-            ]
-        }
+    "Pentanoic acid": {
+      "ions": [
+        103.0754,
+        101.0608
+      ],
+      "formula": "C5H10O2"
     },
-    "Alkanes, aryls, and derivatives (EI)": {
-        "p-xylene": {
-            "ions": [
-                51,
-                77,
-                105,
-                106,
-                91
-            ]
-        },
-        "n-nonane": {
-            "ions": [
-                57,
-                71,
-                85,
-                127,
-                128
-            ]
-        },
-        "1,2,4-trimethylbenzene": {
-            "ions": [
-                39,
-                77,
-                105,
-                119,
-                120
-            ]
-        },
-        "n-decane": {
-            "ions": [
-                141,
-                99,
-                86,
-                85,
-                84
-            ]
-        },
-        "n-hexane": {
-            "ions": [
-                57,
-                56,
-                43,
-                42,
-                40
-            ]
-        },
-        "n-heptane": {
-            "ions": [
-                71,
-                57,
-                43,
-                41,
-                29
-            ]
-        },
-        "n-octane": {
-            "ions": [
-                85,
-                71,
-                57,
-                56,
-                43
-            ]
-        },
-        "1,2,4,5-tetramethylbenzene": {
-            "ions": [
-                134,
-                133,
-                119,
-                120,
-                91
-            ]
-        },
-        "n-tridecane": {
-            "ions": [
-                85,
-                71,
-                57,
-                43,
-                41
-            ]
-        },
-        "methylnaphtalene": {
-            "ions": [
-                142,
-                141,
-                115,
-                70,
-                140
-            ]
-        }
-    },
-    "Benzaldehyde pathway": {
-        "Benzyl alcohol": {
-            "ions": [
-                109.06479,
-                107.05024
-            ]
-        },
-        "Benzaldehyde": {
-            "ions": [
-                107.04914,
-                105.03459
-            ]
-        },
-        "Benzoic acid": {
-            "ions": [
-                123.04406,
-                121.0295
-            ]
-        },
-        "Catechol": {
-            "ions": [
-                111.04406,
-                109.0295
-            ]
-        },
-        "3-oxoadipate": {
-            "ions": [
-                161.04445,
-                159.0299
-            ]
-        },
-        "Muconolactone": {
-            "ions": [
-                143.03389,
-                141.01933
-            ]
-        }
-    },
-    "Butyrate metabolism": {
-        "Pyruvate": {
-            "ions": [
-                89.02332,
-                87.00877
-            ]
-        },
-        "Succinate": {
-            "ions": [
-                119.03389,
-                117.01933
-            ]
-        },
-        "Maleate/Fumarate": {
-            "ions": [
-                117.01824,
-                115.00368
-            ]
-        },
-        "Glutamate": {
-            "ions": [
-                148.06043,
-                146.04588
-            ]
-        },
-        "Butyraldehyde": {
-            "ions": [
-                73.06479,
-                71.05024
-            ]
-        },
-        "Acetone": {
-            "ions": [
-                59.04914,
-                57.03459
-            ]
-        }
-    },
-    "Aminoacids": {
-        "Aspartic acid": {
-            "ions": [
-                134.0448,
-                132.0302
-            ]
-        },
-        "Alanine": {
-            "ions": [
-                90.055,
-                88.0404
-            ]
-        },
-        "Arginine": {
-            "ions": [
-                175.119,
-                173.1044
-            ]
-        },
-        "Asparagine": {
-            "ions": [
-                133.0608,
-                131.0462
-            ]
-        },
-        "Cysteine": {
-            "ions": [
-                122.0271,
-                120.0124
-            ]
-        },
-        "Glutamine": {
-            "ions": [
-                147.0765,
-                145.0618
-            ]
-        },
-        "Glutamic acid": {
-            "ions": [
-                148.0605,
-                146.0458
-            ]
-        },
-        "Histidine": {
-            "ions": [
-                156.0768,
-                154.0622
-            ]
-        },
-        "Glycine": {
-            "ions": [
-                76.0394,
-                74.0247
-            ]
-        },
-        "Lysine": {
-            "ions": [
-                147.1129,
-                145.0982
-            ]
-        },
-        "Methionine": {
-            "ions": [
-                150.0584,
-                148.0437
-            ]
-        },
-        "Leucine/Isoleucine": {
-            "ions": [
-                132.102,
-                130.0873
-            ]
-        },
-        "Phenylalanine": {
-            "ions": [
-                166.0863,
-                164.0717
-            ]
-        },
-        "Proline": {
-            "ions": [
-                116.0707,
-                114.056
-            ]
-        },
-        "Serine": {
-            "ions": [
-                106.0499,
-                104.0353
-            ]
-        },
-        "Threonine": {
-            "ions": [
-                120.0656,
-                118.0509
-            ]
-        },
-        "Tryptophan": {
-            "ions": [
-                205.0972,
-                203.0826
-            ]
-        },
-        "Tyrosine": {
-            "ions": [
-                182.0812,
-                180.0666
-            ]
-        },
-        "Valine": {
-            "ions": [
-                118.0863,
-                116.0177
-            ]
-        }
-    },
-    "Bile acids": {
-        "\"12-Oxochenodeoxycholic Acid\"": {
-            "ions": [
-                407.2792,
-                405.2646
-            ]
-        },
-        "\"12-Oxolithocholic Acid\"": {
-            "ions": [
-                391.2843,
-                389.2697
-            ]
-        },
-        "\"2-Methylbutyrate\"": {
-            "ions": [
-                102.0675,
-                100.053
-            ]
-        },
-        "\"3-Aminoisobutyrate\"": {
-            "ions": [
-                103.0628,
-                101.0482
-            ]
-        },
-        "\"3-Deoxycholic Acid\"": {
-            "ions": [
-                393.2999,
-                391.2854
-            ]
-        },
-        "\"3-Oxocholic Acid\"": {
-            "ions": [
-                407.2792,
-                405.2646
-            ]
-        },
-        "\"3-Oxodeoxycholic-Or-3-Oxochenodeoxycholic Acid\"": {
-            "ions": [
-                391.2843,
-                389.2697
-            ]
-        },
-        "\"3-Oxolithocholic Acid\"": {
-            "ions": [
-                375.2894,
-                373.2748
-            ]
-        },
-        "\"4-Methylvalerate\"": {
-            "ions": [
-                117.091,
-                115.0765
-            ]
-        },
-        "\"5-Aminovalerate\"": {
-            "ions": [
-                118.0863,
-                116.0717
-            ]
-        },
-        "\"7-Oxodeoxycholic Acid\"": {
-            "ions": [
-                407.2792,
-                405.2646
-            ]
-        },
-        "\"Acetate\"": {
-            "ions": [
-                60.0206,
-                58.006
-            ]
-        },
-        "\"Alanine\"": {
-            "ions": [
-                90.055,
-                88.0404
-            ]
-        },
-        "\"Allocholic Acid\"": {
-            "ions": [
-                409.2949,
-                407.2803
-            ]
-        },
-        "\"Alloisolithocholic Acid\"": {
-            "ions": [
-                377.305,
-                375.2905
-            ]
-        },
-        "\"Allolithocholic Acid\"": {
-            "ions": [
-                377.305,
-                375.2905
-            ]
-        },
-        "\"Alpha-Muricholic Acid\"": {
-            "ions": [
-                409.2949,
-                407.2803
-            ]
-        },
-        "\"Anthranilic Acid\"": {
-            "ions": [
-                138.055,
-                136.0404
-            ]
-        },
-        "\"Aspartate\"": {
-            "ions": [
-                134.0448,
-                132.0302
-            ]
-        },
-        "\"Beta-Muricholic Acid\"": {
-            "ions": [
-                409.2949,
-                407.2803
-            ]
-        },
-        "\"Biotin\"": {
-            "ions": [
-                245.0954,
-                243.0809
-            ]
-        },
-        "\"Butyrate\"": {
-            "ions": [
-                88.0519,
-                86.0373
-            ]
-        },
-        "\"Chenodeoxycholic Acid\"": {
-            "ions": [
-                393.2999,
-                391.2854
-            ]
-        },
-        "\"Cholic Acid\"": {
-            "ions": [
-                409.2949,
-                407.2803
-            ]
-        },
-        "\"Crotonate\"": {
-            "ions": [
-                86.0362,
-                84.0217
-            ]
-        },
-        "\"Cysteine\"": {
-            "ions": [
-                122.027,
-                120.0125
-            ]
-        },
-        "\"Deoxycholic Acid\"": {
-            "ions": [
-                393.2999,
-                391.2854
-            ]
-        },
-        "\"Desaminotyrosine\"": {
-            "ions": [
-                167.0703,
-                165.0557
-            ]
-        },
-        "\"Folate\"": {
-            "ions": [
-                442.147,
-                440.1324
-            ]
-        },
-        "\"Gamma-Muricholic Acid\"": {
-            "ions": [
-                409.2949,
-                407.2803
-            ]
-        },
-        "\"Glutamate\"": {
-            "ions": [
-                148.0604,
-                146.0459
-            ]
-        },
-        "\"Glycine\"": {
-            "ions": [
-                76.0393,
-                74.0248
-            ]
-        },
-        "\"Glycochenodeoxycholic Acid\"": {
-            "ions": [
-                450.3214,
-                448.3068
-            ]
-        },
-        "\"Glycocholic Acid\"": {
-            "ions": [
-                466.3163,
-                464.3018
-            ]
-        },
-        "\"Glycodehydrocholic Acid\"": {
-            "ions": [
-                460.2694,
-                458.2548
-            ]
-        },
-        "\"Glycodeoxycholic Acid\"": {
-            "ions": [
-                450.3214,
-                448.3068
-            ]
-        },
-        "\"Glycohyodeoxycholic Acid\"": {
-            "ions": [
-                450.3214,
-                448.3068
-            ]
-        },
-        "\"Glycolithocholic Acid\"": {
-            "ions": [
-                434.3265,
-                432.3119
-            ]
-        },
-        "\"Glycoursodeoxycholic Acid\"": {
-            "ions": [
-                450.3214,
-                448.3068
-            ]
-        },
-        "\"Hexanoate\"": {
-            "ions": [
-                116.0832,
-                114.0686
-            ]
-        },
-        "\"Hyodeoxycholic Acid\"": {
-            "ions": [
-                393.2999,
-                391.2854
-            ]
-        },
-        "\"Indole\"": {
-            "ions": [
-                118.0651,
-                116.0506
-            ]
-        },
-        "\"Indole-3-Acetamide\"": {
-            "ions": [
-                175.0866,
-                173.072
-            ]
-        },
-        "\"Indole-3-Acetate\"": {
-            "ions": [
-                175.0628,
-                173.0482
-            ]
-        },
-        "\"Indole-3-Acrylate\"": {
-            "ions": [
-                187.0628,
-                185.0482
-            ]
-        },
-        "\"Indole-3-Carboxaldehyde\"": {
-            "ions": [
-                146.06,
-                144.0455
-            ]
-        },
-        "\"Indole-3-Lactate\"": {
-            "ions": [
-                205.0733,
-                203.0588
-            ]
-        },
-        "\"Indole-3-Propionate\"": {
-            "ions": [
-                189.0784,
-                187.0639
-            ]
-        },
-        "\"Indole-3-Pyruvate\"": {
-            "ions": [
-                204.0655,
-                202.051
-            ]
-        },
-        "\"Isobutyrate\"": {
-            "ions": [
-                88.0519,
-                86.0373
-            ]
-        },
-        "\"Isodeoxycholic Acid\"": {
-            "ions": [
-                132.1019,
-                130.0874
-            ]
-        },
-        "\"Isoleucine\"": {
-            "ions": [
-                377.305,
-                375.2905
-            ]
-        },
-        "\"Isolithocholic Acid\"": {
-            "ions": [
-                102.0675,
-                100.053
-            ]
-        },
-        "\"Isovalerate\"": {
-            "ions": [
-                131.0339,
-                129.0193
-            ]
-        },
-        "\"Itaconate\"": {
-            "ions": [
-                190.0499,
-                188.0353
-            ]
-        },
-        "\"Kynurenic Acid\"": {
-            "ions": [
-                209.0921,
-                207.0775
-            ]
-        },
-        "\"Kynurenine\"": {
-            "ions": [
-                132.1019,
-                130.0874
-            ]
-        },
-        "\"Leucine\"": {
-            "ions": [
-                377.305,
-                375.2905
-            ]
-        },
-        "\"Lithocholic Acid\"": {
-            "ions": [
-                147.1128,
-                145.0983
-            ]
-        },
-        "\"Lysine\"": {
-            "ions": [
-                150.0583,
-                148.0438
-            ]
-        },
-        "\"Methionine\"": {
-            "ions": [
-                219.1128,
-                217.0983
-            ]
-        },
-        "\"Methylserotonin\"": {
-            "ions": [
-                124.0393,
-                122.0248
-            ]
-        },
-        "\"N-Acetylserotonin\"": {
-            "ions": [
-                409.2949,
-                407.2803
-            ]
-        },
-        "\"Niacin\"": {
-            "ions": [
-                109.0648,
-                107.0502
-            ]
-        },
-        "\"Omega-Muricholic Acid\"": {
-            "ions": [
-                257.2475,
-                255.233
-            ]
-        },
-        "\"P-Cresol\"": {
-            "ions": [
-                220.1179,
-                218.1034
-            ]
-        },
-        "\"Palmitate\"": {
-            "ions": [
-                95.0491,
-                93.0346
-            ]
-        },
-        "\"Pantothenic Acid\"": {
-            "ions": [
-                166.0863,
-                164.0717
-            ]
-        },
-        "\"Phenol\"": {
-            "ions": [
-                124.0393,
-                122.0248
-            ]
-        },
-        "\"Phenylalanine\"": {
-            "ions": [
-                248.0319,
-                246.0173
-            ]
-        },
-        "\"Picolinic Acid\"": {
-            "ions": [
-                116.0706,
-                114.0561
-            ]
-        },
-        "\"Pyridoxal Phosphate\"": {
-            "ions": [
-                74.0362,
-                72.0217
-            ]
-        },
-        "\"Proline\"": {
-            "ions": [
-                168.0291,
-                166.0146
-            ]
-        },
-        "\"Propionate\"": {
-            "ions": [
-                106.0499,
-                104.0353
-            ]
-        },
-        "\"Quinolinic Acid\"": {
-            "ions": [
-                117.0182,
-                115.0037
-            ]
-        },
-        "\"Serine\"": {
-            "ions": [
-                500.304,
-                498.2895
-            ]
-        },
-        "\"Succinate\"": {
-            "ions": [
-                516.2989,
-                514.2844
-            ]
-        },
-        "\"Taurochenodeoxycholic Acid\"": {
-            "ions": [
-                500.304,
-                498.2895
-            ]
-        },
-        "\"Taurocholic Acid\"": {
-            "ions": [
-                500.304,
-                498.2895
-            ]
-        },
-        "\"Taurodeoxycholic Acid\"": {
-            "ions": [
-                484.3091,
-                482.2946
-            ]
-        },
-        "\"Taurohyodeoxycholic Acid\"": {
-            "ions": [
-                500.304,
-                498.2895
-            ]
-        },
-        "\"Taurolithocholic Acid\"": {
-            "ions": [
-                120.0655,
-                118.051
-            ]
-        },
-        "\"Tauroursodeoxycholic Acid\"": {
-            "ions": [
-                161.1073,
-                159.0928
-            ]
-        },
-        "\"Threonine\"": {
-            "ions": [
-                205.0972,
-                203.0826
-            ]
-        },
-        "\"Trans-Indole-3-Acrylate\"": {
-            "ions": [
-                162.0913,
-                160.0768
-            ]
-        },
-        "\"Tryptamine\"": {
-            "ions": [
-                138.0913,
-                136.0768
-            ]
-        },
-        "\"Tryptophan\"": {
-            "ions": [
-                182.0812,
-                180.0666
-            ]
-        },
-        "\"Tryptophol\"": {
-            "ions": [
-                393.2999,
-                391.2854
-            ]
-        },
-        "\"Tyramine\"": {
-            "ions": [
-                102.0675,
-                100.053
-            ]
-        },
-        "\"Tyrosine\"": {
-            "ions": [
-                118.0863,
-                116.0717
-            ]
-        }
+    "Hexanoic acid": {
+      "ions": [
+        117.09101,
+        115.07645
+      ],
+      "formula": "C6H12O2"
     }
+  },
+  "Flavonoids": {
+    "Apigenin": {
+      "ions": [
+        271.0601,
+        269.0455
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O5"
+    },
+    "Catechin": {
+      "ions": [
+        291.0863,
+        289.0718
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H14O6"
+    },
+    "Chrysin": {
+      "ions": [
+        255.0652,
+        253.0506
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O4"
+    },
+    "Galangin": {
+      "ions": [
+        271.0601,
+        269.0455
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O5"
+    },
+    "Genistein": {
+      "ions": [
+        271.0601,
+        269.0455
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O5"
+    },
+    "Isorhamnetin": {
+      "ions": [
+        317.0656,
+        315.051
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C16H12O7"
+    },
+    "Kaempferol": {
+      "ions": [
+        287.055,
+        285.0405
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O6"
+    },
+    "Luteolin": {
+      "ions": [
+        287.055,
+        285.0405
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O6"
+    },
+    "Myricetin": {
+      "ions": [
+        319.0448,
+        317.0303
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O8"
+    },
+    "Pinobanksin": {
+      "ions": [
+        273.0757,
+        271.0612
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H12O5"
+    },
+    "Pinocembrin": {
+      "ions": [
+        257.0808,
+        255.0663
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H12O4"
+    },
+    "Quercetin": {
+      "ions": [
+        303.0499,
+        301.0354
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H10O7"
+    },
+    "Rutin": {
+      "ions": [
+        611.1607,
+        609.1461
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C27H30O16"
+    }
+  },
+  "Terpenoids": {
+    "Prenyl diphosphate": {
+      "ions": [
+        247.0131,
+        244.9985
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C5H12O7P2"
+    },
+    "Citral": {
+      "ions": [
+        153.12739,
+        151.11284
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H16O"
+    },
+    "Geraniol": {
+      "ions": [
+        155.14304,
+        153.12849
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H18O"
+    },
+    "Isoprene": {
+      "ions": [
+        69.0699,
+        67.0554
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C5H8"
+    },
+    "Linalool": {
+      "ions": [
+        155.14304,
+        153.1285
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H18O"
+    },
+    "Menthol": {
+      "ions": [
+        157.1587,
+        155.1441
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H20O"
+    },
+    "Farnesol": {
+      "ions": [
+        223.2056,
+        221.1911
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C15H26O"
+    },
+    "Eucalyptol": {
+      "ions": [
+        155.14304,
+        153.1285
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H18O"
+    },
+    "Amyrin": {
+      "ions": [
+        427.39344,
+        425.37888
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C30H50O"
+    },
+    "Steviol": {
+      "ions": [
+        319.2268,
+        317.2112
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C20H30O3"
+    },
+    "Thymol (carvacrol)": {
+      "ions": [
+        151.11174,
+        149.09719
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H14O"
+    },
+    "Abietic acid": {
+      "ions": [
+        303.2319,
+        301.2173
+      ],
+      "info": [
+        "[M+H]+",
+        "[M-H]-"
+      ],
+      "formula": "C10H14O"
+    }
+  },
+  "Phenolic acids": {
+    "Abscisic acid": {
+      "ions": [
+        265.14344,
+        263.12888
+      ]
+    },
+    "Caffeic acid": {
+      "ions": [
+        181.04954,
+        179.03498
+      ]
+    },
+    "Chlorogenic acid": {
+      "ions": [
+        355.10236,
+        353.08781
+      ]
+    },
+    "Cinnamic acid": {
+      "ions": [
+        149.05971,
+        147.04515
+      ]
+    },
+    "Ellagic acid": {
+      "ions": [
+        303.01354,
+        300.99899
+      ]
+    },
+    "Ferulic acid": {
+      "ions": [
+        195.06519,
+        193.05063
+      ]
+    },
+    "Gallic acid": {
+      "ions": [
+        171.0288,
+        169.01425
+      ]
+    },
+    "p-Coumaric acid": {
+      "ions": [
+        165.05462,
+        163.04007
+      ]
+    },
+    "Salicylic acid": {
+      "ions": [
+        139.03897,
+        137.02442
+      ]
+    },
+    "Protocatechuic acid": {
+      "ions": [
+        155.03389,
+        153.01933
+      ]
+    },
+    "Sinapinic acid": {
+      "ions": [
+        225.07575,
+        223.06119
+      ]
+    },
+    "Syringic acid": {
+      "ions": [
+        199.0601,
+        197.04555
+      ]
+    },
+    "Vanillic acid": {
+      "ions": [
+        169.04954,
+        167.03498
+      ]
+    }
+  },
+  "Long-chain fatty acids": {
+    "Palmitic acid": {
+      "ions": [
+        145.065,
+        143.0503
+      ]
+    },
+    "Myristic acid": {
+      "ions": [
+        183.087,
+        181.0723
+      ]
+    },
+    "Ethylbutyrate": {
+      "ions": [
+        137.0539,
+        136.0392
+      ]
+    }
+  },
+  "Alkanes, aryls, and derivatives (EI)": {
+    "p-xylene": {
+      "ions": [
+        51,
+        77,
+        105,
+        106,
+        91
+      ]
+    },
+    "n-nonane": {
+      "ions": [
+        57,
+        71,
+        85,
+        127,
+        128
+      ]
+    },
+    "1,2,4-trimethylbenzene": {
+      "ions": [
+        39,
+        77,
+        105,
+        119,
+        120
+      ]
+    },
+    "n-decane": {
+      "ions": [
+        141,
+        99,
+        86,
+        85,
+        84
+      ]
+    },
+    "n-hexane": {
+      "ions": [
+        57,
+        56,
+        43,
+        42,
+        40
+      ]
+    },
+    "n-heptane": {
+      "ions": [
+        71,
+        57,
+        43,
+        41,
+        29
+      ]
+    },
+    "n-octane": {
+      "ions": [
+        85,
+        71,
+        57,
+        56,
+        43
+      ]
+    },
+    "1,2,4,5-tetramethylbenzene": {
+      "ions": [
+        134,
+        133,
+        119,
+        120,
+        91
+      ]
+    },
+    "n-tridecane": {
+      "ions": [
+        85,
+        71,
+        57,
+        43,
+        41
+      ]
+    },
+    "methylnaphtalene": {
+      "ions": [
+        142,
+        141,
+        115,
+        70,
+        140
+      ]
+    }
+  },
+  "Benzaldehyde pathway": {
+    "Benzyl alcohol": {
+      "ions": [
+        109.06479,
+        107.05024
+      ]
+    },
+    "Benzaldehyde": {
+      "ions": [
+        107.04914,
+        105.03459
+      ]
+    },
+    "Benzoic acid": {
+      "ions": [
+        123.04406,
+        121.0295
+      ]
+    },
+    "Catechol": {
+      "ions": [
+        111.04406,
+        109.0295
+      ]
+    },
+    "3-oxoadipate": {
+      "ions": [
+        161.04445,
+        159.0299
+      ]
+    },
+    "Muconolactone": {
+      "ions": [
+        143.03389,
+        141.01933
+      ]
+    }
+  },
+  "Butyrate metabolism": {
+    "Pyruvate": {
+      "ions": [
+        89.02332,
+        87.00877
+      ]
+    },
+    "Succinate": {
+      "ions": [
+        119.03389,
+        117.01933
+      ]
+    },
+    "Maleate/Fumarate": {
+      "ions": [
+        117.01824,
+        115.00368
+      ]
+    },
+    "Glutamate": {
+      "ions": [
+        148.06043,
+        146.04588
+      ]
+    },
+    "Butyraldehyde": {
+      "ions": [
+        73.06479,
+        71.05024
+      ]
+    },
+    "Acetone": {
+      "ions": [
+        59.04914,
+        57.03459
+      ]
+    }
+  },
+  "Aminoacids": {
+    "Aspartic acid": {
+      "ions": [
+        134.0448,
+        132.0302
+      ]
+    },
+    "Alanine": {
+      "ions": [
+        90.055,
+        88.0404
+      ]
+    },
+    "Arginine": {
+      "ions": [
+        175.119,
+        173.1044
+      ]
+    },
+    "Asparagine": {
+      "ions": [
+        133.0608,
+        131.0462
+      ]
+    },
+    "Cysteine": {
+      "ions": [
+        122.0271,
+        120.0124
+      ]
+    },
+    "Glutamine": {
+      "ions": [
+        147.0765,
+        145.0618
+      ]
+    },
+    "Glutamic acid": {
+      "ions": [
+        148.0605,
+        146.0458
+      ]
+    },
+    "Histidine": {
+      "ions": [
+        156.0768,
+        154.0622
+      ]
+    },
+    "Glycine": {
+      "ions": [
+        76.0394,
+        74.0247
+      ]
+    },
+    "Lysine": {
+      "ions": [
+        147.1129,
+        145.0982
+      ]
+    },
+    "Methionine": {
+      "ions": [
+        150.0584,
+        148.0437
+      ]
+    },
+    "Leucine/Isoleucine": {
+      "ions": [
+        132.102,
+        130.0873
+      ]
+    },
+    "Phenylalanine": {
+      "ions": [
+        166.0863,
+        164.0717
+      ]
+    },
+    "Proline": {
+      "ions": [
+        116.0707,
+        114.056
+      ]
+    },
+    "Serine": {
+      "ions": [
+        106.0499,
+        104.0353
+      ]
+    },
+    "Threonine": {
+      "ions": [
+        120.0656,
+        118.0509
+      ]
+    },
+    "Tryptophan": {
+      "ions": [
+        205.0972,
+        203.0826
+      ]
+    },
+    "Tyrosine": {
+      "ions": [
+        182.0812,
+        180.0666
+      ]
+    },
+    "Valine": {
+      "ions": [
+        118.0863,
+        116.0177
+      ]
+    }
+  },
+  "Bile acids": {
+    "\"12-Oxochenodeoxycholic Acid\"": {
+      "ions": [
+        407.2792,
+        405.2646
+      ]
+    },
+    "\"12-Oxolithocholic Acid\"": {
+      "ions": [
+        391.2843,
+        389.2697
+      ]
+    },
+    "\"2-Methylbutyrate\"": {
+      "ions": [
+        102.0675,
+        100.053
+      ]
+    },
+    "\"3-Aminoisobutyrate\"": {
+      "ions": [
+        103.0628,
+        101.0482
+      ]
+    },
+    "\"3-Deoxycholic Acid\"": {
+      "ions": [
+        393.2999,
+        391.2854
+      ]
+    },
+    "\"3-Oxocholic Acid\"": {
+      "ions": [
+        407.2792,
+        405.2646
+      ]
+    },
+    "\"3-Oxodeoxycholic-Or-3-Oxochenodeoxycholic Acid\"": {
+      "ions": [
+        391.2843,
+        389.2697
+      ]
+    },
+    "\"3-Oxolithocholic Acid\"": {
+      "ions": [
+        375.2894,
+        373.2748
+      ]
+    },
+    "\"4-Methylvalerate\"": {
+      "ions": [
+        117.091,
+        115.0765
+      ]
+    },
+    "\"5-Aminovalerate\"": {
+      "ions": [
+        118.0863,
+        116.0717
+      ]
+    },
+    "\"7-Oxodeoxycholic Acid\"": {
+      "ions": [
+        407.2792,
+        405.2646
+      ]
+    },
+    "\"Acetate\"": {
+      "ions": [
+        60.0206,
+        58.006
+      ]
+    },
+    "\"Alanine\"": {
+      "ions": [
+        90.055,
+        88.0404
+      ]
+    },
+    "\"Allocholic Acid\"": {
+      "ions": [
+        409.2949,
+        407.2803
+      ]
+    },
+    "\"Alloisolithocholic Acid\"": {
+      "ions": [
+        377.305,
+        375.2905
+      ]
+    },
+    "\"Allolithocholic Acid\"": {
+      "ions": [
+        377.305,
+        375.2905
+      ]
+    },
+    "\"Alpha-Muricholic Acid\"": {
+      "ions": [
+        409.2949,
+        407.2803
+      ]
+    },
+    "\"Anthranilic Acid\"": {
+      "ions": [
+        138.055,
+        136.0404
+      ]
+    },
+    "\"Aspartate\"": {
+      "ions": [
+        134.0448,
+        132.0302
+      ]
+    },
+    "\"Beta-Muricholic Acid\"": {
+      "ions": [
+        409.2949,
+        407.2803
+      ]
+    },
+    "\"Biotin\"": {
+      "ions": [
+        245.0954,
+        243.0809
+      ]
+    },
+    "\"Butyrate\"": {
+      "ions": [
+        88.0519,
+        86.0373
+      ]
+    },
+    "\"Chenodeoxycholic Acid\"": {
+      "ions": [
+        393.2999,
+        391.2854
+      ]
+    },
+    "\"Cholic Acid\"": {
+      "ions": [
+        409.2949,
+        407.2803
+      ]
+    },
+    "\"Crotonate\"": {
+      "ions": [
+        86.0362,
+        84.0217
+      ]
+    },
+    "\"Cysteine\"": {
+      "ions": [
+        122.027,
+        120.0125
+      ]
+    },
+    "\"Deoxycholic Acid\"": {
+      "ions": [
+        393.2999,
+        391.2854
+      ]
+    },
+    "\"Desaminotyrosine\"": {
+      "ions": [
+        167.0703,
+        165.0557
+      ]
+    },
+    "\"Folate\"": {
+      "ions": [
+        442.147,
+        440.1324
+      ]
+    },
+    "\"Gamma-Muricholic Acid\"": {
+      "ions": [
+        409.2949,
+        407.2803
+      ]
+    },
+    "\"Glutamate\"": {
+      "ions": [
+        148.0604,
+        146.0459
+      ]
+    },
+    "\"Glycine\"": {
+      "ions": [
+        76.0393,
+        74.0248
+      ]
+    },
+    "\"Glycochenodeoxycholic Acid\"": {
+      "ions": [
+        450.3214,
+        448.3068
+      ]
+    },
+    "\"Glycocholic Acid\"": {
+      "ions": [
+        466.3163,
+        464.3018
+      ]
+    },
+    "\"Glycodehydrocholic Acid\"": {
+      "ions": [
+        460.2694,
+        458.2548
+      ]
+    },
+    "\"Glycodeoxycholic Acid\"": {
+      "ions": [
+        450.3214,
+        448.3068
+      ]
+    },
+    "\"Glycohyodeoxycholic Acid\"": {
+      "ions": [
+        450.3214,
+        448.3068
+      ]
+    },
+    "\"Glycolithocholic Acid\"": {
+      "ions": [
+        434.3265,
+        432.3119
+      ]
+    },
+    "\"Glycoursodeoxycholic Acid\"": {
+      "ions": [
+        450.3214,
+        448.3068
+      ]
+    },
+    "\"Hexanoate\"": {
+      "ions": [
+        116.0832,
+        114.0686
+      ]
+    },
+    "\"Hyodeoxycholic Acid\"": {
+      "ions": [
+        393.2999,
+        391.2854
+      ]
+    },
+    "\"Indole\"": {
+      "ions": [
+        118.0651,
+        116.0506
+      ]
+    },
+    "\"Indole-3-Acetamide\"": {
+      "ions": [
+        175.0866,
+        173.072
+      ]
+    },
+    "\"Indole-3-Acetate\"": {
+      "ions": [
+        175.0628,
+        173.0482
+      ]
+    },
+    "\"Indole-3-Acrylate\"": {
+      "ions": [
+        187.0628,
+        185.0482
+      ]
+    },
+    "\"Indole-3-Carboxaldehyde\"": {
+      "ions": [
+        146.06,
+        144.0455
+      ]
+    },
+    "\"Indole-3-Lactate\"": {
+      "ions": [
+        205.0733,
+        203.0588
+      ]
+    },
+    "\"Indole-3-Propionate\"": {
+      "ions": [
+        189.0784,
+        187.0639
+      ]
+    },
+    "\"Indole-3-Pyruvate\"": {
+      "ions": [
+        204.0655,
+        202.051
+      ]
+    },
+    "\"Isobutyrate\"": {
+      "ions": [
+        88.0519,
+        86.0373
+      ]
+    },
+    "\"Isodeoxycholic Acid\"": {
+      "ions": [
+        132.1019,
+        130.0874
+      ]
+    },
+    "\"Isoleucine\"": {
+      "ions": [
+        377.305,
+        375.2905
+      ]
+    },
+    "\"Isolithocholic Acid\"": {
+      "ions": [
+        102.0675,
+        100.053
+      ]
+    },
+    "\"Isovalerate\"": {
+      "ions": [
+        131.0339,
+        129.0193
+      ]
+    },
+    "\"Itaconate\"": {
+      "ions": [
+        190.0499,
+        188.0353
+      ]
+    },
+    "\"Kynurenic Acid\"": {
+      "ions": [
+        209.0921,
+        207.0775
+      ]
+    },
+    "\"Kynurenine\"": {
+      "ions": [
+        132.1019,
+        130.0874
+      ]
+    },
+    "\"Leucine\"": {
+      "ions": [
+        377.305,
+        375.2905
+      ]
+    },
+    "\"Lithocholic Acid\"": {
+      "ions": [
+        147.1128,
+        145.0983
+      ]
+    },
+    "\"Lysine\"": {
+      "ions": [
+        150.0583,
+        148.0438
+      ]
+    },
+    "\"Methionine\"": {
+      "ions": [
+        219.1128,
+        217.0983
+      ]
+    },
+    "\"Methylserotonin\"": {
+      "ions": [
+        124.0393,
+        122.0248
+      ]
+    },
+    "\"N-Acetylserotonin\"": {
+      "ions": [
+        409.2949,
+        407.2803
+      ]
+    },
+    "\"Niacin\"": {
+      "ions": [
+        109.0648,
+        107.0502
+      ]
+    },
+    "\"Omega-Muricholic Acid\"": {
+      "ions": [
+        257.2475,
+        255.233
+      ]
+    },
+    "\"P-Cresol\"": {
+      "ions": [
+        220.1179,
+        218.1034
+      ]
+    },
+    "\"Palmitate\"": {
+      "ions": [
+        95.0491,
+        93.0346
+      ]
+    },
+    "\"Pantothenic Acid\"": {
+      "ions": [
+        166.0863,
+        164.0717
+      ]
+    },
+    "\"Phenol\"": {
+      "ions": [
+        124.0393,
+        122.0248
+      ]
+    },
+    "\"Phenylalanine\"": {
+      "ions": [
+        248.0319,
+        246.0173
+      ]
+    },
+    "\"Picolinic Acid\"": {
+      "ions": [
+        116.0706,
+        114.0561
+      ]
+    },
+    "\"Pyridoxal Phosphate\"": {
+      "ions": [
+        74.0362,
+        72.0217
+      ]
+    },
+    "\"Proline\"": {
+      "ions": [
+        168.0291,
+        166.0146
+      ]
+    },
+    "\"Propionate\"": {
+      "ions": [
+        106.0499,
+        104.0353
+      ]
+    },
+    "\"Quinolinic Acid\"": {
+      "ions": [
+        117.0182,
+        115.0037
+      ]
+    },
+    "\"Serine\"": {
+      "ions": [
+        500.304,
+        498.2895
+      ]
+    },
+    "\"Succinate\"": {
+      "ions": [
+        516.2989,
+        514.2844
+      ]
+    },
+    "\"Taurochenodeoxycholic Acid\"": {
+      "ions": [
+        500.304,
+        498.2895
+      ]
+    },
+    "\"Taurocholic Acid\"": {
+      "ions": [
+        500.304,
+        498.2895
+      ]
+    },
+    "\"Taurodeoxycholic Acid\"": {
+      "ions": [
+        484.3091,
+        482.2946
+      ]
+    },
+    "\"Taurohyodeoxycholic Acid\"": {
+      "ions": [
+        500.304,
+        498.2895
+      ]
+    },
+    "\"Taurolithocholic Acid\"": {
+      "ions": [
+        120.0655,
+        118.051
+      ]
+    },
+    "\"Tauroursodeoxycholic Acid\"": {
+      "ions": [
+        161.1073,
+        159.0928
+      ]
+    },
+    "\"Threonine\"": {
+      "ions": [
+        205.0972,
+        203.0826
+      ]
+    },
+    "\"Trans-Indole-3-Acrylate\"": {
+      "ions": [
+        162.0913,
+        160.0768
+      ]
+    },
+    "\"Tryptamine\"": {
+      "ions": [
+        138.0913,
+        136.0768
+      ]
+    },
+    "\"Tryptophan\"": {
+      "ions": [
+        182.0812,
+        180.0666
+      ]
+    },
+    "\"Tryptophol\"": {
+      "ions": [
+        393.2999,
+        391.2854
+      ]
+    },
+    "\"Tyramine\"": {
+      "ions": [
+        102.0675,
+        100.053
+      ]
+    },
+    "\"Tyrosine\"": {
+      "ions": [
+        118.0863,
+        116.0717
+      ]
+    }
+  }
 }
