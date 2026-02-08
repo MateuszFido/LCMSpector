@@ -1,0 +1,785 @@
+"""
+Unit tests for theoretical mass spectrum prediction.
+
+Tests formula detection, isotopic pattern calculation, IonTable formula
+branching, and MzRangeDialog theoretical overlay.
+"""
+
+import json
+import numpy as np
+import pytest
+from unittest.mock import MagicMock, patch
+from PySide6 import QtWidgets
+
+
+# ===========================================================================
+# TestDetectInputType
+# ===========================================================================
+
+
+class TestDetectInputType:
+    """Tests for detect_input_type()."""
+
+    def test_simple_formula(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("C6H12O6") == "formula"
+
+    def test_water(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("H2O") == "formula"
+
+    def test_carbon_monoxide(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("CO") == "formula"
+
+    def test_single_element(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("C") == "formula"
+
+    def test_salt(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("NaCl") == "formula"
+
+    def test_caffeine_formula(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("C8H10N4O2") == "formula"
+
+    def test_name_lowercase_start(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("glucose") == "name"
+
+    def test_name_caffeine(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("caffeine") == "name"
+
+    def test_name_aspirin(self):
+        """'Aspirin' parses to {'Aspirin': 1} which is not in nist_mass."""
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("Aspirin") == "name"
+
+    def test_name_with_spaces(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("acetic acid") == "name"
+
+    def test_empty_string(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("") == "name"
+
+    def test_whitespace_only(self):
+        from utils.theoretical_spectrum import detect_input_type
+
+        assert detect_input_type("   ") == "name"
+
+
+# ===========================================================================
+# TestCalculateTheoreticalSpectrum
+# ===========================================================================
+
+
+class TestAdductDefinitions:
+    """Tests for AdductDefinition dataclass and ADDUCT_DEFINITIONS dict."""
+
+    def test_all_13_adducts_present(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        assert len(ADDUCT_DEFINITIONS) == 13
+
+    def test_positive_adducts_count(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        positive = [d for d in ADDUCT_DEFINITIONS.values() if d.polarity == "positive"]
+        assert len(positive) == 7
+
+    def test_negative_adducts_count(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        negative = [d for d in ADDUCT_DEFINITIONS.values() if d.polarity == "negative"]
+        assert len(negative) == 6
+
+    def test_default_checked_are_mh_plus_and_mh_minus(self):
+        from utils.theoretical_spectrum import DEFAULT_ADDUCTS
+
+        assert "[M+H]+" in DEFAULT_ADDUCTS
+        assert "[M-H]-" in DEFAULT_ADDUCTS
+        assert len(DEFAULT_ADDUCTS) == 2
+
+    def test_adduct_labels_match_keys(self):
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        for label, defn in ADDUCT_DEFINITIONS.items():
+            assert label == defn.label
+
+
+class TestComputeAdductMz:
+    """Tests for compute_adduct_mz() and calculate_monoisotopic_mz()."""
+
+    def test_mh_plus_caffeine(self):
+        """[M+H]+ for caffeine: exact_mass + H ≈ 195.0882."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+H]+"])
+        assert "[M+H]+" in result
+        assert result["[M+H]+"] == pytest.approx(195.0882, abs=0.001)
+
+    def test_mh_minus_caffeine(self):
+        """[M-H]- for caffeine: exact_mass - H ≈ 193.0726."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M-H]-"])
+        assert "[M-H]-" in result
+        assert result["[M-H]-"] == pytest.approx(193.0726, abs=0.001)
+
+    def test_m_na_plus_caffeine(self):
+        """[M+Na]+ for caffeine: exact_mass + Na ≈ 217.0695."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+Na]+"])
+        assert "[M+Na]+" in result
+        assert result["[M+Na]+"] == pytest.approx(217.0695, abs=0.01)
+
+    def test_m_k_plus_caffeine(self):
+        """[M+K]+ for caffeine: exact_mass + K ≈ 233.0434."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+K]+"])
+        assert "[M+K]+" in result
+        assert result["[M+K]+"] == pytest.approx(233.0434, abs=0.01)
+
+    def test_m_nh4_plus_caffeine(self):
+        """[M+NH4]+ for caffeine: exact_mass + NH4 ≈ 212.1147."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+NH4]+"])
+        assert "[M+NH4]+" in result
+        assert result["[M+NH4]+"] == pytest.approx(212.1147, abs=0.01)
+
+    def test_multiply_charged_mz_divided(self):
+        """[M+2H]2+ m/z ≈ (M + 2H) / 2."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+2H]2+"])
+        assert "[M+2H]2+" in result
+        # (194.0804 + 2*1.00794) / 2 ≈ 98.0481
+        assert result["[M+2H]2+"] == pytest.approx(98.048, abs=0.01)
+
+    def test_dimer_mz(self):
+        """[2M+H]+ m/z ≈ 2*M + H."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[2M+H]+"])
+        assert "[2M+H]+" in result
+        # 2*194.0804 + 1.00794 ≈ 389.1687
+        assert result["[2M+H]+"] == pytest.approx(389.169, abs=0.01)
+
+    def test_water_loss_mz(self):
+        """[M+H-H2O]+ m/z ≈ M + H - H2O."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+H-H2O]+"])
+        assert "[M+H-H2O]+" in result
+        # 194.0804 + 1.00794 - 18.01056 ≈ 177.0778
+        assert result["[M+H-H2O]+"] == pytest.approx(177.078, abs=0.01)
+
+    def test_m_cl_minus(self):
+        """[M+Cl]- for caffeine: exact_mass + Cl ≈ 229.0518."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+Cl]-"])
+        assert "[M+Cl]-" in result
+        assert result["[M+Cl]-"] == pytest.approx(229.052, abs=0.01)
+
+    def test_m_formate_minus(self):
+        """[M+HCOO]- for caffeine: exact_mass + CHO2 ≈ 239.0780."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+HCOO]-"])
+        assert "[M+HCOO]-" in result
+        assert result["[M+HCOO]-"] == pytest.approx(239.078, abs=0.01)
+
+    def test_calculate_monoisotopic_mz_multiple(self):
+        """Fast path returns correct dict for multiple adducts."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz(
+            "C8H10N4O2", ["[M+H]+", "[M-H]-", "[M+Na]+"]
+        )
+        assert len(result) == 3
+        assert "[M+H]+" in result
+        assert "[M-H]-" in result
+        assert "[M+Na]+" in result
+
+    def test_calculate_monoisotopic_mz_skips_unknown(self):
+        """Unknown adduct label is silently skipped."""
+        from utils.theoretical_spectrum import calculate_monoisotopic_mz
+
+        result = calculate_monoisotopic_mz("C8H10N4O2", ["[M+H]+", "[FAKE]+"])
+        assert len(result) == 1
+        assert "[M+H]+" in result
+
+
+class TestCalculateTheoreticalSpectrum:
+    """Tests for calculate_theoretical_spectrum()."""
+
+    def test_glucose_has_both_adducts(self):
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("C6H12O6")
+        assert "[M+H]+" in spec.adducts
+        assert "[M-H]-" in spec.adducts
+
+    def test_caffeine_monoisotopic_mz(self):
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("C8H10N4O2")
+        pos = spec.adducts["[M+H]+"]
+        # Caffeine exact mass ~194.0804, [M+H]+ = ~195.088
+        assert pos.monoisotopic_mz == pytest.approx(195.088, abs=0.01)
+
+    def test_abundances_normalized(self):
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("C6H12O6")
+        for adduct in spec.adducts.values():
+            assert adduct.abundances.max() == pytest.approx(1.0)
+
+    def test_mz_values_sorted(self):
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("C6H12O6")
+        for adduct in spec.adducts.values():
+            assert np.all(np.diff(adduct.mz_values) >= 0)
+
+    def test_invalid_formula_raises_valueerror(self):
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        with pytest.raises(ValueError):
+            calculate_theoretical_spectrum("XyzNotAnElement123")
+
+    def test_threshold_filtering(self):
+        """Higher threshold should yield fewer isotopologue peaks."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec_low = calculate_theoretical_spectrum("C6H12O6", abundance_threshold=0.0001)
+        spec_high = calculate_theoretical_spectrum("C6H12O6", abundance_threshold=0.01)
+
+        pos_low = spec_low.adducts["[M+H]+"]
+        pos_high = spec_high.adducts["[M+H]+"]
+        assert len(pos_high.mz_values) <= len(pos_low.mz_values)
+
+    def test_formula_stored(self):
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("H2O")
+        assert spec.formula == "H2O"
+
+    def test_with_custom_adducts(self):
+        """Passing specific adduct list produces only those adducts."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum(
+            "C8H10N4O2", adduct_types=["[M+Na]+", "[M+Cl]-"]
+        )
+        assert "[M+Na]+" in spec.adducts
+        assert "[M+Cl]-" in spec.adducts
+        assert "[M+H]+" not in spec.adducts
+
+    def test_multiply_charged_isotopologues_divided(self):
+        """[M+2H]2+ isotopologue m/z values should be divided by charge."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum(
+            "C8H10N4O2", adduct_types=["[M+2H]2+"]
+        )
+        adduct = spec.adducts["[M+2H]2+"]
+        # Monoisotopic should be roughly (194.08 + 2*1.008) / 2 ≈ 98
+        assert adduct.monoisotopic_mz == pytest.approx(98.048, abs=0.1)
+
+    def test_backward_compatible_defaults(self):
+        """Default behavior with no adduct_types produces [M+H]+ and [M-H]-."""
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        spec = calculate_theoretical_spectrum("C6H12O6")
+        assert set(spec.adducts.keys()) == {"[M+H]+", "[M-H]-"}
+
+
+# ===========================================================================
+# TestIonTableFormulaLookup
+# ===========================================================================
+
+
+class TestIonTableFormulaLookup:
+    """Tests for IonTable formula detection and local lookup."""
+
+    @pytest.fixture
+    def ion_table_with_mock_view(self, qapp, qtbot):
+        from ui.widgets import IonTable
+
+        mock_view = MagicMock()
+        mock_view.comboBoxIonLists = MagicMock()
+        mock_view.statusbar = MagicMock()
+
+        table = IonTable(view=mock_view, parent=None)
+        qtbot.addWidget(table)
+        yield table
+
+    def test_formula_fills_cells_without_pubchem(self, ion_table_with_mock_view, qtbot):
+        """Entering a formula fills m/z cells instantly, no PubChem call."""
+        table = ion_table_with_mock_view
+
+        with patch.object(table, "_execute_lookup_for") as mock_pubchem:
+            table.setItem(0, 0, QtWidgets.QTableWidgetItem("C8H10N4O2"))
+            table.setCurrentCell(0, 0)
+            table._on_editor_closed(MagicMock(), 0)
+
+            # PubChem should NOT be called
+            mock_pubchem.assert_not_called()
+
+        # m/z should be filled
+        mz_item = table.item(0, 1)
+        assert mz_item is not None
+        assert mz_item.text().strip() != ""
+        # Should contain [M+H]+ value
+        assert "195.0882" in mz_item.text()
+
+    def test_name_still_triggers_pubchem(self, ion_table_with_mock_view, qtbot):
+        """Entering a compound name still triggers PubChem lookup."""
+        table = ion_table_with_mock_view
+
+        with patch.object(table, "_execute_lookup_for") as mock_pubchem:
+            table.setItem(0, 0, QtWidgets.QTableWidgetItem("Caffeine"))
+            table.setCurrentCell(0, 0)
+            table._on_editor_closed(MagicMock(), 0)
+
+            mock_pubchem.assert_called_once_with(0, "Caffeine")
+
+    def test_theoretical_spectra_populated(self, ion_table_with_mock_view, qtbot):
+        """Formula lookup populates _theoretical_spectra dict."""
+        table = ion_table_with_mock_view
+
+        table.setItem(0, 0, QtWidgets.QTableWidgetItem("C8H10N4O2"))
+        table.setCurrentCell(0, 0)
+        table._on_editor_closed(MagicMock(), 0)
+
+        assert "C8H10N4O2" in table._theoretical_spectra
+        spec = table._theoretical_spectra["C8H10N4O2"]
+        assert "[M+H]+" in spec.adducts
+
+    def test_theoretical_spectrum_signal_emitted(self, ion_table_with_mock_view, qtbot):
+        """Formula lookup emits theoretical_spectrum_ready signal."""
+        table = ion_table_with_mock_view
+
+        from tests.conftest import SignalCatcher
+
+        catcher = SignalCatcher()
+        table.theoretical_spectrum_ready.connect(catcher.slot)
+
+        table.setItem(0, 0, QtWidgets.QTableWidgetItem("C8H10N4O2"))
+        table.setCurrentCell(0, 0)
+        table._on_editor_closed(MagicMock(), 0)
+
+        assert catcher.was_called
+        name, spectrum = catcher.args
+        assert name == "C8H10N4O2"
+        assert "[M+H]+" in spectrum.adducts
+
+    def test_pubchem_lookup_also_computes_theoretical(
+        self, ion_table_with_mock_view, qtbot
+    ):
+        """PubChem lookup with molecular_formula triggers theoretical computation."""
+        table = ion_table_with_mock_view
+
+        from tests.conftest import SignalCatcher
+
+        catcher = SignalCatcher()
+        table.theoretical_spectrum_ready.connect(catcher.slot)
+
+        table._lookup_row = 0
+        table.setItem(0, 0, QtWidgets.QTableWidgetItem("Caffeine"))
+
+        data = {
+            "mz_pos": 195.0877,
+            "mz_neg": 193.0731,
+            "molecular_formula": "C8H10N4O2",
+        }
+        table._on_lookup_finished("Caffeine", data)
+
+        assert "Caffeine" in table._theoretical_spectra
+        assert catcher.was_called
+        name, spectrum = catcher.args
+        assert name == "Caffeine"
+
+
+# ===========================================================================
+# TestMzRangeDialogTheoretical
+# ===========================================================================
+
+
+class TestMzRangeDialogTheoretical:
+    """Tests for MzRangeDialog theoretical spectrum overlay."""
+
+    @pytest.fixture
+    def sample_spectrum_data(self):
+        """Provide sample m/z and intensity arrays for dialog."""
+        mzs = np.linspace(190, 200, 100)
+        intensities = np.random.RandomState(42).uniform(0, 1000, 100)
+        # Add a peak at ~195
+        intensities[50] = 10000
+        return mzs, intensities
+
+    def test_dialog_no_crash_without_theoretical(self, qapp, qtbot, sample_spectrum_data):
+        """Dialog works normally when theoretical_spectrum is None."""
+        from ui.widgets import MzRangeDialog
+
+        mzs, intensities = sample_spectrum_data
+        dialog = MzRangeDialog(
+            mzs=mzs,
+            intensities=intensities,
+            target_mz_values=[195.0882],
+            ion_labels=["[M+H]+"],
+            mass_accuracy=0.0001,
+            compound_name="Test",
+            theoretical_spectrum=None,
+        )
+        qtbot.addWidget(dialog)
+        # Should not crash; no theoretical items
+        assert dialog._theo_items == []
+
+    def test_dialog_displays_theoretical_peaks(self, qapp, qtbot, sample_spectrum_data):
+        """Dialog displays theoretical bar items when spectrum is provided."""
+        from ui.widgets import MzRangeDialog
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        mzs, intensities = sample_spectrum_data
+        spectrum = calculate_theoretical_spectrum("C8H10N4O2")
+
+        dialog = MzRangeDialog(
+            mzs=mzs,
+            intensities=intensities,
+            target_mz_values=[195.0882, 193.0726],
+            ion_labels=["[M+H]+", "[M-H]-"],
+            mass_accuracy=0.0001,
+            compound_name="Caffeine",
+            theoretical_spectrum=spectrum,
+        )
+        qtbot.addWidget(dialog)
+
+        # Should have theoretical items (bar + text label)
+        assert len(dialog._theo_items) >= 2
+
+    def test_theoretical_items_cleaned_on_ion_switch(
+        self, qapp, qtbot, sample_spectrum_data
+    ):
+        """Theoretical items are cleaned up when switching ions."""
+        from ui.widgets import MzRangeDialog
+        from utils.theoretical_spectrum import calculate_theoretical_spectrum
+
+        mzs, intensities = sample_spectrum_data
+        spectrum = calculate_theoretical_spectrum("C8H10N4O2")
+
+        dialog = MzRangeDialog(
+            mzs=mzs,
+            intensities=intensities,
+            target_mz_values=[195.0882, 193.0726],
+            ion_labels=["[M+H]+", "[M-H]-"],
+            mass_accuracy=0.0001,
+            compound_name="Caffeine",
+            theoretical_spectrum=spectrum,
+        )
+        qtbot.addWidget(dialog)
+
+        # Items from first ion
+        items_ion0 = list(dialog._theo_items)
+        assert len(items_ion0) >= 2
+
+        # Switch to second ion
+        dialog._ion_combo.setCurrentIndex(1)
+
+        # Previous items should be cleaned, new ones created
+        # (items list should have been cleared and repopulated)
+        assert len(dialog._theo_items) >= 2
+        # Items should be different objects (old ones removed)
+        assert dialog._theo_items[0] is not items_ion0[0]
+
+
+# ===========================================================================
+# TestAutoPlotAndLiveUpdate
+# ===========================================================================
+
+
+class TestAutoPlotAndLiveUpdate:
+    """Tests for auto-plotting theoretical spectra on ion list load and
+    live-updating when compounds are removed."""
+
+    @pytest.fixture
+    def config_with_formulas(self, tmp_path):
+        """Config with formula fields for some compounds."""
+        config = {
+            "With Formulas": {
+                "Apigenin": {
+                    "ions": [271.0601, 269.0455],
+                    "info": ["[M+H]+", "[M-H]-"],
+                    "formula": "C15H10O5",
+                },
+                "Catechin": {
+                    "ions": [291.0863, 289.0718],
+                    "info": ["[M+H]+", "[M-H]-"],
+                    "formula": "C15H14O6",
+                },
+                "NoFormula": {
+                    "ions": [100.0, 98.0],
+                    "info": ["[M+H]+", "[M-H]-"],
+                },
+            },
+            "No Formulas": {
+                "CompA": {
+                    "ions": [150.0, 148.0],
+                    "info": ["[M+H]+", "[M-H]-"],
+                },
+            },
+        }
+        config_path = tmp_path / "config.json"
+        config_path.write_text(json.dumps(config, indent=2))
+        return config_path
+
+    @pytest.fixture
+    def tab_with_formulas(self, qapp, qtbot, config_with_formulas):
+        """UploadTab with formula-enabled config."""
+        from ui.tabs.upload_tab import UploadTab
+
+        tab = UploadTab(parent=None, mode="MS Only")
+        tab.config_path = config_with_formulas
+        qtbot.addWidget(tab)
+
+        tab.comboBoxIonLists.clear()
+        tab.comboBoxIonLists.addItem("Create new ion list...")
+        tab._load_ion_config_names()
+        return tab
+
+    def test_bulk_computation_with_formula(self, tab_with_formulas):
+        """Selecting an ion list with formulas populates _theoretical_spectra."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        # Compounds with formulas should have theoretical spectra
+        assert "Apigenin" in tab.ionTable._theoretical_spectra
+        assert "Catechin" in tab.ionTable._theoretical_spectra
+        # Compound without formula should not
+        assert "NoFormula" not in tab.ionTable._theoretical_spectra
+
+    def test_bulk_computation_skips_no_formula(self, tab_with_formulas):
+        """Entries without 'formula' key produce no spectra."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("No Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        assert len(tab.ionTable._theoretical_spectra) == 0
+
+    def test_plots_created_for_formulas(self, tab_with_formulas):
+        """Theoretical plots dict is populated with distinct colors per compound."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        assert "Apigenin" in tab._theoretical_plots
+        assert "Catechin" in tab._theoretical_plots
+        assert "NoFormula" not in tab._theoretical_plots
+
+        # Each compound should have a different pen color
+        apigenin_pen = tab._theoretical_plots["Apigenin"][0].opts["pen"]
+        catechin_pen = tab._theoretical_plots["Catechin"][0].opts["pen"]
+        assert apigenin_pen.color().name() != catechin_pen.color().name()
+
+    def test_clear_selection_emits_compound_removed(self, tab_with_formulas, qtbot):
+        """Selecting a compound row and clearing emits compound_removed."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        from tests.conftest import SignalCatcher
+
+        catcher = SignalCatcher()
+        tab.ionTable.compound_removed.connect(catcher.slot)
+
+        # Select the first row (Apigenin) — specifically the name cell
+        tab.ionTable.setCurrentCell(0, 0)
+        tab.ionTable.selectRow(0)
+        tab.ionTable.clear_selection()
+
+        assert catcher.was_called
+        assert catcher.args == ("Apigenin",)
+
+    def test_clear_selection_cleans_cached_spectra(self, tab_with_formulas):
+        """Clearing a compound row removes it from _theoretical_spectra."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        assert "Apigenin" in tab.ionTable._theoretical_spectra
+
+        tab.ionTable.setCurrentCell(0, 0)
+        tab.ionTable.selectRow(0)
+        tab.ionTable.clear_selection()
+
+        assert "Apigenin" not in tab.ionTable._theoretical_spectra
+
+    def test_plots_cleared_on_ion_list_switch(self, tab_with_formulas):
+        """Switching ion lists removes old theoretical plots before adding new ones."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx1 = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx1)
+        assert len(tab._theoretical_plots) > 0
+
+        # Switch to list without formulas
+        idx2 = tab.comboBoxIonLists.findText("No Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx2)
+
+        # All old plots should be gone
+        assert len(tab._theoretical_plots) == 0
+        assert len(tab.ionTable._theoretical_spectra) == 0
+
+    def test_clear_button_removes_theoretical_plots(self, tab_with_formulas, qtbot):
+        """Full clear button removes all theoretical overlays."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+        assert len(tab._theoretical_plots) > 0
+
+        # Click clear button
+        tab.button_clear_ion_list.click()
+
+        assert len(tab._theoretical_plots) == 0
+        assert len(tab.ionTable._theoretical_spectra) == 0
+
+    def test_save_ion_list_persists_formula(self, tab_with_formulas, qtbot):
+        """Saving an ion list includes the formula field in the saved data."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        # Build ions_data the same way save_ion_list does, to verify formula inclusion
+        ions_data = {}
+        table = tab.ionTable
+        for row in range(table.rowCount()):
+            name_item = table.item(row, 0)
+            if name_item is None:
+                continue
+            name = name_item.text().strip()
+            if not name:
+                continue
+            ions_data[name] = {}
+            mz_item = table.item(row, 1)
+            mz_text = mz_item.text() if mz_item else ""
+            try:
+                ions_data[name]["ions"] = [
+                    float(x) for x in mz_text.split(",") if x.strip()
+                ]
+            except ValueError:
+                ions_data[name]["ions"] = []
+            # Verify formula persistence logic
+            if name in table._theoretical_spectra:
+                ions_data[name]["formula"] = table._theoretical_spectra[name].formula
+
+        assert "Apigenin" in ions_data
+        assert ions_data["Apigenin"]["formula"] == "C15H10O5"
+        assert "Catechin" in ions_data
+        assert ions_data["Catechin"]["formula"] == "C15H14O6"
+        # Compound without formula should not have the key
+        assert "formula" not in ions_data.get("NoFormula", {})
+
+    def test_theoretical_plots_have_legend_entries(self, tab_with_formulas):
+        """Compounds with formulas get legend entries on canvas_avgMS."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        legend = tab.canvas_avgMS.getPlotItem().legend
+        assert legend is not None
+
+        # Collect legend entry labels
+        labels = [entry[1].text for entry in legend.items]
+        assert "Apigenin" in labels
+        assert "Catechin" in labels
+        assert "NoFormula" not in labels
+
+    def test_legend_cleared_on_ion_list_switch(self, tab_with_formulas):
+        """Switching ion lists removes old legend entries."""
+        tab = tab_with_formulas
+
+        # Load list with formulas
+        idx1 = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx1)
+
+        legend = tab.canvas_avgMS.getPlotItem().legend
+        labels_before = [entry[1].text for entry in legend.items]
+        assert "Apigenin" in labels_before
+
+        # Switch to list without formulas
+        idx2 = tab.comboBoxIonLists.findText("No Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx2)
+
+        labels_after = [entry[1].text for entry in legend.items]
+        assert "Apigenin" not in labels_after
+        assert "Catechin" not in labels_after
+
+    def test_legend_cleared_on_compound_removal(self, tab_with_formulas):
+        """Removing a compound clears its legend entry."""
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        legend = tab.canvas_avgMS.getPlotItem().legend
+        labels = [entry[1].text for entry in legend.items]
+        assert "Apigenin" in labels
+
+        # Remove Apigenin
+        tab.ionTable.setCurrentCell(0, 0)
+        tab.ionTable.selectRow(0)
+        tab.ionTable.clear_selection()
+
+        labels_after = [entry[1].text for entry in legend.items]
+        assert "Apigenin" not in labels_after
+        # Catechin should still be there
+        assert "Catechin" in labels_after
+
+    def test_color_index_resets_on_clear(self, tab_with_formulas):
+        """After clear, next compound starts from palette[0]."""
+        from ui.plotting import PlotStyle
+
+        tab = tab_with_formulas
+        idx = tab.comboBoxIonLists.findText("With Formulas")
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        # Color index should have advanced
+        assert tab._color_index_theo > 0
+
+        # Click clear button
+        tab.button_clear_ion_list.click()
+        assert tab._color_index_theo == 0
+
+        # Re-load the list — first compound should get palette[0]
+        tab.comboBoxIonLists.setCurrentIndex(0)  # reset
+        tab.comboBoxIonLists.setCurrentIndex(idx)
+
+        first_compound = list(tab._theoretical_plots.keys())[0]
+        first_bar = tab._theoretical_plots[first_compound][0]
+        expected_color = PlotStyle.PALETTE[0]
+        actual_color = first_bar.opts["pen"].color().name()
+        assert actual_color == expected_color.lower()

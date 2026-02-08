@@ -31,12 +31,13 @@ sys.path.insert(0, str(lcmspector_dir))
 # Also change working directory so resource paths resolve correctly
 os.chdir(lcmspector_dir)
 
-# Enable hot reload watching
-import jurigged
+if __name__ == "__main__":
+    # Enable hot reload watching
+    import jurigged
 
-jurigged.watch(str(lcmspector_dir))
+    jurigged.watch(str(lcmspector_dir))
 
-# Import and run - uses relative imports from lcmspector/
-from main import main
+    # Import and run - uses relative imports from lcmspector/
+    from main import main
 
-main()
+    main()

@@ -250,9 +250,102 @@ class GenericTable(QtWidgets.QTableWidget):
         super().setItem(row, col, item)
 
 
+class AdductDropdown(QtWidgets.QToolButton):
+    """Checkable dropdown for selecting MS adduct types.
+
+    Displays a QMenu with checkable actions grouped by polarity (positive/negative).
+    The menu stays open after clicking an action so users can check multiple adducts
+    without re-opening.
+
+    Signals
+    -------
+    adducts_changed : Signal(list)
+        Emitted when the set of checked adducts changes. Payload is a list of
+        checked adduct label strings.
+    """
+
+    adducts_changed = QtCore.Signal(list)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
+
+        self.setText("Adducts")
+        self.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
+        self.setToolTip("Select adduct types for m/z calculation")
+
+        menu = QtWidgets.QMenu(self)
+        self._actions: dict[str, QtGui.QAction] = {}
+
+        # Group by polarity
+        menu.addSection("Positive")
+        for label, defn in ADDUCT_DEFINITIONS.items():
+            if defn.polarity == "positive":
+                action = menu.addAction(label)
+                action.setCheckable(True)
+                action.setChecked(defn.default_checked)
+                action.triggered.connect(self._on_action_triggered)
+                self._actions[label] = action
+
+        menu.addSection("Negative")
+        for label, defn in ADDUCT_DEFINITIONS.items():
+            if defn.polarity == "negative":
+                action = menu.addAction(label)
+                action.setCheckable(True)
+                action.setChecked(defn.default_checked)
+                action.triggered.connect(self._on_action_triggered)
+                self._actions[label] = action
+
+        # Keep menu open after clicking an action
+        menu.setToolTipsVisible(True)
+        self._keep_open = True
+
+        # Override close behavior to keep menu open on action click
+        original_mouse_release = menu.mouseReleaseEvent
+
+        def _custom_mouse_release(event):
+            action = menu.actionAt(event.position().toPoint())
+            if action and action.isCheckable():
+                action.trigger()
+                return  # Don't close menu
+            original_mouse_release(event)
+
+        menu.mouseReleaseEvent = _custom_mouse_release
+
+        self.setMenu(menu)
+
+    def _on_action_triggered(self):
+        """Emit adducts_changed when any action is toggled."""
+        self.adducts_changed.emit(self.checked_adducts())
+
+    def checked_adducts(self) -> list[str]:
+        """Return list of currently checked adduct labels."""
+        return [label for label, action in self._actions.items() if action.isChecked()]
+
+    def set_checked(self, labels: list[str]):
+        """Set which adducts are checked, blocking signals during update.
+
+        Parameters
+        ----------
+        labels : list[str]
+            Adduct labels to check. All others will be unchecked.
+        """
+        self.blockSignals(True)
+        label_set = set(labels)
+        for label, action in self._actions.items():
+            action.setChecked(label in label_set)
+        self.blockSignals(False)
+
+
 class IonTable(GenericTable):
     # Signal emitted for status bar updates
     lookup_status = QtCore.Signal(str, int)  # (message, duration_ms)
+    # Signal emitted when a theoretical spectrum is computed
+    theoretical_spectrum_ready = QtCore.Signal(
+        str, object
+    )  # (compound_name, TheoreticalSpectrum)
+    # Signal emitted when a compound is removed from the table
+    compound_removed = QtCore.Signal(str)  # compound_name
 
     def __init__(self, view, parent=None):
         super().__init__(50, 3, parent)
@@ -268,8 +361,98 @@ class IonTable(GenericTable):
         # Custom m/z range storage: {compound_name: {mz: (left, right)}}
         self._custom_mz_ranges = {}
 
+        # Theoretical spectra storage: {compound_name: TheoreticalSpectrum}
+        self._theoretical_spectra = {}
+
+        # Adduct dropdown reference (set via set_adduct_dropdown)
+        self._adduct_dropdown = None
+
         # Connect closeEditor signal (fires only when editing finishes, not on each keystroke)
         self.itemDelegate().closeEditor.connect(self._on_editor_closed)
+
+    def set_adduct_dropdown(self, dropdown: "AdductDropdown"):
+        """Store reference to the adduct dropdown.
+
+        Note: No signal connection here — UploadTab orchestrates the
+        adducts_changed flow to ensure correct clear→recompute→replot order.
+        """
+        self._adduct_dropdown = dropdown
+
+    def _get_active_adducts(self) -> list[str]:
+        """Return currently checked adducts from dropdown, or defaults."""
+        from utils.theoretical_spectrum import DEFAULT_ADDUCTS
+
+        if self._adduct_dropdown is not None:
+            return self._adduct_dropdown.checked_adducts()
+        return list(DEFAULT_ADDUCTS)
+
+    def _find_row_by_name(self, name: str) -> int:
+        """Find the table row index for a compound name, or -1 if not found."""
+        for row in range(self.rowCount()):
+            item = self.item(row, 0)
+            if item and item.text().strip() == name:
+                return row
+        return -1
+
+    def _on_adducts_changed(self, adduct_list: list[str]):
+        """Recompute m/z and theoretical spectra for all formula-based compounds."""
+        from utils.theoretical_spectrum import (
+            calculate_monoisotopic_mz,
+            calculate_theoretical_spectrum,
+        )
+
+        for name, spectrum in list(self._theoretical_spectra.items()):
+            formula = spectrum.formula
+
+            # Fast path: update table m/z values
+            mz_dict = calculate_monoisotopic_mz(formula, adduct_list)
+            if not mz_dict:
+                continue
+
+            row = self._find_row_by_name(name)
+            if row < 0:
+                continue
+
+            mz_text = ", ".join(str(v) for v in mz_dict.values())
+            info_text = ", ".join(mz_dict.keys())
+
+            self.blockSignals(True)
+            try:
+                mz_item = self.item(row, 1)
+                if mz_item is None:
+                    mz_item = QtWidgets.QTableWidgetItem()
+                    self.setItem(row, 1, mz_item)
+                mz_item.setText(mz_text)
+
+                info_item = self.item(row, 2)
+                if info_item is None:
+                    info_item = QtWidgets.QTableWidgetItem()
+                    self.setItem(row, 2, info_item)
+                info_item.setText(info_text)
+            finally:
+                self.blockSignals(False)
+
+            self._highlight_cell(row, 1)
+            self._highlight_cell(row, 2)
+
+            # Slow path: recompute theoretical spectrum with new adducts
+            try:
+                new_spectrum = calculate_theoretical_spectrum(formula, adduct_list)
+                self._theoretical_spectra[name] = new_spectrum
+                self.theoretical_spectrum_ready.emit(name, new_spectrum)
+            except Exception:
+                pass
+
+    def clear_selection(self):
+        """Override to detect removed compounds and emit compound_removed signal."""
+        removed_names = set()
+        for item in self.selectedItems():
+            if item.column() == 0 and item.text().strip():
+                removed_names.add(item.text().strip())
+        super().clear_selection()
+        for name in removed_names:
+            self._theoretical_spectra.pop(name, None)
+            self.compound_removed.emit(name)
 
     def contextMenuEvent(self, pos):
         """Override to add 'Edit integration...' action to context menu."""
@@ -363,7 +546,9 @@ class IonTable(GenericTable):
         # 2. Get spectrum data from UploadTab
         spectrum_data = self.view.get_current_spectrum_data()
         if spectrum_data is None:
-            self.lookup_status.emit("No MS data available. Check an MS file first.", 5000)
+            self.lookup_status.emit(
+                "No MS data available. Check an MS file first.", 5000
+            )
             return
         mzs, intensities = spectrum_data
 
@@ -379,6 +564,7 @@ class IonTable(GenericTable):
             mass_accuracy=mass_accuracy,
             compound_name=compound_name,
             existing_ranges=self._custom_mz_ranges.get(compound_name, {}),
+            theoretical_spectrum=self._theoretical_spectra.get(compound_name),
             parent=self,
         )
         dialog.exec()
@@ -420,8 +606,14 @@ class IonTable(GenericTable):
         if mz_item is not None and mz_item.text().strip():
             return
 
-        # Execute lookup immediately (no debounce needed since closeEditor only fires once)
-        self._execute_lookup_for(row, compound_name)
+        # Branch: formula → local calculation, name → PubChem lookup
+        from utils.theoretical_spectrum import detect_input_type
+
+        if detect_input_type(compound_name) == "formula":
+            self._execute_formula_lookup(row, compound_name)
+        else:
+            # Execute PubChem lookup (no debounce needed since closeEditor only fires once)
+            self._execute_lookup_for(row, compound_name)
 
     def _execute_lookup_for(self, row: int, compound_name: str):
         """Execute a PubChem lookup for the given row and compound name."""
@@ -452,6 +644,70 @@ class IonTable(GenericTable):
         # Start the lookup
         self._lookup_thread.start()
 
+    def _execute_formula_lookup(self, row: int, formula: str):
+        """Resolve a molecular formula locally and fill m/z cells.
+
+        Computes monoisotopic m/z for all active adducts from the formula
+        using pyteomics, fills the table cells, and emits
+        ``theoretical_spectrum_ready``.
+        """
+        from utils.theoretical_spectrum import (
+            calculate_monoisotopic_mz,
+            calculate_theoretical_spectrum,
+        )
+
+        active_adducts = self._get_active_adducts()
+
+        # Fast path: compute monoisotopic m/z for table display
+        try:
+            mz_dict = calculate_monoisotopic_mz(formula, active_adducts)
+        except Exception as e:
+            self.lookup_status.emit(f"Invalid formula '{formula}': {e}", 5000)
+            return
+
+        if not mz_dict:
+            self.lookup_status.emit(f"Could not compute adducts for '{formula}'", 5000)
+            return
+
+        mz_text = ", ".join(str(v) for v in mz_dict.values())
+        info_text = ", ".join(mz_dict.keys())
+
+        # Block signals to avoid re-triggering
+        self.blockSignals(True)
+
+        mz_item = self.item(row, 1)
+        if mz_item is None:
+            mz_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 1, mz_item)
+        mz_item.setText(mz_text)
+
+        info_item = self.item(row, 2)
+        if info_item is None:
+            info_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 2, info_item)
+        info_item.setText(info_text)
+
+        self.blockSignals(False)
+
+        # Apply green highlight
+        self._highlight_cell(row, 1)
+        self._highlight_cell(row, 2)
+
+        # Slow path: compute theoretical spectrum with isotopic patterns
+        try:
+            spectrum = calculate_theoretical_spectrum(formula, active_adducts)
+            self._theoretical_spectra[formula] = spectrum
+            self.theoretical_spectrum_ready.emit(formula, spectrum)
+        except ValueError as e:
+            self.lookup_status.emit(f"Invalid formula '{formula}': {e}", 5000)
+            return
+
+        first_label = next(iter(mz_dict))
+        first_mz = mz_dict[first_label]
+        self.lookup_status.emit(
+            f"Formula '{formula}' resolved: {first_label} = {first_mz}", 5000
+        )
+
     def _on_lookup_finished(self, compound_name: str, data: dict):
         """Handle successful PubChem lookup - fill m/z and info columns."""
         row = getattr(self, "_lookup_row", None)
@@ -463,41 +719,85 @@ class IonTable(GenericTable):
         if name_item is None or name_item.text().strip() != compound_name:
             return
 
-        # Format m/z values: [M+H]+, [M-H]-
-        mz_pos = data.get("mz_pos")
-        mz_neg = data.get("mz_neg")
+        molecular_formula = data.get("molecular_formula", "")
 
-        if mz_pos is not None and mz_neg is not None:
-            mz_text = f"{mz_pos}, {mz_neg}"
-            info_text = "[M+H]+, [M-H]-"
-
-            # Block signals to avoid re-triggering
-            self.blockSignals(True)
-
-            # Fill m/z column
-            mz_item = self.item(row, 1)
-            if mz_item is None:
-                mz_item = QtWidgets.QTableWidgetItem()
-                self.setItem(row, 1, mz_item)
-            mz_item.setText(mz_text)
-
-            # Fill info column
-            info_item = self.item(row, 2)
-            if info_item is None:
-                info_item = QtWidgets.QTableWidgetItem()
-                self.setItem(row, 2, info_item)
-            info_item.setText(info_text)
-
-            self.blockSignals(False)
-
-            # Apply green highlight to filled cells
-            self._highlight_cell(row, 1)
-            self._highlight_cell(row, 2)
-
-            # Emit success status (matching log message format)
-            self.lookup_status.emit(
-                f"PubChem lookup successful for '{compound_name}': [M+H]+ = {mz_pos}", 5000
+        # If PubChem returned a molecular formula, use active adducts for m/z
+        if molecular_formula:
+            from utils.theoretical_spectrum import (
+                calculate_monoisotopic_mz,
+                calculate_theoretical_spectrum,
             )
+
+            active_adducts = self._get_active_adducts()
+            try:
+                mz_dict = calculate_monoisotopic_mz(molecular_formula, active_adducts)
+            except Exception:
+                mz_dict = {}
+
+            if mz_dict:
+                mz_text = ", ".join(str(v) for v in mz_dict.values())
+                info_text = ", ".join(mz_dict.keys())
+            else:
+                # Fallback to PubChem's simple [M+H]+/[M-H]- values
+                mz_pos = data.get("mz_pos")
+                mz_neg = data.get("mz_neg")
+                if mz_pos is not None and mz_neg is not None:
+                    mz_text = f"{mz_pos}, {mz_neg}"
+                    info_text = "[M+H]+, [M-H]-"
+                else:
+                    return
+        else:
+            # No molecular formula - use PubChem's simple values
+            mz_pos = data.get("mz_pos")
+            mz_neg = data.get("mz_neg")
+            if mz_pos is not None and mz_neg is not None:
+                mz_text = f"{mz_pos}, {mz_neg}"
+                info_text = "[M+H]+, [M-H]-"
+            else:
+                return
+
+        # Block signals to avoid re-triggering
+        self.blockSignals(True)
+
+        # Fill m/z column
+        mz_item = self.item(row, 1)
+        if mz_item is None:
+            mz_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 1, mz_item)
+        mz_item.setText(mz_text)
+
+        # Fill info column
+        info_item = self.item(row, 2)
+        if info_item is None:
+            info_item = QtWidgets.QTableWidgetItem()
+            self.setItem(row, 2, info_item)
+        info_item.setText(info_text)
+
+        self.blockSignals(False)
+
+        # Apply green highlight to filled cells
+        self._highlight_cell(row, 1)
+        self._highlight_cell(row, 2)
+
+        # Emit success status
+        first_mz = mz_text.split(",")[0].strip()
+        first_info = info_text.split(",")[0].strip()
+        self.lookup_status.emit(
+            f"PubChem lookup successful for '{compound_name}': {first_info} = {first_mz}",
+            5000,
+        )
+
+        # Compute theoretical spectrum if molecular formula is available
+        if molecular_formula:
+            try:
+                active_adducts = self._get_active_adducts()
+                spectrum = calculate_theoretical_spectrum(
+                    molecular_formula, active_adducts
+                )
+                self._theoretical_spectra[compound_name] = spectrum
+                self.theoretical_spectrum_ready.emit(compound_name, spectrum)
+            except Exception:
+                pass  # Non-critical: theoretical overlay is optional
 
     def _on_lookup_error(self, compound_name: str, error_msg: str):
         """Handle PubChem lookup error."""
@@ -636,6 +936,19 @@ class IonTable(GenericTable):
             ions_data[name]["info"] = [
                 x.strip() for x in info_text.split(",") if x.strip()
             ]
+
+            # 4. Persist formula if available (for auto-plotting on reload)
+            if name in self._theoretical_spectra:
+                ions_data[name]["formula"] = self._theoretical_spectra[name].formula
+
+        # 5. Persist adduct selection
+        active_adducts = self._get_active_adducts()
+        from utils.theoretical_spectrum import DEFAULT_ADDUCTS
+
+        # Compare as sets so the same selection in a different order
+        # does not trigger unnecessary persistence.
+        if set(active_adducts) != set(DEFAULT_ADDUCTS):
+            ions_data["_adducts"] = active_adducts
 
         # Save locally in config.json
         try:
@@ -963,9 +1276,7 @@ class UnifiedResultsTable(GenericTable):
         # Clear existing data but preserve row count and basic structure
         for row in range(self.rowCount()):
             for col in range(self.columnCount()):
-                if (
-                    col >= 2
-                ):  # Only clear ion data columns, preserve file/concentration
+                if col >= 2:  # Only clear ion data columns, preserve file/concentration
                     self.setItem(row, col, None)
 
         # If no rows exist yet, set them up
@@ -1395,6 +1706,7 @@ class MzRangeDialog(QtWidgets.QDialog):
         mass_accuracy,
         compound_name,
         existing_ranges=None,
+        theoretical_spectrum=None,
         parent=None,
     ):
         super().__init__(parent)
@@ -1407,12 +1719,14 @@ class MzRangeDialog(QtWidgets.QDialog):
         self._ion_labels = ion_labels
         self._mass_accuracy = mass_accuracy
         self._compound_name = compound_name
+        self._theoretical_spectrum = theoretical_spectrum
 
         # Internal state: {mz: (left, right)} for all ions
         self._ranges = dict(existing_ranges) if existing_ranges else {}
         self._current_ion_idx = 0
         self._left_line = None
         self._right_line = None
+        self._theo_items = []  # Tracked theoretical overlay items
 
         self._build_ui()
         self._plot_spectrum()
@@ -1426,9 +1740,7 @@ class MzRangeDialog(QtWidgets.QDialog):
         combo_layout = QtWidgets.QHBoxLayout()
         combo_layout.addWidget(QtWidgets.QLabel("Ion:"))
         self._ion_combo = QtWidgets.QComboBox()
-        for i, (mz, label) in enumerate(
-            zip(self._target_mz_values, self._ion_labels)
-        ):
+        for i, (mz, label) in enumerate(zip(self._target_mz_values, self._ion_labels)):
             self._ion_combo.addItem(f"{label} ({mz:.4f})")
         self._ion_combo.currentIndexChanged.connect(self._on_ion_changed)
         combo_layout.addWidget(self._ion_combo)
@@ -1445,9 +1757,7 @@ class MzRangeDialog(QtWidgets.QDialog):
             vb.enableAutoRange(axis="y")
             vb.setAutoVisible(y=True)
 
-        self._plot_widget.getPlotItem().getViewBox().sigXRangeChanged.connect(
-            _auto_y
-        )
+        self._plot_widget.getPlotItem().getViewBox().sigXRangeChanged.connect(_auto_y)
 
         layout.addWidget(self._plot_widget)
 
@@ -1564,6 +1874,59 @@ class MzRangeDialog(QtWidgets.QDialog):
 
         # Update labels with initial values
         self._update_boundary_labels()
+
+        # Overlay theoretical spectrum for current ion
+        self._plot_theoretical_for_current_ion()
+
+    def _plot_theoretical_for_current_ion(self):
+        """Overlay theoretical isotopic peaks for the currently selected ion."""
+        # Clean up previous theoretical items
+        plot_item = self._plot_widget.getPlotItem()
+        for item in self._theo_items:
+            try:
+                plot_item.removeItem(item)
+            except Exception:
+                pass
+        self._theo_items.clear()
+
+        if self._theoretical_spectrum is None:
+            return
+
+        idx = self._current_ion_idx
+        if idx >= len(self._ion_labels):
+            return
+
+        # Match ion label to adduct key
+        label = self._ion_labels[idx]
+        adduct = self._theoretical_spectrum.adducts.get(label)
+        if adduct is None:
+            return
+
+        # Scale abundances relative to experimental data in view window
+        mz = self._target_mz_values[idx]
+        view_mask = (self._mzs >= mz - 2.0) & (self._mzs <= mz + 2.0)
+        if np.any(view_mask):
+            max_exp = np.max(self._intensities[view_mask])
+        else:
+            max_exp = 1.0
+        scaled_heights = adduct.abundances * max_exp * 0.9
+
+        # Plot as bar graph
+        bar_item = pg.BarGraphItem(
+            x=adduct.mz_values,
+            height=scaled_heights,
+            width=0.1,
+            pen=mkPen("#d95f02", width=1),
+            brush=pg.mkBrush(217, 95, 2, 80),
+        )
+        plot_item.addItem(bar_item)
+        self._theo_items.append(bar_item)
+
+        # Add "Theoretical" text label above the monoisotopic peak
+        text_item = pg.TextItem("Theoretical", color="#d95f02", anchor=(0.5, 1.0))
+        text_item.setPos(adduct.monoisotopic_mz, scaled_heights[0] * 1.05)
+        plot_item.addItem(text_item)
+        self._theo_items.append(text_item)
 
     def _update_boundary_labels(self):
         """Update the boundary value labels when lines are moved."""
