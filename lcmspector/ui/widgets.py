@@ -270,7 +270,7 @@ class AdductDropdown(QtWidgets.QToolButton):
         super().__init__(parent)
         from utils.theoretical_spectrum import ADDUCT_DEFINITIONS
 
-        self.setText("Adducts \u25BC")
+        self.setText("Adducts")
         self.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
         self.setToolTip("Select adduct types for m/z calculation")
 
@@ -341,7 +341,9 @@ class IonTable(GenericTable):
     # Signal emitted for status bar updates
     lookup_status = QtCore.Signal(str, int)  # (message, duration_ms)
     # Signal emitted when a theoretical spectrum is computed
-    theoretical_spectrum_ready = QtCore.Signal(str, object)  # (compound_name, TheoreticalSpectrum)
+    theoretical_spectrum_ready = QtCore.Signal(
+        str, object
+    )  # (compound_name, TheoreticalSpectrum)
     # Signal emitted when a compound is removed from the table
     compound_removed = QtCore.Signal(str)  # compound_name
 
@@ -542,7 +544,9 @@ class IonTable(GenericTable):
         # 2. Get spectrum data from UploadTab
         spectrum_data = self.view.get_current_spectrum_data()
         if spectrum_data is None:
-            self.lookup_status.emit("No MS data available. Check an MS file first.", 5000)
+            self.lookup_status.emit(
+                "No MS data available. Check an MS file first.", 5000
+            )
             return
         mzs, intensities = spectrum_data
 
@@ -777,14 +781,17 @@ class IonTable(GenericTable):
         first_mz = mz_text.split(",")[0].strip()
         first_info = info_text.split(",")[0].strip()
         self.lookup_status.emit(
-            f"PubChem lookup successful for '{compound_name}': {first_info} = {first_mz}", 5000
+            f"PubChem lookup successful for '{compound_name}': {first_info} = {first_mz}",
+            5000,
         )
 
         # Compute theoretical spectrum if molecular formula is available
         if molecular_formula:
             try:
                 active_adducts = self._get_active_adducts()
-                spectrum = calculate_theoretical_spectrum(molecular_formula, active_adducts)
+                spectrum = calculate_theoretical_spectrum(
+                    molecular_formula, active_adducts
+                )
                 self._theoretical_spectra[compound_name] = spectrum
                 self.theoretical_spectrum_ready.emit(compound_name, spectrum)
             except Exception:
@@ -935,6 +942,7 @@ class IonTable(GenericTable):
         # 5. Persist adduct selection
         active_adducts = self._get_active_adducts()
         from utils.theoretical_spectrum import DEFAULT_ADDUCTS
+
         if active_adducts != DEFAULT_ADDUCTS:
             ions_data["_adducts"] = active_adducts
 
@@ -1264,9 +1272,7 @@ class UnifiedResultsTable(GenericTable):
         # Clear existing data but preserve row count and basic structure
         for row in range(self.rowCount()):
             for col in range(self.columnCount()):
-                if (
-                    col >= 2
-                ):  # Only clear ion data columns, preserve file/concentration
+                if col >= 2:  # Only clear ion data columns, preserve file/concentration
                     self.setItem(row, col, None)
 
         # If no rows exist yet, set them up
@@ -1730,9 +1736,7 @@ class MzRangeDialog(QtWidgets.QDialog):
         combo_layout = QtWidgets.QHBoxLayout()
         combo_layout.addWidget(QtWidgets.QLabel("Ion:"))
         self._ion_combo = QtWidgets.QComboBox()
-        for i, (mz, label) in enumerate(
-            zip(self._target_mz_values, self._ion_labels)
-        ):
+        for i, (mz, label) in enumerate(zip(self._target_mz_values, self._ion_labels)):
             self._ion_combo.addItem(f"{label} ({mz:.4f})")
         self._ion_combo.currentIndexChanged.connect(self._on_ion_changed)
         combo_layout.addWidget(self._ion_combo)
@@ -1749,9 +1753,7 @@ class MzRangeDialog(QtWidgets.QDialog):
             vb.enableAutoRange(axis="y")
             vb.setAutoVisible(y=True)
 
-        self._plot_widget.getPlotItem().getViewBox().sigXRangeChanged.connect(
-            _auto_y
-        )
+        self._plot_widget.getPlotItem().getViewBox().sigXRangeChanged.connect(_auto_y)
 
         layout.addWidget(self._plot_widget)
 
