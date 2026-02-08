@@ -54,7 +54,15 @@ def pytest_unconfigure(config):
     if real_status is not None and real_status == 0:
         if sys.platform == "win32":
             import ctypes
+
             kernel32 = ctypes.windll.kernel32
+            kernel32.GetCurrentProcess.restype = ctypes.c_void_p
+            kernel32.TerminateProcess.argtypes = [ctypes.c_void_p, ctypes.c_uint]
+            kernel32.TerminateProcess.restype = ctypes.c_int
+
+            sys.stdout.flush()
+            sys.stderr.flush()
+
             kernel32.TerminateProcess(kernel32.GetCurrentProcess(), 0)
         else:
             os._exit(0)
