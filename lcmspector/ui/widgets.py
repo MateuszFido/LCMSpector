@@ -1988,7 +1988,12 @@ class MzRangeDialog(QtWidgets.QDialog):
 
         # Match ion label to adduct key
         label = self._ion_labels[idx]
-        adduct = self._theoretical_spectrum.adducts.get(label)
+        adducts = getattr(self._theoretical_spectrum, "adducts", None) or getattr(
+            self._theoretical_spectrum, "precursor_isotopes", None
+        )
+        if adducts is None:
+            return
+        adduct = adducts.get(label)
         if adduct is None:
             return
 

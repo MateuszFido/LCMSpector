@@ -666,6 +666,34 @@ class TestPlottingDispatch:
         assert "[M+H]+" in labels
         assert "[M-H]-" in labels
 
+    def test_mz_range_dialog_opens_for_peptide(self, qapp, qtbot):
+        """MzRangeDialog does not crash when given a PeptideSpectrum."""
+        from ui.widgets import MzRangeDialog
+        from utils.theoretical_spectrum import calculate_peptide_fragments
+
+        spec = calculate_peptide_fragments("PEPTIDE", ["[M+H]+"])
+        mzs = np.linspace(100, 1000, 2000)
+        intensities = np.random.default_rng(42).random(2000) * 10000
+
+        # Get first precursor m/z for target
+        adduct_spec = spec.precursor_isotopes["[M+H]+"]
+        target_mz = float(adduct_spec.mz_values[0])
+
+        d = MzRangeDialog(
+            mzs=mzs,
+            intensities=intensities,
+            target_mz_values=[target_mz],
+            ion_labels=["[M+H]+"],
+            mass_accuracy=0.01,
+            compound_name="PEPTIDE",
+            existing_ranges={},
+            theoretical_spectrum=spec,
+        )
+        qtbot.addWidget(d)
+
+        # Dialog opened without crashing — verify theoretical overlay was plotted
+        assert len(d._theo_items) > 0
+
 
 # ===========================================================================
 # TestExistingBehaviorPreserved
