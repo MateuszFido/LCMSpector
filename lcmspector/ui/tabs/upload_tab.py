@@ -1049,7 +1049,11 @@ class UploadTab(TabBase):
                     if y_data is not None and len(y_data) > 0:
                         max_exp = max(max_exp, float(y_data.max()))
                 except Exception:
-                    pass
+                    # Intentionally ignore errors from malformed plot items, but log for debugging.
+                    logger.debug(
+                        "Failed to read yData from plot item while computing max experimental intensity",
+                        exc_info=True,
+                    )
         return max_exp
 
     def _on_theoretical_spectrum_ready(self, compound_name: str, spectrum):
